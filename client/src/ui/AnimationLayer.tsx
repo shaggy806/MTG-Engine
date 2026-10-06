@@ -191,6 +191,9 @@ interface DrawnCard {
   readonly fromY: number
   readonly toX: number
   readonly toY: number
+  /** The owner's seat colour, off their quadrant, for the cardback's tint
+   * (App.css's `.seat-tinted`) — the flight is portalled out of it. */
+  readonly seat: string
 }
 
 /**
@@ -203,7 +206,7 @@ interface DrawnCard {
  */
 function drawFlight(
   player: PlayerId,
-): { fromX: number; fromY: number; toX: number; toY: number } | null {
+): { fromX: number; fromY: number; toX: number; toY: number; seat: string } | null {
   const pile = libraryCardOf(player)
   const panel = document.querySelector<HTMLElement>(`[data-player-id="${CSS.escape(player)}"]`)
   const cell = panel?.closest<HTMLElement>('.quadrant-cell')
@@ -216,6 +219,7 @@ function drawFlight(
     fromY: p.top + p.height / 2 - window.innerHeight / 2,
     toX: to.x,
     toY: to.y,
+    seat: getComputedStyle(cell).getPropertyValue('--seat').trim(),
   }
 }
 
@@ -1741,6 +1745,13 @@ function peelCards(
   for (let i = 0; i < shown; i += 1) {
     const card = document.createElement('div')
     card.className = 'peel-card'
+    // The pile's seat colour, for the cardback's tint: the card is about to
+    // leave the quadrant that sets it. None, none (plain leather).
+    const seat = getComputedStyle(top).getPropertyValue('--seat').trim()
+    if (seat !== '') {
+      card.classList.add('seat-tinted')
+      card.style.setProperty('--seat', seat)
+    }
     card.style.left = `${r.left}px`
     card.style.top = `${r.top}px`
     card.style.width = `${r.width}px`
@@ -2322,9 +2333,10 @@ export function AnimationLayer({
       {drawnCards.map((c) => (
         <div
           key={c.key}
-          className="drawn-card-fly"
+          className="drawn-card-fly seat-tinted"
           style={
             {
+              '--seat': c.seat,
               '--draw-from-x': `${c.fromX}px`,
               '--draw-from-y': `${c.fromY}px`,
               '--draw-to-x': `${c.toX}px`,

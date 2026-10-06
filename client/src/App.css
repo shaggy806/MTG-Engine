@@ -1695,6 +1695,24 @@
     radial-gradient(circle closest-side at center, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 70%, transparent 73%),
     var(--card-back-leather);
 }
+/* A player's own library is their seat's colour: the leather mixed with
+   it, the glow and the count's ring in it, so each pile says whose it is
+   at a glance across the table. Inside a player's quadrant (which sets
+   --seat), and on a card back an animation flies out of that pile
+   (`seat-tinted`, with the pile's --seat copied on). A face-down card that
+   isn't anyone's library (the zone viewer, a card held in exile) keeps the
+   plain leather above. */
+.quadrant-cell .card-back,
+.seat-tinted .card-back {
+  background:
+    radial-gradient(circle closest-side at center, color-mix(in srgb, var(--seat) 26%, transparent) 0%, color-mix(in srgb, var(--seat) 8%, transparent) 70%, transparent 73%),
+    linear-gradient(160deg, color-mix(in srgb, var(--seat) 34%, #17130f), color-mix(in srgb, var(--seat) 12%, #08070a));
+  border-color: color-mix(in srgb, var(--seat) 45%, var(--border));
+}
+.quadrant-cell .card-back-count,
+.seat-tinted .card-back-count {
+  border-color: color-mix(in srgb, var(--seat) 75%, transparent);
+}
 .card-back-count {
   display: grid;
   place-items: center;
