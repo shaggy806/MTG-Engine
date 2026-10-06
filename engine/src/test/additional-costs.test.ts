@@ -128,6 +128,28 @@ describe("additional cost — sacrifice a land (Harrow, Crop Rotation)", () => {
     ).toThrow(/cannot pay/);
   });
 
+  it("taps the land it sacrifices for the spell's own cost when it can", () => {
+    // A bug report (2026-10-05): the payment didn't know which land was
+    // about to go, so it could tap the others and sacrifice an untapped
+    // one, its mana lost. Harrow ({2}{G}) off four untapped lands,
+    // sacrificing an Island: the Island pays, and one land stays untapped.
+    const { game } = mkGame(["Harrow"]);
+    game.advanceUntil(toPrecombat);
+    for (const id of landsOf(game, A)) game.state.objects[id].tapped = true;
+    game.debugSpawn("Forest", A, "battlefield");
+    game.debugSpawn("Forest", A, "battlefield");
+    game.debugSpawn("Island", A, "battlefield");
+    const island = game.debugSpawn("Island", A, "battlefield");
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Harrow"),
+      sacrifice: island,
+    });
+    expect(game.state.objects[island].zone).toBe("graveyard");
+    expect(landsOf(game, A).filter((id) => !game.state.objects[id].tapped)).toHaveLength(1);
+  });
+
   it("can tap the very land it sacrifices (rule 601.2g)", () => {
     // Crop Rotation costs {G} and one Forest is the only land: tap it for mana
     // first, then sacrifice it. Both halves of the cost come from one permanent.

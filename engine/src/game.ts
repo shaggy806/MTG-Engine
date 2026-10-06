@@ -638,7 +638,8 @@ function autoSlotsOf(slots: readonly object[]): number[] {
  * tapped for another part of the same cost and can't pay (rule 602.2a — no
  * longer untapped); `last` ones are tried only after everything else, so a
  * permanent the player may yet choose to tap for that other part is spared
- * whenever it can be.
+ * whenever it can be; `first` ones before anything else — a land about to
+ * be sacrificed for the cost, whose mana is lost unless it pays.
  */
 /** A convoke payment with its contribution settled — see `resolveConvoke`. */
 type PaidConvoke = ConvokePayment & { readonly pays: "generic" | Color };
@@ -656,13 +657,14 @@ function castableFaces(def: CardDefinition): readonly (number | undefined)[] {
 }
 
 interface ManaSourceArrangement {
+  readonly first?: ReadonlySet<ObjectId>;
   readonly last?: ReadonlySet<ObjectId>;
   readonly withheld?: ReadonlySet<ObjectId>;
 }
 
 function arrangeManaSources(
   sources: readonly ManaSource[],
-  { last, withheld }: ManaSourceArrangement,
+  { first, last, withheld }: ManaSourceArrangement,
 ): ManaSource[] {
   // A withheld permanent is being tapped for something else, which only
   // rules out its `{T}` options — an untapped ability (Vivi Ornitier's
@@ -675,8 +677,10 @@ function arrangeManaSources(
           const options = s.options.filter((o) => o.untapped === true);
           return options.length === 0 || s.sacrificeSelf ? [] : [{ ...s, options }];
         });
-  if (last === undefined) return kept;
-  return [...kept.filter((s) => !last.has(s.id)), ...kept.filter((s) => last.has(s.id))];
+  const ordered =
+    first === undefined ? kept : [...kept.filter((s) => first.has(s.id)), ...kept.filter((s) => !first.has(s.id))];
+  if (last === undefined) return ordered;
+  return [...ordered.filter((s) => !last.has(s.id)), ...ordered.filter((s) => last.has(s.id))];
 }
 
 /** One permission a graveyard card could be played under, with the static
@@ -2843,6 +2847,8 @@ export class Game {
   private isStackableTokenName(name: string): boolean {
     const def = this.registry.get(name);
     if (def.activated.length > 0) return false;
+    // Each Saga counts its own lore and triggers its own chapters.
+    if (def.chapters !== null) return false;
     return def.triggered.every(
       (t) => t.targets.length === 0 && t.effect !== null && isCountScalableEffect(t.effect),
     );
@@ -9470,6 +9476,12 @@ export class Game {
         ...(manaArrangement ?? {}),
         last: this.costSacrificeCandidates(player, severalSacrificed, undefined),
       };
+    } else if (sacrificeVictim !== undefined) {
+      // The one permanent being sacrificed pays first where it can (rule
+      // 601.2g: mana abilities before costs): Crop Rotation's land taps for
+      // its {G} before it goes, rather than going untapped while another
+      // land pays and its mana is lost (a bug report, 2026-10-05).
+      manaArrangement = { ...(manaArrangement ?? {}), first: new Set([sacrificeVictim]) };
     }
     const payment = this.payMana(
       player,
@@ -19940,6 +19952,12 @@ export class Game {
         made.push(id);
         if (copied) this.emit({ type: "permanent-copied", object: id, copyOf: printedName });
         this.emit({ type: "permanent-entered-battlefield", object: id });
+        // A Saga token — a copy of a Saga — enters with a lore counter too
+        // (rule 714.3a), as `moveObject` gives a Saga card: before this, a
+        // token copy of one sat on no counters and never read chapter I.
+        if (this.registry.get(printedName).chapters !== null) {
+          this.addLoreCounter(id, this.counterMultiplier(id, "lore"));
+        }
       }
       return made;
     });

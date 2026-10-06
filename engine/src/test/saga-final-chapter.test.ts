@@ -125,3 +125,20 @@ describe("a completed Saga is sacrificed", () => {
     expect(fired(game, mourner)).toBe(1);
   });
 });
+
+describe("a token copy of a Saga", () => {
+  it("enters with a lore counter and reads chapter I (rule 714.3a)", () => {
+    // A bug report (2026-10-05): a copy of a Saga entered with no lore
+    // counter — tokens are minted onto the battlefield, never through the
+    // `moveObject` entry that gives a Saga card its counter.
+    const game = setUp();
+    const saga = game.debugSpawn("History of Benalia", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "create-token-copy", of: 0, count: 1 }, [{ kind: "object", object: saga }]);
+    const copy = game.state.zones.shared.battlefield.find(
+      (id) => id !== saga && game.state.objects[id].copyOf === "History of Benalia",
+    )!;
+    expect(game.state.objects[copy].counters.lore).toBe(1);
+    onTurn(game, 1);
+    expect(fired(game, copy)).toBe(1);
+  });
+});
