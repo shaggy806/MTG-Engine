@@ -722,23 +722,37 @@
 }
 .pp-zones {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
   color: var(--muted);
   font-size: var(--text-sm);
 }
+/* A count that opens its zone (your hand, a graveyard, exile, emblems) is a
+   small bevelled button, so it reads as one; a count that opens nothing
+   (library, lands, an opponent's hand) stays plain text beside them. The
+   button look is written out here rather than taken from index.css's bevel
+   rule, which leaves .pp-zone-link out so the disabled ones stay flat. */
 .pp-zone-link {
-  background: none;
-  border: none;
-  padding: 0;
   margin: 0;
-  color: inherit;
+  padding: 1px 7px;
   font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--bevel-edge);
+  box-shadow: inset 1px 1px 0 var(--bevel-light), inset -1px -2px 0 var(--bevel-dark);
   cursor: pointer;
 }
-.pp-zone-link:hover:not(:disabled) {
-  text-decoration: underline;
+.pp-zone-link:active:not(:disabled) {
+  box-shadow: inset 1px 2px 0 var(--bevel-dark), inset -1px -1px 0 var(--bevel-light);
+  translate: 0 1px;
 }
 .pp-zone-link:disabled {
+  padding: 0;
+  color: inherit;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
   cursor: default;
   /* Looks identical to the plain (non-clickable) pp-zones spans next to it —
      only override the generic dimmed-disabled-button look. */
@@ -1673,10 +1687,12 @@
   justify-content: center;
   border-radius: 8px;
   border: 1px solid var(--border);
-  /* A dark leather back with a gold oval, picking up the accent (index.css)
-     — the indigo it was sat apart from everything around it. */
+  /* A dark leather back with a gold glow, picking up the accent (index.css)
+     — the indigo it was sat apart from everything around it. A circle, not
+     an oval (`closest-side` of a portrait card is half its width), sized to
+     sit just around the count's ring. */
   background:
-    radial-gradient(ellipse 36% 44% at center, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 70%, transparent 72%),
+    radial-gradient(circle closest-side at center, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 70%, transparent 73%),
     var(--card-back-leather);
 }
 .card-back-count {
