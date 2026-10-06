@@ -37,6 +37,7 @@ import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { waitingLabel } from './game/waitingLabel.ts'
+import { useEscape } from './ui/useEscape.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { applyBoardOrder } from './game/boardOrder.ts'
 import { useBoardDrag, type BoardDragControls } from './game/useBoardDrag.ts'
@@ -695,6 +696,8 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   const [showCapture, setShowCapture] = useState(false)
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
   const dismissHighroll = useCallback(() => setDismissedHighroll(true), [])
+  const closeHistory = useCallback(() => setShowHistory(false), [])
+  useEscape(showHistory ? closeHistory : undefined)
   // One bus per screen, carrying each frame's cues from playback across to
   // the overlay layer (they're siblings — see AnimationLayer's own comment).
   const [bus] = useState(() => new AnimationBus())
@@ -2464,7 +2467,10 @@ function Table({
       const typing =
         t instanceof HTMLElement &&
         (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable)
-      if (e.key === ' ' && mode === 'priority' && !typing) {
+      // Nor is Space behind a popup (History, a graveyard): it's the page,
+      // not a pass the player can see the board for.
+      const behindPopup = document.querySelector('.zone-viewer-overlay') !== null
+      if (e.key === ' ' && mode === 'priority' && !typing && !behindPopup) {
         e.preventDefault()
         pass()
       } else if (e.key === 'Escape') {

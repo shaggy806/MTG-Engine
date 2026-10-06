@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useEscape } from './useEscape.ts'
 import type { CardDefinition, ObjectId, VisibleObject } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
 import { Symbols } from './Symbols.tsx'
@@ -144,6 +145,10 @@ export function ZoneViewer({
     picked.length >= selection.min &&
     picked.length <= selection.max &&
     (selection.fits?.(picked) ?? true)
+
+  // Escape closes a viewer that's only for looking, or cancels a choice that
+  // can be cancelled; a choice that must be made stays.
+  useEscape(selection ? (collapsed ? undefined : selection.onCancel) : onClose)
 
   if (selection && collapsed) return null
 
