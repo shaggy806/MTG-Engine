@@ -70,7 +70,7 @@ describe("engines in the target ranking", () => {
     expect(ranked(game, murder)[0]).toBe(baloth);
     // Four turns on the battlefield before this one, at two players: two rounds.
     game.state.objects[bears].enteredBattlefieldOnTurn = 5;
-    game.state.objects[bears].tally = { damageToPlayers: 6, cardsDrawn: 3, thisTurn: { turn: 0, damageToPlayers: 0, cardsDrawn: 0 } };
+    game.state.objects[bears].tally = { lifeTaken: 6, cardsDrawn: 3, thisTurn: { turn: 0, lifeTaken: 0, cardsDrawn: 0 } };
     // 3 cards over 2 rounds, and 6 damage at a card per 4 over 2 rounds.
     expect(trackRecordOf(game.state, registry, bears, 1)).toBeCloseTo(1.5 + 0.75);
     expect(ranked(game, murder)[0]).toBe(bears);
@@ -82,9 +82,9 @@ describe("engines in the target ranking", () => {
     game.state.objects[bears].enteredBattlefieldOnTurn = 5;
     // All six this turn — as a simulated combat would add them.
     game.state.objects[bears].tally = {
-      damageToPlayers: 6,
+      lifeTaken: 6,
       cardsDrawn: 0,
-      thisTurn: { turn: game.state.turn.number, damageToPlayers: 6, cardsDrawn: 0 },
+      thisTurn: { turn: game.state.turn.number, lifeTaken: 6, cardsDrawn: 0 },
     };
     expect(trackRecordOf(game.state, registry, bears, 1)).toBe(0);
   });
@@ -94,7 +94,7 @@ describe("engines in the target ranking", () => {
     const archivist = spawn(game, "Archivist");
     game.state.objects[archivist].enteredBattlefieldOnTurn = 5;
     // A card a round, which Archivist's {T}: draw a card already says.
-    game.state.objects[archivist].tally = { damageToPlayers: 0, cardsDrawn: 2, thisTurn: { turn: 0, damageToPlayers: 0, cardsDrawn: 0 } };
+    game.state.objects[archivist].tally = { lifeTaken: 0, cardsDrawn: 2, thisTurn: { turn: 0, lifeTaken: 0, cardsDrawn: 0 } };
     expect(trackRecordOf(game.state, registry, archivist, 1)).toBe(0);
   });
 });

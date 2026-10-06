@@ -1151,9 +1151,9 @@ const SCENARIOS: readonly BotScenario[] = [
       const bears = onBoard(game, "Grizzly Bears", B);
       game.state.objects[bears].enteredBattlefieldOnTurn = game.state.turn.number - 3;
       game.state.objects[bears].tally = {
-        damageToPlayers: 6,
+        lifeTaken: 6,
         cardsDrawn: 3,
-        thisTurn: { turn: 0, damageToPlayers: 0, cardsDrawn: 0 },
+        thisTurn: { turn: 0, lifeTaken: 0, cardsDrawn: 0 },
       };
       return {
         game,

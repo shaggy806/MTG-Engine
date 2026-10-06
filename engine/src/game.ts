@@ -16892,7 +16892,7 @@ export class Game {
         return types.size;
       },
       gainLife: (player, amount) => this.changeLife(player, amount),
-      loseLife: (player, amount) => this.changeLife(player, -amount),
+      loseLife: (player, amount) => this.loseLifeTallied(player, amount),
       manaTypesOf: (mana) => this.manaOneOf(mana, controller, source),
       addMana: (player, mana, amount, spec) =>
         this.addMana(
@@ -24482,8 +24482,33 @@ export class Game {
     const object = this.state.objects[source];
     if (object === undefined || object.zone !== "battlefield" || object.controller === target.player) return;
     const tally = this.tallyOf(object);
-    tally.damageToPlayers += amount;
-    tally.thisTurn.damageToPlayers += amount;
+    tally.lifeTaken += amount;
+    tally.thisTurn.lifeTaken += amount;
+  }
+
+  /** An effect's life loss (not damage, which `tallyDamage` counts), added
+   * to the resolving ability's source's `tally` when it is still the
+   * permanent that put the ability on the stack (rule 400.7) and the player
+   * losing is one of its controller's opponents. What was actually lost, so
+   * a life total that can't change counts nothing. */
+  private loseLifeTallied(player: PlayerId, amount: number): void {
+    const before = this.state.players[player]?.life;
+    this.changeLife(player, -amount);
+    const lost = before === undefined ? 0 : before - this.state.players[player].life;
+    const resolving = this.state.resolvingSource;
+    if (lost <= 0 || resolving === undefined) return;
+    const object = this.state.objects[resolving.source];
+    if (
+      object === undefined ||
+      object.zone !== "battlefield" ||
+      object.timestamp !== resolving.timestamp ||
+      object.controller === player
+    ) {
+      return;
+    }
+    const tally = this.tallyOf(object);
+    tally.lifeTaken += lost;
+    tally.thisTurn.lifeTaken += lost;
   }
 
   /** `object`'s `tally`, its `thisTurn` share started over if that was an
@@ -24491,11 +24516,11 @@ export class Game {
   private tallyOf(object: GameObject): NonNullable<GameObject["tally"]> {
     const turn = this.state.turn.number;
     const tally = (object.tally ??= {
-      damageToPlayers: 0,
+      lifeTaken: 0,
       cardsDrawn: 0,
-      thisTurn: { turn, damageToPlayers: 0, cardsDrawn: 0 },
+      thisTurn: { turn, lifeTaken: 0, cardsDrawn: 0 },
     });
-    if (tally.thisTurn.turn !== turn) tally.thisTurn = { turn, damageToPlayers: 0, cardsDrawn: 0 };
+    if (tally.thisTurn.turn !== turn) tally.thisTurn = { turn, lifeTaken: 0, cardsDrawn: 0 };
     return tally;
   }
 
@@ -24899,7 +24924,8 @@ export class Game {
   ): void {
     if (delta === 0) return;
     for (const p of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown, triggerPlayer)) {
-      this.changeLife(p, delta);
+      if (delta < 0) this.loseLifeTallied(p, -delta);
+      else this.changeLife(p, delta);
     }
   }
 

@@ -267,7 +267,7 @@ describe("a permanent's tally (what the bots' target ranking reads)", () => {
     const archivist = spawn(game, "Archivist", A);
     game.dispatch({ type: "activate-ability", player: A, source: archivist, abilityIndex: 0 });
     game.advanceUntil(stackEmpty);
-    expect(game.state.objects[archivist].tally).toMatchObject({ damageToPlayers: 0, cardsDrawn: 1 });
+    expect(game.state.objects[archivist].tally).toMatchObject({ lifeTaken: 0, cardsDrawn: 1 });
   });
 
   it("credits damage to an opponent, not to a creature or its own controller", () => {
@@ -286,10 +286,33 @@ describe("a permanent's tally (what the bots' target ranking reads)", () => {
     expect(game.state.objects[pyromancer].tally).toBeUndefined();
     ping({ kind: "player", player: B });
     expect(game.state.objects[pyromancer].tally).toMatchObject({
-      damageToPlayers: 1,
+      lifeTaken: 1,
       cardsDrawn: 0,
-      thisTurn: { turn: game.state.turn.number, damageToPlayers: 1 },
+      thisTurn: { turn: game.state.turn.number, lifeTaken: 1 },
     });
+  });
+
+  it("credits life an opponent loses to its ability, as it does damage", () => {
+    // Not damage (rule 120.3 doesn't apply), but the same life gone: Ob
+    // Nixilis, the Fallen's drain is its record as much as a hit would be.
+    const game = mkGame();
+    game.advanceUntil(atFirstMain);
+    const imp = spawn(game, "Cackling Imp", A);
+    const drain = (player: PlayerId) => {
+      game.state.objects[imp].tapped = false;
+      game.dispatch({
+        type: "activate-ability",
+        player: A,
+        source: imp,
+        abilityIndex: 0,
+        targets: [{ kind: "player", player }],
+      });
+      game.advanceUntil(stackEmpty);
+    };
+    drain(A);
+    expect(game.state.objects[imp].tally).toBeUndefined();
+    drain(B);
+    expect(game.state.objects[imp].tally).toMatchObject({ lifeTaken: 1, cardsDrawn: 0 });
   });
 
   it("starts over when the permanent leaves the battlefield (rule 400.7)", () => {

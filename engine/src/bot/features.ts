@@ -611,19 +611,42 @@ function tokenRate(registry: CardRegistry, def: CardDefinition, opponents: numbe
   return Math.min(TOKEN_RATE_CAP, rate.fixed + rate.perOpponent * opponents);
 }
 
-/** Damage dealt to opponents counted as a card: 4 life is a card in the
+/** Life taken from opponents counted as a card: 4 life is a card in the
  * evaluation (`life` 0.5 against `hand` 2). */
-const DAMAGE_PER_CARD = 4;
+const LIFE_PER_CARD = 4;
 /** The most a permanent's track record is credited a round, as for
  * {@link DRAW_RATE_CAP}: one that has drawn a hand in a turn shouldn't
  * outweigh the board. */
 const TRACK_RECORD_CAP = 3;
 
+/** The real position a decision is being made in, while a bot is making
+ * one — see {@link withTrackRecordEvidence}. */
+let evidence: GameState | null = null;
+
+/**
+ * Run `decide` with every track record read off `root`, the position the bot
+ * is actually deciding in, rather than off whichever position its search is
+ * scoring. A rollout that plays into the next turn makes the damage it only
+ * simulated a "settled" turn of the tally, and Ob Nixilis, the Fallen's
+ * controller turned down its drain because the line where it didn't grow
+ * happened to simulate a hit. The outermost call wins: a search nested in a
+ * rollout is still judged by the real board, not by the rollout's.
+ */
+export function withTrackRecordEvidence<T>(root: GameState, decide: () => T): T {
+  if (evidence !== null) return decide();
+  evidence = root;
+  try {
+    return decide();
+  } finally {
+    evidence = null;
+  }
+}
+
 /**
  * What a permanent has shown it does, a round, past what its printed
  * abilities already say: the cards its controller drew off it beyond
- * {@link drawRate}, and the damage it dealt opponents at a card per
- * {@link DAMAGE_PER_CARD}, over the rounds it has been on the battlefield
+ * {@link drawRate}, and the life it took from opponents (damage, or a drain
+ * like Ob Nixilis, the Fallen's) at a card per {@link LIFE_PER_CARD}, over the rounds it has been on the battlefield
  * before this turn (`GameObject.tally`, public, as `settledTally` reads it). The printed rates price an engine from the
  * turn it lands; this is the evidence for one they can't read — a creature
  * wearing the equipment, one that connects every turn, a draw a static
@@ -635,14 +658,16 @@ export function trackRecordOf(
   id: ObjectId,
   opponents: number,
 ): number {
-  const object = state.objects[id];
-  if (object === undefined || object.tally === undefined) return 0;
-  // Only turns already over: what its own search simulates this turn — a
-  // creature connecting in a combat it's weighing — mustn't add to the
-  // evidence it's weighing it by, or dealing damage would count twice (in
-  // the life it costs, and again here). Nothing for one that arrived this
-  // turn.
-  const now = state.turn.number;
+  // The record as of the real board while a bot decides (a position its
+  // search reached may have played on into later turns), and only turns
+  // already over on it: a creature connecting in a combat being weighed
+  // mustn't add to the evidence it's weighed by, or its damage would count
+  // twice (in the life it costs, and again here). Nothing for one that
+  // arrived this turn, or one not there in the real game.
+  const real = evidence ?? state;
+  const object = real.objects[id];
+  if (object === undefined || object.tally === undefined || object.zone !== "battlefield") return 0;
+  const now = real.turn.number;
   const turns = now - (object.enteredBattlefieldOnTurn ?? now);
   if (turns <= 0) return 0;
   const tally = settledTally(object, now);
@@ -651,12 +676,12 @@ export function trackRecordOf(
   const name = printedCardName(object);
   const printed = registry.has(name) ? drawRate(registry.get(name), opponents) : 0;
   const extraDraws = Math.max(0, tally.cardsDrawn - printed * rounds);
-  const damage = tally.damageToPlayers / DAMAGE_PER_CARD;
+  const life = tally.lifeTaken / LIFE_PER_CARD;
   // Less than a card's worth isn't a record: one hit for 2 is a creature
   // doing what its power says, and a search that plays on past the turn
   // would otherwise credit the hits it only simulated.
-  if (extraDraws + damage < 1) return 0;
-  return Math.min(TRACK_RECORD_CAP, (extraDraws + damage) / rounds);
+  if (extraDraws + life < 1) return 0;
+  return Math.min(TRACK_RECORD_CAP, (extraDraws + life) / rounds);
 }
 
 /**
