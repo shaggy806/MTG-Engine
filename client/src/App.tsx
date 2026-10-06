@@ -33,6 +33,7 @@ import {
   standardAssignment,
   targetCountAtX,
 } from 'engine/client'
+import type { SeatStatus } from 'protocol'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
@@ -632,6 +633,50 @@ function HighrollToast({ onDismiss, children }: { readonly onDismiss: () => void
   )
 }
 
+/**
+ * The end of the game, as its own panel over the final board: who won and
+ * how, and what next. It used to be one line in the bottom-right corner
+ * ("Bob wins · last player remaining"), easy to miss after a concede, with
+ * nowhere to go from it. A rematch would need the server to deal a new game
+ * into the same room; until then the way on is the main menu, as the Seat
+ * menu's "Leave the room" goes.
+ */
+function GameResultPanel({
+  view,
+  seat,
+  seats,
+  onDismiss,
+}: {
+  readonly view: PlayerView
+  readonly seat: PlayerId
+  readonly seats: readonly SeatStatus[]
+  readonly onDismiss: () => void
+}) {
+  useEscape(onDismiss)
+  const { winner, reason } = view.result
+  const headline = winner === null ? 'Draw' : winner === seat ? 'You win!' : `${playerLabel(winner, seats)} wins`
+  const seatClass = winner !== null && view.turnOrder.includes(winner) ? seatClassOf(view.turnOrder, winner) : ''
+  return (
+    <div className="result-overlay" onClick={onDismiss}>
+      <div className="result-box" role="dialog" aria-label="Game over" onClick={(e) => e.stopPropagation()}>
+        <p className="result-kicker">Game over</p>
+        <h2 className={`result-headline ${seatClass}`}>{headline}</h2>
+        <p className="muted">
+          {reason ? `${reason[0].toUpperCase()}${reason.slice(1)} · ` : ''}turn {view.turn.number}
+        </p>
+        <div className="result-actions">
+          <button type="button" onClick={onDismiss}>
+            View the board
+          </button>
+          <button type="button" className="result-primary" onClick={() => window.location.assign('/')}>
+            Main menu
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /** Leaves the waiting room for the landing page, giving up my seat so the
  * table isn't left waiting on someone who has gone. */
 function BackToMenu({ game }: { readonly game: NetworkGame }) {
@@ -697,6 +742,9 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
   const dismissHighroll = useCallback(() => setDismissedHighroll(true), [])
   const closeHistory = useCallback(() => setShowHistory(false), [])
+  // The end-of-game panel, put aside to look at the final board.
+  const [resultDismissed, setResultDismissed] = useState(false)
+  const dismissResult = useCallback(() => setResultDismissed(true), [])
   useEscape(showHistory ? closeHistory : undefined)
   // One bus per screen, carrying each frame's cues from playback across to
   // the overlay layer (they're siblings — see AnimationLayer's own comment).
@@ -892,6 +940,10 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
             />
           </div>
         </div>
+      ) : null}
+
+      {over && !resultDismissed ? (
+        <GameResultPanel view={view} seat={seat} seats={game.seats} onDismiss={dismissResult} />
       ) : null}
 
       {showCapture ? <CapturePanel game={game} onClose={() => setShowCapture(false)} /> : null}
@@ -3129,6 +3181,9 @@ function Table({
           {view.result.winner ? `${playerLabel(view.result.winner, game.seats)} wins` : 'Draw'}
         </strong>
         <span className="muted">{view.result.reason}</span>
+        <button type="button" onClick={() => window.location.assign('/')}>
+          Main menu
+        </button>
       </div>
     )
   } else if (mode === 'choose-enchant' && enchantAction) {

@@ -72,3 +72,12 @@ title; when one lands, delete it in both. The animation follow-ups are in
   same path, drawn whole from the first frame, so it sits on the defender before the line gets
   there. Resolving arrows put the head on a sliver path of its own that waits for the line
   (`.arrow-tip`); attack arrows could do the same.
+- **A rematch from the end-of-game panel** (2026-10-06 UI review). A finished game shows
+  `GameResultPanel` (App.tsx) with "View the board" and "Main menu". A rematch — the same seats
+  and decks, a new game in the same room — would need the server to deal a new `Game` into a
+  room that has ended (`RoomManager`, `Room`); `leave-room` is pending-room only today.
+- **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review). Moving bot
+  speed into the Settings panel brought every step back at 1366x768, but at 1024 the track
+  (`PhaseTrack`) still stops at CD. "Player 1 to act" and the text buttons (Settings, History,
+  Capture, Seat) are what's left to shorten — icons, or the acting player folded into the turn
+  banner.
