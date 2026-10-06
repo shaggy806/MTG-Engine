@@ -395,6 +395,20 @@ export const playerLabel = (id: PlayerId, seats?: readonly SeatStatus[]): string
   return custom || id.charAt(0).toUpperCase() + id.slice(1)
 }
 
+/** `text` — a refusal from the engine or server, which names players by
+ * seat id ("bob is not being asked to block") and objects by id — with each
+ * seat's `playerLabel` and each object's name (`nameOf`) in their place. */
+export const withNames = (
+  text: string,
+  seats: readonly SeatStatus[] | undefined,
+  nameOf: NameOf,
+): string => {
+  const ids = (seats ?? []).map((s) => s.player)
+  const seatRe = ids.length > 0 ? new RegExp(`\\b(${ids.join('|')})\\b`, 'g') : null
+  const named = seatRe === null ? text : text.replace(seatRe, (id) => playerLabel(id as PlayerId, seats))
+  return named.replace(/\bobj-\d+\b/g, (id) => nameOf(id as ObjectId))
+}
+
 export type SeatClass = 'seat-a' | 'seat-b' | 'seat-c' | 'seat-d'
 
 export const SEAT_CLASSES: readonly SeatClass[] = ['seat-a', 'seat-b', 'seat-c', 'seat-d']

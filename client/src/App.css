@@ -2039,13 +2039,22 @@
 }
 /* art-first layout's name, below the art instead of in a title bar above it
    -- reuses .ct-name's own truncation styling, just needs its own padding
-   now that it's not inside .ct-title. */
+   now that it's not inside .ct-title. A flex row, as .ct-title is: as a
+   block, its line box was sized by the tile's own 14px font, taller than
+   the 11px name inside it, and the name sat on that line's baseline -- at
+   the bottom of its strip, against the type line, and on a legendary card
+   over the strip's gold bottom rule (a bug report, 2026-10-05). As much
+   padding below the name as above it, too. */
 .ct-name-row {
-  padding: calc(4px * var(--ct-scale, 1)) calc(6px * var(--ct-scale, 1)) 0;
+  display: flex;
+  align-items: center;
+  padding: calc(3px * var(--ct-scale, 1)) calc(6px * var(--ct-scale, 1));
 }
+/* --name-scale: set by CardTile.tsx, as the type line's --type-scale is --
+   a long name shrinks to fit before it's cut short. */
 .card-tile.art-first .ct-name-row .ct-name {
   font-weight: 700;
-  font-size: calc(11px * var(--ct-scale, 1));
+  font-size: calc(11px * var(--name-scale, 1) * var(--ct-scale, 1));
 }
 .ct-copy {
   font-weight: 400;

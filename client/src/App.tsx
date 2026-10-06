@@ -68,7 +68,7 @@ import {
 } from './game/damageAssignment.ts'
 import { usePlayback } from './game/usePlayback.ts'
 import { AnimationBus } from './game/animationBus.ts'
-import { playerLabel, seatClassOf } from './format.ts'
+import { playerLabel, seatClassOf, withNames } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
 import { AnimationLayer } from './ui/AnimationLayer.tsx'
@@ -608,7 +608,7 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
       role="alert"
       title="Click to dismiss"
     >
-      ⚠ {error}
+      ⚠ {withNames(error, game.seats, game.nameOf)}
     </div>
   )
 }

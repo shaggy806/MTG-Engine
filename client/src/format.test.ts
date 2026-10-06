@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { GameEvent, ObjectId, PlayerId } from 'engine/client'
 import type { SeatStatus } from 'protocol'
-import { describeEvent } from './format.ts'
+import { describeEvent, withNames } from './format.ts'
 
 const p1 = 'p1' as PlayerId
 const p2 = 'p2' as PlayerId
@@ -41,5 +41,18 @@ describe('describeEvent', () => {
         seats,
       ),
     ).toBe('card:o1 deals 2 to Toby')
+  })
+})
+
+describe('withNames', () => {
+  it("names a refusal's players and objects as the table shows them", () => {
+    expect(withNames('p2 is not being asked to block obj-12', seats, nameOf)).toBe(
+      'P2 is not being asked to block card:obj-12',
+    )
+    expect(withNames('p1 cannot attack', seats, nameOf)).toBe('Toby cannot attack')
+  })
+
+  it('leaves a seat id inside another word alone', () => {
+    expect(withNames('p10 and xp1', seats, nameOf)).toBe('p10 and xp1')
   })
 })

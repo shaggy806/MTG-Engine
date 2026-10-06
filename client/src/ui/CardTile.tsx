@@ -215,8 +215,21 @@ export function CardTile({
       el.style.setProperty('--type-scale', String(scale))
     }
   }, [artFirst, typeLineText])
+  // And the name, the same way: Smaug, the Great Calamity shrinks to fit
+  // the hand's tile rather than end in "Cala…".
+  const nameRef = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const el = nameRef.current
+    if (!artFirst || !el) return
+    el.style.removeProperty('--name-scale')
+    let scale = 1
+    while (el.scrollWidth > el.clientWidth && scale > 0.55) {
+      scale = Math.round((scale - 0.05) * 100) / 100
+      el.style.setProperty('--name-scale', String(scale))
+    }
+  }, [artFirst, obj.name, face])
   const nameNode = (
-    <span className="ct-name">
+    <span className="ct-name" ref={artFirst ? nameRef : undefined}>
       {obj.name ?? face}
       {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
       {obj.faces && obj.faces.length > 1 ? (
