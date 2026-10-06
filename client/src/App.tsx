@@ -833,6 +833,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         actions={shown.busy || botPlaying ? EMPTY_ACTIONS : shown.actions}
         hand={hand}
         previousView={shown.previousView}
+        answered={shown.answered}
         boardDrag={boardDrag}
         aims={bus.aims}
       />
@@ -903,6 +904,9 @@ interface TableProps {
   /** The board shown before this one: what `Stack` needs to animate only its
    * new arrivals, and `ArrowLayer` only its new arrows. */
   readonly previousView: PlayerView | null
+  /** A later frame is playing over this board, so its pending decision has
+   * been answered (`Playback.answered`): the stack draws no "prompted by". */
+  readonly answered: boolean
   /** Your own permanents' dragged order and the drag in progress, owned by
    * `GameScreen` so a drag survives this component's per-frame remount. */
   readonly boardDrag: BoardDragControls
@@ -927,6 +931,7 @@ function Table({
   actions,
   hand,
   previousView,
+  answered,
   boardDrag,
   aims,
 }: TableProps) {
@@ -4773,9 +4778,10 @@ function Table({
           just another legal-target object (e.g. a counterspell targeting
           "spell"), the same architecture tileFor already uses for
           battlefield permanents. */}
-      {stackShowsSomething(view) ? (
+      {stackShowsSomething(view, answered) ? (
         <Stack
           view={view}
+          answered={answered}
           targetSlot={targetSlot}
           pickedIds={pickedObjKeys}
           onTargetClick={(id) => clickPermanent([id])}

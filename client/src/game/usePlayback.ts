@@ -29,6 +29,12 @@ export interface Playback {
    * while this holds: those actions belong to a board that isn't on screen
    * yet, or one whose changes are still being shown. */
   readonly busy: boolean
+  /** A later frame is playing over `view` (its first half): whatever `view`
+   * was waiting on has been answered by then, so nothing should still say
+   * it's being asked — the stack's "prompted by" card above all, which sat
+   * on top while the abilities under it resolved and left (a bug report,
+   * 2026-10-05). */
+  readonly answered: boolean
   /** There's a last update to replay (see `replay`): something happened in
    * it, and the board before it is known. */
   readonly replayable: boolean
@@ -84,6 +90,7 @@ export function usePlayback(
     actions: frame?.actions ?? [],
     revision: 0,
     busy: false,
+    answered: false,
     replayable: false,
   })
   /** The last frame that had anything in it, with what replaying it needs:
@@ -248,6 +255,7 @@ export function usePlayback(
         // Still busy through the second half: the board is on screen, but
         // what's happening to it isn't finished yet.
         busy,
+        answered: false,
         replayable: replayable || cur.replayable,
       }))
       if (afterMs > 0) timerRef.current = window.setTimeout(finish, afterMs)
@@ -258,7 +266,7 @@ export function usePlayback(
     else {
       timerRef.current = window.setTimeout(show, beforeMs)
       // Returning `cur` unchanged bails the re-render out entirely.
-      setDisplayed((cur) => (cur.busy ? cur : { ...cur, busy: true }))
+      setDisplayed((cur) => (cur.busy && cur.answered ? cur : { ...cur, busy: true, answered: true }))
     }
     return schedule.endPhase
   }
@@ -276,6 +284,7 @@ export function usePlayback(
       actions: [],
       revision,
       busy: true,
+      answered: true,
       replayable: cur.replayable,
     }))
     // …mounted before its first half measures it, then the update again.
@@ -324,6 +333,7 @@ export function usePlayback(
         actions: [],
         revision: revisionRef.current,
         busy: false,
+        answered: false,
         replayable: false,
       })
       return

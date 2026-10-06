@@ -17,7 +17,8 @@ import type { ObjectId, PlayerView } from 'engine/client'
  * extra to draw — nothing pending, the cause is already on the stack, or the
  * card isn't in a zone this viewer can see (the decision strip still names it
  * in words either way). */
-export function decisionGhostOf(view: PlayerView): ObjectId | null {
+export function decisionGhostOf(view: PlayerView, answered = false): ObjectId | null {
+  if (answered) return null
   const source = view.decisionSource
   if (!source) return null
   if (view.zones.stack.includes(source.object)) return null
@@ -26,6 +27,6 @@ export function decisionGhostOf(view: PlayerView): ObjectId | null {
 }
 
 /** Whether the stack overlay has anything at all to draw. */
-export function stackShowsSomething(view: PlayerView): boolean {
-  return view.zones.stack.length > 0 || decisionGhostOf(view) !== null
+export function stackShowsSomething(view: PlayerView, answered = false): boolean {
+  return view.zones.stack.length > 0 || decisionGhostOf(view, answered) !== null
 }

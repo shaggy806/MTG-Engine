@@ -51,6 +51,9 @@ export interface StackProps {
    * its arrival each time anything happened. `null` when there was no
    * earlier board: everything counts as new. */
   readonly previousStack?: readonly ObjectId[] | null
+  /** The decision this board was waiting on has been answered — a later
+   * frame is playing over it — so no "prompted by" card is drawn. */
+  readonly answered?: boolean
 }
 
 /**
@@ -81,6 +84,7 @@ export function Stack({
   onFocusEntry,
   seats,
   previousStack = null,
+  answered = false,
 }: StackProps) {
   const before = previousStack === null ? null : new Set(previousStack)
   // The card that caused the decision you're being asked, when it isn't
@@ -89,7 +93,7 @@ export function Stack({
   // graveyard, so without this a forced choice arrives with nothing on screen
   // explaining it. It rides at depth 0 -- where whatever you're responding to
   // always sits -- and isn't a real stack object, so it's never targetable.
-  const ghost = decisionGhostOf(view)
+  const ghost = decisionGhostOf(view, answered)
   const ids = [...(ghost ? [ghost] : []), ...[...view.zones.stack].reverse()]
   const N = ids.length
   const nameOf = (id: ObjectId): string => view.objects[id]?.cardName ?? id
