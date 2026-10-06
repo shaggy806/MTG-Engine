@@ -30,7 +30,7 @@ export interface PlayerPanelProps {
   readonly seats?: readonly SeatStatus[]
   /** This player's own cards currently in the (shared) exile zone. */
   readonly exileSize?: number
-  /** Won the highroll and went first this game. */
+  /** Went first this game: won the highroll, or the host picked them. */
   readonly wentFirst?: boolean
   /** This player is the monarch (rule 720). */
   readonly isMonarch?: boolean
@@ -171,7 +171,7 @@ export function PlayerPanel({
             ) : null}
           </span>
         ) : null}
-        {wentFirst ? <span className="pp-went-first" title="Won the highroll, goes first">🎲</span> : null}
+        {wentFirst ? <span className="pp-went-first" title="Went first this game">🎲</span> : null}
         {isMonarch ? <span className="pp-monarch" title="The monarch (rule 720)">👑</span> : null}
         {info.commanderDamageTaken.length > 0 ? (
           <span className="pp-cmdr-dmg">

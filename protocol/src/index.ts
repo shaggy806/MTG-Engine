@@ -14,6 +14,7 @@
 export type {
   PassSettings,
   BotSpeed,
+  RoomSettings,
   CaptureSummary,
   ClientMessage,
   SeatCommander,

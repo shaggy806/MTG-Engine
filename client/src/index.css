@@ -246,24 +246,13 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
-/* The host's bot-speed toggle (ui/BotSpeedControl.tsx) — shared by the seat
-   board and the in-game top strip, hence here rather than in either page's
-   stylesheet. */
-.bot-speed {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--text-sm);
-}
-.bot-speed-label {
-  color: var(--muted);
-  margin-right: 4px;
-}
-.bot-speed-option {
+/* A small option in a row of them, one of which is chosen: the lobby's room
+   settings (bot speed, the starting-life presets). */
+.seg-option {
   padding: 3px 10px;
   font-size: var(--text-sm);
 }
-.bot-speed-option.active {
+.seg-option.active {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-bg);

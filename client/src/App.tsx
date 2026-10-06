@@ -619,7 +619,7 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
   )
 }
 
-/** Who won the highroll, as the same toast a refusal is (in the accent
+/** Who won the highroll (or who the host picked to go first), as the same toast a refusal is (in the accent
  * colours rather than the error's): over the board while the opening hands
  * are decided, gone on its own after {@link TOAST_LINGER_MS} or on a click. */
 function HighrollToast({ onDismiss, children }: { readonly onDismiss: () => void; readonly children: ReactNode }) {
@@ -920,7 +920,9 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         <ErrorLine game={game} />
         {showHighroll ? (
           <HighrollToast onDismiss={dismissHighroll}>
-            🎲 {playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first
+            {game.firstPlayerChosen
+              ? `${playerLabel(view.startingPlayer, game.seats)} goes first, the host's pick`
+              : `🎲 ${playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first`}
           </HighrollToast>
         ) : null}
       </div>

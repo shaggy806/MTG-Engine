@@ -85,6 +85,7 @@ describe("room host", () => {
     const { joined } = await hostedRoom();
     expect(joined.isHost).toBe(true);
     expect(joined.botSpeed).toBe("normal");
+    expect(joined.settings).toEqual({ startingLife: 40, firstPlayer: "random" });
     expect(joined.seats.some((s) => s.isHost)).toBe(false);
   });
 
@@ -101,6 +102,7 @@ describe("room host", () => {
       { type: "add-seat", roomId },
       { type: "start-game", roomId },
       { type: "set-bot-speed", roomId, speed: "slow" },
+      { type: "set-room-settings", roomId, settings: { startingLife: 20 } },
     ]) {
       guest.send(message);
       const reply = await next(guest.queue, "error");
@@ -145,6 +147,60 @@ describe("room host", () => {
     expect((await next(guest.queue, "room-joined")).isHost).toBe(false);
   });
 
+  it("shows everyone the room settings, and refuses a bad one whole", async () => {
+    const { host, roomId } = await hostedRoom();
+    const guest = await client();
+    guest.send({ type: "join-room", roomId });
+    await next(guest.queue, "room-joined");
+    guest.send({ type: "claim-seat", roomId, seat: BOB, clientToken: "bob" });
+    await next(guest.queue, "room-joined");
+
+    host.send({ type: "set-room-settings", roomId, settings: { startingLife: 25, firstPlayer: BOB } });
+    expect((await next(guest.queue, "room-joined")).settings).toEqual({ startingLife: 25, firstPlayer: BOB });
+
+    for (const settings of [
+      { startingLife: 0 },
+      { startingLife: 1000 },
+      { startingLife: 12.5 },
+      { startingLife: "30" },
+      { firstPlayer: "nobody" },
+      { startingLife: 30, firstPlayer: "nobody" },
+    ]) {
+      host.send({ type: "set-room-settings", roomId, settings });
+      expect((await next(host.queue, "error")).message).toMatch(/starting life|no such seat/);
+    }
+    host.send({ type: "set-room-settings", roomId, settings: {} });
+    expect((await next(host.queue, "room-joined")).settings).toEqual({ startingLife: 25, firstPlayer: BOB });
+  });
+
+  it("goes back to the highroll when the seat picked to go first is removed", async () => {
+    const { host, roomId } = await hostedRoom();
+    host.send({ type: "add-seat", roomId });
+    const three = await next(host.queue, "room-joined");
+    const third = three.seats[2].player;
+    host.send({ type: "set-room-settings", roomId, settings: { firstPlayer: third } });
+    expect((await next(host.queue, "room-joined")).settings?.firstPlayer).toBe(third);
+    host.send({ type: "remove-seat", roomId, seat: third });
+    expect((await next(host.queue, "room-joined")).settings?.firstPlayer).toBe("random");
+  });
+
+  it("starts the game with the host's starting life and first player", async () => {
+    const { host, roomId } = await hostedRoom();
+    host.send({ type: "set-room-settings", roomId, settings: { startingLife: 30, firstPlayer: BOB } });
+    await next(host.queue, "room-joined");
+    host.send({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice", ready: true });
+    await next(host.queue, "room-joined");
+    host.send({ type: "add-bot", roomId, seat: BOB });
+    await next(host.queue, "room-joined");
+    host.send({ type: "start-game", roomId });
+
+    const state = await next(host.queue, "state");
+    expect(state.view.startingPlayer).toBe(BOB);
+    expect(state.firstPlayerChosen).toBe(true);
+    expect(state.view.players[ALICE].life).toBe(30);
+    expect(state.view.players[BOB].life).toBe(30);
+  });
+
   it("carries the host and bot speed into the started game", async () => {
     const { host, roomId } = await hostedRoom();
     host.send({ type: "set-bot-speed", roomId, speed: "fast" });
@@ -158,6 +214,7 @@ describe("room host", () => {
     const state = await next(host.queue, "state");
     expect(state.isHost).toBe(true);
     expect(state.botSpeed).toBe("fast");
+    expect(state.firstPlayerChosen).toBeUndefined();
 
     // Still adjustable mid-game.
     host.send({ type: "set-bot-speed", roomId, speed: "slow" });

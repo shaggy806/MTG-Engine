@@ -94,16 +94,6 @@
   color: var(--text);
   border-color: var(--muted-dim);
 }
-.ts-menu .bot-speed {
-  margin-right: 6px;
-  font-size: var(--text-xs);
-}
-.ts-menu .bot-speed-option.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-bg);
-  box-shadow: var(--bevel-pressed);
-}
 /* The viewer's animation settings (ui/MotionControl.tsx): a button in the
    strip and a small panel dropped below it. */
 .motion-control {

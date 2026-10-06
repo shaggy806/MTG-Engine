@@ -49,8 +49,10 @@ title; when one lands, delete it in both. The animation follow-ups are in
 - **Quality-of-life room options (house rules).** Options the room creator can turn on before a
   game that are technically against the rules but make play smoother. The user's example: mana
   that, when tapped, doesn't have its colour decided until it's spent on a specific coloured
-  cost. Each would be an opt-in room setting (the lobby, `server/src/room.ts`), off by default,
-  since the engine otherwise follows the Comprehensive Rules exactly.
+  cost. Each would be an opt-in room setting, off by default, since the engine otherwise follows
+  the Comprehensive Rules exactly: a field in the lobby's `RoomSettingsPanel` and a key on
+  `protocol`'s `RoomSettings`, checked in `PendingRoom.setSettings` and applied in
+  `toGameConfig`, as starting life and the first player are.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 - **The library and the deck builder load every card definition.** Both fetch all 32 card
   shards (`client/src/cards/cardData.ts`): about 3.1 MB, 610 kB gzipped, at 5,400 cards, and

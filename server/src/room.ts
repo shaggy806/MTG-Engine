@@ -242,6 +242,10 @@ export interface RoomOptions {
   /** The waiting room's host role, carried across promotion. */
   readonly host?: HostRole;
   readonly botSpeed?: BotSpeed;
+  /** The waiting room's host picked who goes first (`RoomSettings`), rather
+   * than leaving it to the highroll — said on every frame so the client
+   * doesn't announce a highroll nobody won. */
+  readonly firstPlayerChosen?: boolean;
   /**
    * What `addBot` seats, overriding {@link DEFAULT_BOT}.
    *
@@ -350,6 +354,8 @@ export class Room {
   private gate: FrameGate | null = null;
   readonly host: HostRole;
   botSpeed: BotSpeed;
+  /** See `RoomOptions.firstPlayerChosen`. */
+  readonly firstPlayerChosen: boolean;
   /** The host has paused the bots: the frame gate stays shut, whatever the
    * clients say, until resumed — or for one move per `stepBots`. */
   botsPaused = false;
@@ -373,6 +379,7 @@ export class Room {
     this.seq = options.startSeq ?? 0;
     this.host = options.host ?? new HostRole(null);
     this.botSpeed = options.botSpeed ?? "normal";
+    this.firstPlayerChosen = options.firstPlayerChosen === true;
     this.onUpdate = options.onUpdate ?? (() => {});
     this.pacing = options.pacing ?? "realtime";
     this.showStackArrivals = options.showStackArrivals ?? true;

@@ -8,7 +8,7 @@ import { commanderPrintings, getActiveDeck, setActive } from '../deck-builder/de
 import type { DeckContents, PickableDeck } from '../deck-builder/decks.ts'
 import { CommanderArt } from './CommanderArt.tsx'
 import { DeckPickerModal } from './DeckPickerModal.tsx'
-import { BotSpeedControl } from '../ui/BotSpeedControl.tsx'
+import { RoomSettingsPanel } from './RoomSettingsPanel.tsx'
 import { randomBotDeck } from './randomBotDeck.ts'
 import './lobby.css'
 
@@ -257,8 +257,9 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
         ) : null}
       </div>
 
+      <RoomSettingsPanel game={game} seatLabel={seatLabel} />
+
       <div className="seat-board-footer">
-        <BotSpeedControl speed={game.botSpeed} editable={host} onChange={game.setBotSpeed} />
         {host ? (
           <button type="button" className="start-game-btn" disabled={!allReady} onClick={game.startGame}>
             Start Game

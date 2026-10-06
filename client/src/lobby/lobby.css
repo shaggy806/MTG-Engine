@@ -283,6 +283,75 @@
   padding: 4px 8px;
 }
 
+/* The room's game settings (RoomSettingsPanel.tsx), between the seats and
+   Start Game: one row of labelled fields, the host's to change. */
+.room-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(100%, 760px);
+  margin: 0 auto 14px;
+  padding: 12px 16px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+.room-settings-title {
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.room-settings-fields {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 32px;
+  align-items: flex-start;
+}
+.rs-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  text-align: left;
+}
+.rs-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.rs-value {
+  font-size: var(--text-base);
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+}
+.rs-options {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rs-life-input {
+  width: 4em;
+  padding: 3px 6px;
+  margin-left: 6px;
+  font-size: var(--text-sm);
+  text-align: center;
+  appearance: textfield;
+}
+.rs-life-input::-webkit-inner-spin-button,
+.rs-life-input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.rs-select {
+  padding: 4px 8px;
+  font-size: var(--text-sm);
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
 .seat-board-footer {
   display: flex;
   flex-direction: column;
