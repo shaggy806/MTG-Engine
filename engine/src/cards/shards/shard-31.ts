@@ -35,6 +35,7 @@ import _poolBoulderloftPathway from "../pool/boulderloft-pathway.js";
 import _poolBoundingWolf from "../pool/bounding-wolf.js";
 import _poolBrainsurge from "../pool/brainsurge.js";
 import _poolBrindleBoar from "../pool/brindle-boar.js";
+import _poolCandelabraOfTawnos from "../pool/candelabra-of-tawnos.js";
 import _poolCaptainsCall from "../pool/captains-call.js";
 import _poolCastleSengir from "../pool/castle-sengir.js";
 import _poolCatalystElemental from "../pool/catalyst-elemental.js";
@@ -149,6 +150,7 @@ import _poolMalevolentRumble from "../pool/malevolent-rumble.js";
 import _poolMarisiBreakerOfTheCoil from "../pool/marisi-breaker-of-the-coil.js";
 import _poolMarkerBeetles from "../pool/marker-beetles.js";
 import _poolMasterOfThePearlTrident from "../pool/master-of-the-pearl-trident.js";
+import _poolMerchantOfTruth from "../pool/merchant-of-truth.js";
 import _poolMiscast from "../pool/miscast.js";
 import _poolMischievousMystic from "../pool/mischievous-mystic.js";
 import _poolMoanOfTheUnhallowed from "../pool/moan-of-the-unhallowed.js";
@@ -173,6 +175,7 @@ import _poolRaidingNightstalker from "../pool/raiding-nightstalker.js";
 import _poolRamirezDepietroPillager from "../pool/ramirez-depietro-pillager.js";
 import _poolRangerCaptainOfEos from "../pool/ranger-captain-of-eos.js";
 import _poolRavenform from "../pool/ravenform.js";
+import _poolRedDragon from "../pool/red-dragon.js";
 import _poolRegrowth from "../pool/regrowth.js";
 import _poolRemorsefulCleric from "../pool/remorseful-cleric.js";
 import _poolRestlessRidgeline from "../pool/restless-ridgeline.js";
@@ -183,6 +186,7 @@ import _poolRimrockKnight from "../pool/rimrock-knight.js";
 import _poolRitualOfRestoration from "../pool/ritual-of-restoration.js";
 import _poolRockBadger from "../pool/rock-badger.js";
 import _poolRuggedPrairie from "../pool/rugged-prairie.js";
+import _poolSamuraisKatana from "../pool/samurais-katana.js";
 import _poolSandbarSerpent from "../pool/sandbar-serpent.js";
 import _poolSanguinaryPriest from "../pool/sanguinary-priest.js";
 import _poolSazhKatzroy from "../pool/sazh-katzroy.js";
@@ -224,6 +228,7 @@ import _poolTheWatcherInTheWater from "../pool/the-watcher-in-the-water.js";
 import _poolThorinsLastStand from "../pool/thorins-last-stand.js";
 import _poolTifaLockhart from "../pool/tifa-lockhart.js";
 import _poolTimbercrownPathway from "../pool/timbercrown-pathway.js";
+import _poolTombstoneCareerCriminal from "../pool/tombstone-career-criminal.js";
 import _poolTorchFiend from "../pool/torch-fiend.js";
 import _poolTouchTheSpiritRealm from "../pool/touch-the-spirit-realm.js";
 import _poolTowerOfChampions from "../pool/tower-of-champions.js";
@@ -238,6 +243,7 @@ import _poolValorSinger from "../pool/valor-singer.js";
 import _poolVaultOfCatlacan from "../pool/vault-of-catlacan.js";
 import _poolVesselOfParamnesia from "../pool/vessel-of-paramnesia.js";
 import _poolViashinoSpearhunter from "../pool/viashino-spearhunter.js";
+import _poolVivienMonstersAdvocate from "../pool/vivien-monsters-advocate.js";
 import _poolWalkingAtlas from "../pool/walking-atlas.js";
 import _poolWallOfMist from "../pool/wall-of-mist.js";
 import _poolWallOfWood from "../pool/wall-of-wood.js";
@@ -293,6 +299,7 @@ const shard: CardShard = {
     _poolBoundingWolf,
     _poolBrainsurge,
     _poolBrindleBoar,
+    _poolCandelabraOfTawnos,
     _poolCaptainsCall,
     _poolCastleSengir,
     _poolCatalystElemental,
@@ -407,6 +414,7 @@ const shard: CardShard = {
     _poolMarisiBreakerOfTheCoil,
     _poolMarkerBeetles,
     _poolMasterOfThePearlTrident,
+    _poolMerchantOfTruth,
     _poolMiscast,
     _poolMischievousMystic,
     _poolMoanOfTheUnhallowed,
@@ -431,6 +439,7 @@ const shard: CardShard = {
     _poolRamirezDepietroPillager,
     _poolRangerCaptainOfEos,
     _poolRavenform,
+    _poolRedDragon,
     _poolRegrowth,
     _poolRemorsefulCleric,
     _poolRestlessRidgeline,
@@ -441,6 +450,7 @@ const shard: CardShard = {
     _poolRitualOfRestoration,
     _poolRockBadger,
     _poolRuggedPrairie,
+    _poolSamuraisKatana,
     _poolSandbarSerpent,
     _poolSanguinaryPriest,
     _poolSazhKatzroy,
@@ -482,6 +492,7 @@ const shard: CardShard = {
     _poolThorinsLastStand,
     _poolTifaLockhart,
     _poolTimbercrownPathway,
+    _poolTombstoneCareerCriminal,
     _poolTorchFiend,
     _poolTouchTheSpiritRealm,
     _poolTowerOfChampions,
@@ -496,6 +507,7 @@ const shard: CardShard = {
     _poolVaultOfCatlacan,
     _poolVesselOfParamnesia,
     _poolViashinoSpearhunter,
+    _poolVivienMonstersAdvocate,
     _poolWalkingAtlas,
     _poolWallOfMist,
     _poolWallOfWood,

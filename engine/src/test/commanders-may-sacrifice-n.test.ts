@@ -44,6 +44,18 @@ describe("Strefan, Maurer Progenitor", () => {
     expect(named(game, "Blood Token").length).toBe(2);
   });
 
+  it("counts a player who lost life and then lost the game (Tymna's and Teysa's rulings)", () => {
+    const C = asPlayerId("carol");
+    const { game } = mkGame([A, B, C]);
+    game.debugSpawn("Strefan, Maurer Progenitor", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "lose-life", amount: 1, who: "each-opponent" });
+    game.debugApplyEffect(B, { kind: "lose-life", amount: 39, who: "you" });
+    game.advanceUntil(turnTwo);
+    expect(game.state.players[B].hasLost).toBe(true);
+    // Bob and Carol both lost life, though Bob has since lost the game.
+    expect(named(game, "Blood Token").length).toBe(2);
+  });
+
   it("sacrifices two Blood tokens to put a Vampire onto the battlefield attacking, indestructible this turn", () => {
     const { game, c } = mkGame();
     const strefan = game.debugSpawn("Strefan, Maurer Progenitor", A, "battlefield", { summoningSick: false });
@@ -102,5 +114,40 @@ describe("Rakdos, Patron of Chaos", () => {
     game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "cleanup");
     expect(game.state.objects[bears].zone).toBe("battlefield");
     expect(game.state.zones.perPlayer[A].hand.length).toBe(hand + 2);
+  });
+});
+
+describe("Teysa, Opulent Oligarch", () => {
+  it("investigates for each opponent who lost life, one who then lost the game included", () => {
+    const C = asPlayerId("carol");
+    const { game } = mkGame([A, B, C]);
+    game.debugSpawn("Teysa, Opulent Oligarch", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "lose-life", amount: 1, who: "each-opponent" });
+    game.debugApplyEffect(B, { kind: "lose-life", amount: 39, who: "you" });
+    game.advanceUntil(turnTwo);
+    expect(game.state.players[B].hasLost).toBe(true);
+    expect(named(game, "Clue Token").length).toBe(2);
+  });
+
+  it("makes one Spirit the first time a Clue you control goes to the graveyard each turn", () => {
+    const { game } = mkGame();
+    const teysa = game.debugSpawn("Teysa, Opulent Oligarch", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Clue Token", count: 2 });
+    game.debugApplyEffect(A, { kind: "sacrifice", who: "you", filter: { subtype: "Clue" }, count: 2 }, [], {
+      source: teysa,
+    });
+    // The sacrifice is queued and done on the game's next pass, then the
+    // Spirit trigger resolves.
+    game.advanceUntil(
+      (s) =>
+        s.zones.shared.battlefield.every((id) => s.objects[id].cardName !== "Clue Token") &&
+        s.zones.shared.stack.length === 0 &&
+        s.awaiting === null &&
+        s.pendingSacrifices.length === 0 &&
+        s.zones.shared.battlefield.some((id) => s.objects[id].cardName === "Spirit Token (White-Black)"),
+    );
+    game.advanceUntil((s) => s.turn.step === "postcombat-main");
+    expect(named(game, "Clue Token").length).toBe(0);
+    expect(named(game, "Spirit Token (White-Black)").length).toBe(1);
   });
 });

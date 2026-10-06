@@ -77,6 +77,7 @@ import _poolDemonsDisciple from "../pool/demons-disciple.js";
 import _poolDemonsGrasp from "../pool/demons-grasp.js";
 import _poolDigsiteEngineer from "../pool/digsite-engineer.js";
 import _poolDismember from "../pool/dismember.js";
+import _poolDiveDown from "../pool/dive-down.js";
 import _poolDragonkinBerserker from "../pool/dragonkin-berserker.js";
 import _poolDragonsPresence from "../pool/dragons-presence.js";
 import _poolDryadsFavor from "../pool/dryads-favor.js";
@@ -140,6 +141,7 @@ import _poolInvokeTheDivine from "../pool/invoke-the-divine.js";
 import _poolJacesSanctum from "../pool/jaces-sanctum.js";
 import _poolJasmineBoreal from "../pool/jasmine-boreal.js";
 import _poolJuganDefendsTheTemple from "../pool/jugan-defends-the-temple.js";
+import _poolKavaronMemorialWorld from "../pool/kavaron-memorial-world.js";
 import _poolKederektParasite from "../pool/kederekt-parasite.js";
 import _poolKeepSafe from "../pool/keep-safe.js";
 import _poolKellanTheKid from "../pool/kellan-the-kid.js";
@@ -370,6 +372,7 @@ const shard: CardShard = {
     _poolDemonsGrasp,
     _poolDigsiteEngineer,
     _poolDismember,
+    _poolDiveDown,
     _poolDragonkinBerserker,
     _poolDragonsPresence,
     _poolDryadsFavor,
@@ -433,6 +436,7 @@ const shard: CardShard = {
     _poolJacesSanctum,
     _poolJasmineBoreal,
     _poolJuganDefendsTheTemple,
+    _poolKavaronMemorialWorld,
     _poolKederektParasite,
     _poolKeepSafe,
     _poolKellanTheKid,

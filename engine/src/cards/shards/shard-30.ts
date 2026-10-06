@@ -32,6 +32,7 @@ import _poolBlightedWoodland from "../pool/blighted-woodland.js";
 import _poolBloodArtist from "../pool/blood-artist.js";
 import _poolBloodPet from "../pool/blood-pet.js";
 import _poolBloodbraidElf from "../pool/bloodbraid-elf.js";
+import _poolBogwaterLumaret from "../pool/bogwater-lumaret.js";
 import _poolBonescytheSliver from "../pool/bonescythe-sliver.js";
 import _poolBorderGuard from "../pool/border-guard.js";
 import _poolBotanicalPlaza from "../pool/botanical-plaza.js";
@@ -42,6 +43,7 @@ import _poolBurdenedAerialist from "../pool/burdened-aerialist.js";
 import _poolBurrogBanemaker from "../pool/burrog-banemaker.js";
 import _poolCacklingCounterpart from "../pool/cackling-counterpart.js";
 import _poolCameraLauncher from "../pool/camera-launcher.js";
+import _poolCapsizingWave from "../pool/capsizing-wave.js";
 import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
 import _poolCemeteryTampering from "../pool/cemetery-tampering.js";
@@ -106,6 +108,7 @@ import _poolGalianBeast from "../pool/galian-beast.js";
 import _poolGarrukPrimalHunter from "../pool/garruk-primal-hunter.js";
 import _poolGimlisRecklessMight from "../pool/gimlis-reckless-might.js";
 import _poolGixYawgmothPraetor from "../pool/gix-yawgmoth-praetor.js";
+import _poolGlimmerpost from "../pool/glimmerpost.js";
 import _poolGoblinSpymaster from "../pool/goblin-spymaster.js";
 import _poolGoreSwine from "../pool/gore-swine.js";
 import _poolGoringCeratops from "../pool/goring-ceratops.js";
@@ -260,6 +263,7 @@ import _poolWindsOfRath from "../pool/winds-of-rath.js";
 import _poolWindseekerCentaur from "../pool/windseeker-centaur.js";
 import _poolWindsweptHeath from "../pool/windswept-heath.js";
 import _poolWizardsOfThay from "../pool/wizards-of-thay.js";
+import _poolWordsOfWisdom from "../pool/words-of-wisdom.js";
 import _poolZephyrBoots from "../pool/zephyr-boots.js";
 import _poolZodiacTiger from "../pool/zodiac-tiger.js";
 import _poolZulAshurLichLord from "../pool/zul-ashur-lich-lord.js";
@@ -300,6 +304,7 @@ const shard: CardShard = {
     _poolBloodArtist,
     _poolBloodPet,
     _poolBloodbraidElf,
+    _poolBogwaterLumaret,
     _poolBonescytheSliver,
     _poolBorderGuard,
     _poolBotanicalPlaza,
@@ -310,6 +315,7 @@ const shard: CardShard = {
     _poolBurrogBanemaker,
     _poolCacklingCounterpart,
     _poolCameraLauncher,
+    _poolCapsizingWave,
     _poolCaveSense,
     _poolCelestialForce,
     _poolCemeteryTampering,
@@ -374,6 +380,7 @@ const shard: CardShard = {
     _poolGarrukPrimalHunter,
     _poolGimlisRecklessMight,
     _poolGixYawgmothPraetor,
+    _poolGlimmerpost,
     _poolGoblinSpymaster,
     _poolGoreSwine,
     _poolGoringCeratops,
@@ -528,6 +535,7 @@ const shard: CardShard = {
     _poolWindseekerCentaur,
     _poolWindsweptHeath,
     _poolWizardsOfThay,
+    _poolWordsOfWisdom,
     _poolZephyrBoots,
     _poolZodiacTiger,
     _poolZulAshurLichLord,

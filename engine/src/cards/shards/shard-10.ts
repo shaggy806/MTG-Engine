@@ -50,6 +50,7 @@ import _poolChapelGeist from "../pool/chapel-geist.js";
 import _poolCitanulHierophants from "../pool/citanul-hierophants.js";
 import _poolCivicWayfinder from "../pool/civic-wayfinder.js";
 import _poolCompellingArgument from "../pool/compelling-argument.js";
+import _poolCrawlingChorus from "../pool/crawling-chorus.js";
 import _poolCrookshankKobolds from "../pool/crookshank-kobolds.js";
 import _poolCrossroadsWatcher from "../pool/crossroads-watcher.js";
 import _poolCrushContraband from "../pool/crush-contraband.js";
@@ -344,6 +345,7 @@ const shard: CardShard = {
     _poolCitanulHierophants,
     _poolCivicWayfinder,
     _poolCompellingArgument,
+    _poolCrawlingChorus,
     _poolCrookshankKobolds,
     _poolCrossroadsWatcher,
     _poolCrushContraband,

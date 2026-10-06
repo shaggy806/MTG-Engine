@@ -65,6 +65,7 @@ import _poolExtractFromDarkness from "../pool/extract-from-darkness.js";
 import _poolEyeOfRamos from "../pool/eye-of-ramos.js";
 import _poolFadeIntoAntiquity from "../pool/fade-into-antiquity.js";
 import _poolFairgroundsPatrol from "../pool/fairgrounds-patrol.js";
+import _poolFangrenMarauder from "../pool/fangren-marauder.js";
 import _poolFertileGround from "../pool/fertile-ground.js";
 import _poolFiendlash from "../pool/fiendlash.js";
 import _poolFinalDeath from "../pool/final-death.js";
@@ -97,6 +98,7 @@ import _poolHiddenNursery from "../pool/hidden-nursery.js";
 import _poolHideousTaskmaster from "../pool/hideous-taskmaster.js";
 import _poolHithlainKnots from "../pool/hithlain-knots.js";
 import _poolHulkingBugbear from "../pool/hulking-bugbear.js";
+import _poolHungryLynx from "../pool/hungry-lynx.js";
 import _poolHuntersInsight from "../pool/hunters-insight.js";
 import _poolHurloonMinotaur from "../pool/hurloon-minotaur.js";
 import _poolIcecaveCrasher from "../pool/icecave-crasher.js";
@@ -161,6 +163,7 @@ import _poolQuaketuskBoar from "../pool/quaketusk-boar.js";
 import _poolQuietusSpike from "../pool/quietus-spike.js";
 import _poolRaffinesTower from "../pool/raffines-tower.js";
 import _poolRagingPoltergeist from "../pool/raging-poltergeist.js";
+import _poolRakishHeir from "../pool/rakish-heir.js";
 import _poolReignOfThePit from "../pool/reign-of-the-pit.js";
 import _poolRelicOfSauron from "../pool/relic-of-sauron.js";
 import _poolRenegadeDemon from "../pool/renegade-demon.js";
@@ -175,6 +178,7 @@ import _poolSacredArmory from "../pool/sacred-armory.js";
 import _poolSaheeliRadiantCreator from "../pool/saheeli-radiant-creator.js";
 import _poolSamiWildcatCaptain from "../pool/sami-wildcat-captain.js";
 import _poolSanctuaryCat from "../pool/sanctuary-cat.js";
+import _poolSanctumOfShatteredHeights from "../pool/sanctum-of-shattered-heights.js";
 import _poolSandstormVerge from "../pool/sandstorm-verge.js";
 import _poolSarythTheVipersFang from "../pool/saryth-the-vipers-fang.js";
 import _poolSavaiTriome from "../pool/savai-triome.js";
@@ -239,6 +243,7 @@ import _poolWallOfIce from "../pool/wall-of-ice.js";
 import _poolWaterServant from "../pool/water-servant.js";
 import _poolWeaponizeTheMonsters from "../pool/weaponize-the-monsters.js";
 import _poolWeightOfTheUnderworld from "../pool/weight-of-the-underworld.js";
+import _poolWharfInfiltrator from "../pool/wharf-infiltrator.js";
 import _poolWildRide from "../pool/wild-ride.js";
 import _poolWithstandDeath from "../pool/withstand-death.js";
 import _poolWortBoggartAuntie from "../pool/wort-boggart-auntie.js";
@@ -318,6 +323,7 @@ const shard: CardShard = {
     _poolEyeOfRamos,
     _poolFadeIntoAntiquity,
     _poolFairgroundsPatrol,
+    _poolFangrenMarauder,
     _poolFertileGround,
     _poolFiendlash,
     _poolFinalDeath,
@@ -350,6 +356,7 @@ const shard: CardShard = {
     _poolHideousTaskmaster,
     _poolHithlainKnots,
     _poolHulkingBugbear,
+    _poolHungryLynx,
     _poolHuntersInsight,
     _poolHurloonMinotaur,
     _poolIcecaveCrasher,
@@ -414,6 +421,7 @@ const shard: CardShard = {
     _poolQuietusSpike,
     _poolRaffinesTower,
     _poolRagingPoltergeist,
+    _poolRakishHeir,
     _poolReignOfThePit,
     _poolRelicOfSauron,
     _poolRenegadeDemon,
@@ -428,6 +436,7 @@ const shard: CardShard = {
     _poolSaheeliRadiantCreator,
     _poolSamiWildcatCaptain,
     _poolSanctuaryCat,
+    _poolSanctumOfShatteredHeights,
     _poolSandstormVerge,
     _poolSarythTheVipersFang,
     _poolSavaiTriome,
@@ -492,6 +501,7 @@ const shard: CardShard = {
     _poolWaterServant,
     _poolWeaponizeTheMonsters,
     _poolWeightOfTheUnderworld,
+    _poolWharfInfiltrator,
     _poolWildRide,
     _poolWithstandDeath,
     _poolWortBoggartAuntie,

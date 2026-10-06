@@ -21,6 +21,7 @@ import _poolAtlaPalaniNestTender from "../pool/atla-palani-nest-tender.js";
 import _poolAuraOfSilence from "../pool/aura-of-silence.js";
 import _poolAuramancer from "../pool/auramancer.js";
 import _poolAvenArcher from "../pool/aven-archer.js";
+import _poolAwokenHorror from "../pool/awoken-horror.js";
 import _poolAxgardArmory from "../pool/axgard-armory.js";
 import _poolBaldinCenturyHerdmaster from "../pool/baldin-century-herdmaster.js";
 import _poolBattleRageBlessing from "../pool/battle-rage-blessing.js";
@@ -224,6 +225,7 @@ import _poolSpinningWheel from "../pool/spinning-wheel.js";
 import _poolSpitefulVisions from "../pool/spiteful-visions.js";
 import _poolSprout from "../pool/sprout.js";
 import _poolStaffOfTheStoryteller from "../pool/staff-of-the-storyteller.js";
+import _poolStoicRebuttal from "../pool/stoic-rebuttal.js";
 import _poolStoneHavenMedic from "../pool/stone-haven-medic.js";
 import _poolStormsWrath from "../pool/storms-wrath.js";
 import _poolStripMine from "../pool/strip-mine.js";
@@ -320,6 +322,7 @@ const shard: CardShard = {
     _poolAuraOfSilence,
     _poolAuramancer,
     _poolAvenArcher,
+    _poolAwokenHorror,
     _poolAxgardArmory,
     _poolBaldinCenturyHerdmaster,
     _poolBattleRageBlessing,
@@ -523,6 +526,7 @@ const shard: CardShard = {
     _poolSpitefulVisions,
     _poolSprout,
     _poolStaffOfTheStoryteller,
+    _poolStoicRebuttal,
     _poolStoneHavenMedic,
     _poolStormsWrath,
     _poolStripMine,

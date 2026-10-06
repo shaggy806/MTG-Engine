@@ -142,6 +142,16 @@ per gap under the same bold title; when a gap closes, delete it in both.
   that isn't double-faced, told to enter transformed, stays where it is; `flicker` with
   `transformed` returns it normally. Clive, Ifrit's Dominant has it today; Dion, Bahamut's
   Dominant and The Legend of Roku wait on it (found in the no-engine-work pass, not re-run).
+- **A sacrifice trigger misses its own sacrifice.** Rule 603.10a: an ability that triggers on a
+  permanent being sacrificed "looks back in time", so it triggers when its own source is the one
+  sacrificed. `detectTriggers` (`game.ts`) scans a departed object's own abilities only for
+  `permanent-destroyed` and `permanent-left-battlefield`, not `permanent-sacrificed`, so
+  Korvold, Fae-Cursed King sacrificing himself doesn't trigger his own ability today. Esoteric
+  Duplicator ("whenever you sacrifice this artifact or another artifact") waits on it (batch 36).
+- **A tapped-for-mana trigger adds only a fixed amount.** `Game.tappedForManaExtras` skips a
+  `tapped-for-mana` trigger whose `add-mana` amount isn't a number, so a card authored with a
+  count there silently adds nothing and `pool.test` doesn't catch it. Elvish Guidance ("an
+  additional {G} for each Elf you control") waits on it (batch 36).
 - **Damage modifiers apply in a fixed order.** When a doubler (Dictate of the Twin Gods,
   Torbran, Gratuitous Violence) meets prevention or another modifier, the affected player (or
   controller of the affected object) chooses the order (rule 616.1); the engine fixes it. The
@@ -157,7 +167,8 @@ per gap under the same bold title; when a gap closes, delete it in both.
     Conspiracy): Ayara, First of Locthwain and Bloomvine Regent (Théoden and Pashalik Mons are
     split now).
   - `each-player-may` asks one player at a time where the ruling has every player choose first,
-    then all act at once: Will of the Jeskai's wheel mode, Kwain, Itinerant Meddler.
+    then all act at once: Will of the Jeskai's wheel mode, Kwain, Itinerant Meddler. Perforating
+    Artist (batch 36) is blocked on it.
   - `trigger-controller` for "that player" on a spell-cast trigger reads the spell's controller as
     the trigger resolves, so a stolen-library spell countered first points at its owner: Forced
     Fruition, Ruric Thar, Spellshock, Magebane Lizard.

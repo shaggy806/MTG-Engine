@@ -38,6 +38,7 @@ import _poolCalamityOfCinders from "../pool/calamity-of-cinders.js";
 import _poolCanalMonitor from "../pool/canal-monitor.js";
 import _poolCartographersHawk from "../pool/cartographers-hawk.js";
 import _poolCatharticReunion from "../pool/cathartic-reunion.js";
+import _poolChameleonColossus from "../pool/chameleon-colossus.js";
 import _poolChokedEstuary from "../pool/choked-estuary.js";
 import _poolChompingChangeling from "../pool/chomping-changeling.js";
 import _poolCoalGolem from "../pool/coal-golem.js";
@@ -79,6 +80,7 @@ import _poolEvolutionaryLeap from "../pool/evolutionary-leap.js";
 import _poolExemplarOfLight from "../pool/exemplar-of-light.js";
 import _poolExperimentalAugury from "../pool/experimental-augury.js";
 import _poolExquisiteBlood from "../pool/exquisite-blood.js";
+import _poolFaerieDreamthief from "../pool/faerie-dreamthief.js";
 import _poolFailedInspection from "../pool/failed-inspection.js";
 import _poolFallenAngel from "../pool/fallen-angel.js";
 import _poolFangrenHunter from "../pool/fangren-hunter.js";
@@ -122,6 +124,7 @@ import _poolKessDissidentMage from "../pool/kess-dissident-mage.js";
 import _poolKikiJikiMirrorBreaker from "../pool/kiki-jiki-mirror-breaker.js";
 import _poolKindredDominance from "../pool/kindred-dominance.js";
 import _poolKnightOfTheWhiteOrchid from "../pool/knight-of-the-white-orchid.js";
+import _poolLaserScrewdriver from "../pool/laser-screwdriver.js";
 import _poolLastMarchOfTheEnts from "../pool/last-march-of-the-ents.js";
 import _poolLethalScheme from "../pool/lethal-scheme.js";
 import _poolLightningJavelin from "../pool/lightning-javelin.js";
@@ -238,10 +241,12 @@ import _poolThassasBounty from "../pool/thassas-bounty.js";
 import _poolTheWallsOfBaSingSe from "../pool/the-walls-of-ba-sing-se.js";
 import _poolTheWanderingRescuer from "../pool/the-wandering-rescuer.js";
 import _poolTheyWentThisWay from "../pool/they-went-this-way.js";
+import _poolThingInTheIce from "../pool/thing-in-the-ice.js";
 import _poolThornOfTheBlackRose from "../pool/thorn-of-the-black-rose.js";
 import _poolThornling from "../pool/thornling.js";
 import _poolThrabenCharm from "../pool/thraben-charm.js";
 import _poolThrillOfPossibility from "../pool/thrill-of-possibility.js";
+import _poolThunderMagic from "../pool/thunder-magic.js";
 import _poolThunderclapDrake from "../pool/thunderclap-drake.js";
 import _poolThunderingGiant from "../pool/thundering-giant.js";
 import _poolTimberGorge from "../pool/timber-gorge.js";
@@ -322,6 +327,7 @@ const shard: CardShard = {
     _poolCanalMonitor,
     _poolCartographersHawk,
     _poolCatharticReunion,
+    _poolChameleonColossus,
     _poolChokedEstuary,
     _poolChompingChangeling,
     _poolCoalGolem,
@@ -363,6 +369,7 @@ const shard: CardShard = {
     _poolExemplarOfLight,
     _poolExperimentalAugury,
     _poolExquisiteBlood,
+    _poolFaerieDreamthief,
     _poolFailedInspection,
     _poolFallenAngel,
     _poolFangrenHunter,
@@ -406,6 +413,7 @@ const shard: CardShard = {
     _poolKikiJikiMirrorBreaker,
     _poolKindredDominance,
     _poolKnightOfTheWhiteOrchid,
+    _poolLaserScrewdriver,
     _poolLastMarchOfTheEnts,
     _poolLethalScheme,
     _poolLightningJavelin,
@@ -522,10 +530,12 @@ const shard: CardShard = {
     _poolTheWallsOfBaSingSe,
     _poolTheWanderingRescuer,
     _poolTheyWentThisWay,
+    _poolThingInTheIce,
     _poolThornOfTheBlackRose,
     _poolThornling,
     _poolThrabenCharm,
     _poolThrillOfPossibility,
+    _poolThunderMagic,
     _poolThunderclapDrake,
     _poolThunderingGiant,
     _poolTimberGorge,

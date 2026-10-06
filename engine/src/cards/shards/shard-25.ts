@@ -8,6 +8,7 @@ import _poolAbominationTerrifyingTitan from "../pool/abomination-terrifying-tita
 import _poolAbundantCountryside from "../pool/abundant-countryside.js";
 import _poolAlrundsEpiphany from "../pool/alrunds-epiphany.js";
 import _poolAltarOfDementia from "../pool/altar-of-dementia.js";
+import _poolAlwaysWatching from "../pool/always-watching.js";
 import _poolAncientGrudge from "../pool/ancient-grudge.js";
 import _poolAquusSteed from "../pool/aquus-steed.js";
 import _poolArcaneEncyclopedia from "../pool/arcane-encyclopedia.js";
@@ -65,6 +66,7 @@ import _poolDragUnder from "../pool/drag-under.js";
 import _poolDragonologist from "../pool/dragonologist.js";
 import _poolDrakeSkullCameo from "../pool/drake-skull-cameo.js";
 import _poolDreadbore from "../pool/dreadbore.js";
+import _poolDreamscapeArtist from "../pool/dreamscape-artist.js";
 import _poolDromarsCharm from "../pool/dromars-charm.js";
 import _poolDrownInIchor from "../pool/drown-in-ichor.js";
 import _poolEldraziDevastator from "../pool/eldrazi-devastator.js";
@@ -282,6 +284,7 @@ const shard: CardShard = {
     _poolAbundantCountryside,
     _poolAlrundsEpiphany,
     _poolAltarOfDementia,
+    _poolAlwaysWatching,
     _poolAncientGrudge,
     _poolAquusSteed,
     _poolArcaneEncyclopedia,
@@ -339,6 +342,7 @@ const shard: CardShard = {
     _poolDragonologist,
     _poolDrakeSkullCameo,
     _poolDreadbore,
+    _poolDreamscapeArtist,
     _poolDromarsCharm,
     _poolDrownInIchor,
     _poolEldraziDevastator,

@@ -13,6 +13,7 @@ import _poolAngelfireIgnition from "../pool/angelfire-ignition.js";
 import _poolAngelicEdict from "../pool/angelic-edict.js";
 import _poolAnnul from "../pool/annul.js";
 import _poolAnthemOfChampions from "../pool/anthem-of-champions.js";
+import _poolAnticipate from "../pool/anticipate.js";
 import _poolArchweaver from "../pool/archweaver.js";
 import _poolArtisansSorrow from "../pool/artisans-sorrow.js";
 import _poolAzureDrake from "../pool/azure-drake.js";
@@ -46,6 +47,7 @@ import _poolCourierHawk from "../pool/courier-hawk.js";
 import _poolCryptothrall from "../pool/cryptothrall.js";
 import _poolDailyBugleBuilding from "../pool/daily-bugle-building.js";
 import _poolDarkDeal from "../pool/dark-deal.js";
+import _poolDefabricate from "../pool/defabricate.js";
 import _poolDefiantSalvager from "../pool/defiant-salvager.js";
 import _poolDejaVu from "../pool/deja-vu.js";
 import _poolDerangedAssistant from "../pool/deranged-assistant.js";
@@ -199,6 +201,7 @@ import _poolTailTheSuspect from "../pool/tail-the-suspect.js";
 import _poolTalismanOfConviction from "../pool/talisman-of-conviction.js";
 import _poolTannukSteadfastSecond from "../pool/tannuk-steadfast-second.js";
 import _poolTaureanMauler from "../pool/taurean-mauler.js";
+import _poolTeachersPest from "../pool/teachers-pest.js";
 import _poolTeleportationCircle from "../pool/teleportation-circle.js";
 import _poolTelethopter from "../pool/telethopter.js";
 import _poolTempleOfEpiphany from "../pool/temple-of-epiphany.js";
@@ -260,6 +263,7 @@ const shard: CardShard = {
     _poolAngelicEdict,
     _poolAnnul,
     _poolAnthemOfChampions,
+    _poolAnticipate,
     _poolArchweaver,
     _poolArtisansSorrow,
     _poolAzureDrake,
@@ -293,6 +297,7 @@ const shard: CardShard = {
     _poolCryptothrall,
     _poolDailyBugleBuilding,
     _poolDarkDeal,
+    _poolDefabricate,
     _poolDefiantSalvager,
     _poolDejaVu,
     _poolDerangedAssistant,
@@ -446,6 +451,7 @@ const shard: CardShard = {
     _poolTalismanOfConviction,
     _poolTannukSteadfastSecond,
     _poolTaureanMauler,
+    _poolTeachersPest,
     _poolTeleportationCircle,
     _poolTelethopter,
     _poolTempleOfEpiphany,

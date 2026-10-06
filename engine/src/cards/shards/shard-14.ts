@@ -55,6 +55,7 @@ import _poolCircleOfDreamsDruid from "../pool/circle-of-dreams-druid.js";
 import _poolCloudshredderSliver from "../pool/cloudshredder-sliver.js";
 import _poolCobaltGolem from "../pool/cobalt-golem.js";
 import _poolCombatThresher from "../pool/combat-thresher.js";
+import _poolCompanyCommander from "../pool/company-commander.js";
 import _poolConiferStrider from "../pool/conifer-strider.js";
 import _poolConservatory from "../pool/conservatory.js";
 import _poolConsultTheNecrosages from "../pool/consult-the-necrosages.js";
@@ -107,6 +108,7 @@ import _poolFlowstoneWall from "../pool/flowstone-wall.js";
 import _poolForestBear from "../pool/forest-bear.js";
 import _poolFortifiedRampart from "../pool/fortified-rampart.js";
 import _poolFreshVolunteers from "../pool/fresh-volunteers.js";
+import _poolFuelForTheCause from "../pool/fuel-for-the-cause.js";
 import _poolFuturistForge from "../pool/futurist-forge.js";
 import _poolGaladrielLightOfValinor from "../pool/galadriel-light-of-valinor.js";
 import _poolGhostsOfTheDamned from "../pool/ghosts-of-the-damned.js";
@@ -147,6 +149,7 @@ import _poolJoustingDummy from "../pool/jousting-dummy.js";
 import _poolKeenBuccaneer from "../pool/keen-buccaneer.js";
 import _poolKonaRescueBeastie from "../pool/kona-rescue-beastie.js";
 import _poolKrarkTheThumbless from "../pool/krark-the-thumbless.js";
+import _poolLeveler from "../pool/leveler.js";
 import _poolLingeringSouls from "../pool/lingering-souls.js";
 import _poolLlanowarElves from "../pool/llanowar-elves.js";
 import _poolLoxodonStalwart from "../pool/loxodon-stalwart.js";
@@ -261,6 +264,7 @@ import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
 import _poolZopandrelHungerDominus from "../pool/zopandrel-hunger-dominus.js";
 import _poolZukosOffense from "../pool/zukos-offense.js";
 import _tokensApeToken from "../tokens/ape-token.js";
+import _tokensDeathtouchRatToken from "../tokens/deathtouch-rat-token.js";
 import _tokensFishToken from "../tokens/fish-token.js";
 import _tokensGolemEnchantmentArtifactToken from "../tokens/golem-enchantment-artifact-token.js";
 import _tokensGolemVigilanceToken from "../tokens/golem-vigilance-token.js";
@@ -323,6 +327,7 @@ const shard: CardShard = {
     _poolCloudshredderSliver,
     _poolCobaltGolem,
     _poolCombatThresher,
+    _poolCompanyCommander,
     _poolConiferStrider,
     _poolConservatory,
     _poolConsultTheNecrosages,
@@ -375,6 +380,7 @@ const shard: CardShard = {
     _poolForestBear,
     _poolFortifiedRampart,
     _poolFreshVolunteers,
+    _poolFuelForTheCause,
     _poolFuturistForge,
     _poolGaladrielLightOfValinor,
     _poolGhostsOfTheDamned,
@@ -415,6 +421,7 @@ const shard: CardShard = {
     _poolKeenBuccaneer,
     _poolKonaRescueBeastie,
     _poolKrarkTheThumbless,
+    _poolLeveler,
     _poolLingeringSouls,
     _poolLlanowarElves,
     _poolLoxodonStalwart,
@@ -531,6 +538,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensApeToken,
+    _tokensDeathtouchRatToken,
     _tokensFishToken,
     _tokensGolemEnchantmentArtifactToken,
     _tokensGolemVigilanceToken,

@@ -62,6 +62,7 @@ import _poolElvishRanger from "../pool/elvish-ranger.js";
 import _poolEmeraldDragonfly from "../pool/emerald-dragonfly.js";
 import _poolEnterTheEnigma from "../pool/enter-the-enigma.js";
 import _poolExultantSkymarcher from "../pool/exultant-skymarcher.js";
+import _poolFaerieHarbinger from "../pool/faerie-harbinger.js";
 import _poolFavoredOfIroas from "../pool/favored-of-iroas.js";
 import _poolFear from "../pool/fear.js";
 import _poolFearlessPup from "../pool/fearless-pup.js";
@@ -84,6 +85,7 @@ import _poolGothmogMorgulLieutenant from "../pool/gothmog-morgul-lieutenant.js";
 import _poolGreaterBasilisk from "../pool/greater-basilisk.js";
 import _poolGrindingStation from "../pool/grinding-station.js";
 import _poolGrizzlyBears from "../pool/grizzly-bears.js";
+import _poolHaldirLorienLieutenant from "../pool/haldir-lorien-lieutenant.js";
 import _poolHalfElfMonk from "../pool/half-elf-monk.js";
 import _poolHandOfDeath from "../pool/hand-of-death.js";
 import _poolHapatraVizierOfPoisons from "../pool/hapatra-vizier-of-poisons.js";
@@ -143,6 +145,7 @@ import _poolMummyParamount from "../pool/mummy-paramount.js";
 import _poolMurderousRider from "../pool/murderous-rider.js";
 import _poolNecroticHex from "../pool/necrotic-hex.js";
 import _poolNestOfScarabs from "../pool/nest-of-scarabs.js";
+import _poolNightpackAmbusher from "../pool/nightpack-ambusher.js";
 import _poolOnTheTrail from "../pool/on-the-trail.js";
 import _poolOnakkeOgre from "../pool/onakke-ogre.js";
 import _poolOnduWarCleric from "../pool/ondu-war-cleric.js";
@@ -152,6 +155,7 @@ import _poolOrzhovGuildgate from "../pool/orzhov-guildgate.js";
 import _poolOverseerOfTheDamned from "../pool/overseer-of-the-damned.js";
 import _poolOversoldCemetery from "../pool/oversold-cemetery.js";
 import _poolPassionateArchaeologist from "../pool/passionate-archaeologist.js";
+import _poolPlagueWind from "../pool/plague-wind.js";
 import _poolPollenbrightDruid from "../pool/pollenbright-druid.js";
 import _poolPrecinctCaptain from "../pool/precinct-captain.js";
 import _poolPresenceOfGond from "../pool/presence-of-gond.js";
@@ -177,6 +181,7 @@ import _poolResurrectionOrb from "../pool/resurrection-orb.js";
 import _poolReturnToNature from "../pool/return-to-nature.js";
 import _poolRevokeExistence from "../pool/revoke-existence.js";
 import _poolRhoxFaithmender from "../pool/rhox-faithmender.js";
+import _poolRoarOfChallenge from "../pool/roar-of-challenge.js";
 import _poolRoguesGloves from "../pool/rogues-gloves.js";
 import _poolRootbornDefenses from "../pool/rootborn-defenses.js";
 import _poolSHIELDDeploymentDrone from "../pool/s-h-i-e-l-d-deployment-drone.js";
@@ -255,6 +260,7 @@ import _poolWakandanDroneFlock from "../pool/wakandan-drone-flock.js";
 import _poolWallOfLimbs from "../pool/wall-of-limbs.js";
 import _poolWallOfRazors from "../pool/wall-of-razors.js";
 import _poolWallOfVines from "../pool/wall-of-vines.js";
+import _poolWarkiteMarauder from "../pool/warkite-marauder.js";
 import _poolWarthog from "../pool/warthog.js";
 import _poolWernogRidersChaplain from "../pool/wernog-riders-chaplain.js";
 import _poolWhiptongueFrog from "../pool/whiptongue-frog.js";
@@ -351,6 +357,7 @@ const shard: CardShard = {
     _poolEmeraldDragonfly,
     _poolEnterTheEnigma,
     _poolExultantSkymarcher,
+    _poolFaerieHarbinger,
     _poolFavoredOfIroas,
     _poolFear,
     _poolFearlessPup,
@@ -373,6 +380,7 @@ const shard: CardShard = {
     _poolGreaterBasilisk,
     _poolGrindingStation,
     _poolGrizzlyBears,
+    _poolHaldirLorienLieutenant,
     _poolHalfElfMonk,
     _poolHandOfDeath,
     _poolHapatraVizierOfPoisons,
@@ -432,6 +440,7 @@ const shard: CardShard = {
     _poolMurderousRider,
     _poolNecroticHex,
     _poolNestOfScarabs,
+    _poolNightpackAmbusher,
     _poolOnTheTrail,
     _poolOnakkeOgre,
     _poolOnduWarCleric,
@@ -441,6 +450,7 @@ const shard: CardShard = {
     _poolOverseerOfTheDamned,
     _poolOversoldCemetery,
     _poolPassionateArchaeologist,
+    _poolPlagueWind,
     _poolPollenbrightDruid,
     _poolPrecinctCaptain,
     _poolPresenceOfGond,
@@ -466,6 +476,7 @@ const shard: CardShard = {
     _poolReturnToNature,
     _poolRevokeExistence,
     _poolRhoxFaithmender,
+    _poolRoarOfChallenge,
     _poolRoguesGloves,
     _poolRootbornDefenses,
     _poolSHIELDDeploymentDrone,
@@ -544,6 +555,7 @@ const shard: CardShard = {
     _poolWallOfLimbs,
     _poolWallOfRazors,
     _poolWallOfVines,
+    _poolWarkiteMarauder,
     _poolWarthog,
     _poolWernogRidersChaplain,
     _poolWhiptongueFrog,

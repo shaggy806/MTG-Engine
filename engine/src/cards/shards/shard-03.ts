@@ -45,6 +45,7 @@ import _poolDecimate from "../pool/decimate.js";
 import _poolDeeptreadMerrow from "../pool/deeptread-merrow.js";
 import _poolDefenseOfTheHeart from "../pool/defense-of-the-heart.js";
 import _poolDementiaBat from "../pool/dementia-bat.js";
+import _poolDemonsHorn from "../pool/demons-horn.js";
 import _poolDesmondMiles from "../pool/desmond-miles.js";
 import _poolDiscipleOfTheOldWays from "../pool/disciple-of-the-old-ways.js";
 import _poolDoctorDoomKingOfLatveria from "../pool/doctor-doom-king-of-latveria.js";
@@ -122,6 +123,7 @@ import _poolMahadiEmporiumMaster from "../pool/mahadi-emporium-master.js";
 import _poolMakindiMesas from "../pool/makindi-mesas.js";
 import _poolMalevolentAwakening from "../pool/malevolent-awakening.js";
 import _poolMapTheFrontier from "../pool/map-the-frontier.js";
+import _poolMassOfMysteries from "../pool/mass-of-mysteries.js";
 import _poolMerfolkCoralsmith from "../pool/merfolk-coralsmith.js";
 import _poolMetallicSliver from "../pool/metallic-sliver.js";
 import _poolMinotaurAggressor from "../pool/minotaur-aggressor.js";
@@ -169,6 +171,7 @@ import _poolRushwoodElemental from "../pool/rushwood-elemental.js";
 import _poolSacredPrey from "../pool/sacred-prey.js";
 import _poolSadisticHypnotist from "../pool/sadistic-hypnotist.js";
 import _poolSagesReverie from "../pool/sages-reverie.js";
+import _poolSaguWildling from "../pool/sagu-wildling.js";
 import _poolSakuraTribeScout from "../pool/sakura-tribe-scout.js";
 import _poolSalvagedManaworker from "../pool/salvaged-manaworker.js";
 import _poolScamperingSurveyor from "../pool/scampering-surveyor.js";
@@ -208,6 +211,7 @@ import _poolSulfurVent from "../pool/sulfur-vent.js";
 import _poolSunspireGriffin from "../pool/sunspire-griffin.js";
 import _poolSupplyLineCranes from "../pool/supply-line-cranes.js";
 import _poolSurveillanceRoom from "../pool/surveillance-room.js";
+import _poolSwordCoastSerpent from "../pool/sword-coast-serpent.js";
 import _poolSymbioticWurm from "../pool/symbiotic-wurm.js";
 import _poolTakeAGlance from "../pool/take-a-glance.js";
 import _poolTangledIslet from "../pool/tangled-islet.js";
@@ -251,6 +255,7 @@ import _tokensConstructTokenArtifactCount from "../tokens/construct-token-artifa
 import _tokensElfDruidToken from "../tokens/elf-druid-token.js";
 import _tokensOxToken from "../tokens/ox-token.js";
 import _tokensPlantToken from "../tokens/plant-token.js";
+import _tokensSpiritTokenWhiteBlack from "../tokens/spirit-token-white-black.js";
 import _tokensWhaleToken from "../tokens/whale-token.js";
 import _tokensWormToken from "../tokens/worm-token.js";
 
@@ -298,6 +303,7 @@ const shard: CardShard = {
     _poolDeeptreadMerrow,
     _poolDefenseOfTheHeart,
     _poolDementiaBat,
+    _poolDemonsHorn,
     _poolDesmondMiles,
     _poolDiscipleOfTheOldWays,
     _poolDoctorDoomKingOfLatveria,
@@ -375,6 +381,7 @@ const shard: CardShard = {
     _poolMakindiMesas,
     _poolMalevolentAwakening,
     _poolMapTheFrontier,
+    _poolMassOfMysteries,
     _poolMerfolkCoralsmith,
     _poolMetallicSliver,
     _poolMinotaurAggressor,
@@ -422,6 +429,7 @@ const shard: CardShard = {
     _poolSacredPrey,
     _poolSadisticHypnotist,
     _poolSagesReverie,
+    _poolSaguWildling,
     _poolSakuraTribeScout,
     _poolSalvagedManaworker,
     _poolScamperingSurveyor,
@@ -461,6 +469,7 @@ const shard: CardShard = {
     _poolSunspireGriffin,
     _poolSupplyLineCranes,
     _poolSurveillanceRoom,
+    _poolSwordCoastSerpent,
     _poolSymbioticWurm,
     _poolTakeAGlance,
     _poolTangledIslet,
@@ -506,6 +515,7 @@ const shard: CardShard = {
     _tokensElfDruidToken,
     _tokensOxToken,
     _tokensPlantToken,
+    _tokensSpiritTokenWhiteBlack,
     _tokensWhaleToken,
     _tokensWormToken,
   ],

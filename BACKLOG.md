@@ -73,8 +73,8 @@ section keeps only what to do next.
 - **The nine other starter precons' 46 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
   TDC decks.
 - **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,353 of 5,000
-  implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6428 (batches 30–35);
-  rank 6429 is next. Every card left needs engine work: build the features that block the most
+  implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
+  rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Cards a built feature may have unblocked** — recheck each against its Oracle text:
@@ -133,6 +133,10 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **An additional-cost option is offered without checking its mana** (Eaten Alive, pulled).
 - **A milled card is looked for only in the graveyard** (701.17c).
 - **"Return it transformed" brings back a card that can't transform** (712.14a).
+- **A sacrifice trigger misses its own sacrifice** (603.10a): "whenever you sacrifice this or
+  another …", and Korvold sacrificing himself.
+- **A tapped-for-mana trigger adds only a fixed amount**: "an additional {G} for each Elf" adds
+  nothing.
 - **Damage modifiers apply in a fixed order** (616.1).
 - **"You sacrifice it" at end step is done by its controller** (701.21a).
 - **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape** — Ayara, Bloomvine Regent, Will of the Jeskai, Kwain, Forced Fruition, Ruric Thar, Spellshock, Magebane Lizard, Black Mage's Rod, and some 610.3c citations.

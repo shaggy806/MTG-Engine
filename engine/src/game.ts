@@ -16719,6 +16719,8 @@ export class Game {
         }
       },
       playersInScope: (who) => scoped(who),
+      playersCountedInScope: (who) =>
+        this.scopedPlayers(controller, who, triggerObject, triggerLastKnown(), refs.player, true),
       discardHand: (player) => this.discardWholeHand(player),
       // The object whose entering, dying, attacking… fired a trigger is read
       // as it last existed on the battlefield once it has left (rule 608.2h):
@@ -24870,6 +24872,11 @@ export class Game {
     triggerLastKnown?: LastKnownInfo,
     /** The player the triggering event named — `LastKnownRefs.player`. */
     triggerPlayer?: PlayerId,
+    /** Keep a player who has left the game in an each-player/each-opponent
+     * scope — for counting what happened to players this turn, where one who
+     * lost life and then lost the game still counts (Tymna the Weaver's and
+     * Teysa, Opulent Oligarch's rulings). */
+    includeDeparted = false,
   ): PlayerId[] {
     if (who === "you") return [controller];
     if (who === "you-and-opponents-attacking-trigger-player") {
@@ -24909,7 +24916,7 @@ export class Game {
     ];
     return rotated.filter(
       (p) =>
-        !this.state.players[p].hasLost &&
+        (includeDeparted || !this.state.players[p].hasLost) &&
         (who === "each-player" || p !== controller) &&
         (who !== "each-other-opponent" || p !== triggerPlayer),
     );

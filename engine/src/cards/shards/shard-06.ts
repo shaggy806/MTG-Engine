@@ -10,6 +10,7 @@ import _poolAlabasterHostSanctifier from "../pool/alabaster-host-sanctifier.js";
 import _poolAlexiosDeimosOfKosmos from "../pool/alexios-deimos-of-kosmos.js";
 import _poolAlibouAncientWitness from "../pool/alibou-ancient-witness.js";
 import _poolAlleyStrangler from "../pool/alley-strangler.js";
+import _poolAllureOfPower from "../pool/allure-of-power.js";
 import _poolAlphaDeathclaw from "../pool/alpha-deathclaw.js";
 import _poolAngelOfIndemnity from "../pool/angel-of-indemnity.js";
 import _poolAngelOfRetribution from "../pool/angel-of-retribution.js";
@@ -140,6 +141,7 @@ import _poolMarkedByHonor from "../pool/marked-by-honor.js";
 import _poolMeetingOfMinds from "../pool/meeting-of-minds.js";
 import _poolMikokoroCenterOfTheSea from "../pool/mikokoro-center-of-the-sea.js";
 import _poolMirkoObsessiveTheorist from "../pool/mirko-obsessive-theorist.js";
+import _poolMoggSalvage from "../pool/mogg-salvage.js";
 import _poolMoggSentry from "../pool/mogg-sentry.js";
 import _poolMrFoxglove from "../pool/mr-foxglove.js";
 import _poolMuxusGoblinGrandee from "../pool/muxus-goblin-grandee.js";
@@ -238,6 +240,7 @@ import _poolTouchOfBrilliance from "../pool/touch-of-brilliance.js";
 import _poolTrashTheTown from "../pool/trash-the-town.js";
 import _poolTraverseTheOutlands from "../pool/traverse-the-outlands.js";
 import _poolTreeMonkey from "../pool/tree-monkey.js";
+import _poolTurnAside from "../pool/turn-aside.js";
 import _poolTurntimberGrove from "../pool/turntimber-grove.js";
 import _poolTwoHeadedSliver from "../pool/two-headed-sliver.js";
 import _poolTyrantsFamiliar from "../pool/tyrants-familiar.js";
@@ -288,6 +291,7 @@ const shard: CardShard = {
     _poolAlexiosDeimosOfKosmos,
     _poolAlibouAncientWitness,
     _poolAlleyStrangler,
+    _poolAllureOfPower,
     _poolAlphaDeathclaw,
     _poolAngelOfIndemnity,
     _poolAngelOfRetribution,
@@ -418,6 +422,7 @@ const shard: CardShard = {
     _poolMeetingOfMinds,
     _poolMikokoroCenterOfTheSea,
     _poolMirkoObsessiveTheorist,
+    _poolMoggSalvage,
     _poolMoggSentry,
     _poolMrFoxglove,
     _poolMuxusGoblinGrandee,
@@ -516,6 +521,7 @@ const shard: CardShard = {
     _poolTrashTheTown,
     _poolTraverseTheOutlands,
     _poolTreeMonkey,
+    _poolTurnAside,
     _poolTurntimberGrove,
     _poolTwoHeadedSliver,
     _poolTyrantsFamiliar,

@@ -38,6 +38,7 @@ import _poolBorborygmos from "../pool/borborygmos.js";
 import _poolBrambleweftBehemoth from "../pool/brambleweft-behemoth.js";
 import _poolBrashTaunter from "../pool/brash-taunter.js";
 import _poolBronzeSable from "../pool/bronze-sable.js";
+import _poolBurrowguardMentor from "../pool/burrowguard-mentor.js";
 import _poolButcherOfMalakir from "../pool/butcher-of-malakir.js";
 import _poolCaptainSisay from "../pool/captain-sisay.js";
 import _poolCaptainStormCosmiumRaider from "../pool/captain-storm-cosmium-raider.js";
@@ -88,6 +89,7 @@ import _poolFireElemental from "../pool/fire-elemental.js";
 import _poolFireball from "../pool/fireball.js";
 import _poolFootSoldiers from "../pool/foot-soldiers.js";
 import _poolFrontierGuide from "../pool/frontier-guide.js";
+import _poolGadwickTheWizened from "../pool/gadwick-the-wizened.js";
 import _poolGeothermalCrevice from "../pool/geothermal-crevice.js";
 import _poolGiftedAetherborn from "../pool/gifted-aetherborn.js";
 import _poolGilacorn from "../pool/gilacorn.js";
@@ -151,6 +153,7 @@ import _poolMireInMisery from "../pool/mire-in-misery.js";
 import _poolMonumentToEndurance from "../pool/monument-to-endurance.js";
 import _poolMorgueToad from "../pool/morgue-toad.js";
 import _poolMurkfiendLiege from "../pool/murkfiend-liege.js";
+import _poolMyrGalvanizer from "../pool/myr-galvanizer.js";
 import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
 import _poolNibelheimAflame from "../pool/nibelheim-aflame.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
@@ -302,6 +305,7 @@ const shard: CardShard = {
     _poolBrambleweftBehemoth,
     _poolBrashTaunter,
     _poolBronzeSable,
+    _poolBurrowguardMentor,
     _poolButcherOfMalakir,
     _poolCaptainSisay,
     _poolCaptainStormCosmiumRaider,
@@ -352,6 +356,7 @@ const shard: CardShard = {
     _poolFireball,
     _poolFootSoldiers,
     _poolFrontierGuide,
+    _poolGadwickTheWizened,
     _poolGeothermalCrevice,
     _poolGiftedAetherborn,
     _poolGilacorn,
@@ -415,6 +420,7 @@ const shard: CardShard = {
     _poolMonumentToEndurance,
     _poolMorgueToad,
     _poolMurkfiendLiege,
+    _poolMyrGalvanizer,
     _poolNarstadScrapper,
     _poolNibelheimAflame,
     _poolNicolBolasTheRavager,

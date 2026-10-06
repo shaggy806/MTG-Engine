@@ -4159,6 +4159,10 @@ export interface EffectApi {
    * `discard-hand`, and anything else that acts on a scope one player at a
    * time rather than in one call. */
   playersInScope(who: PlayerScope): readonly PlayerId[];
+  /** {@link playersInScope}, but keeping each player who has left the game —
+   * "each opponent who lost life this turn" still counts one who then lost
+   * (Tymna the Weaver's, Teysa, Opulent Oligarch's rulings). */
+  playersCountedInScope(who: PlayerScope): readonly PlayerId[];
   /** Discard a player's whole hand at once (rule 701.8) — no choice, so this
    * never raises a `discard` decision the way `discardCards` does. */
   discardHand(player: PlayerId): void;
@@ -5464,7 +5468,7 @@ function signedAmountValue(
   }
   if ("playersWithTurnStat" in amount) {
     return ctx
-      .playersInScope(amount.who)
+      .playersCountedInScope(amount.who)
       .filter((p) => ctx.turnStatOf(p, amount.playersWithTurnStat) > 0).length;
   }
   if ("opponentsControllingFewer" in amount) {

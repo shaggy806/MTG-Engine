@@ -73,6 +73,7 @@ import _poolEtherealGuidance from "../pool/ethereal-guidance.js";
 import _poolEumidianHatchery from "../pool/eumidian-hatchery.js";
 import _poolEvendoWakingHaven from "../pool/evendo-waking-haven.js";
 import _poolExclusionMage from "../pool/exclusion-mage.js";
+import _poolEzioBladeOfVengeance from "../pool/ezio-blade-of-vengeance.js";
 import _poolFiendishDuo from "../pool/fiendish-duo.js";
 import _poolFiligreeFamiliar from "../pool/filigree-familiar.js";
 import _poolFirescreamer from "../pool/firescreamer.js";
@@ -136,6 +137,7 @@ import _poolMandibleJusticiar from "../pool/mandible-justiciar.js";
 import _poolMarchFromTheBlackGate from "../pool/march-from-the-black-gate.js";
 import _poolMarkOfFury from "../pool/mark-of-fury.js";
 import _poolMassiveRaid from "../pool/massive-raid.js";
+import _poolMastermindPlum from "../pool/mastermind-plum.js";
 import _poolMastersCall from "../pool/masters-call.js";
 import _poolMercilessEviction from "../pool/merciless-eviction.js";
 import _poolMesaUnicorn from "../pool/mesa-unicorn.js";
@@ -151,6 +153,7 @@ import _poolMoxOpal from "../pool/mox-opal.js";
 import _poolMysticPeak from "../pool/mystic-peak.js";
 import _poolNantukoElder from "../pool/nantuko-elder.js";
 import _poolNarnamCobra from "../pool/narnam-cobra.js";
+import _poolNightMarket from "../pool/night-market.js";
 import _poolNyxLotus from "../pool/nyx-lotus.js";
 import _poolOhranFrostfang from "../pool/ohran-frostfang.js";
 import _poolOvergrownFarmland from "../pool/overgrown-farmland.js";
@@ -246,6 +249,7 @@ import _poolVashtaNerada from "../pool/vashta-nerada.js";
 import _poolVeinRipper from "../pool/vein-ripper.js";
 import _poolVibraniumEnergyDaggers from "../pool/vibranium-energy-daggers.js";
 import _poolVirtuousVariant from "../pool/virtuous-variant.js";
+import _poolVirulentSliver from "../pool/virulent-sliver.js";
 import _poolVividCreek from "../pool/vivid-creek.js";
 import _poolVolcanicVillain from "../pool/volcanic-villain.js";
 import _poolWallOfRunes from "../pool/wall-of-runes.js";
@@ -339,6 +343,7 @@ const shard: CardShard = {
     _poolEumidianHatchery,
     _poolEvendoWakingHaven,
     _poolExclusionMage,
+    _poolEzioBladeOfVengeance,
     _poolFiendishDuo,
     _poolFiligreeFamiliar,
     _poolFirescreamer,
@@ -402,6 +407,7 @@ const shard: CardShard = {
     _poolMarchFromTheBlackGate,
     _poolMarkOfFury,
     _poolMassiveRaid,
+    _poolMastermindPlum,
     _poolMastersCall,
     _poolMercilessEviction,
     _poolMesaUnicorn,
@@ -417,6 +423,7 @@ const shard: CardShard = {
     _poolMysticPeak,
     _poolNantukoElder,
     _poolNarnamCobra,
+    _poolNightMarket,
     _poolNyxLotus,
     _poolOhranFrostfang,
     _poolOvergrownFarmland,
@@ -512,6 +519,7 @@ const shard: CardShard = {
     _poolVeinRipper,
     _poolVibraniumEnergyDaggers,
     _poolVirtuousVariant,
+    _poolVirulentSliver,
     _poolVividCreek,
     _poolVolcanicVillain,
     _poolWallOfRunes,
