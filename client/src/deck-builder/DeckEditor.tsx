@@ -1,13 +1,16 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { DragEvent, MouseEvent } from 'react'
-import type { CardDefinition } from 'engine/client'
+import type { CardDefinition, Color } from 'engine/client'
 import {
   canCommandAlone,
   canPairCommanders,
+  colorIdentityOf,
   flavorNamesOf,
   hasPartner,
+  identityString,
   isDeckableCard,
   validateCommanderDeck,
+  withinIdentity,
 } from 'engine/client'
 import { cardPool } from '../cards/cardData.ts'
 import { Symbols } from '../ui/Symbols.tsx'
@@ -47,6 +50,18 @@ function buildableCards(): readonly CardDefinition[] {
  * saved before that filter existed can still name one, and such a row has to
  * render (and be removable) rather than showing up as an unknown card. */
 const cardNamed = (name: string): CardDefinition | undefined => cardPool().byName.get(name)
+
+/** Each card's colour identity (rule 903.4, every face's), worked out once:
+ * the pool's colour filter reads thousands of them per keystroke. */
+const identities = new WeakMap<CardDefinition, ReadonlySet<Color>>()
+function identityOf(def: CardDefinition): ReadonlySet<Color> {
+  let identity = identities.get(def)
+  if (identity === undefined) {
+    identity = colorIdentityOf(def, cardPool().registry)
+    identities.set(def, identity)
+  }
+  return identity
+}
 
 /**
  * A deck's commanders once `cardName` is starred. Starring a commander again
@@ -102,6 +117,10 @@ export function DeckEditor({
   // used to lose it for good.
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
+  // The pool kept to the commander's colour identity (rule 903.4) while the
+  // deck has one: a Temur deck was offered white cards first, none of which
+  // it can play.
+  const [inIdentityOnly, setInIdentityOnly] = useState(true)
   const [name, setName] = useState(deck.name)
   const [hover, setHover] = useState<HoverTarget | null>(null)
   const [dropActive, setDropActive] = useState(false)
@@ -121,10 +140,25 @@ export function DeckEditor({
    * of cards all at once. */
   const POOL_PAGE_SIZE = 100
 
+  /** The commanders' combined colour identity, or null with no commander
+   * (or one the pool doesn't have) to keep the pool to. */
+  const commanderIdentity = useMemo(() => {
+    if (deck.commanders.length === 0) return null
+    const identity = new Set<Color>()
+    for (const name of deck.commanders) {
+      const def = cardNamed(name)
+      if (def === undefined) return null
+      for (const c of identityOf(def)) identity.add(c)
+    }
+    return identity
+  }, [deck.commanders])
+  const identityFilter = inIdentityOnly ? commanderIdentity : null
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return buildableCards().filter((c) => {
       if (typeFilter && !c.types.includes(typeFilter as CardDefinition['types'][number])) return false
+      if (identityFilter !== null && !withinIdentity(identityOf(c), identityFilter)) return false
       if (!q) return true
       return (
         c.name.toLowerCase().includes(q) ||
@@ -134,13 +168,13 @@ export function DeckEditor({
         c.subtypes.some((s) => s.toLowerCase().includes(q))
       )
     })
-  }, [query, typeFilter])
+  }, [query, typeFilter, identityFilter])
 
   const [poolPage, setPoolPage] = useState(0)
   const poolPageCount = Math.max(1, Math.ceil(filtered.length / POOL_PAGE_SIZE))
   // Reset to the first page during render whenever the search changes — see
   // the same pattern (and why it isn't an effect) in `LibraryPage`.
-  const poolKey = `${query}|${typeFilter ?? ''}`
+  const poolKey = `${query}|${typeFilter ?? ''}|${identityFilter === null ? '' : identityString(identityFilter)}`
   const [pagedFor, setPagedFor] = useState(poolKey)
   if (pagedFor !== poolKey) {
     setPagedFor(poolKey)
@@ -408,6 +442,22 @@ export function DeckEditor({
             ))}
           </div>
 
+          {commanderIdentity !== null ? (
+            <label className="db-identity-filter">
+              <input
+                type="checkbox"
+                checked={inIdentityOnly}
+                onChange={(e) => setInIdentityOnly(e.target.checked)}
+              />
+              Only cards in the commander's colours
+              {commanderIdentity.size > 0 ? (
+                <Symbols text={[...identityString(commanderIdentity)].map((c) => `{${c}}`).join('')} />
+              ) : (
+                <span className="muted">(colourless)</span>
+              )}
+            </label>
+          ) : null}
+
           <ul className="db-card-list">
             {poolRows.map((c) => {
               const n = counts.get(c.name) ?? 0
@@ -475,6 +525,8 @@ export function DeckEditor({
                 type="button"
                 onClick={() => setPoolPage(poolPageSafe - 1)}
                 disabled={poolPageSafe === 0}
+                aria-label="Previous page"
+                title="Previous page"
               >
                 ←
               </button>
@@ -485,6 +537,8 @@ export function DeckEditor({
                 type="button"
                 onClick={() => setPoolPage(poolPageSafe + 1)}
                 disabled={poolPageSafe >= poolPageCount - 1}
+                aria-label="Next page"
+                title="Next page"
               >
                 →
               </button>

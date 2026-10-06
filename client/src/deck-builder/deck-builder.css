@@ -87,6 +87,19 @@
   background: var(--accent-bg);
   color: var(--accent);
 }
+.db-starter-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.db-starter-commander {
+  font-size: 11px;
+  color: var(--muted);
+}
+.db-list li button.selected .db-starter-commander {
+  color: inherit;
+  opacity: 0.8;
+}
 .db-active-badge {
   margin-left: auto;
   font-size: 10px;
@@ -199,6 +212,15 @@
 .db-type-filters button.selected {
   border-color: var(--accent);
   color: var(--text);
+}
+
+.db-identity-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
 }
 
 .db-card-list {
