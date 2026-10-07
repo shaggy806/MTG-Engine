@@ -97,6 +97,7 @@ import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { emblemToVisible } from './ui/defToVisible.ts'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
 import { carryHover } from './ui/hoverCarry.ts'
+import { LibraryTopCard } from './ui/LibraryTopCard.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
 import { LandingScreen } from './lobby/LandingScreen.tsx'
 import { InviteLink } from './lobby/InviteLink.tsx'
@@ -3060,21 +3061,20 @@ function Table({
    * It's playable the way a hand card is — the engine offers a `play-land`
    * (or `cast-spell`) naming it — so it goes through `clickHandCard`, and is
    * drawn as it would be in the hand, scaled down to the face-down pile's
-   * box (`.library-top`). A card playable more than one way (a modal
+   * box (`.library-top`), with the card full size on hover
+   * (`LibraryTopCard`). A card playable more than one way (a modal
    * double-faced card's two land faces) gets a button per way, as in the
    * hand. */
   const libraryTopTile = (obj: VisibleObject) => {
     const faceOpts = mode === 'priority' ? (playFacesByCard.get(obj.id) ?? []) : []
     return (
       <>
-        <div className="library-top" key={obj.id}>
-          <CardTile
-            obj={obj}
-            layout="art-first"
-            highlight={faceOpts.length > 0}
-            onClick={() => clickHandCard(obj.id)}
-          />
-        </div>
+        <LibraryTopCard
+          key={obj.id}
+          obj={obj}
+          highlight={faceOpts.length > 0}
+          onClick={() => clickHandCard(obj.id)}
+        />
         {faceOpts.length > 1
           ? faceOpts.map((a, i) => (
               <button key={i} type="button" onClick={() => playFace(a)}>

@@ -55,10 +55,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   "you may" asked after another decision in the same resolution (it parks, and loses
   `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
   granted (`grantedAbility` kind `modifier`, which has no signature).
-- **A revealed top card of a library has no hover card** (the user, 2026-10-07). When a
-  player's top card is revealed (`.library-top`, drawn in `App.tsx`), hovering it should show a
-  blown-up version of the card, the way hovering a battlefield tile does (`MiniTile`'s popover,
-  `useHoverPopover`).
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review). Moving bot
   speed into the Settings panel brought every step back at 1366x768, but at 1024 the track
   (`PhaseTrack`) still stops at CD. "Player 1 to act" and the text buttons (Settings, History,
