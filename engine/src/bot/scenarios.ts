@@ -3333,6 +3333,34 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "casts Dragon Tempest before the Dragon it pays off",
+    kind: "training",
+    rule: "An enters payoff goes down before the creature it pays off: the Dragon after it gets haste and deals damage.",
+    position(registry) {
+      // Reported from a live game (2026-10-07): "bot played Dragon Tempest
+      // after a Dragon instead of before it." Tempest first, then Shivan
+      // Dragon: the Dragon enters with haste and deals 2 (two Dragons) to the
+      // Bears. The search scores each cast with rollouts that pass our own
+      // seat for the rest of the turn (`castPayoff` turns on the `"acting"`
+      // rollout only for "whenever you cast" payoffs), so Tempest first reads
+      // as an inert enchantment and the Dragon first as a 5/5 flier.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 8);
+      onBoard(game, "Furnace Whelp", A);
+      const tempest = game.debugSpawn("Dragon Tempest", A, "hand");
+      game.debugSpawn("Shivan Dragon", A, "hand");
+      onBoard(game, "Grizzly Bears", B);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === tempest,
+          detail: `chose ${action.type === "cast-spell" ? `Cast ${game.state.objects[action.card]?.cardName}` : action.type}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "casts Opt first so Shiko's Flurry copies the Lightning Bolt",
     rule: "With a second-spell payoff out, a cheap first spell turns the next one into two.",
     position(registry) {

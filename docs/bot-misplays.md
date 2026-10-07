@@ -4,6 +4,28 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-07 — Dragon Tempest cast after a Dragon instead of before it
+
+- **Seen:** with Dragon Tempest and a Dragon in hand and mana for both, the bot cast the Dragon
+  first and Tempest after, so neither of Tempest's triggers saw the Dragon enter.
+- **Right:** Tempest first, then the Dragon: it enters with haste and deals X damage (X = Dragons
+  you control) to any target.
+- **Scenario:** "casts Dragon Tempest before the Dragon it pays off" (training) — eight Mountains,
+  Furnace Whelp out, Tempest and Shivan Dragon in hand, Grizzly Bears across: casts Shivan Dragon.
+- **Why:** the priority search (`bot/eval-bot.ts`) scores each cast with rollouts that pass our
+  own seat for the rest of the turn, so Tempest first reads as an inert two-mana enchantment and
+  the Dragon first as a 5/5 flier. The `"acting"` rollout, which plays out the rest of our turn,
+  is switched on by `castPayoff` only for "whenever you cast" payoffs (Shiko and Narset, prowess),
+  not for "whenever a creature you control enters" ones.
+- **Fix (outline):** widen `castPayoff` to an enters payoff (an `enters-battlefield` trigger with
+  `who: "you-control"`) on the battlefield or in hand while a creature it would see is also in
+  hand, so the search scores Tempest with the Dragon cast after it. Then check v1's own cast order
+  (`controller.ts`) under that rollout puts the payoff first — if v1 casts the Dragon first in
+  the rollout, the line still isn't seen. Might break: turns where the wider `"acting"` rollout
+  costs time (Soul Warden-style lifegain triggers are common enters payoffs); check with the gate
+  and `bot:diff`.
+- **Status:** open.
+
 ## 2026-10-07 — a Spacecraft stationed past its last threshold
 
 - **Seen:** bots station Spacecraft that already have every station band lit, tapping a creature
