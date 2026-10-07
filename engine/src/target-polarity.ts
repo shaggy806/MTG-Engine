@@ -953,6 +953,110 @@ export function damageOnStack(state: GameState, registry: CardRegistry): Map<Obj
   return out;
 }
 
+/** Most waiting triggers a damage plan weighs (`planDamage` tries every
+ * subset of them for each target). */
+const MAX_PLANNED_CHUNKS = 8;
+
+/**
+ * The damage of each trigger of `controller`'s still waiting to go on the
+ * stack (`pendingTriggers`) behind the one being aimed — Terror of the Peaks
+ * triggers from creatures that entered together, Scourge of Valkas's from
+ * Dragons that did — where it's one target slot dealt damage that can be
+ * told. Their targets aren't chosen yet, so the one being aimed can plan for
+ * them (`planDamage`).
+ */
+export function waitingTriggerDamage(state: GameState, registry: CardRegistry, controller: PlayerId): number[] {
+  const out: number[] = [];
+  for (const trigger of state.pendingTriggers) {
+    if (trigger.controller !== controller || trigger.grantedAbility !== undefined) continue;
+    if (trigger.autoTargets !== undefined || !registry.has(trigger.cardName)) continue;
+    const def = registry.get(trigger.cardName);
+    const ability = trigger.chapter === true ? def.chapters?.[trigger.abilityIndex] : def.triggered[trigger.abilityIndex];
+    if (ability === undefined || ability.targets.length !== 1) continue;
+    const amount = slotDamage(ability.effect, {
+      x: trigger.x ?? 0,
+      triggerValue: trigger.triggerValue,
+      board: { state, registry, you: controller },
+    })[0];
+    if (amount !== undefined && amount > 0) out.push(amount);
+  }
+  return out.slice(0, MAX_PLANNED_CHUNKS - 1);
+}
+
+/** How much more damage kills `ref` (a creature's toughness less the damage
+ * on it and on its way, a planeswalker's loyalty, a battle's defence), or
+ * null when damage can't kill it or it's dead already. */
+function damageToKill(
+  state: GameState,
+  registry: CardRegistry,
+  ref: TargetRef,
+  pending: ReadonlyMap<ObjectId, number>,
+): number | null {
+  if (ref.kind !== "object") return null;
+  const object = state.objects[ref.object];
+  if (object === undefined || object.zone !== "battlefield") return null;
+  const c = computeCharacteristics(state, registry, ref.object);
+  const already = pending.get(ref.object) ?? 0;
+  let need: number | null = null;
+  if (c.types.includes("creature") && !c.keywords.has("indestructible")) {
+    need = c.toughness - (object.damageMarked ?? 0);
+  } else if (c.types.includes("planeswalker")) {
+    need = object.counters.loyalty ?? 0;
+  } else if (c.types.includes("battle")) {
+    need = object.counters.defense ?? 0;
+  }
+  if (need === null) return null;
+  need -= already;
+  return need > 0 ? need : null;
+}
+
+/**
+ * Where the first of several damage chunks dealt together should go —
+ * `chunks[0]` the trigger being aimed, the rest its siblings still waiting
+ * (`waitingTriggerDamage`) — so that between them they kill the most (the
+ * user, 2026-10-07: simultaneous damage triggers plan together). Most
+ * valuable first, each opposing permanent the chunks left can kill takes the
+ * cheapest set of them that does, with the damage already on the stack
+ * counted; the first chunk goes where that puts it. Null when the plan
+ * leaves the first chunk free, for the usual aim to place. Each later
+ * trigger plans again with the damage before it on the stack, so the plan
+ * holds as they go on.
+ */
+export function planDamage(
+  state: GameState,
+  registry: CardRegistry,
+  me: PlayerId,
+  options: readonly TargetRef[],
+  chunks: readonly number[],
+  value: (state: GameState, registry: CardRegistry, ref: TargetRef) => number = targetValue,
+): TargetRef | null {
+  if (chunks.length < 2) return null;
+  const pending = damageOnStack(state, registry);
+  const killable = options
+    .filter((ref) => sideOf(state, ref, me) === "opponent")
+    .map((ref) => ({ ref, need: damageToKill(state, registry, ref, pending), worth: value(state, registry, ref) }))
+    .filter((t): t is { ref: TargetRef; need: number; worth: number } => t.need !== null)
+    .sort((a, b) => b.worth - a.worth);
+  let free = (1 << chunks.length) - 1;
+  for (const target of killable) {
+    let best = 0;
+    let bestSum = Infinity;
+    for (let mask = 1; mask < 1 << chunks.length; mask += 1) {
+      if ((mask & free) !== mask) continue;
+      let sum = 0;
+      for (let i = 0; i < chunks.length; i += 1) if (mask & (1 << i)) sum += chunks[i];
+      if (sum >= target.need && sum < bestSum) {
+        best = mask;
+        bestSum = sum;
+      }
+    }
+    if (best === 0) continue;
+    if (best & 1) return target.ref;
+    free &= ~best;
+  }
+  return null;
+}
+
 /** The damage each asked slot of the trigger being put on the stack
  * (`pendingTargetedTrigger`) deals, in the order its slots are asked, so its
  * target is aimed at what that damage kills as a cast's is (`offerDamage`).

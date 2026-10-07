@@ -61,12 +61,14 @@ import {
   offerPolarities,
   onlyWrongSide,
   pendingTargetDamage,
+  planDamage,
   pendingTargetPolarities,
   rankTargets,
   sideOf,
   stackEffectOf,
   slotPolarities,
   targetValue,
+  waitingTriggerDamage,
 } from "./target-polarity.js";
 import type { Polarity } from "./target-polarity.js";
 
@@ -2697,6 +2699,18 @@ export class HeuristicBotController extends AutomaticController {
     // what it kills, with the damage already on the stack counted, as a
     // cast's is.
     const damages = copied === null ? pendingTargetDamage(state, this.registry) : [];
+    // And planned with the damage triggers still waiting behind it, whose
+    // targets aren't chosen yet: two Terror triggers of 2 kill a 4/4 between
+    // them (`planDamage`).
+    const own = damages[0];
+    const planned =
+      copied === null && legalOptions.length === 1 && polarities?.[0] === "harm" && own !== undefined
+        ? planDamage(state, this.registry, this.playerId, legalOptions[0], [
+            own,
+            ...waitingTriggerDamage(state, this.registry, this.playerId),
+          ])
+        : null;
+    if (planned !== null) return [planned];
     const options =
       current === undefined || polarities === null
         ? legalOptions

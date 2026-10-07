@@ -288,6 +288,46 @@ function secondDamageTrigger(
   };
 }
 
+/**
+ * Two damage triggers from one payoff that go on the stack together, both
+ * aimed by the bot (one simulation, so v1's aim stands); passes if both go
+ * at `right`.
+ */
+function bothDamageTriggers(
+  registry: CardRegistry,
+  weights: EvalWeights,
+  spec: {
+    readonly payoff: string;
+    readonly entering: readonly string[];
+    readonly across: readonly string[];
+    readonly right: string;
+  },
+): ScenarioResult {
+  const game = table(registry, [A, B], A);
+  onBoard(game, spec.payoff, A);
+  const across = spec.across.map((name) => onBoard(game, name, B));
+  for (const name of spec.entering) game.debugSpawn(name, A, "battlefield", { announceEntry: true });
+  const bot = new EvalBotController(A, registry, { weights, maxSimulations: 1 });
+  const right = across.find((id) => game.state.objects[id]?.cardName === spec.right);
+  const name = (ref: TargetRef | null | undefined): string =>
+    ref?.kind === "object" ? (game.state.objects[ref.object]?.cardName ?? ref.object) : String(ref?.kind ?? ref);
+  const aimed: (TargetRef | null)[] = [];
+  for (let i = 0; i < 20 && aimed.length < 2; i += 1) {
+    game.advanceUntil((s) => s.awaiting !== null || s.result.over);
+    if (game.state.awaiting === null || game.state.result.over) break;
+    const action = bot.act(viewOf(game, A));
+    if (game.state.awaiting.kind === "choose-targets") {
+      aimed.push(action.type === "choose-targets" ? (action.targets[0] ?? null) : null);
+    }
+    game.dispatch(action);
+  }
+  if (aimed.length < 2) return { passed: false, detail: `only ${aimed.length} trigger(s) asked for a target` };
+  return {
+    passed: aimed.every((ref) => ref?.kind === "object" && ref.object === right),
+    detail: `first at ${name(aimed[0])}, second at ${name(aimed[1])}`,
+  };
+}
+
 function toSecondMain(game: Game): ScenarioResult | null {
   game.advanceUntil(
     (s) =>
@@ -1549,6 +1589,40 @@ const SCENARIOS: readonly BotScenario[] = [
         across: ["Craw Wurm", "Colossal Dreadmaw"],
         first: "Craw Wurm",
         right: "Craw Wurm",
+      });
+    },
+  },
+  {
+    name: "plans two Terror of the Peaks triggers together to kill what neither kills alone",
+    rule: "Damage triggers that go on the stack together are aimed together: two triggers of 2 kill a 4/4.",
+    run(weights, registry) {
+      // The user (2026-10-07): simultaneous damage triggers should plan
+      // together. Two Grizzly Bears enter under Terror of the Peaks: two
+      // triggers of 2, neither of which kills Serra Angel or Hill Giant
+      // alone. The first is aimed while the second still waits to go on the
+      // stack (`waitingTriggerDamage`), so it goes at the Angel and the
+      // second finishes it (`planDamage`); before, the first read only its
+      // own 2, killed nothing anywhere, and the pair went elsewhere.
+      return bothDamageTriggers(registry, weights, {
+        payoff: "Terror of the Peaks",
+        entering: ["Grizzly Bears", "Grizzly Bears"],
+        across: ["Serra Angel", "Hill Giant"],
+        right: "Serra Angel",
+      });
+    },
+  },
+  {
+    name: "plans two Scourge of Valkas triggers together to kill what neither kills alone",
+    rule: "Damage triggers that go on the stack together are aimed together, a counted amount too: 3 and 3 kill a 6/6.",
+    run(weights, registry) {
+      // The same for Scourge of Valkas: two Dragons enter beside it, two
+      // triggers of 3 (three Dragons), and Colossal Dreadmaw (6/6) dies to
+      // both where Craw Wurm (6/4) would take two to kill as well.
+      return bothDamageTriggers(registry, weights, {
+        payoff: "Scourge of Valkas",
+        entering: ["Shivan Dragon", "Shivan Dragon"],
+        across: ["Colossal Dreadmaw", "Craw Wurm"],
+        right: "Colossal Dreadmaw",
       });
     },
   },
