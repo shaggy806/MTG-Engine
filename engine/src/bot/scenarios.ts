@@ -3333,6 +3333,32 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "casts Urza's Incubator first so Miirym fits in the same turn",
+    kind: "training",
+    rule: "A cost reducer that pays for itself this turn goes first: Incubator naming Dragon, then Miirym, is seven mana for both.",
+    position(registry) {
+      // Reported from a live game (2026-10-07): "Bot played Miirym instead of
+      // Urza's Incubator; if it had played Urza's Incubator and chosen
+      // Dragons it could have afforded to play Miirym too." Seven lands:
+      // Incubator (3), then Miirym at {1}{G}{U}{R} (4). Miirym first leaves one
+      // mana and no Incubator.
+      const game = table(registry, [A, B], A);
+      lands(game, "Forest", A, 3);
+      lands(game, "Island", A, 2);
+      lands(game, "Mountain", A, 2);
+      const incubator = game.debugSpawn("Urza's Incubator", A, "hand");
+      game.debugSpawn("Miirym, Sentinel Wyrm", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === incubator,
+          detail: `chose ${action.type === "cast-spell" ? `Cast ${game.state.objects[action.card]?.cardName}` : action.type}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "casts Omnath, Locus of Rage before cracking its fetch lands",
     kind: "training",
     rule: "A landfall payoff goes down before the lands enter: each fetch cracked after it is another trigger.",

@@ -4,6 +4,29 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-07 — Miirym cast instead of Urza's Incubator, which would have paid for both
+
+- **Seen:** the bot cast Miirym, Sentinel Wyrm with Urza's Incubator also in hand. Incubator
+  first, naming Dragon, would have made Miirym cost {2} less, and both fit in the turn's mana.
+- **Right:** Incubator (3) naming Dragon, then Miirym for {1}{G}{U}{R} (4): two spells for
+  seven mana instead of one.
+- **Scenario:** "casts Urza's Incubator first so Miirym fits in the same turn" (training) — seven
+  lands, both in hand: casts Miirym.
+- **Why:** no bot knows a cost reducer makes the next spell cheaper. v1 casts the castable spell
+  with the highest mana value (`controller.ts`'s `act`, the `spells.reduce` on `manaValueOf`), so
+  Miirym (6) beats Incubator (3); v1 gets this scenario wrong too. v2's search scores each cast
+  with rollouts that pass our own seat (the `"acting"` rollout is only for cast payoffs,
+  `castPayoff`), so Incubator first reads as a three-mana artifact that does nothing this turn,
+  and Miirym's later cast is never seen.
+- **Fix (outline):** a sequencing rule beside "payoff first" (`payoffFirst`, `eval-bot.ts`): when
+  a castable cost reducer (`costModification.reduceGeneric`, Incubator's chosen type included)
+  lets the mana left after it still cast a spell in hand it reduces — one that the mana couldn't
+  cast with the reducer's cost spent unreduced — cast the reducer first. Then the "choose a creature
+  type" answer must name the type that spell has (check `answerAwaited`'s `choose-creature-type`
+  picks Dragon here). Might break: a reducer cast first when the bigger spell alone was the
+  better play (a wipe, a must-answer threat); keep it to turns where both fit.
+- **Status:** open.
+
 ## 2026-10-07 — fetch lands cracked before a landfall payoff was cast
 
 - **Seen:** Kresh cracked five fetch lands (Rocky Tar Pit, Terramorphic Expanse, Escape Tunnel,
@@ -43,7 +66,9 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   `who: "you-control"`) on the battlefield or in hand while a creature it would see is also in
   hand, so the search scores Tempest with the Dragon cast after it. Then check v1's own cast order
   (`controller.ts`) under that rollout puts the payoff first — if v1 casts the Dragon first in
-  the rollout, the line still isn't seen. Might break: turns where the wider `"acting"` rollout
+  the rollout, the line still isn't seen — and it does: v1 casts the highest mana value first
+  and gets this scenario wrong too (checked 2026-10-07), so it needs a "payoff first" rule for
+  enters payoffs as well. Might break: turns where the wider `"acting"` rollout
   costs time (Soul Warden-style lifegain triggers are common enters payoffs); check with the gate
   and `bot:diff`.
 - **Status:** open.
