@@ -285,6 +285,15 @@ const ops = {
     }),
   eval: (room, game, cmd) => new Function("game", "room", "registry", cmd.js)(game, room, registry),
 };
+/** A room a browser created and started here (a blitz, a rematch), rather
+ * than a scenario: the same commands reach its game, but there's no scenario
+ * to `reset` it to. Whichever game is under the code now, after a rematch. */
+function startedRoom(code, op) {
+  const room = manager.get(code);
+  if (!(room instanceof Room) || op === "reset") return undefined;
+  return { room, game: room.game };
+}
+
 /** Commands that change a room, and so push a frame afterwards. */
 const MUTATES = new Set(["spawn", "move", "life", "eval"]);
 
@@ -301,7 +310,7 @@ createServer((req, res) => {
       if (cmd.op === "list") {
         result = op();
       } else {
-        const entry = live.get(cmd.room);
+        const entry = live.get(cmd.room) ?? startedRoom(cmd.room, cmd.op);
         if (!entry) throw new Error(`no room "${cmd.room}" (try: ${[...live.keys()].join(", ")})`);
         result = op(entry.room, entry.game, cmd);
         if (MUTATES.has(cmd.op)) entry.room.publish();

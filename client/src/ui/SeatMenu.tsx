@@ -5,11 +5,22 @@ import type { NetworkGame } from '../net/useNetworkGame.ts'
 /**
  * What a player can do with their own seat mid-game, in one button in the top
  * strip (which has no room for three): hand it to a bot and take it back,
- * concede, and leave. Conceding asks once more inside the panel rather than
- * through a browser dialog: rule 104.3a lets a player concede at any time,
- * and it can't be undone.
+ * concede, and leave — and, once the game is over, reopen its result.
+ * Conceding asks once more inside the panel rather than through a browser
+ * dialog: rule 104.3a lets a player concede at any time, and it can't be
+ * undone.
  */
-export function SeatMenu({ game, view }: { readonly game: NetworkGame; readonly view: PlayerView }) {
+export function SeatMenu({
+  game,
+  view,
+  onShowResult,
+}: {
+  readonly game: NetworkGame
+  readonly view: PlayerView
+  /** Opens the end-of-game panel again once it's been put aside to look at
+   * the board: the way back to its rematch. */
+  readonly onShowResult?: () => void
+}) {
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const boxRef = useRef<HTMLDivElement>(null)
@@ -85,6 +96,17 @@ export function SeatMenu({ game, view }: { readonly game: NetworkGame; readonly 
                 Concede…
               </button>
             )
+          ) : null}
+          {onShowResult !== undefined ? (
+            <button
+              type="button"
+              onClick={() => {
+                onShowResult()
+                setOpen(false)
+              }}
+            >
+              Game result
+            </button>
           ) : null}
           <button type="button" onClick={() => window.location.assign('/')}>
             Leave the room

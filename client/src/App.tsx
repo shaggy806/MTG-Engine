@@ -36,6 +36,8 @@ import {
 import type { SeatStatus } from 'protocol'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { BlitzReport, NetworkGame } from './net/useNetworkGame.ts'
+import { rematchOffer } from './net/rematch.ts'
+import type { RematchOffer } from './net/rematch.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { waitingLabel } from './game/waitingLabel.ts'
 import { gameStats } from './game/gameStats.ts'
@@ -559,7 +561,10 @@ export default function App() {
   if (game.status === 'waiting-for-players') {
     return <WaitingForPlayersScreen game={game} />
   }
-  return <GameScreen game={game} />
+  // Keyed on the game, so a rematch starts the screen afresh: its playback
+  // seeded from the new game's first frame rather than animating it as what
+  // the old one did next, and none of the old game's panels left open.
+  return <GameScreen key={game.gameNumber} game={game} />
 }
 
 function CenteredScreen({
@@ -671,20 +676,27 @@ function HighrollToast({ onDismiss, children }: { readonly onDismiss: () => void
  * The end of the game, as its own panel over the final board: who won and
  * how, and what next. It used to be one line in the bottom-right corner
  * ("Bob wins · last player remaining"), easy to miss after a concede, with
- * nowhere to go from it. A rematch would need the server to deal a new game
- * into the same room; until then the way on is the main menu, as the Seat
- * menu's "Leave the room" goes.
+ * nowhere to go from it. The way on is the main menu, or a rematch in the
+ * same room (`rematchOffer`): the host deals it, and everyone else is carried
+ * into it, told meanwhile who they're waiting on.
  */
 function GameResultPanel({
   view,
   seat,
   seats,
   onDismiss,
+  offer,
+  onRematch,
+  rematchAsked,
 }: {
   readonly view: PlayerView
   readonly seat: PlayerId
   readonly seats: readonly SeatStatus[]
   readonly onDismiss: () => void
+  readonly offer: RematchOffer | null
+  readonly onRematch: () => void
+  /** Asked, and neither dealt nor refused yet: one click deals one game. */
+  readonly rematchAsked: boolean
 }) {
   useEscape(onDismiss)
   const { winner, reason } = view.result
@@ -734,13 +746,27 @@ function GameResultPanel({
             ))}
           </tbody>
         </table>
+        {offer?.kind === 'waiting' ? (
+          <p className="muted result-waiting" role="status">
+            Waiting for {offer.host === null ? 'the host' : playerLabel(offer.host, seats)} to rematch…
+          </p>
+        ) : null}
         <div className="result-actions">
           <button type="button" onClick={onDismiss}>
             View the board
           </button>
-          <button type="button" className="result-primary" onClick={() => window.location.assign('/')}>
+          <button
+            type="button"
+            className={offer?.kind === 'button' ? undefined : 'result-primary'}
+            onClick={() => window.location.assign('/')}
+          >
             Main menu
           </button>
+          {offer?.kind === 'button' ? (
+            <button type="button" className="result-primary" disabled={rematchAsked} onClick={onRematch}>
+              {offer.label}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
@@ -815,6 +841,15 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   // The end-of-game panel, put aside to look at the final board.
   const [resultDismissed, setResultDismissed] = useState(false)
   const dismissResult = useCallback(() => setResultDismissed(true), [])
+  const showResult = useCallback(() => setResultDismissed(false), [])
+  // The error count when the rematch was asked for: the button stays down
+  // until the new game replaces this screen, or a refusal comes back.
+  const [rematchAskedAt, setRematchAskedAt] = useState<number | null>(null)
+  const { rematch, errorSeq } = game
+  const askRematch = useCallback(() => {
+    setRematchAskedAt(errorSeq)
+    rematch()
+  }, [rematch, errorSeq])
   useEscape(showHistory ? closeHistory : undefined)
   // One bus per screen, carrying each frame's cues from playback across to
   // the overlay layer (they're siblings — see AnimationLayer's own comment).
@@ -943,7 +978,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               Capture
             </button>
           ) : null}
-          <SeatMenu game={game} view={view} />
+          <SeatMenu game={game} view={view} onShowResult={over && resultDismissed ? showResult : undefined} />
         </div>
       </header>
 
@@ -1022,7 +1057,20 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       ) : null}
 
       {over && !resultDismissed ? (
-        <GameResultPanel view={view} seat={seat} seats={game.seats} onDismiss={dismissResult} />
+        <GameResultPanel
+          view={view}
+          seat={seat}
+          seats={game.seats}
+          onDismiss={dismissResult}
+          offer={rematchOffer({
+            canRematch: game.canRematch,
+            isHost: game.isHost,
+            blitz: game.blitzRoom,
+            seats: game.seats,
+          })}
+          onRematch={askRematch}
+          rematchAsked={rematchAskedAt === game.errorSeq}
+        />
       ) : null}
 
       {showCapture ? <CapturePanel game={game} onClose={() => setShowCapture(false)} /> : null}

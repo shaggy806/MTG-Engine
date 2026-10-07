@@ -55,10 +55,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   "you may" asked after another decision in the same resolution (it parks, and loses
   `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
   granted (`grantedAbility` kind `modifier`, which has no signature).
-- **A rematch from the end-of-game panel** (2026-10-06 UI review). A finished game shows
-  `GameResultPanel` (App.tsx) with "View the board" and "Main menu". A rematch — the same seats
-  and decks, a new game in the same room — would need the server to deal a new `Game` into a
-  room that has ended (`RoomManager`, `Room`); `leave-room` is pending-room only today.
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review). Moving bot
   speed into the Settings panel brought every step back at 1366x768, but at 1024 the track
   (`PhaseTrack`) still stops at CD. "Player 1 to act" and the text buttons (Settings, History,

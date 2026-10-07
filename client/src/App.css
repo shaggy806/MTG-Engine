@@ -554,6 +554,10 @@
   gap: 10px;
   margin-top: 10px;
 }
+/* "Waiting for the host to rematch…", above the buttons it stands in for. */
+.result-box .result-waiting {
+  margin-top: 10px;
+}
 .result-actions .result-primary {
   background: var(--accent);
   border-color: var(--accent);

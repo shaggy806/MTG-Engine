@@ -30,6 +30,8 @@ import type {
 } from 'protocol'
 import { prefetchArt } from '../ui/art.ts'
 import { randomBotDecks } from '../lobby/randomBotDeck.ts'
+import { isRematch } from './rematch.ts'
+import type { GameKey } from './rematch.ts'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??
@@ -233,8 +235,24 @@ export interface NetworkGame {
   blitz: (deck: WireDeck, report: BlitzReport) => void
   /** A blitz between its click and the game's first frame. */
   readonly blitzing: boolean
+  /** What the blitz's import changed, until dismissed — and gone for good
+   * once the room deals a rematch, which is a game the player has already
+   * been told about. */
   readonly blitzReport: BlitzReport | null
   dismissBlitzReport: () => void
+  /** Whether the joined room is one this tab blitzed into, so its rematch
+   * can be offered as "Blitz again". Forgotten on a reload, which only
+   * costs the name. */
+  readonly blitzRoom: boolean
+  /** Which game of the room the frames are from: 1, then one more per
+   * rematch (`state.game`). Keys the game screen, so a rematch starts it
+   * afresh. 0 before the first frame. */
+  readonly gameNumber: number
+  /** The room can deal a rematch once its game is over (`state.canRematch`). */
+  readonly canRematch: boolean
+  /** Host only, once the game is over: deal the next game into this room,
+   * everyone at the table carried into it. */
+  rematch: () => void
   joinRoom: (roomId: string) => void
   /** Walks back out of a room that hasn't started yet, to the landing page —
    * giving up my seat, if I hold one, so the table can fill it again. */
@@ -341,6 +359,8 @@ export function useNetworkGame(): NetworkGame {
   /** Set by `blitz` until its game's first frame: the deck and bots to seat
    * once the room is joined, and whether that's been sent. */
   const pendingBlitzRef = useRef<{ deck: WireDeck; bots: readonly WireDeck[]; sent: boolean } | null>(null)
+  /** The game the last frame was from, to tell a rematch's first frame. */
+  const lastGameRef = useRef<GameKey | null>(null)
   const unmountedRef = useRef(false)
   const reconnectAttemptRef = useRef(0)
   const reconnectTimeoutRef = useRef<number | null>(null)
@@ -371,6 +391,9 @@ export function useNetworkGame(): NetworkGame {
   const [builder, setBuilder] = useState<BuilderInfo | null>(null)
   const [blitzing, setBlitzing] = useState(false)
   const [blitzReport, setBlitzReport] = useState<BlitzReport | null>(null)
+  const [blitzRoomId, setBlitzRoomId] = useState<string | null>(null)
+  const [gameNumber, setGameNumber] = useState(0)
+  const [canRematch, setCanRematch] = useState(false)
   const view = frame?.view ?? null
   const actions = frame?.actions ?? EMPTY_ACTIONS
 
@@ -412,6 +435,7 @@ export function useNetworkGame(): NetworkGame {
             storeHostToken(message.roomId, pendingHostTokenRef.current)
             pendingHostTokenRef.current = null
           }
+          if (pendingBlitzRef.current !== null) setBlitzRoomId(message.roomId)
           roomIdRef.current = message.roomId
           setRoomId(message.roomId)
           window.history.replaceState(null, '', roomUrl(message.roomId))
@@ -521,6 +545,13 @@ export function useNetworkGame(): NetworkGame {
             pendingClaimRef.current = null
           }
           if (!wasPlaying) setError(null)
+          // A rematch: what the blitz's import changed was the last game's
+          // news, not this one's.
+          const game: GameKey = { roomId: message.roomId, game: message.game }
+          if (isRematch(lastGameRef.current, game)) setBlitzReport(null)
+          lastGameRef.current = game
+          setGameNumber(message.game)
+          setCanRematch(message.canRematch === true)
           setSeats(message.seats)
           setSeat(message.seat)
           setFrame({ seq: message.seq, view: message.view, actions: message.actions })
@@ -844,6 +875,12 @@ export function useNetworkGame(): NetworkGame {
     send({ type: 'start-game', roomId: id })
   }, [send])
 
+  const rematch = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'rematch', roomId: id })
+  }, [send])
+
   const passTurn = useCallback(() => {
     const id = roomIdRef.current
     if (id === null) return
@@ -1009,6 +1046,10 @@ export function useNetworkGame(): NetworkGame {
     blitzing,
     blitzReport,
     dismissBlitzReport,
+    blitzRoom: blitzRoomId !== null && blitzRoomId === roomId,
+    gameNumber,
+    canRematch,
+    rematch,
     joinRoom,
     leaveRoom,
     claimSeat,
