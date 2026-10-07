@@ -96,6 +96,7 @@ import { CapturePanel } from './ui/CapturePanel.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { emblemToVisible } from './ui/defToVisible.ts'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
+import { carryHover } from './ui/hoverCarry.ts'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
 import { LandingScreen } from './lobby/LandingScreen.tsx'
 import { InviteLink } from './lobby/InviteLink.tsx'
@@ -3182,6 +3183,14 @@ function Table({
     observer.observe(row)
     return () => observer.disconnect()
   }, [handIds.length])
+  // The card under a resting pointer is a new element after this remount:
+  // take up its hover as it stood (`hoverCarry.ts`). After the spacing
+  // above, which can move the hand under the pointer before it paints.
+  const playerColRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const col = playerColRef.current
+    return col === null ? undefined : carryHover(col)
+  }, [handCardGap])
 
   /** Sizes `boardEl`'s tiles to the largest width at which its rows still fit
    * the height its quadrant gives it (`.quadrant-body`'s content box),
@@ -4934,7 +4943,7 @@ function Table({
   const quadrantColumns = opponents.length === 1 ? 1 : 2
 
   return (
-    <div className="player-col">
+    <div className="player-col" ref={playerColRef}>
       {/* `peekable` is exactly the modes where the hand collapses to its
           fixed tray and the priority controls float in the corner — i.e.
           where something is permanently drawn over the bottom of the

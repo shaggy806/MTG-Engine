@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
+import { pointerIsOver } from './hoverCarry.ts'
 
 /** Breathing room between the anchor and its popover, and between the
  * popover and the viewport edge it gets clamped against. */
@@ -50,6 +51,17 @@ export function useHoverPopover<T extends HTMLElement = HTMLDivElement>(dep?: un
   const wrapRef = useRef<T>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
+  // Opened as this mounted, under a pointer already resting on the anchor:
+  // the board remounts each frame (`hoverCarry.ts`), and this is the popover
+  // the old tile had open, so it shows without its fade.
+  const carried = useRef(false)
+  useLayoutEffect(() => {
+    const anchor = wrapRef.current
+    if (anchor !== null && pointerIsOver(anchor)) {
+      carried.current = true
+      setOpen(true)
+    }
+  }, [])
 
   useLayoutEffect(() => {
     if (!open) return
@@ -86,6 +98,7 @@ export function useHoverPopover<T extends HTMLElement = HTMLDivElement>(dep?: un
       )
       popover.style.left = `${left}px`
       popover.style.top = `${top}px`
+      popover.classList.toggle('hover-carry', carried.current)
       popover.classList.add('placed')
     }
     place()
@@ -106,7 +119,10 @@ export function useHoverPopover<T extends HTMLElement = HTMLDivElement>(dep?: un
     open,
     handlers: {
       onMouseEnter: () => setOpen(true),
-      onMouseLeave: () => setOpen(false),
+      onMouseLeave: () => {
+        carried.current = false
+        setOpen(false)
+      },
       onFocus: () => setOpen(true),
       onBlur: () => setOpen(false),
     },

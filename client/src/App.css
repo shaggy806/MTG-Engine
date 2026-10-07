@@ -2657,6 +2657,7 @@
    corner isn't covered by a later tile in the same wrapped row. The popover
    no longer needs this — it's portalled out and carries its own z-index. */
 .mini-tile-wrap:hover,
+.mini-tile-wrap.hover-carry,
 .mini-tile-wrap:focus-within {
   z-index: 40;
 }
@@ -3051,10 +3052,12 @@
   left: auto;
   right: calc(50% + var(--card-w) * 0.825 + 8px);
 }
-.hand-cards .hand-card:hover .hand-kw-tips {
+.hand-cards .hand-card:hover .hand-kw-tips,
+.hand-cards .hand-card.hover-carry .hand-kw-tips {
   display: flex;
 }
 .mulligan-modal .hand-cards .hand-card:hover .hand-kw-tips,
+.mulligan-modal .hand-cards .hand-card.hover-carry .hand-kw-tips,
 .hand-grid .hand-kw-tips {
   display: none;
 }
@@ -3347,6 +3350,7 @@
   z-index: var(--z, 0);
 }
 .hand-cards .hand-card:hover,
+.hand-cards .hand-card.hover-carry,
 .hand-cards .hand-card:focus-within {
   /* Comfortably above any --z a hand can produce (even a huge hand stays
      under 1000) so the hovered/grown card is always on top regardless of
@@ -3372,10 +3376,24 @@
    (:focus-within for keyboard/touch parity, same convention as the stack's
    own hover reveal) enlarges its already-shrunk text right along with it. */
 .hand-cards .hand-card:hover .card-tile,
+.hand-cards .hand-card.hover-carry .card-tile,
 .hand-cards .hand-card:focus-within .card-tile {
   translate: 0 -30px;
   rotate: 0deg;
   scale: 1.65;
+}
+/* A hover carried over `Table`'s per-frame remount (ui/hoverCarry.ts): the
+   card under a resting pointer is a new element, and the browser hovers it a
+   moment after first styling it, so its hover would play again from the
+   start. Shown at once instead, keyword tips included (the hand's hover
+   rules above and below take `.hover-carry` as `:hover`). Also on a popover
+   reopened under the pointer (useHoverPopover). */
+.hover-carry,
+.hover-carry * {
+  transition: none !important;
+}
+.hover-carry .keyword-tips {
+  animation: none !important;
 }
 /* The mulligan popup shows the whole hand already, all at once, purely to
    read before a keep/mulligan decision -- growing whichever card the mouse
@@ -3384,12 +3402,14 @@
    built for. Wins over the rule above on specificity (one extra class)
    without needing !important. */
 .mulligan-modal .hand-cards .hand-card:hover .card-tile,
+.mulligan-modal .hand-cards .hand-card.hover-carry .card-tile,
 .mulligan-modal .hand-cards .hand-card:focus-within .card-tile {
   translate: 0 var(--y, 0px);
   rotate: var(--r, 0deg);
   scale: 1;
 }
 .mulligan-modal .hand-cards .hand-card:hover,
+.mulligan-modal .hand-cards .hand-card.hover-carry,
 .mulligan-modal .hand-cards .hand-card:focus-within {
   z-index: var(--z, 0);
 }
@@ -4392,6 +4412,7 @@
 }
 .hand-grid .hand-card .card-tile,
 .hand-grid .hand-card:hover .card-tile,
+.hand-grid .hand-card.hover-carry .card-tile,
 .hand-grid .hand-card:focus-within .card-tile {
   rotate: 0deg;
   translate: 0 0;

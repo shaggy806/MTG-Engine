@@ -59,18 +59,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   player's top card is revealed (`.library-top`, drawn in `App.tsx`), hovering it should show a
   blown-up version of the card, the way hovering a battlefield tile does (`MiniTile`'s popover,
   `useHoverPopover`).
-- **Hover effects reset when another player plays a card** (a bug report, 2026-10-07). With
-  the pointer resting on a card in hand, every card another player plays makes that card's
-  grow-on-hover animation (`.hand-cards .hand-card:hover .card-tile` in `App.css`, a 0.15s
-  scale/translate/rotate transition) play again; the user adds that hover effects on other cards
-  (the battlefield tiles' hover popovers, `MiniTile`/`useHoverPopover`) reset the same way. That
-  it reaches both points at one shared cause rather than the hand's own CSS. Not yet reproduced. The hand's keys are
-  stable (`key={id}` in `App.tsx`'s hand row), so the leads are: something remounting the
-  `.card-tile` or a parent of the hand row on the view update (Chrome re-hit-tests `:hover` after
-  layout, so a fresh element starts unhovered and transitions up), or the play animation
-  (`AnimationLayer.tsx`) briefly covering the hand with an element that takes the pointer.
-  Reproduce in a dev room with the pointer parked on a hand card while a bot casts, recording
-  frames.
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review). Moving bot
   speed into the Settings panel brought every step back at 1366x768, but at 1024 the track
   (`PhaseTrack`) still stops at CD. "Player 1 to act" and the text buttons (Settings, History,
