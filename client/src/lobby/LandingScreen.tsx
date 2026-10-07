@@ -48,21 +48,26 @@ function normalizeCode(raw: string): string {
 }
 
 /** The window the page is laid out for at its natural size; a bigger one
- * scales it up, up to {@link MAX_ZOOM}. */
+ * scales it up, by {@link ZOOM_GAIN} of the extra, up to {@link MAX_ZOOM}. */
 const BASE_WIDTH = 1440
 const BASE_HEIGHT = 860
-const MAX_ZOOM = 1.75
+/** Half the window's growth past the base: in full step, a 1440p monitor
+ * scaled the page 1.67x, too large (the user, 2026-10-07); half is ~1.34x
+ * there and ~1.13x at 1080p. */
+const ZOOM_GAIN = 0.5
+const MAX_ZOOM = 1.4
 
 /**
  * How much to scale the page for this window: 1 up to {@link BASE_WIDTH} x
- * {@link BASE_HEIGHT}, then in step with whichever of the two runs out
+ * {@link BASE_HEIGHT}, then growing with whichever of the two runs out
  * first, so the page grows on a big monitor without outgrowing a short one.
  * Every size on the page is in px, sized for a laptop, so on a 1440p screen
  * it was a small island of small text. A number, not CSS: no CSS length
  * divides into the unitless factor `zoom` takes.
  */
 function landingZoom(width: number, height: number): number {
-  return Math.min(MAX_ZOOM, Math.max(1, Math.min(width / BASE_WIDTH, height / BASE_HEIGHT)))
+  const growth = Math.max(0, Math.min(width / BASE_WIDTH, height / BASE_HEIGHT) - 1)
+  return Math.min(MAX_ZOOM, 1 + growth * ZOOM_GAIN)
 }
 
 function useLandingZoom(): number {
