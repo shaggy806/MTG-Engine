@@ -65,12 +65,11 @@ What blocks each unimplemented card, and which cards a built feature may have un
 the per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`). Card lists go there; this
 section keeps only what to do next.
 
-- **Now (priority since 2026-09-30): the TDC precons' 5 missing cards** (`SAMPLE_DECKS`, so every
-  bot plays them): Temur Roar 2, Sultai Arisen 1, Abzan Armor 2 (Jeskai Striker and Mardu Surge
-  have none left), each behind a
-  feature of its own. Delete a card's substitution in `sample-decks.ts` as it lands. Which
-  feature each needs: `docs/card-blockers.md`, "Open leads".
-- **The nine other starter precons' 46 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
+- **Now (priority since 2026-09-30): the TDC precons' last missing card** (`SAMPLE_DECKS`, so every
+  bot plays it): Reality Shift (Temur Roar), behind manifest — face-down permanents, which aren't
+  modeled at all (`docs/card-blockers.md`, "Open leads"). The other four landed 2026-10-07.
+  Delete a card's substitution in `sample-decks.ts` as it lands.
+- **The nine other starter precons' 45 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
   TDC decks.
 - **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,353 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);

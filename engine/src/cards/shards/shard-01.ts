@@ -108,6 +108,7 @@ import _poolKodamaOfTheWestTree from "../pool/kodama-of-the-west-tree.js";
 import _poolKorHalberd from "../pool/kor-halberd.js";
 import _poolKrenkoTinStreetKingpin from "../pool/krenko-tin-street-kingpin.js";
 import _poolLavaSpike from "../pool/lava-spike.js";
+import _poolLeylineTyrant from "../pool/leyline-tyrant.js";
 import _poolLifegift from "../pool/lifegift.js";
 import _poolLilianasDevotee from "../pool/lilianas-devotee.js";
 import _poolLilianasSpecter from "../pool/lilianas-specter.js";
@@ -358,6 +359,7 @@ const shard: CardShard = {
     _poolKorHalberd,
     _poolKrenkoTinStreetKingpin,
     _poolLavaSpike,
+    _poolLeylineTyrant,
     _poolLifegift,
     _poolLilianasDevotee,
     _poolLilianasSpecter,

@@ -786,4 +786,43 @@ export default {
     },
     bots: { bob: {}, carol: { casts: [{ name: "Colossal Dreadmaw" }] }, dave: {} },
   },
+
+  SLAUG: {
+    about:
+      "4p. Slaughter the Strong: cast it and keep creatures of total power 4 or less (the banner " +
+      "counts it; Confirm greys out past 4). Then bob, carol and dave keep theirs, and the rest go at once.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 0, bob: 3, carol: 3, dave: 3 },
+    battlefield: {
+      alice: ["Plains", "Plains", "Plains", "Hill Giant", "Grizzly Bears", "Llanowar Elves"],
+      bob: ["Serra Angel", "Craw Wurm"],
+      carol: ["Shivan Dragon", "Grizzly Bears"],
+    },
+    hand: { alice: ["Slaughter the Strong"] },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
+
+  SHDRX: {
+    about:
+      "2p. Shadrix Silverquill: pass to combat and its trigger asks \"you may choose 2\" — two modes, " +
+      "each at a different player, or none.",
+    players: ["alice", "bob"],
+    lands: { alice: 3, bob: 3 },
+    battlefield: { alice: ["Shadrix Silverquill", "Grizzly Bears"], bob: ["Hill Giant"] },
+    bots: { bob: {} },
+  },
+
+  LOAMS: {
+    about:
+      "2p. Life from the Loam in alice's graveyard: cast Divination, and before each draw choose to " +
+      "draw or dredge 3.",
+    players: ["alice", "bob"],
+    lands: { alice: 3, bob: 3 },
+    hand: { alice: ["Divination"] },
+    setup(game) {
+      game.debugSpawn("Life from the Loam", "alice", "graveyard");
+    },
+    bots: { bob: {} },
+  },
+
 };

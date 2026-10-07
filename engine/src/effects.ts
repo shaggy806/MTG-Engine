@@ -2249,6 +2249,10 @@ export type EffectSpec =
        * "you" }` with slot 0. That player gone (an illegal target), it puts
        * none (rule 608.2b). */
       readonly controlledByTarget?: number;
+      /** With `controlledByTarget`: that player is the one who puts them —
+       * Shadrix Silverquill's "target player **puts** a +1/+1 counter on
+       * each creature they control" — for "whenever you put" (Hapatra). */
+      readonly putByTarget?: true;
     }
   | {
       /** "You gain hexproof until end of turn" (Lazotep Plating). A *player*
@@ -3300,6 +3304,17 @@ export type EffectSpec =
        * one has been. Counted per ability, like `resolved-this-turn`, so a
        * permanent that leaves and comes back starts again (rule 400.7). */
       readonly notChosenThisTurn?: boolean;
+      /** "You **may** choose two" (Shadrix Silverquill): no mode at all is
+       * also an answer, removing the ability — but never fewer than
+       * `minModes` otherwise (the ruling: zero or two, not one). Only with
+       * `announced`. */
+      readonly optional?: true;
+      /** "Each mode must target a different player" (Shadrix Silverquill):
+       * each chosen mode's target slots must name a different target from
+       * every earlier chosen mode's — built, as the modes are announced, as
+       * an `other` relation on the earlier slots (`triggerTargetSpecs`).
+       * Only with `announced`. */
+      readonly eachTargetsDifferentPlayer?: true;
     }
   | {
       /** Apply `then` if `condition` holds at resolution, otherwise `else`
@@ -3334,6 +3349,10 @@ export type EffectSpec =
        * `else`. Paid as the choice is answered, not when the effect resolves.
        */
       readonly cost?: string;
+      /** With an `{X}` in `cost`: X is paid in mana of this colour — "you
+       * may pay **any amount of {R}**" (Leyline Tyrant) is `cost: "{X}"`
+       * with `xColor: "R"`, each X one {R}. */
+      readonly xColor?: Color;
       /**
        * Life to pay as part of that cost (with `cost`, or on its own) —
        * Zoraline, Cosmos Caller's "you may pay {W}{B} and 2 life", Tymna the
@@ -3486,6 +3505,25 @@ export type EffectSpec =
       readonly who: PlayerScope;
       readonly keep: number;
       readonly filter: CardFilter;
+    }
+  | {
+      /**
+       * "Each player chooses any number of creatures they control with total
+       * power 4 or less, then sacrifices all other creatures they control"
+       * (Slaughter the Strong): each player in `who`, in turn order from the
+       * active player and knowing the choices before theirs, chooses any of
+       * their permanents matching `filter` whose total power is at most
+       * `maxTotalPower` (a negative power subtracting — the ruling); then
+       * every one not chosen is sacrificed at once (one event, rule 603.10a).
+       */
+      readonly kind: "keep-total-power";
+      readonly who: PlayerScope;
+      readonly filter: CardFilter;
+      readonly maxTotalPower: number;
+      readonly prompt: string;
+      /** Set only by the engine: the players still to choose, and what those
+       * before them kept. */
+      readonly progress?: { readonly toAsk: readonly PlayerId[]; readonly kept: readonly ObjectId[] };
     }
   | {
       /**
@@ -4525,6 +4563,18 @@ export interface EffectApi {
   grantSpellsThisTurn(castFrom: readonly ZoneType[] | undefined, triggered: readonly TriggeredAbility[]): void;
   /** See the `"sacrifice-all-but"` {@link EffectSpec}. */
   sacrificeAllBut(player: PlayerId, keep: number, filter: CardFilter): void;
+  /** See the `"keep-total-power"` {@link EffectSpec}: ask `player` which of
+   * their permanents matching `filter` to keep, total power at most `max`.
+   * `false` when they control none, and nothing was asked. */
+  askKeepTotalPower(player: PlayerId, filter: CardFilter, max: number, prompt: string): boolean;
+  /** What the last `askKeepTotalPower` answer kept, taken (and cleared). */
+  takeKept(): readonly ObjectId[];
+  /** See the `"keep-total-power"` {@link EffectSpec}: each of `players`
+   * sacrifices every permanent matching `filter` they control but `kept` (a
+   * token stack once per member kept), at once. */
+  sacrificeAllExcept(players: readonly PlayerId[], filter: CardFilter, kept: readonly ObjectId[]): void;
+  /** `players` in turn order from the active player (rule 101.4). */
+  apnap(players: readonly PlayerId[]): readonly PlayerId[];
   /** See the `"encore"` {@link EffectSpec}. */
   encore(): void;
   /** The colour this effect's source named as it entered, or `undefined` —
@@ -4641,6 +4691,8 @@ export interface EffectApi {
     exceptSource?: boolean,
     /** Whose side `filter` is read from — see `controlledByTarget`. */
     scopeTo?: PlayerId,
+    /** Who puts them — the effect's controller when absent. */
+    by?: PlayerId,
   ): void;
   /** See the `"double-counters-all"` {@link EffectSpec}. */
   doubleCountersAll(filter: CardFilter, counterKind: string): void;
@@ -4894,6 +4946,8 @@ export interface EffectApi {
     otherCost?: { readonly life?: number; readonly energy?: number },
     /** The player the question is about — see `may`'s `aboutThatPlayer`. */
     about?: PlayerId,
+    /** The colour `cost`'s X is paid in — see `may`'s `xColor`. */
+    xColor?: Color,
   ): void;
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
@@ -6690,6 +6744,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.amount === "own-toughness" ? spec.amount : amountValue(spec.amount, ctx),
         spec.exceptSource === true,
         scopeTo,
+        spec.putByTarget === true ? scopeTo : undefined,
       );
       return;
     }
@@ -7318,6 +7373,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               ...(spec.costEnergy !== undefined ? { energy: amountValue(spec.costEnergy, ctx) } : {}),
             },
         spec.aboutThatPlayer === true ? effectPlayer("that-player", ctx) : undefined,
+        spec.xColor,
       );
       return;
     }
@@ -7326,6 +7382,24 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         ctx.sacrificeAllBut(player, spec.keep, spec.filter);
       }
       return;
+    case "keep-total-power": {
+      // One player at a time, each answered before the next is asked (the
+      // ruling: the active player first, then the rest in turn order,
+      // knowing the choices before them); the sacrifice waits for them all.
+      const below = ctx.parkedCount();
+      let toAsk = spec.progress?.toAsk ?? ctx.apnap(ctx.playersInScope(spec.who));
+      const kept = [...(spec.progress?.kept ?? []), ...(spec.progress !== undefined ? ctx.takeKept() : [])];
+      while (toAsk.length > 0) {
+        const player = toAsk[0];
+        toAsk = toAsk.slice(1);
+        if (ctx.askKeepTotalPower(player, spec.filter, spec.maxTotalPower, spec.prompt)) {
+          ctx.resumeAfterDecisions({ ...spec, progress: { toAsk, kept } }, below);
+          return;
+        }
+      }
+      ctx.sacrificeAllExcept(ctx.playersInScope(spec.who), spec.filter, kept);
+      return;
+    }
     case "encore":
       ctx.encore();
       return;

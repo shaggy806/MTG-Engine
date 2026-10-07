@@ -98,14 +98,13 @@ it fails for any substitution whose original is now registered, and checks every
 
 The tables below mirror `sample-decks.ts` at the time of the swap; the code is authoritative.
 
-### Temur Roar — Ureni of the Unwritten (18)
+### Temur Roar — Ureni of the Unwritten (17)
 
 | printed card | plays as | why |
 |---|---|---|
 | Dragonlord Atarka | Drakuseth, Maw of Flames | Seven-mana legendary Dragon that burns as it attacks. |
 | Glorybringer | Terror of the Peaks | Five-mana red flying Dragon that removes creatures. |
 | Hellkite Courser | Rorix Bladewing | Six-mana red flying Dragon with haste. |
-| Leyline Tyrant | Archwing Dragon | Four-mana red flying Dragon. |
 | Opportunistic Dragon | Skyship Stalker | Four-mana red flying Dragon. |
 | Reality Shift | Resculpt | Two-mana instant: removal, creature removal. |
 | Reflections of Littjara | Crucible of Fire | Enchantment that rewards a deck of Dragons. |
@@ -120,7 +119,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Whirlwing Stormbrood | Ganax, Astral Hunter | Five-mana red Dragon that makes Treasure as Dragons enter. |
 | Zenith Festival | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 
-### Sultai Arisen — Teval, the Balanced Scale (24)
+### Sultai Arisen — Teval, the Balanced Scale (23)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -134,7 +133,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Gravecrawler | Bloodghast | Cheap black creature that keeps coming back from the graveyard. |
 | Kotis, Sibsig Champion | Doomed Necromancer | Three-mana creature: reanimation, recursion. |
 | Lethal Scheme | Hero's Downfall | Instant-speed creature or planeswalker removal. |
-| Life from the Loam | Grim Discovery | Two-mana sorcery: land recursion, regrowth. |
 | Living Death | Rise Again | Five-mana sorcery: reanimation, recursion. |
 | Lord of the Forsaken | Mindscour Dragon | Six-mana creature: mill, self-mill. |
 | Millikin | Hedron Crawler | Two-mana creature: mana creature, ramp. |
@@ -149,7 +147,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Welcome the Dead | Deep Analysis | Four-mana sorcery: card draw for life, card draw. |
 | Wonder | Pixie Queen | Four-mana creature: gives flying, evasion. |
 
-### Abzan Armor — Felothar the Steadfast (15)
+### Abzan Armor — Felothar the Steadfast (13)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -160,9 +158,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Faeburrow Elder | Fyndhorn Elder | Three-mana creature: mana creature, ramp. |
 | Protector of the Wastes | Angel of the Ruins | Six-mana creature: artifact and enchantment removal, removal. |
 | Reunion of the House | Brilliant Restoration | Seven-mana sorcery: mass reanimation, reanimation. |
-| Shadrix Silverquill | Archangel of Thune | Five-mana white flier that grows the team. |
 | Sidar Kondo of Jamuraa | Delney, Streetwise Lookout | Four-mana creature: evasion. |
-| Slaughter the Strong | Citywide Bust | Three-mana sorcery: sweeper, creature removal. |
 | Tip the Scales | Toxic Deluge | Three-mana sorcery: removal, sweeper. |
 | Tree of Redemption | Ancient Lumberknot | Four-mana creature that deals damage by toughness. |
 | Wall of Roots | Vine Trellis | Two-mana creature: mana creature, ramp. |

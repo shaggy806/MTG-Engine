@@ -22,11 +22,15 @@ lands, add its summary here, not to `BACKLOG.md`.
 Card-level detail behind `BACKLOG.md`'s card items, moved here from it on 2026-10-04. Delete a
 lead when its cards land or turn out blocked on something else (record that in the batch JSON).
 
-- **The TDC precons' 5 missing cards**, each behind a feature of its own (records in
-  `engine/data/sweep-3/TDC*.json` and the older sweeps): dredge for Life from the Loam; manifest
-  for Reality Shift; modes that each target a different player for Shadrix
-  Silverquill; keeping creatures of total power 4 or less for Slaughter the Strong; and unspent
-  red mana that stays, with "pay any amount of {R}", for Leyline Tyrant.
+- **The TDC precons' last missing card**: Reality Shift, behind manifest (`mechanic:face-down`) —
+  face-down permanents aren't modeled at all: a 2/2 with no name, cost, types or abilities in the
+  layers, hidden from opponents in every view, turned face up as a special action, revealed as it
+  leaves. The other four landed 2026-10-07 (`engine/data/sweep-3/TDC8.json`), each on a feature
+  built for it: dredge (Life from the Loam — `CardDefinition.dredge`, asked before each draw),
+  `keep-total-power` (Slaughter the Strong), a modal's `optional` and `eachTargetsDifferentPlayer`
+  (Shadrix Silverquill), and `keepsUnspentMana` with a `may`'s `xColor` (Leyline Tyrant). Dredge
+  may have unblocked the pool's other dredge cards (Golgari Grave-Troll, Stinkweed Imp, Darkblast,
+  Shambling Shell, Golgari Thug, …): recheck each.
 - **The cheap recurring blockers the top-5000 batches found:** "can't cast more than one spell
   each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a spell's
   additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),

@@ -608,6 +608,13 @@ function untilEndOfTurnKeywords(keywords: readonly Keyword[]): PtModifier[] {
     : [{ power: 0, toughness: 0, keywords: [...keywords], untilEndOfTurn: true }];
 }
 
+/** `cost` with its X at `x`: generic mana, or — a `may`'s `xColor`, "pay
+ * any amount of {R}" — that many pips of one colour. */
+function concreteX(cost: ManaCost, x: number, xColor: Color | undefined): ManaCost {
+  if (xColor === undefined) return { ...cost, generic: cost.generic + cost.x * x, x: 0 };
+  return { ...cost, colored: { ...cost.colored, [xColor]: cost.colored[xColor] + cost.x * x }, x: 0 };
+}
+
 /** A triggered ability's target specs as it goes on the stack: its own,
  * then each announced mode's, in listed order (rules 603.3c, 700.2 — a
  * modal ability's chosen modes bring their targets with them). */
@@ -619,6 +626,22 @@ function triggerTargetSpecs(
   if (modes === null || modes === undefined || effect === null || effect === undefined) return ability.targets;
   if (effect.kind !== "modal") return ability.targets;
   if (effect.announced !== true) return ability.targets;
+  // "Each mode must target a different player" (Shadrix Silverquill): each
+  // chosen mode's slots differ from every earlier chosen mode's — an `other`
+  // relation on those slots, which every check of the targets reads.
+  if (effect.eachTargetsDifferentPlayer === true) {
+    const out: TargetSpec[] = [...ability.targets];
+    const earlier: number[] = [];
+    for (const i of modes) {
+      const mine: number[] = [];
+      for (const spec of effect.modes[i]?.targets ?? []) {
+        mine.push(out.length);
+        out.push(earlier.length > 0 ? { kind: "other", of: spec, than: { slots: [...earlier] } } : spec);
+      }
+      earlier.push(...mine);
+    }
+    return out;
+  }
   const modeSpecs = modes.flatMap((i) => effect.modes[i]?.targets ?? []);
   return modeSpecs.length === 0 ? ability.targets : [...ability.targets, ...modeSpecs];
 }
@@ -912,15 +935,9 @@ export class Game {
     this.decisionCtx = {
       state: this.state,
       registry: this.registry,
-      maxAffordableAbilityX: (player, cost) => {
+      maxAffordableAbilityX: (player, cost, xColor) => {
         const parsed = parseManaCost(cost);
-        return parsed.x === 0
-          ? 0
-          : this.maxAffordableAbilityX(player, (x) => ({
-              ...parsed,
-              generic: parsed.generic + parsed.x * x,
-              x: 0,
-            }));
+        return parsed.x === 0 ? 0 : this.maxAffordableAbilityX(player, (x) => concreteX(parsed, x, xColor));
       },
       pendingTriggerTargetSource: () => {
         const pending = this.state.pendingTargetedTrigger;
@@ -3441,7 +3458,7 @@ export class Game {
     }
     for (const player of this.state.turnOrder) {
       for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
-        this.drawCard(player);
+        this.drawCard(player, true);
       }
     }
 
@@ -3503,7 +3520,7 @@ export class Game {
       this.state.rngState = this.rng.seed;
       this.forgetStints(this.state.zones.perPlayer[player].library);
       for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
-        this.drawCard(player);
+        this.drawCard(player, true);
       }
       this.emit({ type: "mulligan-taken", player, count: taken + 1 });
       hands[player] = { taken: taken + 1, step: "decide" };
@@ -3998,6 +4015,8 @@ export class Game {
       readonly about?: PlayerId;
       /** See the `choose-modes` decision's `sourceLost`. */
       readonly sourceLost?: boolean;
+      /** The colour `cost`'s X is paid in — see `may`'s `xColor`. */
+      readonly xColor?: Color;
     } = {},
   ): void {
     const key = ability.key;
@@ -4083,6 +4102,7 @@ export class Game {
         ? { declineController }
         : {}),
       ...(cost !== undefined ? { cost } : {}),
+      ...(ability.xColor !== undefined ? { xColor: ability.xColor } : {}),
       ...(key !== undefined ? { abilityKey: key } : {}),
       ...(onlyUnchosen ? { notChosenThisTurn: offered } : {}),
       ...(costLife > 0 ? { costLife } : {}),
@@ -4124,6 +4144,16 @@ export class Game {
       return;
     }
 
+    // A dredge question (rule 702.52): draw, or dredge the card chosen.
+    if (awaiting.dredgeFor !== undefined) {
+      this.state.awaiting = null;
+      const pick = modeIndices[0] ?? 0;
+      const card = pick > 0 ? awaiting.dredgeFor.cards[pick - 1] : undefined;
+      if (card === undefined) this.drawCard(player, true);
+      else this.dredge(player, card);
+      if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+      return;
+    }
     // A modal trigger announcing its modes: they're the ability's, recorded
     // as it goes on the stack, not applied now.
     if (awaiting.announcing === true) {
@@ -4181,11 +4211,7 @@ export class Game {
     if (cost !== undefined && chosen.length > 0) {
       const parsed = parseManaCost(cost);
       chosenX = parsed.x > 0 ? Math.max(0, Math.floor(xValue ?? 0)) : 0;
-      const concrete = {
-        ...parsed,
-        generic: parsed.generic + parsed.x * chosenX,
-        x: 0,
-      };
+      const concrete = concreteX(parsed, chosenX, awaiting.xColor);
       const payment = this.payMana(player, concrete);
       if (payment === null) chosen = [];
       else this.executePayment(player, payment);
@@ -4817,9 +4843,14 @@ export class Game {
       step === "end-combat";
     for (const player of this.state.turnOrder) {
       const pool = this.state.players[player].manaPool;
-      const kept = keepPersistent
-        ? pool.filter((unit) => unit.persists === true || (stillCombat && unit.untilEndOfCombat === true))
-        : [];
+      // Leyline Tyrant's "you don't lose unspent red mana": every step, cleanup
+      // too, while it's there (`keepsUnspentMana`).
+      const keptTypes = pool.length === 0 ? new Set<ManaType>() : this.keptManaTypes(player);
+      const kept = pool.filter(
+        (unit) =>
+          keptTypes.has(unit.type) ||
+          (keepPersistent && (unit.persists === true || (stillCombat && unit.untilEndOfCombat === true))),
+      );
       if (kept.length !== pool.length) {
         this.state.players[player].manaPool = kept;
       }
@@ -4883,6 +4914,12 @@ export class Game {
       if (this.state.awaiting !== null) {
         this.grantPriority(this.state.awaiting.player);
         return;
+      }
+      // Draws waiting behind a dredge question: one at a time, each offered
+      // dredge again.
+      if ((this.state.pendingDraws?.length ?? 0) > 0) {
+        this.drawNextWaiting();
+        continue;
       }
       // Carry out a mass-destroy (Wrath of God) that began while another
       // decision was being answered.
@@ -5214,6 +5251,21 @@ export class Game {
    * maximum" wins, and the other way round (the Twenty-Toed Toad ruling).
    * Never below 0.
    */
+  /** The mana types `player` keeps as steps and phases end: those a static
+   * of a permanent they control names (`keepsUnspentMana` — Leyline Tyrant). */
+  private keptManaTypes(player: PlayerId): Set<ManaType> {
+    const out = new Set<ManaType>();
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source === undefined || source.controller !== player || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (ability.keepsUnspentMana === undefined || !this.staticActive(source, ability)) continue;
+        for (const type of ability.keepsUnspentMana) out.add(type);
+      }
+    }
+    return out;
+  }
+
   private maxHandSizeOf(player: PlayerId): number {
     const changes: { readonly timestamp: number; readonly apply: (size: number) => number }[] = [];
     for (const id of this.state.zones.shared.battlefield) {
@@ -13006,6 +13058,7 @@ export class Game {
     return (
       s.awaiting !== null ||
       s.pendingDiscards.length > 0 ||
+      (s.pendingDraws?.length ?? 0) > 0 ||
       (s.pendingEnterAttacking?.length ?? 0) > 0 ||
       s.pendingSacrifices.length > 0 ||
       s.pendingSacrificeVictims.length > 0 ||
@@ -16108,7 +16161,8 @@ export class Game {
           : [],
       );
       const maxModes = Math.min(amountValue(modal.maxModes, ctx), offered.length);
-      if (maxModes <= 0) {
+      // "You may choose two" with fewer than two on offer: none it is.
+      if (maxModes <= 0 || (modal.optional === true && maxModes < modal.minModes)) {
         this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no modes chosen" });
         return "done";
       }
@@ -16120,6 +16174,7 @@ export class Game {
         announcing: true,
         minModes: Math.min(modal.minModes, maxModes),
         maxModes,
+        ...(modal.optional === true ? { orNone: true } : {}),
         modes: offered.map((i) => ({ text: modal.modes[i].text, effect: modal.modes[i].effect })),
         ...(offered.length < modal.modes.length ? { announcedFrom: offered } : {}),
         ...(turnKey !== undefined ? { abilityKey: turnKey } : {}),
@@ -16735,6 +16790,11 @@ export class Game {
       },
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) {
+          // Behind a dredge question: the rest wait their turn, in order.
+          if (this.drawsWaiting()) {
+            (this.state.pendingDraws ??= []).push({ player, count: count - i });
+            return;
+          }
           // Once a draw finds the library empty, every later one in the same
           // effect is the same failed draw again (rule 704.5b only needs one).
           // Stopping keeps "draw a card for each creature" over a big token
@@ -17623,6 +17683,70 @@ export class Game {
           });
         }
       },
+      askKeepTotalPower: (player, filter, max, prompt) => {
+        // "Creatures they control": only the asked player's own.
+        const eligible = this.battlefieldMatching(player, filter).filter(
+          (id) => this.state.objects[id]?.controller === player,
+        );
+        if (eligible.length === 0 || this.state.players[player]?.hasLost === true) return false;
+        const available = eligible.reduce((n, id) => n + (this.state.objects[id]?.stackCount ?? 1), 0);
+        this.state.awaiting = {
+          kind: "choose-permanents",
+          player,
+          eligible,
+          min: 0,
+          max: available,
+          prompt,
+          then: { kind: "sequence", effects: [] },
+          source,
+          x,
+          maxTotalPower: max,
+        };
+        return true;
+      },
+      takeKept: () => {
+        const kept = this.state.keptByChoice ?? [];
+        delete this.state.keptByChoice;
+        return kept;
+      },
+      sacrificeAllExcept: (players, filter, kept) => {
+        // A token stack kept in part: the members kept are peeled off and
+        // stay, the rest of the stack goes.
+        const keep = new Set<ObjectId>();
+        const counts = new Map<ObjectId, number>();
+        for (const id of kept) counts.set(id, (counts.get(id) ?? 0) + 1);
+        for (const [id, n] of counts) {
+          const object = this.state.objects[id];
+          if (object?.zone !== "battlefield") continue;
+          const size = object.stackCount ?? 1;
+          if (n >= size) {
+            keep.add(id);
+            continue;
+          }
+          for (let i = 0; i < n; i += 1) keep.add(this.splitOneFromStack(id));
+        }
+        // Every one at once, as `sacrificeAll` (rule 603.10a).
+        const victims = this.state.zones.shared.battlefield.filter((id) => {
+          const object = this.state.objects[id];
+          return (
+            object !== undefined &&
+            !keep.has(id) &&
+            players.includes(object.controller) &&
+            matchesFilter(this.state, this.registry, id, filter, { you: object.controller }) &&
+            this.canBeSacrificed(id)
+          );
+        });
+        if (victims.length === 0) return;
+        this.withLeaveBatch(() => {
+          this.snapshotLeaving(victims);
+          for (const id of victims) {
+            const sacrificer = this.state.objects[id].controller;
+            this.moveObject(id, "graveyard");
+            this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
+          }
+        });
+      },
+      apnap: (players) => this.apnapOrder().filter((p) => players.includes(p)),
       goadCreaturesOf: (player, forGame) => {
         for (const id of this.state.zones.shared.battlefield) {
           if (this.state.objects[id]?.controller !== player) continue;
@@ -17732,7 +17856,7 @@ export class Game {
         // ceases to exist either way (rule 111.7).
         this.moveObject(id, "library");
       },
-      addCounterAll: (filter, counter, amount, exceptSource, scopeTo) => {
+      addCounterAll: (filter, counter, amount, exceptSource, scopeTo, by) => {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
         // and mutate the battlefield array underneath the loop. With
         // "equal to that creature's toughness", every count is read before
@@ -17744,7 +17868,7 @@ export class Game {
             n: amount === "own-toughness" ? this.characteristics(id).toughness : amount,
           }));
         for (const { id, n } of each) {
-          this.addCounter({ kind: "object", object: id }, counter, n, false, controller);
+          this.addCounter({ kind: "object", object: id }, counter, n, false, by ?? controller);
         }
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
@@ -18258,7 +18382,7 @@ export class Game {
         this.state.preventionShields.push({ target, amount, combatOnly });
         this.emit({ type: "prevention-shield-created", target, amount });
       },
-      chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn, otherCost, about) =>
+      chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn, otherCost, about, xColor) =>
         this.beginModesChoice(
           source,
           controller,
@@ -18281,6 +18405,7 @@ export class Game {
             ...(otherCost?.life !== undefined ? { costLife: otherCost.life } : {}),
             ...(otherCost?.energy !== undefined ? { costEnergy: otherCost.energy } : {}),
             ...(about !== undefined ? { about } : {}),
+            ...(xColor !== undefined ? { xColor } : {}),
           },
         ),
       changeLifeScoped: (who, delta) =>
@@ -21764,6 +21889,14 @@ export class Game {
     }
     if (awaiting.casualty !== undefined) {
       this.applyCasualty(player, chosen, awaiting.casualty);
+      return;
+    }
+    // Slaughter the Strong's choice: what's kept is collected for the
+    // resolving `keep-total-power`, which resumes once it's answered.
+    if (awaiting.maxTotalPower !== undefined) {
+      this.state.awaiting = null;
+      this.state.keptByChoice = [...(this.state.keptByChoice ?? []), ...chosen];
+      if (this.state.awaiting === null) this.prepareForPriority(awaiting.priorityTo ?? this.activePlayer);
       return;
     }
     const { then, source, x, priorityTo } = awaiting;
@@ -25618,8 +25751,39 @@ export class Game {
 
   // --- zones -------------------------------------------------
 
-  private drawCard(player: PlayerId): void {
+  private drawCard(player: PlayerId, noDredge = false): void {
     if (this.state.result.over) return;
+    // Dredge (rule 702.52): a card in `player`'s graveyard may replace this
+    // draw — asked first, one draw at a time, by the player whose draw it
+    // is (rule 616.1); declined, the draw goes on as below. Not for the
+    // opening hand, nor a draw that answer already made.
+    if (!noDredge) {
+      const cards = this.dredgeCards(player);
+      if (cards.length > 0) {
+        this.state.awaiting = {
+          kind: "choose-modes",
+          player,
+          source: cards[0],
+          minModes: 1,
+          maxModes: 1,
+          modes: [
+            { text: "Draw a card", effect: { kind: "sequence", effects: [] } },
+            ...cards.map((id) => {
+              const card = this.state.objects[id];
+              const n = this.registry.get(card.cardName).dredge;
+              return {
+                text: `Dredge ${n}: mill ${n}, return ${card.cardName} to your hand`,
+                effect: { kind: "sequence", effects: [] } as EffectSpec,
+              };
+            }),
+          ],
+          x: 0,
+          targets: [],
+          dredgeFor: { cards },
+        };
+        return;
+      }
+    }
     // "If you would draw a card while your library has no cards in it, you
     // win the game instead" (Laboratory Maniac — rule 614.11: it applies
     // though there's no card to draw). The draw is replaced whether or not
@@ -25659,6 +25823,60 @@ export class Game {
     for (let i = 0; i < draws && !this.state.result.over; i += 1) {
       if (!this.drawWonInstead(player)) this.drawCardRaw(player);
     }
+  }
+
+  /** The cards in `player`'s graveyard whose dredge could replace a draw
+   * now: dredge N with at least N cards in their library (702.52b). */
+  private dredgeCards(player: PlayerId): ObjectId[] {
+    const zones = this.state.zones.perPlayer[player];
+    if (zones === undefined || this.state.players[player]?.hasLost === true) return [];
+    return zones.graveyard.filter((id) => {
+      const card = this.state.objects[id];
+      if (card === undefined || !this.registry.has(card.cardName)) return false;
+      const n = this.registry.get(card.cardName).dredge;
+      return n > 0 && zones.library.length >= n;
+    });
+  }
+
+  /** Whether draws are waiting behind a dredge question, so the next one
+   * must wait too. */
+  private drawsWaiting(): boolean {
+    const awaiting = this.state.awaiting;
+    return (
+      (this.state.pendingDraws?.length ?? 0) > 0 ||
+      (awaiting !== null && awaiting.kind === "choose-modes" && awaiting.dredgeFor !== undefined)
+    );
+  }
+
+  /** The next draw waiting behind a dredge question: made now, and offered
+   * dredge again. */
+  private drawNextWaiting(): void {
+    const queue = [...(this.state.pendingDraws ?? [])];
+    const first = queue.shift();
+    if (first === undefined) return;
+    const library = this.state.zones.perPlayer[first.player]?.library;
+    const gone = library === undefined || this.state.players[first.player]?.hasLost === true;
+    // A draw that finds the library empty ends the rest of its instruction,
+    // as `draw` stops (rule 704.5b needs only one); a player who has left
+    // draws nothing.
+    if (!gone && first.count > 1 && library.length > 0) {
+      queue.unshift({ player: first.player, count: first.count - 1 });
+    }
+    if (queue.length === 0) delete this.state.pendingDraws;
+    else this.state.pendingDraws = queue;
+    if (!gone) this.drawCard(first.player);
+  }
+
+  /** Dredge (rule 702.52a): `player` mills N instead of drawing, and `card`
+   * returns from their graveyard to their hand. The mill is a mill — its
+   * replacements apply (Bruvac). */
+  private dredge(player: PlayerId, card: ObjectId): void {
+    const object = this.state.objects[card];
+    if (object === undefined || object.zone !== "graveyard" || object.owner !== player) return;
+    const n = this.registry.get(object.cardName).dredge;
+    if (n <= 0 || this.state.zones.perPlayer[player].library.length < n) return;
+    this.millByEffect({ kind: "player", player }, n);
+    if (this.state.objects[card]?.zone === "graveyard") this.moveObject(card, "hand");
   }
 
   /** Laboratory Maniac's "you win the game instead" for one draw of

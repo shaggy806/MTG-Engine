@@ -29,6 +29,7 @@ export const chooseModes = defineDecision({
       source: awaiting.source,
       minModes: awaiting.minModes,
       maxModes: awaiting.maxModes,
+      ...(awaiting.orNone === true ? { orNone: true } : {}),
       modeTexts: awaiting.modes.map((m) => m.text),
       // "You choose an opponent": each mode is that player's (an
       // `about-player` effect), so a driver can name them properly.
@@ -39,7 +40,7 @@ export const chooseModes = defineDecision({
       ...(awaiting.ward !== undefined ? { ward: { spell: awaiting.ward.spell } } : {}),
       // "You may pay {X}{R}" — tell the driver how large X may be.
       ...(awaiting.cost !== undefined && parseManaCost(awaiting.cost).x > 0
-        ? { xCost: { maxX: ctx.maxAffordableAbilityX(awaiting.player, awaiting.cost) } }
+        ? { xCost: { maxX: ctx.maxAffordableAbilityX(awaiting.player, awaiting.cost, awaiting.xColor) } }
         : {}),
       ...(awaiting.trigger !== undefined && awaiting.trigger.alikeCount > 0
         ? { sameForAll: awaiting.trigger.alikeCount }
@@ -56,13 +57,18 @@ export const chooseModes = defineDecision({
     const chosen = action.modes;
     const duplicate = noDuplicates(chosen, `${player} chose the same mode twice`);
     if (duplicate !== null) return duplicate;
-    const count = withinRange(
-      chosen,
-      awaiting.minModes,
-      awaiting.maxModes,
-      (got, min, max) =>
-        `${player} must choose between ${min} and ${max} mode(s), chose ${got}`,
-    );
+    const count =
+      awaiting.orNone === true && chosen.length === 0
+        ? null
+        : withinRange(
+            chosen,
+            awaiting.minModes,
+            awaiting.maxModes,
+            (got, min, max) =>
+              awaiting.orNone === true
+                ? `${player} must choose none, or between ${min} and ${max} mode(s), chose ${got}`
+                : `${player} must choose between ${min} and ${max} mode(s), chose ${got}`,
+          );
     if (count !== null) return count;
     for (const i of chosen) {
       if (i < 0 || i >= awaiting.modes.length || !Number.isInteger(i)) {
@@ -101,7 +107,10 @@ export const chooseModes = defineDecision({
     if (legal.kind !== "choose-modes") return [];
     const indices = legal.modeTexts.map((_, i) => i);
     const xValues = legal.xCost === undefined ? [undefined] : [legal.xCost.maxX, 0];
-    return subsetsBetween(indices, legal.minModes, legal.maxModes, limit).flatMap((modes) =>
+    const subsets = subsetsBetween(indices, legal.minModes, legal.maxModes, limit);
+    // "You may choose two": choosing none is an answer too.
+    if (legal.orNone === true && legal.minModes > 0) subsets.unshift([]);
+    return subsets.flatMap((modes) =>
       xValues.map(
         (xValue): Action => ({
           type: "choose-modes",
@@ -114,6 +123,10 @@ export const chooseModes = defineDecision({
   },
 
   randomAnswer: (legal, player, rng): Action => {
+    // "You may choose two": none, now and then.
+    if (legal.orNone === true && legal.minModes > 0 && rng.pickIndex(4) === 0) {
+      return { type: "choose-modes", player, modes: [] };
+    }
     const count =
       legal.minModes + Math.floor(rng.random() * (legal.maxModes - legal.minModes + 1));
     const pool = legal.modeTexts.map((_text, i) => i);

@@ -419,6 +419,15 @@ with the field (`Phyrexian Mite Token`). Not yet: "gains toxic N until end of
 turn" (no modifier carries it) and a static scoped to "creatures with toxic"
 (Skrelv's Hive) — toxic is read in the same layer it would have to wait for.
 
+**Dredge** (rule 702.52) is a field: `dredge: 3` is "Dredge 3" (Life from
+the Loam). Keep the reminder text in `text`. While the card is in its owner's
+graveyard, each draw they'd make is asked about first — "Draw a card" or
+"Dredge N: mill N, return [card] to your hand" (a `choose-modes` the engine
+answers itself) — one draw at a time, so a card milled by one dredge can
+replace the next draw; never with fewer than N cards in the library
+(702.52b). The opening hand isn't asked. The mill is a mill (Bruvac doubles
+it); the draw it replaced never happened ("whenever you draw" doesn't see it).
+
 **Infect** (rule 702.90) and **wither** (702.80): `infect` / `wither` in
 `keywords`, or granted (`grantKeywords`, `grant-keyword`, `animate`'s
 `keywords` — Inkmoth Nexus, Tainted Strike, Phyresis). Damage from a source
@@ -757,6 +766,7 @@ target, so hexproof doesn't stop them.
 | `reflexive-trigger` | `targets: TargetSpec[]`, `effect`, `text` | "**When you do**, …" — a reflexive triggered ability (rule 603.12): Terra, Herald of Hope's "you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped" is a `may` with `cost: "{2}"` and this as its `effect`. Applying it triggers an ability that goes on the stack once the creating spell or ability has finished resolving, choosing `targets` then — so it *can* target, unlike a `may`'s `then`, and players can respond to it. `effect` reads its own targets by slot; `"source"`, X (including an X paid for the `may`) and the triggering event are the creator's. With no legal target it's removed as it would go on the stack. Put it only where the action has certainly happened: a `may`'s `effect`, a `sacrifice-source`'s `then`, a `conditional` on a `this-way` condition. `value?: EffectAmount` is read as it triggers and becomes its `{ triggerValue: true }` — Tip the Scales' "Sacrifice a creature. When you do, all creatures get -X/-X until end of turn, where X is the sacrificed creature's toughness" is a `sacrifice`, then this under a `this-way` `"sacrificed"` conditional with `value: { thisWay: "sacrificed", sumOf: "toughness" }`: only the spell's resolution knows what it sacrificed, and players respond knowing X (its ruling). |
 | `counter` | `target` (a spell slot, or `"trigger-object"` — a cast trigger's "counter that spell", Vexing Bauble), `into?: "hand" \| "exile"` | Counterspell. A spell that can't be countered stays on the stack and resolves (`counter-failed`); a countered copy of a spell ceases to exist (rule 707.10c). `into: "hand"` is Remand's "if that spell is countered this way, put it into its owner's hand instead" — still a counter, so it does nothing to a spell that can't be countered, unlike `return-to-hand` with `from: "stack"`. `into: "exile"` is "exile it instead of putting it into its owner's graveyard" (Transcendent Dragon, whose `cast-now` of the same slot then finds it in exile — one that wasn't countered is still on the stack, where nothing is cast from). |
 | `sacrifice-all-but` | `who`, `keep`, `filter` | "chooses up to N they control, then sacrifices the rest" (Archfiend of Depravity) — the inverse of `sacrifice`, which names how many to give up. Raised only when they're over the limit. |
+| `keep-total-power` | `who`, `filter`, `maxTotalPower`, `prompt` | "Each player chooses any number of creatures they control with total power 4 or less, then sacrifices all other creatures they control" (Slaughter the Strong): each player in turn order from the active player, knowing the choices before theirs, picks which of their own to keep (a `choose-permanents` with `maxTotalPower`, a negative power subtracting — the ruling); then everything not kept goes at once (rule 603.10a). A token stack can be kept in part. |
 | `sacrifice` | `who`, `filter`, `count`, `exceptSource?` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`), Korvold (`who: "you"`, `exceptSource: true` = "another") |
 | `sacrifice-source` | `then?` | Defense of the Heart — "Sacrifice ~. **If you do,** …"; no choice, and `then` only applies if the source was still there to sacrifice: the same object the ability refers to (rule 400.7), still controlled by the ability's controller (rule 701.21a — Colfenor's Urn's ruling: taken by another player, it isn't sacrificed and nothing returns) |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite. With `oneSided`, `b` may be a planeswalker (Stump Stomp's "deals damage equal to its power to target creature or planeswalker you don't control"). |
@@ -886,7 +896,7 @@ Neither goes on the stack yet (§15, "Partial").
 | `add-counter` | `target`, `counter` (string), `amount`, `by?` | `by` (an `EffectPlayerRef`) is who puts them when the card says someone else does — Alexios's "that player … puts a +1/+1 counter on it" is `by: "active-player"` — which a "whenever you put … counters" trigger reads; the effect's controller otherwise. `counter: "+1/+1"` etc. A **keyword counter** (rule 122.1b) is a counter named for the keyword, spelled as the engine's `Keyword` — `"flying"`, `"first-strike"`, `"double-strike"`, `"deathtouch"`, `"haste"`, `"hexproof"`, `"indestructible"`, `"lifelink"`, `"menace"`, `"reach"`, `"trample"`, `"vigilance"` — and the permanent has that keyword while the counter is on it (layer 6; `KEYWORD_COUNTERS` in `characteristics.ts`). Decayed, exalted and shadow counters aren't modeled. A **stun counter** (rule 122.1d) is `"stun"`: whenever a permanent with one would become untapped — in its untap step or by an effect — one is removed instead (`Game.untapUnlessStunned`; Pugnacious Hammerskull, Baloth Prime's entering six by an `enters-battlefield` replacement's `counters`). |
 | `remove-counter` | `target`, `counter` (string), `amount` | The reverse of `add-counter` — Unbreathing Horde's "prevent that damage and remove a +1/+1 counter from it" (the `then` of its `would-deal-damage` prevention, `target: "source"`). Removes up to `amount`, as many as there are, and none from a permanent with none (its ruling); announced as `counter-removed`, so "for as long as it has a counter" durations end with the last. Only a permanent still on the battlefield as the same object loses any (rule 122.2). |
 | `earthbend` | `target`, `amount` | Earthbend N — "target land you control becomes a 0/0 creature with haste that's still a land. Put N +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped." (Toph, the First Metalbender's end-step earthbend 2 is a `step-begins` trigger with a land-you-control target slot and `{ kind: "earthbend", target: 0, amount: 2 }`). Permanent, not until end of turn. The return is a delayed trigger keyed to the land leaving (see *Delayed triggered abilities*), so it survives the land losing its abilities, returns it under its owner's control, and only from the graveyard or exile it went to. |
-| `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). `controlledByTarget: slot` reads `filter` from the side of the player in that slot, as `modify-pt-all`'s does: Requisition Raid's "each creature **target player** controls" is `{ type: "creature", controlledBy: "you" }` with slot 0 — that player an illegal target, none. `amount: "own-toughness"` is "a number of counters on each … equal to **that creature's** toughness" (Canopy Gargantuan): every one's toughness read before any counter goes on. |
+| `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). `controlledByTarget: slot` reads `filter` from the side of the player in that slot, as `modify-pt-all`'s does: Requisition Raid's "each creature **target player** controls" is `{ type: "creature", controlledBy: "you" }` with slot 0 — that player an illegal target, none. `amount: "own-toughness"` is "a number of counters on each … equal to **that creature's** toughness" (Canopy Gargantuan): every one's toughness read before any counter goes on. `putByTarget: true` with `controlledByTarget` is "target player **puts** a +1/+1 counter on each creature they control" (Shadrix Silverquill): that player is who puts them, for "whenever you put" (Exemplar of Light). |
 | `populate` | — | Populate (rule 701.36a): choose a creature token you control and create a token copying it (Rootborn Defenses, Trostani, Selesnya's Voice). With two or more that differ (tokens alike in all but their timestamps are one choice), the controller picks on the board — a `choose-permanents` whose `then` is the copy; with one, nothing is asked. |
 | `monstrosity` | `amount` | Monstrosity N (rule 701.37a): "if this permanent isn't monstrous, put N +1/+1 counters on it and it becomes monstrous" — always its own source, and only while that's the same permanent (400.7): one that left and came back, or is monstrous already, gets nothing and fires no `becomes-monstrous` trigger (the rulings). `GameObject.monstrous` is a designation, not an ability: losing abilities keeps it, leaving the battlefield ends it. `amount: "x"` is "Monstrosity X" off `{X}` in the cost (Hydra Broodmaster), and the trigger's `{ triggerValue: true }` is that X (701.37c). |
 | `exert` | `target`, `asItAttacks?` | Exert a permanent (rule 701.43): it won't untap during its exerter's next untap step — the effect controller's, whoever controls it by then (a borrowed creature exerted still untaps in its owner's), and the mark is gone after that untap step whether it untapped or not. Tapped or untapped, again or not (701.43b); only on the battlefield (701.43c). You rarely write it: a creature's "you may exert this creature as it attacks" is the static `exertAsItAttacks` (§10), which asks and exerts with `asItAttacks`. |
@@ -1159,7 +1169,14 @@ exist (rule 111.7), so neither comes back.
   as the ability goes on the stack, so creatures entering together each take a
   different one. Counted per ability, like
   `resolved-this-turn` (a permanent that leaves and returns starts again),
-  and reset as each turn begins.
+  and reset as each turn begins. `optional: true` is "you **may** choose
+  two" (Shadrix Silverquill): choosing none removes the ability, and
+  otherwise it's `minModes` to `maxModes` — never one of a "choose two" (its
+  ruling); the client offers "Choose none". `eachTargetsDifferentPlayer:
+  true` is "each mode must target a different player": each chosen mode's
+  slots are built as an `other` relation on every earlier chosen mode's
+  (`triggerTargetSpecs`), so every check of the targets refuses a repeat.
+  Both only with `announced`.
 - **`may { effect, prompt, cost?, costLife?, costEnergy?, then?, else?, oncePerTurn? }`** — "You may [effect]". One
   optional mode; same targeting rule as `modal`. `cost` is a mana cost to say
   yes ("you may pay {B}. If you do, draw a card" — Nihil Spellbomb): the
@@ -1181,7 +1198,10 @@ exist (rule 111.7), so neither comes back.
   again (`else` applies instead); a resolution where it was declined doesn't
   count. Same per-ability count as `modal`'s `notChosenThisTurn` — a `may` is
   a choice of one mode. Not "This ability triggers only once each turn", which
-  is the trigger's own `oncePerTurn` (§9).
+  is the trigger's own `oncePerTurn` (§9). `xColor: "R"` with `cost:
+  "{X}"` is "you may pay **any amount of {R}**" (Leyline Tyrant): X is paid
+  in that colour, each X one {R}, and the X offered goes only as high as the
+  player's red mana does; a `reflexive-trigger` under it reads it as X.
 - **`goad { target | who | filter, forGame? }`** — goad (rule 701.15): until
   the effect's controller's next turn, each creature goaded attacks each
   combat if able and attacks a player other than them if able. `target` is a
@@ -2521,6 +2541,12 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   minus: { cardTypesInGraveyard: { ownedBy: "you" } } }` (a `CountSpec`)
   behind its delirium `condition`; `adjust` adds to it. Never below 0.
 - `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
+- `keepsUnspentMana: ["R"]` — "You don't lose unspent red mana as steps and
+  phases end" (Leyline Tyrant): mana of those types stays in its
+  controller's pool through every step, cleanup included, so into later turns
+  while it's on the battlefield; gone, the mana goes as the current step ends
+  (the rulings). Savage Ventmaw's mana for the turn is `add-mana`'s
+  `persists` instead.
   A fact about the *controller* rather than about anything the ability
   affects, so it's read straight off the battlefield at cleanup instead of
   going through the layer system; pair it with `affects: { scope: "self" }`.

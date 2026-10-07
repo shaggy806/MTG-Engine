@@ -2116,6 +2116,11 @@ export type AwaitingDecision =
        * `returnToHand`), not an effect resolving: the player who activated
        * it, who gets priority once it's made (rule 117.3c). */
       readonly priorityTo?: PlayerId;
+      /** Set for a `keep-total-power` choice (Slaughter the Strong): what's
+       * picked is kept, and its total power — a negative power subtracting
+       * (the ruling) — may be at most this. `then` is unused; the picks are
+       * collected in `GameState.keptByChoice`. */
+      readonly maxTotalPower?: number;
     }
   | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"
@@ -2125,6 +2130,14 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       /** The player the question is about — see the offer's `about`. */
       readonly about?: PlayerId;
+      /** No mode at all is also an answer, besides `minModes` to `maxModes`
+       * — an announced modal's `optional` ("you may choose two"). */
+      readonly orNone?: true;
+      /** A draw `player` is about to make, with dredge cards in their
+       * graveyard (rule 702.52): mode 0 draws it, mode i dredges `cards[i-1]`
+       * instead. Answered by the engine itself; the modes' effects are
+       * unused. */
+      readonly dredgeFor?: { readonly cards: readonly ObjectId[] };
       /** The permanent (for an ability) or spell object the effect belongs to
        * — used to build the resolution context for the chosen modes. */
       readonly source: ObjectId;
@@ -2184,6 +2197,9 @@ export type AwaitingDecision =
        * may pay {B}. If you do, …"). Only offered when it's payable, so
        * declining by choice and being unable to pay both land on `onDecline`. */
       readonly cost?: string;
+      /** The colour `cost`'s X is paid in — a `may`'s `xColor` ("pay any
+       * amount of {R}"). */
+      readonly xColor?: Color;
       /** Set when this is a ward payment (rule 702.21a): the one mode pays
        * the ward cost of `warded`, declining counters `spell` (also the
        * decision's target 0). Choosing to pay logs `ward-paid`. */
@@ -3067,6 +3083,14 @@ export interface GameState {
    * attacking its first option meanwhile; the answer only re-points it.
    * Optional so a snapshot saved before it existed still loads.
    */
+  /** What the players asked by a resolving `keep-total-power` effect have
+   * chosen to keep so far (a token stack once per member kept), read and
+   * cleared as the effect resumes. */
+  keptByChoice?: ObjectId[];
+  /** Draws waiting behind a dredge question (rule 702.52): the rest of an
+   * instruction's draws, each made — and offered dredge again — one at a
+   * time once the question before it is answered (the ruling). */
+  pendingDraws?: { readonly player: PlayerId; readonly count: number }[];
   pendingEnterAttacking?: {
     readonly player: PlayerId;
     readonly creatures: readonly EnterAttackingChoice[];

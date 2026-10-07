@@ -2426,4 +2426,31 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
       you: { bf: ['Archon of Falling Stars', 'Swamp*3'], hand: ['Murder'], gy: ['Curse of Verbosity'] },
     }),
   ),
+  preset(
+    'Slaughter the Strong',
+    board({
+      you: { bf: ['Plains*3', 'Hill Giant', 'Grizzly Bears', 'Llanowar Elves'], hand: ['Slaughter the Strong'] },
+      opp: [{ human: true, bf: ['Serra Angel', 'Craw Wurm'] }, { bf: ['Shivan Dragon', 'Grizzly Bears*2'] }],
+    }),
+  ),
+  preset(
+    'Shadrix Silverquill',
+    board({
+      you: { bf: ['Shadrix Silverquill', 'Grizzly Bears'] },
+      opp: { bf: ['Hill Giant'] },
+    }),
+  ),
+  preset(
+    'Leyline Tyrant',
+    board({
+      you: { bf: ['Leyline Tyrant', 'Mountain*4', 'Forest*2', 'Swamp'], hand: ['Murder'] },
+      opp: { life: 20 },
+    }),
+  ),
+  preset(
+    'Life from the Loam',
+    board({
+      you: { bf: ['Island*3'], hand: ['Divination'], gy: ['Life from the Loam'] },
+    }),
+  ),
 ]

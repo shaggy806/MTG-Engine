@@ -359,6 +359,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   },
   ward: none,
   "sacrifice-all-but": none,
+  "keep-total-power": none,
   "sacrifice-all": none,
   "choose-exiled-to-play": none,
   "put-exiled-this-way-onto-battlefield": none,

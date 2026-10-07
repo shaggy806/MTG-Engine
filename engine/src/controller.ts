@@ -27,6 +27,7 @@ import { matchesFilter } from "./filter.js";
 import type { CardFilter } from "./filter.js";
 import type { CardDefinition } from "./cards/define.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
+import { keepMostPower } from "./decisions/choose-permanents.js";
 import type { RandomSource } from "./decisions/contract.js";
 import { assignedCombatDamage, combatDamageOf, computeCharacteristics, staticConditionMet } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
@@ -326,6 +327,9 @@ export interface PlayerController {
     eligible: readonly ObjectId[],
     min: number,
     max: number,
+    /** Kept under a total-power cap (Slaughter the Strong), each eligible
+     * permanent's power with it. */
+    cap?: PowerCap,
   ): readonly ObjectId[];
   /**
    * Creatures were put onto the battlefield attacking with a choice of what
@@ -444,6 +448,13 @@ function answerAwaited(
   // is parallel — this controller may act while it is still in `hands`.
   if (!mayActOn(awaiting, player)) return null;
   return decisionFor(awaiting.kind).ask(controller, view, awaiting as never, player);
+}
+
+/** A choice of permanents to keep under a total-power cap — Slaughter the
+ * Strong's 4 — with each eligible permanent's power. */
+export interface PowerCap {
+  readonly maxTotalPower: number;
+  readonly powers: Readonly<Record<ObjectId, number>>;
 }
 
 /** Always passes priority, never attacks or blocks; discards from the front. */
@@ -637,7 +648,12 @@ export class AutomaticController implements PlayerController {
     eligible: readonly ObjectId[],
     min: number,
     max: number,
+    cap?: PowerCap,
   ): readonly ObjectId[] {
+    if (cap !== undefined) {
+      const units = eligible.flatMap((id) => Array<ObjectId>(view.state.objects[id]?.stackCount ?? 1).fill(id));
+      return keepMostPower(units, cap.powers, cap.maxTotalPower);
+    }
     return ownPermanentsFirst(view, eligible, min, max);
   }
 
@@ -837,13 +853,22 @@ export class ScriptedController implements PlayerController {
    * about the choice. */
   chooseProliferateFn: ProliferateChooser = (view, eligible) =>
     ownedProliferateTargets(view, eligible);
-  /** Your own first, up to `max` — see `ownPermanentsFirst`. */
+  /** Your own first, up to `max` — see `ownPermanentsFirst`; under a power
+   * cap, the most power that fits (`keepMostPower`). */
   choosePermanentsFn: (
     view: ControllerView,
     eligible: readonly ObjectId[],
     min: number,
     max: number,
-  ) => readonly ObjectId[] = (view, eligible, min, max) => ownPermanentsFirst(view, eligible, min, max);
+    cap?: PowerCap,
+  ) => readonly ObjectId[] = (view, eligible, min, max, cap) =>
+    cap !== undefined
+      ? keepMostPower(
+          eligible.flatMap((id) => Array<ObjectId>(view.state.objects[id]?.stackCount ?? 1).fill(id)),
+          cap.powers,
+          cap.maxTotalPower,
+        )
+      : ownPermanentsFirst(view, eligible, min, max);
   /** The opponent with the least life — see `attackLowestLife`. */
   chooseAttackTargetsFn: (
     view: ControllerView,
@@ -1035,8 +1060,9 @@ export class ScriptedController implements PlayerController {
     eligible: readonly ObjectId[],
     min: number,
     max: number,
+    cap?: PowerCap,
   ): readonly ObjectId[] {
-    return this.choosePermanentsFn(view, eligible, min, max);
+    return this.choosePermanentsFn(view, eligible, min, max, cap);
   }
 
   chooseAttackTargets(

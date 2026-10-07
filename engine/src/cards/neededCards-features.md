@@ -503,6 +503,13 @@ in `git log`.
   (`copy-spell`'s `controller`), with `cast-now`'s `by` and the
   `{ controllerOfTarget }` player reference: Transforming Flourish and the
   Creative, Incarnation and Replication Techniques (`demonstrate.test.ts`).
+- **The TDC precons' last four** (2026-10-07, TDC8) — dredge (`keyword:dredge`,
+  `CardDefinition.dredge`, asked before each draw), `keep-total-power`, a
+  modal's `optional` and `eachTargetsDifferentPlayer`, `add-counter-all`'s
+  `putByTarget`, `keepsUnspentMana` and a `may`'s `xColor`: Life from the
+  Loam, Slaughter the Strong, Shadrix Silverquill, Leyline Tyrant
+  (`precon-tdc-batch-6.test.ts`). Reality Shift still waits on face-down
+  permanents.
 - **Mana provenance** — the mana pool as tagged `ManaUnit`s (Path of
   Ancestry, Cavern of Souls, …; `mana-provenance.test.ts`, AUTHORING §15).
 - **Changeling** (`keyword:changeling`) — every creature type, and every land

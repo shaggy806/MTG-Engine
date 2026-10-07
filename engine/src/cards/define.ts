@@ -22,7 +22,7 @@ import type {
   ThisWayKind,
 } from "../effects.js";
 import type { AggregateOf, AggregateSpec, CardFilter, NumCompare } from "../filter.js";
-import type { Color, SpendAs } from "../mana.js";
+import type { Color, ManaType, SpendAs } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
 import type { PlayerCounterKind, TurnHistoryKind, ZoneType } from "../state.js";
 import type { TargetSpec } from "../target.js";
@@ -1354,6 +1354,13 @@ export interface StaticAbility {
    * it's read straight off the battlefield at cleanup rather than through the
    * layer system. */
   readonly noMaxHandSize?: boolean;
+  /** "You don't lose unspent red mana as steps and phases end" (Leyline
+   * Tyrant): mana of these types in the controller's pool isn't emptied as
+   * each step and phase ends (rule 500.4) — cleanup included, so it lasts
+   * into later turns while this is on the battlefield (the ruling). Gone, the
+   * mana is lost as the step or phase it left in ends. Like `noMaxHandSize`,
+   * a property of the player, read off the battlefield. */
+  readonly keepsUnspentMana?: readonly ManaType[];
   /** "**You** have hexproof" (rule 702.11d — Shalai, Voice of Plenty): this
    * permanent's controller can't be the target of spells or abilities their
    * opponents control. Like `noMaxHandSize`, a property of the player, read
@@ -1780,6 +1787,14 @@ export interface CardDefinition {
    * player that many poison counters (120.3g, 702.164c).
    */
   readonly toxic: number;
+  /**
+   * Dredge N (rule 702.52 — Life from the Loam's "Dredge 3"): while this
+   * card is in its owner's graveyard, each time they would draw a card
+   * they may mill N cards instead and return this card to their hand — not
+   * with fewer than N cards in their library (702.52b). Asked before each
+   * draw, one at a time (`Game.drawCard`). 0 for none.
+   */
+  readonly dredge: number;
   readonly text: string;
   /** Target slots, in order. Chosen when the spell is cast. Empty for a
    * `castModal` spell (its targets come from the chosen modes). */
@@ -2288,6 +2303,7 @@ const PRINTED_ABILITY: {
   toughness: false,
   keywords: (def) => def.keywords.length > 0,
   toxic: (def) => def.toxic > 0,
+  dredge: (def) => def.dredge > 0,
   text: false,
   targets: (def) => def.targets.length > 0,
   castModal: (def) => def.castModal !== null,
@@ -2410,6 +2426,8 @@ interface CardDraft {
   keywords?: readonly Keyword[];
   /** See {@link CardDefinition.toxic}. */
   toxic?: number;
+  /** See {@link CardDefinition.dredge}. */
+  dredge?: number;
   text?: string;
   targets?: readonly TargetSpec[];
   castModal?: CastModalSpec;
@@ -2528,6 +2546,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     toughness: draft.toughness ?? null,
     keywords: draft.keywords ?? [],
     toxic: draft.toxic ?? 0,
+    dredge: draft.dredge ?? 0,
     text: draft.text ?? "",
     targets: draft.targets ?? [],
     castModal: draft.castModal ?? null,

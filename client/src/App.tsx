@@ -3453,7 +3453,7 @@ function Table({
       </div>
     )
   } else if (mode === 'choose-modes' && modesChoiceAction) {
-    const { minModes, maxModes, modeTexts, modePlayers, source, ward, about, sameForAll } = modesChoiceAction
+    const { minModes, maxModes, modeTexts, modePlayers, source, ward, about, sameForAll, orNone } = modesChoiceAction
     // A choice among players (Tasigur's "you choose an opponent") reads with
     // their names; the engine's own text names the seat.
     const modeLabel = (i: number): ReactNode => {
@@ -3478,7 +3478,7 @@ function Table({
             ? <Symbols text={modeTexts[0]} />
             : single
               ? 'choose one'
-              : `choose ${minModes === maxModes ? minModes : `${minModes}–${maxModes}`}`}
+              : `${orNone ? 'you may choose' : 'choose'} ${minModes === maxModes ? minModes : `${minModes}–${maxModes}`}`}
           {/* The same question once per player (myriad): which one this is. */}
           {about !== undefined ? ` — ${playerLabel(about, game.seats)}` : ''}
         </span>
@@ -3552,6 +3552,16 @@ function Table({
             >
               Confirm
             </button>
+            {/* "You may choose two" (Shadrix Silverquill): none at all is an
+                answer too, never just one. */}
+            {orNone && (
+              <button
+                type="button"
+                onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [] })}
+              >
+                Choose none
+              </button>
+            )}
           </>
         )}
       </div>
@@ -3728,12 +3738,20 @@ function Table({
       </div>
     )
   } else if (mode === 'choose-permanents' && choosePermanentsAction) {
-    const { min, max } = choosePermanentsAction
+    const { min, max, maxTotalPower, powers } = choosePermanentsAction
+    // Kept under a total-power cap (Slaughter the Strong): the running total
+    // against it, a negative power subtracting, as the engine counts it.
+    const totalPower =
+      maxTotalPower === undefined ? 0 : permanentPicks.reduce((n, id) => n + (powers?.[id] ?? 0), 0)
+    const overCap = maxTotalPower !== undefined && totalPower > maxTotalPower
     controls = (
       <div className="controls">
         <span>
           {view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}
-          {choosePermanentsAction.prompt} — {permanentPicks.length}/{max} chosen
+          {choosePermanentsAction.prompt} —{' '}
+          {maxTotalPower !== undefined
+            ? `total power ${totalPower}/${maxTotalPower}`
+            : `${permanentPicks.length}/${max} chosen`}
         </span>
         <button
           type="button"
@@ -3744,7 +3762,7 @@ function Table({
         </button>
         <button
           type="button"
-          disabled={permanentPicks.length < min || permanentPicks.length > max}
+          disabled={permanentPicks.length < min || permanentPicks.length > max || overCap}
           onClick={() =>
             game.dispatch({ type: 'choose-permanents', player: seat, permanents: [...permanentPicks] })
           }

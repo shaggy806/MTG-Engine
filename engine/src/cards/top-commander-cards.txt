@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3354 already implemented / 1646 missing (marks refreshed 2026-10-06)
+3358 already implemented / 1642 missing (marks refreshed 2026-10-07)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -705,7 +705,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   706  Sundering Eruption // Volcanic Fissure   {3}              Sorcery // Land
 [x]   707  Grim Tutor                               {1}{B}{B}        Sorcery
 [x]   708  Chain Reaction                           {2}{R}{R}        Sorcery
-[ ]   709  Life from the Loam                       {1}{G}           Sorcery
+[x]   709  Life from the Loam                       {1}{G}           Sorcery
 [ ]   710  Archaeomancer's Map                      {2}{W}           Artifact
 [ ]   711  Fact or Fiction                          {3}{U}           Instant
 [x]   712  Castle Ardenvale                         {0}              Land
@@ -2332,7 +2332,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2339  Survival of the Fittest                  {1}{G}           Enchantment
 [x]  2340  Tainted Strike                           {B}              Instant
 [ ]  2341  Hazel's Brewmaster                       {3}{B}           Creature — Squirrel Warlock
-[ ]  2342  Slaughter the Strong                     {1}{W}{W}        Sorcery
+[x]  2342  Slaughter the Strong                     {1}{W}{W}        Sorcery
 [ ]  2343  Thieving Skydiver                        {1}{U}           Creature — Merfolk Rogue
 [ ]  2344  Chthonian Nightmare                      {1}{B}           Enchantment
 [x]  2345  Conduit of Ruin                          {6}              Creature — Eldrazi
@@ -2343,7 +2343,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2350  Geothermal Bog                           {0}              Land — Swamp Mountain
 [x]  2351  Kiora, Behemoth Beckoner                 {2}{G/U}         Legendary Planeswalker — Kiora
 [x]  2352  Rograkh, Son of Rohgahh                  {0}              Legendary Creature — Kobold Warrior
-[ ]  2353  Leyline Tyrant                           {2}{R}{R}        Creature — Dragon
+[x]  2353  Leyline Tyrant                           {2}{R}{R}        Creature — Dragon
 [x]  2354  Sedgemoor Witch                          {2}{B}           Creature — Human Warlock
 [x]  2355  The Lord of Pain                         {3}{B}{R}        Legendary Creature — Human Assassin
 [ ]  2356  Amonkhet Raceway                         {0}              Land
@@ -2676,7 +2676,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2683  Gilded Drake                             {1}{U}           Creature — Drake
 [x]  2684  Jwari Disruption // Jwari Ruins          {2}              Instant // Land
 [ ]  2685  Gandalf the White                        {3}{W}{W}        Legendary Creature — Avatar Wizard
-[ ]  2686  Shadrix Silverquill                      {3}{W}{B}        Legendary Creature — Elder Dragon
+[x]  2686  Shadrix Silverquill                      {3}{W}{B}        Legendary Creature — Elder Dragon
 [ ]  2687  Zenith Chronicler                        {2}              Artifact Creature — Phyrexian Construct
 [x]  2688  Invisible Stalker                        {1}{U}           Creature — Human Rogue
 [x]  2689  Essence Scatter                          {1}{U}           Instant

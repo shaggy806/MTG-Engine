@@ -37,6 +37,7 @@ import type {
   LegalAction,
 } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
+import type { Color } from "../mana.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { AwaitingDecision, GameState } from "../state.js";
@@ -179,7 +180,7 @@ export interface DecisionReadCtx {
    * candidate X until one fails. `choose-modes` needs it to advertise how
    * large an "you may pay {X}{R}" mode's X may be.
    */
-  readonly maxAffordableAbilityX: (player: PlayerId, manaString: string | null) => number;
+  readonly maxAffordableAbilityX: (player: PlayerId, manaString: string | null, xColor?: Color) => number;
   /**
    * The {@link TargetSource} of the triggered ability parked in
    * `state.pendingTargetedTrigger`, or `undefined` when none is.

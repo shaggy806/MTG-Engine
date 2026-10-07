@@ -130,6 +130,7 @@ import _poolLandTax from "../pool/land-tax.js";
 import _poolLashOfTheWhip from "../pool/lash-of-the-whip.js";
 import _poolLeoninSnarecaster from "../pool/leonin-snarecaster.js";
 import _poolLetterOfAcceptance from "../pool/letter-of-acceptance.js";
+import _poolLifeFromTheLoam from "../pool/life-from-the-loam.js";
 import _poolLithoformEngine from "../pool/lithoform-engine.js";
 import _poolLuminarchAscension from "../pool/luminarch-ascension.js";
 import _poolMacetailHystrodon from "../pool/macetail-hystrodon.js";
@@ -405,6 +406,7 @@ const shard: CardShard = {
     _poolLashOfTheWhip,
     _poolLeoninSnarecaster,
     _poolLetterOfAcceptance,
+    _poolLifeFromTheLoam,
     _poolLithoformEngine,
     _poolLuminarchAscension,
     _poolMacetailHystrodon,

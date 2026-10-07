@@ -212,6 +212,10 @@ How to use it:
 | [Star Athlete](#star-athlete) | new decision | Harmonize and blitz |
 | [Jaxis, the Troublemaker](#jaxis-the-troublemaker) | rules call | Harmonize and blitz |
 | [Henzie "Toolbox" Torre](#henzie-toolbox-torre) | rules call | Harmonize and blitz |
+| [Slaughter the Strong](#slaughter-the-strong) | new decision | The TDC precons' last cards |
+| [Shadrix Silverquill](#shadrix-silverquill) | new decision | The TDC precons' last cards |
+| [Leyline Tyrant](#leyline-tyrant) | new decision | The TDC precons' last cards |
+| [Life from the Loam](#life-from-the-loam) | new decision | The TDC precons' last cards |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4068,3 +4072,54 @@ stack count once per token)
   the Forest and is offered the Bolt. Declining demonstrate makes no copies at all. The Techniques
   copy the same way, and Creative Technique leaves the lands it revealed on the bottom of the
   library, not in exile.
+
+## The TDC precons' last cards (2026-10-07)
+
+### Slaughter the Strong
+
+*New decision* — choosing creatures to keep under a total-power cap, each player in turn
+
+- **Setup:** A three-player table. Slaughter the Strong in your hand with three Plains; you have
+  Hill Giant, Grizzly Bears and Llanowar Elves; bob (yours to play) has Serra Angel and Craw Wurm;
+  carol has Shivan Dragon and two Grizzly Bears.
+- **Do:** Cast Slaughter the Strong. Click your creatures to keep; then sit at bob and choose his.
+- **Check:** The banner reads "total power N/4" as you pick, and Confirm is greyed out past 4 (the
+  Giant and the Bears together). You're asked first, then bob, then carol (a bot), each only about
+  their own creatures; nothing dies until all three have chosen, then everything not kept goes at
+  once.
+
+### Shadrix Silverquill
+
+*New decision* — "you may choose two", each mode at a different player
+
+- **Setup:** Shadrix Silverquill and a Grizzly Bears on your battlefield, before combat; one
+  opponent with a Hill Giant.
+- **Do:** Move to combat. At the trigger, pick two modes, then aim them.
+- **Check:** The banner reads "you may choose 2", Confirm needs exactly two, and "Choose none"
+  removes the trigger. Aiming, the second mode can't target the player the first took. "Target
+  player puts a +1/+1 counter on each creature they control" puts counters only on that player's
+  creatures.
+
+### Leyline Tyrant
+
+*New decision* — paying any amount of {R} as it dies; *rules call* — red mana that stays
+
+- **Setup:** Leyline Tyrant on your battlefield with four Mountains and two Forests, and Murder in
+  your hand with a Swamp; one opponent at 20.
+- **Do:** Tap two Mountains for {R}{R} and pass to the next step; then Murder your own Tyrant.
+- **Check:** The two red mana stay in your pool across steps (and into the next turn) while the
+  Tyrant is out; mana of other colours empties as usual. As it dies you're asked to pay, with X
+  offered only as high as your red mana goes (the Forests don't count); paying then asks for a
+  target, which takes that much damage.
+
+### Life from the Loam
+
+*New decision* — dredge, offered before each draw
+
+- **Setup:** Life from the Loam in your graveyard, Divination in your hand with three Islands, and
+  a library of at least ten cards.
+- **Do:** Cast Divination.
+- **Check:** Before each of the two draws you're asked "Draw a card" or "Dredge 3: mill 3, return
+  Life from the Loam to your hand" — the second question after the first is answered. Dredging
+  mills three and puts the Loam in your hand instead of drawing; with fewer than three cards in
+  your library it isn't offered. Your turn's draw step asks the same.

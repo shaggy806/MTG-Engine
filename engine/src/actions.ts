@@ -1121,6 +1121,9 @@ export type LegalAction =
       readonly source: ObjectId;
       readonly minModes: number;
       readonly maxModes: number;
+      /** No mode at all is also an answer ("you may choose two" — Shadrix
+       * Silverquill): zero, or `minModes` to `maxModes`. */
+      readonly orNone?: true;
       /** The player the question is about, when there is one per player
        * (myriad's "for each opponent … you may"): a driver shows it beside
        * the prompt. See the `may` effect's `aboutThatPlayer`. */
@@ -1193,6 +1196,11 @@ export type LegalAction =
       readonly prompt: string;
       /** As `sacrifice`'s: how many a compacted token stack stands for. */
       readonly copies?: Readonly<Record<ObjectId, number>>;
+      /** The most total power the picks may have (Slaughter the Strong's 4),
+       * a negative power subtracting; absent for no such limit. With it,
+       * each eligible permanent's power (`powers`). */
+      readonly maxTotalPower?: number;
+      readonly powers?: Readonly<Record<ObjectId, number>>;
     }
   | {
       readonly kind: "scry";

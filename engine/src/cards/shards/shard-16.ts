@@ -207,6 +207,7 @@ import _poolScatterTheSeeds from "../pool/scatter-the-seeds.js";
 import _poolScurryOak from "../pool/scurry-oak.js";
 import _poolSelesnyaGuildmage from "../pool/selesnya-guildmage.js";
 import _poolSenateCourier from "../pool/senate-courier.js";
+import _poolShadrixSilverquill from "../pool/shadrix-silverquill.js";
 import _poolShatteredSanctum from "../pool/shattered-sanctum.js";
 import _poolShipwreckMarsh from "../pool/shipwreck-marsh.js";
 import _poolShriekingDrake from "../pool/shrieking-drake.js";
@@ -508,6 +509,7 @@ const shard: CardShard = {
     _poolScurryOak,
     _poolSelesnyaGuildmage,
     _poolSenateCourier,
+    _poolShadrixSilverquill,
     _poolShatteredSanctum,
     _poolShipwreckMarsh,
     _poolShriekingDrake,

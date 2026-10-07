@@ -1,0 +1,44 @@
+{
+  "batch": "TDC8",
+  "status": "complete",
+  "ranks": "The TDC precons' last cards, each on a feature of its own: keep-total-power, a modal's optional and eachTargetsDifferentPlayer, keepsUnspentMana with a may's xColor, dredge (rule 702.52)",
+  "authored": [
+    {
+      "name": "Slaughter the Strong",
+      "files": [
+        "engine/src/cards/pool/slaughter-the-strong.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shadrix Silverquill",
+      "files": [
+        "engine/src/cards/pool/shadrix-silverquill.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Leyline Tyrant",
+      "files": [
+        "engine/src/cards/pool/leyline-tyrant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Life from the Loam",
+      "files": [
+        "engine/src/cards/pool/life-from-the-loam.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Reality Shift",
+      "needs": [
+        "mechanic:face-down"
+      ],
+      "why": "Manifest: a face-down 2/2 permanent (rule 701.40), and face-down permanents aren't modeled \u2014 characteristics, hidden information in views, turning face up, revealing as it leaves."
+    }
+  ]
+}

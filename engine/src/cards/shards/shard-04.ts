@@ -210,6 +210,7 @@ import _poolSigiledSkink from "../pool/sigiled-skink.js";
 import _poolSisterHospitaller from "../pool/sister-hospitaller.js";
 import _poolSkyTerror from "../pool/sky-terror.js";
 import _poolSlashOfTalons from "../pool/slash-of-talons.js";
+import _poolSlaughterTheStrong from "../pool/slaughter-the-strong.js";
 import _poolSlimebind from "../pool/slimebind.js";
 import _poolSlitherBlade from "../pool/slither-blade.js";
 import _poolSnowCoveredWastes from "../pool/snow-covered-wastes.js";
@@ -488,6 +489,7 @@ const shard: CardShard = {
     _poolSisterHospitaller,
     _poolSkyTerror,
     _poolSlashOfTalons,
+    _poolSlaughterTheStrong,
     _poolSlimebind,
     _poolSlitherBlade,
     _poolSnowCoveredWastes,

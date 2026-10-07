@@ -4093,12 +4093,14 @@ import _poolLeveler from "./pool/leveler.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLeyDruid from "./pool/ley-druid.js";
 import _poolLeylineProwler from "./pool/leyline-prowler.js";
+import _poolLeylineTyrant from "./pool/leyline-tyrant.js";
 import _poolLibraryLarcenist from "./pool/library-larcenist.js";
 import _poolLibrary from "./pool/library.js";
 import _poolLichsCaress from "./pool/lichs-caress.js";
 import _poolLierDiscipleOfTheDrowned from "./pool/lier-disciple-of-the-drowned.js";
 import _poolLiesaForgottenArchangel from "./pool/liesa-forgotten-archangel.js";
 import _poolLiesaShroudOfDusk from "./pool/liesa-shroud-of-dusk.js";
+import _poolLifeFromTheLoam from "./pool/life-from-the-loam.js";
 import _poolLifeInsurance from "./pool/life-insurance.js";
 import _poolLifebloodHydra from "./pool/lifeblood-hydra.js";
 import _poolLifecraftersBestiary from "./pool/lifecrafters-bestiary.js";
@@ -6246,6 +6248,7 @@ import _poolShadowcloakVampire from "./pool/shadowcloak-vampire.js";
 import _poolShadowheartDarkJusticiar from "./pool/shadowheart-dark-justiciar.js";
 import _poolShadowmageInfiltrator from "./pool/shadowmage-infiltrator.js";
 import _poolShadowyBackstreet from "./pool/shadowy-backstreet.js";
+import _poolShadrixSilverquill from "./pool/shadrix-silverquill.js";
 import _poolShalaiAndHallar from "./pool/shalai-and-hallar.js";
 import _poolShalaiVoiceOfPlenty from "./pool/shalai-voice-of-plenty.js";
 import _poolShamanOfSpring from "./pool/shaman-of-spring.js";
@@ -6501,6 +6504,7 @@ import _poolSlashTheRanks from "./pool/slash-the-ranks.js";
 import _poolSlateOfAncestry from "./pool/slate-of-ancestry.js";
 import _poolSlaughterPact from "./pool/slaughter-pact.js";
 import _poolSlaughterSpecialist from "./pool/slaughter-specialist.js";
+import _poolSlaughterTheStrong from "./pool/slaughter-the-strong.js";
 import _poolSlayersStronghold from "./pool/slayers-stronghold.js";
 import _poolSleddingOtterPenguin from "./pool/sledding-otter-penguin.js";
 import _poolSleightOfHand from "./pool/sleight-of-hand.js";
@@ -12830,12 +12834,14 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLevitation,
   _poolLeyDruid,
   _poolLeylineProwler,
+  _poolLeylineTyrant,
   _poolLibraryLarcenist,
   _poolLibrary,
   _poolLichsCaress,
   _poolLierDiscipleOfTheDrowned,
   _poolLiesaForgottenArchangel,
   _poolLiesaShroudOfDusk,
+  _poolLifeFromTheLoam,
   _poolLifeInsurance,
   _poolLifebloodHydra,
   _poolLifecraftersBestiary,
@@ -14983,6 +14989,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolShadowheartDarkJusticiar,
   _poolShadowmageInfiltrator,
   _poolShadowyBackstreet,
+  _poolShadrixSilverquill,
   _poolShalaiAndHallar,
   _poolShalaiVoiceOfPlenty,
   _poolShamanOfSpring,
@@ -15238,6 +15245,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSlateOfAncestry,
   _poolSlaughterPact,
   _poolSlaughterSpecialist,
+  _poolSlaughterTheStrong,
   _poolSlayersStronghold,
   _poolSleddingOtterPenguin,
   _poolSleightOfHand,

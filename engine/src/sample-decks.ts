@@ -198,7 +198,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Zenith Festival", 1],
     ],
     substitutions: [
-      sub("Leyline Tyrant", "Archwing Dragon", "Four-mana red flying Dragon."),
       sub("Reality Shift", "Resculpt", "Two-mana instant: removal, creature removal."),
     ],
   }),
@@ -299,7 +298,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Woodland Cemetery", 1],
     ],
     substitutions: [
-      sub("Life from the Loam", "Grim Discovery", "Two-mana sorcery: land recursion, regrowth."),
     ],
   }),
   precon({
@@ -394,8 +392,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Zetalpa, Primal Dawn", 1],
     ],
     substitutions: [
-      sub("Shadrix Silverquill", "Archangel of Thune", "Five-mana white flier that grows the team."),
-      sub("Slaughter the Strong", "Citywide Bust", "Three-mana sorcery: sweeper, creature removal."),
     ],
   }),
   precon({
@@ -1288,7 +1284,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     substitutions: [
       sub("Carnelian Orb of Dragonkind", "Ruby Medallion", "Red artifact that makes the deck's spells cheaper."),
       sub("Dragonhawk, Fate's Tempest", "Demanding Dragon", "Five-mana red flying Dragon."),
-      sub("Leyline Tyrant", "Archwing Dragon", "Four-mana red flying Dragon."),
       sub("Minion of the Mighty", "Dragonkin Berserker", "Cheap red creature that pays off Dragons."),
       sub("Sarkhan, Dragon Ascendant", "Reckless Fireweaver", "Two-mana red creature."),
       sub("The Elder Dragon War", "Enduring Courage", "Red enchantment that pumps and hastes the deck's creatures."),
