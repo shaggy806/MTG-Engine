@@ -3333,6 +3333,35 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "casts Omnath, Locus of Rage before cracking its fetch lands",
+    kind: "training",
+    rule: "A landfall payoff goes down before the lands enter: each fetch cracked after it is another trigger.",
+    position(registry) {
+      // Reported from a live game (2026-10-07): "bot triggered a ton of lands
+      // entering before playing a landfall card." Kresh cracked five fetch
+      // lands (and sacrificed a sixth land to Hearthhull), then cast Omnath,
+      // Locus of Rage and played Cinder Glade: one Elemental where Omnath
+      // first would have made six. Here: Omnath first, then three fetches,
+      // three 5/5s. The search scores each cracked fetch with rollouts that
+      // pass our own seat, so Omnath's later triggers are never seen —
+      // `castPayoff` turns the `"acting"` rollout on only for "whenever you
+      // cast" payoffs, not landfall.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 3);
+      lands(game, "Forest", A, 3);
+      for (const fetch of ["Evolving Wilds", "Fabled Passage", "Terramorphic Expanse"]) onBoard(game, fetch, A);
+      const omnath = game.debugSpawn("Omnath, Locus of Rage", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === omnath,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "casts Dragon Tempest before the Dragon it pays off",
     kind: "training",
     rule: "An enters payoff goes down before the creature it pays off: the Dragon after it gets haste and deals damage.",

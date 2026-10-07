@@ -4,6 +4,28 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-07 — fetch lands cracked before a landfall payoff was cast
+
+- **Seen:** Kresh cracked five fetch lands (Rocky Tar Pit, Terramorphic Expanse, Escape Tunnel,
+  Evolving Wilds, Fabled Passage), then cast Omnath, Locus of Rage and played Cinder Glade — one
+  landfall trigger where Omnath first would have made six.
+- **Right:** cast the landfall payoff first, then crack the fetches: every land that enters after
+  it is another trigger.
+- **Scenario:** "casts Omnath, Locus of Rage before cracking its fetch lands" (training) — six
+  basics, Evolving Wilds, Fabled Passage and Terramorphic Expanse out, Omnath in hand: cracks a
+  fetch.
+- **Why:** not the search — a fixed rule ahead of it. Both bots crack a free fetch
+  (`isFreeFetch`: a land that sacrifices itself for a land and costs no mana) the moment they
+  can, before any spell: v2 in `eval-bot.ts`'s priority choice ("fetch"), v1 in `controller.ts`'s
+  `act`. The rule that puts a landfall permanent first ("landfall first", `isLandfallPermanent`)
+  only runs when a land drop is available, so it never weighs a fetch.
+- **Fix (outline):** in both places, let a castable landfall permanent go before a free fetch, as
+  it already goes before a land drop. Care where the fetch's land pays for the payoff (Fabled
+  Passage's land enters untapped at four lands): crack only what the cast needs, or compare
+  `castableAfter` with and without the fetch. Might break: the gate's fetch scenarios and a turn
+  where the payoff costs more than the mana on hand.
+- **Status:** open.
+
 ## 2026-10-07 — Dragon Tempest cast after a Dragon instead of before it
 
 - **Seen:** with Dragon Tempest and a Dragon in hand and mana for both, the bot cast the Dragon
