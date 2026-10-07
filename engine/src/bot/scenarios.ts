@@ -1424,6 +1424,45 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   {
+    name: "aims a second Summon: Bahamut trigger away from the first one's target",
+    kind: "training",
+    rule: "A destroy trigger already on the stack has its permanent dead; a second one goes at something else.",
+    run(weights, registry) {
+      // Reported from a live game (2026-10-07): "with a trigger that would
+      // destroy a target on the stack, the bot still targets the same
+      // permanent with a second destroy effect" — with two Summon: Bahamuts.
+      // Both chapter I triggers here: the first takes Serra Angel, the second
+      // should take the Bears. v2 searches the choice with v1's pick
+      // (`chooseTargets`: `aimedTargets`, `rankTargets`) scored first, and on
+      // this small board the search finds the Bears. Live, the room's clock
+      // (`timeBudgetMs`) cuts the search short on a big board and v1's pick
+      // stands — and nothing in it reads what is already on the stack. So the
+      // bot here searches one simulation, the clock run out.
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Serra Angel", B);
+      onBoard(game, "Grizzly Bears", B);
+      game.debugSpawn("Summon: Bahamut", A, "battlefield", { announceEntry: true });
+      game.debugSpawn("Summon: Bahamut", A, "battlefield", { announceEntry: true });
+      const bot = new EvalBotController(A, registry, { weights, maxSimulations: 1 });
+      const aimed = (): TargetRef | null | undefined => {
+        game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || s.result.over);
+        if (game.state.awaiting?.kind !== "choose-targets") return undefined;
+        const action = bot.act(viewOf(game, A));
+        game.dispatch(action);
+        return action.type === "choose-targets" ? (action.targets[0] ?? null) : null;
+      };
+      const name = (ref: TargetRef | null | undefined): string =>
+        ref?.kind === "object" ? (game.state.objects[ref.object]?.cardName ?? ref.object) : String(ref?.kind ?? ref);
+      const first = aimed();
+      const second = aimed();
+      if (first === undefined || second === undefined) {
+        return { passed: false, detail: "the chapter triggers never asked for two targets" };
+      }
+      const same = first?.kind === "object" && second?.kind === "object" && first.object === second.object;
+      return { passed: !same && second !== null, detail: `first ${name(first)}, second ${name(second)}` };
+    },
+  },
+  {
     name: "does not station a Spacecraft past its last threshold",
     kind: "training",
     rule: "Charge counters past a Spacecraft's last station threshold do nothing; the creature tapped for them is a blocker lost.",

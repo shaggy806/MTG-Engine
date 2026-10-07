@@ -4,6 +4,28 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-07 — a second destroy trigger aimed at what the first was already destroying
+
+- **Seen:** with two Summon: Bahamuts, one's "destroy up to one target nonland permanent" chapter
+  trigger was on the stack, and the other's was aimed at the same permanent.
+- **Right:** the permanent the first trigger destroys is gone either way; the second goes at the
+  next-best target.
+- **Scenario:** "aims a second Summon: Bahamut trigger away from the first one's target"
+  (training) — two Bahamuts enter, Serra Angel and Grizzly Bears across: both triggers take the
+  Angel. The bot there gets one simulation, standing in for the live clock.
+- **Why:** both bots aim a trigger with v1's `chooseTargets` (`controller.ts`: `aimedTargets`,
+  `rankTargets`), which ranks the legal targets by value and never reads the stack, so the Angel
+  is still the best target. v2 searches the choice with v1's pick scored first, and with its
+  full budget it finds the Bears on this small board. Live, rooms give the bot a clock
+  (`timeBudgetMs`, `Room.addBot`), and on a big board it runs out early, so v1's pick stands.
+- **Fix (outline):** in `chooseTargets` (and the cast path through `aimedTargets`), drop from a
+  harmful slot any permanent already doomed by our own destroy/exile effect on the stack (a
+  stack object we control whose effect is destroy or exile and whose target is that permanent),
+  unless no other worthwhile target is left. Might break: a permanent with indestructible or a
+  regeneration shield, where a second destroy doesn't help either, and a target the first
+  effect might lose (a hexproof grant in response) — rare, and still better aimed elsewhere.
+- **Status:** open.
+
 ## 2026-10-07 — Miirym cast instead of Urza's Incubator, which would have paid for both
 
 - **Seen:** the bot cast Miirym, Sentinel Wyrm with Urza's Incubator also in hand. Incubator
