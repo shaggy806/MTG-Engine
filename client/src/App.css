@@ -296,6 +296,7 @@
 }
 .turn-banner-player {
   font-family: var(--font-display);
+  font-size-adjust: var(--font-display-adjust);
   color: var(--gold);
   letter-spacing: 0.02em;
 }
@@ -3001,6 +3002,7 @@
   align-items: center;
   gap: 0.4em;
   font-family: var(--font-display);
+  font-size-adjust: var(--font-display-adjust);
   font-weight: 700;
   color: var(--gold);
 }
@@ -3730,6 +3732,7 @@
   font-family: var(--font-display);
   font-size: clamp(0.9rem, calc(var(--card-w) * 0.08), 1.4rem);
   font-weight: 700;
+  font-size-adjust: var(--font-display-adjust);
   letter-spacing: 0.04em;
   white-space: nowrap;
   color: var(--seat, var(--text));
@@ -4203,6 +4206,7 @@
   font-family: var(--font-display);
   letter-spacing: 0.04em;
   text-align: center;
+  font-size-adjust: var(--font-display-adjust);
   white-space: nowrap;
   animation: tp-banner-pop ease-out forwards;
 }

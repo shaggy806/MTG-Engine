@@ -1,9 +1,9 @@
-/* Board redesign phase 8: Cinzel (headings, whose-turn) / JetBrains Mono
-   (numbers), ported from the mockup artifact; the palette and body font
-   since replaced (below), layered onto the existing token *names* so every
-   rule already written against --bg/--panel/--border/etc. picks up the new
-   look without a rename. */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Barlow:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+/* Board redesign phase 8: a display face (headings, whose-turn) / JetBrains
+   Mono (numbers), ported from the mockup artifact; the palette, body font
+   and display face since replaced (below), layered onto the existing token
+   *names* so every rule already written against --bg/--panel/--border/etc.
+   picks up the new look without a rename. */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
 :root {
   color-scheme: dark;
@@ -106,12 +106,19 @@
      it's declared per board, in App.css's `.board` rule. */
 
   /* The site's three faces, and the only place any of them is named: Barlow
-     for everything you read, Cinzel for headings and banners, JetBrains Mono
+     for everything you read, Bebas Neue (the user's pick, 2026-10-07, over
+     Cinzel: a scoreboard's tall condensed capitals, for "blitz") for
+     headings and banners, JetBrains Mono
      for codes and numbers that should line up (room codes, the mana pool,
      the `.mono` class).
      The 'Mana' font (ui/symbols.css) is symbols, not type. */
   --font-body: 'Barlow', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Cinzel', Georgia, serif;
+  --font-display: 'Bebas Neue', 'Barlow Condensed', Impact, sans-serif;
+  /* Bebas Neue is all capitals, condensed: at a size Cinzel read well at,
+     it reads about a quarter smaller. Every rule using --font-display sets
+     this too, sizing its capitals to 0.9 of the font size (as the type
+     specimen the user picked from did) rather than retuning each size. */
+  --font-display-adjust: cap-height 0.9;
   --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
 
   /* The type scale for the interface: every fixed text size outside a card
@@ -130,6 +137,10 @@
   font-size: var(--text-base);
   color: var(--text);
   background: var(--bg);
+  /* Bebas Neue has one weight, and the heading rules ask for 600 or 700: a
+     browser would smear a fake bold over it. Barlow and JetBrains Mono load
+     every weight the site uses, so this changes nothing for them. */
+  font-synthesis-weight: none;
 }
 
 * {
@@ -240,6 +251,7 @@ h3 {
   margin: 0;
   font-weight: 600;
   font-family: var(--font-display);
+  font-size-adjust: var(--font-display-adjust);
 }
 
 .muted {

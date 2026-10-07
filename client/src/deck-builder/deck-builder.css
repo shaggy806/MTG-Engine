@@ -136,6 +136,7 @@
 .db-name-input {
   font: inherit;
   font-family: var(--font-display);
+  font-size-adjust: var(--font-display-adjust);
   font-size: var(--text-xl);
   background: none;
   border: 1px solid transparent;
@@ -680,6 +681,7 @@
 .db-pane-head h3 {
   margin: 0;
   font-family: var(--font-display);
+  font-size-adjust: var(--font-display-adjust);
   font-size: var(--text-base);
   font-weight: 600;
 }
