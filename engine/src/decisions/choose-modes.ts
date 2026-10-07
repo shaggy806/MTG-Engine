@@ -30,6 +30,11 @@ export const chooseModes = defineDecision({
       minModes: awaiting.minModes,
       maxModes: awaiting.maxModes,
       modeTexts: awaiting.modes.map((m) => m.text),
+      // "You choose an opponent": each mode is that player's (an
+      // `about-player` effect), so a driver can name them properly.
+      ...(awaiting.modes.some((m) => m.effect.kind === "about-player")
+        ? { modePlayers: awaiting.modes.map((m) => (m.effect.kind === "about-player" ? m.effect.player : null)) }
+        : {}),
       ...(awaiting.about !== undefined ? { about: awaiting.about } : {}),
       ...(awaiting.ward !== undefined ? { ward: { spell: awaiting.ward.spell } } : {}),
       // "You may pay {X}{R}" — tell the driver how large X may be.

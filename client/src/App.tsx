@@ -3383,7 +3383,13 @@ function Table({
       </div>
     )
   } else if (mode === 'choose-modes' && modesChoiceAction) {
-    const { minModes, maxModes, modeTexts, source, ward, about, sameForAll } = modesChoiceAction
+    const { minModes, maxModes, modeTexts, modePlayers, source, ward, about, sameForAll } = modesChoiceAction
+    // A choice among players (Tasigur's "you choose an opponent") reads with
+    // their names; the engine's own text names the seat.
+    const modeLabel = (i: number): ReactNode => {
+      const player = modePlayers?.[i] ?? null
+      return player !== null ? `Choose ${playerLabel(player, game.seats)}` : <Symbols text={modeTexts[i]} />
+    }
     const optional = minModes === 0 && maxModes === 1
     const single = minModes === 1 && maxModes === 1
     const toggle = (i: number) =>
@@ -3446,25 +3452,25 @@ function Table({
             )}
           </>
         ) : single ? (
-          modeTexts.map((t, i) => (
+          modeTexts.map((_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [i] })}
             >
-              <Symbols text={t} />
+              {modeLabel(i)}
             </button>
           ))
         ) : (
           <>
-            {modeTexts.map((t, i) => (
+            {modeTexts.map((_, i) => (
               <button
                 key={i}
                 type="button"
                 className={modePicks.includes(i) ? 'selected' : undefined}
                 onClick={() => toggle(i)}
               >
-                <Symbols text={t} />
+                {modeLabel(i)}
               </button>
             ))}
             <button

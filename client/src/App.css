@@ -2810,6 +2810,13 @@
   fill: currentColor;
 }
 .mt-badge {
+/* A creature's total toxic value (MiniTile.tsx): its number, in poison
+   green, as a chip in the keyword stack. */
+.mt-kw .mt-toxic {
+  font-weight: 700;
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 60%, transparent);
+}
   position: absolute;
   top: 2px;
   right: 2px;

@@ -85,7 +85,9 @@ function typeLine(obj: VisibleObject): string {
  * multi-word keyword (e.g. "first strike") matches a comma-separated line
  * listing it alongside others. */
 function keywordWordSet(obj: VisibleObject): Set<string> {
-  return new Set(obj.keywords.flatMap((k) => k.replace(/-/g, ' ').toLowerCase().split(' ')))
+  const words = obj.keywords.flatMap((k) => k.replace(/-/g, ' ').toLowerCase().split(' '))
+  // A printed "Toxic 2" line restates the bold line's "Toxic 2" too.
+  return new Set(obj.toxic > 0 ? [...words, 'toxic', String(obj.toxic)] : words)
 }
 
 /** True when `text` (a full text block or a single line) only restates
@@ -112,7 +114,7 @@ function isJustKeywords(text: string, kw: Set<string>): boolean {
  * tokens it creates have) is left alone; only the leading restatement is
  * ever removed. */
 function bodyText(obj: VisibleObject, text: string): string {
-  if (obj.keywords.length === 0 || text.length === 0) return text
+  if ((obj.keywords.length === 0 && obj.toxic === 0) || text.length === 0) return text
   const kw = keywordWordSet(obj)
   const lead = text.match(/^([^.\n]+)([.\n]\s*|$)/)
   if (lead && isJustKeywords(lead[1], kw)) {
@@ -187,9 +189,11 @@ export function CardTile({
   // reads as the bare keyword line it restates once its aside is gone.
   const displayText = bodyText(obj, stripReminders(obj.text))
   const showText = displayText.length > 0 && !isJustKeywords(displayText, keywordWordSet(obj))
-  const keywordLine = obj.keywords
-    .map((k) => KEYWORD_LABEL[k] ?? cap(k))
-    .join(', ')
+  // Toxic last, as its total: a granted one is in no rules text at all.
+  const keywordLine = [
+    ...obj.keywords.map((k) => KEYWORD_LABEL[k] ?? cap(k)),
+    ...(obj.toxic > 0 ? [`Toxic ${obj.toxic}`] : []),
+  ].join(', ')
   const tint = cardTint(obj)
 
   const artFirst = layout === 'art-first'

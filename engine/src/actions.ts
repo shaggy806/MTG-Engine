@@ -1132,6 +1132,12 @@ export type LegalAction =
       /** Rules text of each mode, in order — index into this is what the
        * `choose-modes` action submits. */
       readonly modeTexts: readonly string[];
+      /** The player each mode names, in the same order, when the modes are a
+       * choice among players ("you choose an opponent", Tasigur, the Golden
+       * Fang) — `null` for a mode that names none. The text says
+       * "Choose Bob" after the seat; a driver labels the mode with the
+       * player's own name from this instead. */
+      readonly modePlayers?: readonly (PlayerId | null)[];
       /** A triggered ability's "you may" with identical triggers still on
        * the stack under it: how many. The answer's `forAll` gives each of
        * them the same answer. Their targets were chosen as each went on the

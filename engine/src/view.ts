@@ -162,6 +162,10 @@ export interface VisibleObject {
    * its printed loyalty anywhere else — or `null` for anything else. */
   readonly loyalty: number | null;
   readonly keywords: readonly Keyword[];
+  /** Its total toxic value (rule 702.164b): every toxic ability it has, a
+   * printed one and each one granted ("Other Rats you control have toxic
+   * 1"), summed; 0 for none. Not among `keywords`, being a number. */
+  readonly toxic: number;
   /** Combat restrictions from static abilities (`"cant-attack"` from a
    * Pacifism, `"must-attack"` from Juggernaut). */
   readonly restrictions: readonly CombatRestriction[];
@@ -449,6 +453,7 @@ function visible(
         : def.loyalty
       : null,
     keywords: [...computed.keywords],
+    toxic: computed.toxic,
     // Including a turn-wide "can't block this turn" rule it falls under.
     restrictions: [...restrictionsOf(state, registry, id)],
     colors: [...computed.colors],

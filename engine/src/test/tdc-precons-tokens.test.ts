@@ -847,6 +847,9 @@ describe("Tasigur, the Golden Fang", () => {
     activateTasigur(game);
     game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
     expect(game.state.awaiting?.player).toBe(A);
+    // Each mode says which player it is, for a driver to name them.
+    const offer = game.legalActions(A).find((o) => o.kind === "choose-modes");
+    expect(offer?.kind === "choose-modes" ? offer.modePlayers : undefined).toEqual([B, C]);
     // The second mode: Carol.
     game.dispatch({ type: "choose-modes", player: A, modes: [1] });
     game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");

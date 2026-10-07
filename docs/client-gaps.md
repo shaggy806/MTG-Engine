@@ -16,15 +16,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   "Edit from here" leaves all of those behind. A commander placed in a library goes to its
   bottom, whatever its place in the list. Each is a field on `ScenarioCard`/`ScenarioSpec` and a
   step in `server/src/builder.ts`'s `buildScenario` and `snapshotScenario`.
-- **A creature's total toxic value isn't in the player view.** `Characteristics.toxic` (rule
-  702.164b) isn't a `Keyword`, so `VisibleObject.keywords` leaves it out: a Rat that
-  Karumonix, the Rat King gives toxic 1 shows nothing, and only a printed "Toxic N" is readable,
-  in the card's text. The view needs a `toxic` field and the board a badge for it.
-- **"Choose an opponent" names seats, not players.** `choose-opponent` (Tasigur, the Golden
-  Fang) asks with a `choose-modes` whose texts are "Choose Bob" — the capitalised seat id — and
-  the popup prints mode texts as they are, so a player with a display name is offered by the
-  wrong one. The modes need to say which player each is, for the client to label with
-  `playerLabel`.
 - **Face-down permanents should sit on their controller's board, and turning one face up should
   work like any other activated ability** (the user's ask): a click on the card opens the same
   little menu another permanent's activated abilities use, with "turn face up" in it when the

@@ -166,13 +166,20 @@ export function MiniTile({
           {/* One icon per keyword, stacked in the art's corner — enough to
               recognize at a glance which keywords a permanent has; the words
               themselves are in the hover card's keyword line. */}
-          {obj.keywords.length > 0 ? (
+          {obj.keywords.length > 0 || obj.toxic > 0 ? (
             <span className="mt-kw">
               {obj.keywords.map((k) => (
                 <span key={k} role="img" aria-label={keywordLabel(k)}>
                   <KeywordIcon keyword={k} />
                 </span>
               ))}
+              {/* Toxic is a number, not a keyword (and a granted one shows
+                  nowhere else): its total, in poison green. */}
+              {obj.toxic > 0 ? (
+                <span className="mt-toxic" role="img" aria-label={`Toxic ${obj.toxic}`} title={`Toxic ${obj.toxic}`}>
+                  {obj.toxic}
+                </span>
+              ) : null}
             </span>
           ) : null}
 
