@@ -57,10 +57,25 @@ export function useHoverPopover<T extends HTMLElement = HTMLDivElement>(dep?: un
   const carried = useRef(false)
   useLayoutEffect(() => {
     const anchor = wrapRef.current
-    if (anchor !== null && pointerIsOver(anchor)) {
-      carried.current = true
-      setOpen(true)
+    if (anchor === null || !pointerIsOver(anchor)) return
+    carried.current = true
+    setOpen(true)
+    // The browser may never count the pointer as having entered a tile that
+    // mounted under it, and then sends no `mouseleave` either: a popover
+    // opened this way closes on the first move that leaves its anchor
+    // (bubbling, so `hoverCarry.ts`'s capturing listener has already
+    // recorded where the pointer is).
+    const follow = () => {
+      if (!carried.current) {
+        window.removeEventListener('pointermove', follow)
+      } else if (!pointerIsOver(anchor)) {
+        carried.current = false
+        setOpen(false)
+        window.removeEventListener('pointermove', follow)
+      }
     }
+    window.addEventListener('pointermove', follow, { passive: true })
+    return () => window.removeEventListener('pointermove', follow)
   }, [])
 
   useLayoutEffect(() => {
