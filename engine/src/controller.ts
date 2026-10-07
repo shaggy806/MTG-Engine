@@ -1633,6 +1633,34 @@ function lifeDelta(
   return 0;
 }
 
+/** Whether every amount `effect` has is X — so at X = 0 it does nothing.
+ * False for an effect with no amounts at all, or a fixed one beside X. */
+function onlyScalesWithX(effect: EffectSpec | null | undefined): boolean {
+  let x = 0;
+  let fixed = 0;
+  const visit = (node: unknown, key: string | null): void => {
+    if (node === "x") {
+      x += 1;
+      return;
+    }
+    if (typeof node === "number" && key !== null && AMOUNT_KEYS.has(key)) {
+      if (node !== 0) fixed += 1;
+      return;
+    }
+    if (node === null || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      for (const child of node) visit(child, key);
+      return;
+    }
+    for (const [k, child] of Object.entries(node)) visit(child, k);
+  };
+  visit(effect, null);
+  return x > 0 && fixed === 0;
+}
+
+/** The keys an effect's amounts sit under. */
+const AMOUNT_KEYS: ReadonlySet<string> = new Set(["amount", "power", "toughness", "count"]);
+
 /** Whether `def` makes its controller's own spells cheaper: a static cost
  * reduction for spells "you cast" (or anyone's), Urza's Incubator's included. */
 function reducesOwnSpells(def: CardDefinition): boolean {
@@ -2316,8 +2344,55 @@ export class HeuristicBotController extends AutomaticController {
     return this.sweepTakesOurs(state, this.registry.get(top.cardName).effect, () => true);
   }
 
+  /**
+   * A "dies" or "leaves the battlefield" payoff to cast before `wipe`, a
+   * board wipe that takes creatures of ours: a permanent spell among
+   * `offers` with such a trigger whose filter matches one of them, after
+   * which — resolved, every player passing once — the wipe is still on
+   * offer. Cast first, it sees them go: Colfenor's Urn exiling the Walls a
+   * Citywide Bust destroys, to bring them back at the end step (a capture,
+   * 2026-10-04, HB5MR turn 22: bob cast the Bust with the Urn in hand). The
+   * search's rollouts pass our seat, so "the Urn, then the Bust" is never a
+   * line it sees. Null when there's none.
+   */
+  protected payoffBeforeWipe<T extends Action>(view: ControllerView, wipe: Action, offers: readonly T[]): T | null {
+    if (wipe.type !== "cast-spell") return null;
+    const state = view.state;
+    const me = this.playerId;
+    const wipeName = state.objects[wipe.card]?.cardName ?? "";
+    if (!this.registry.has(wipeName)) return null;
+    const effect = this.registry.get(wipeName).effect;
+    const ours = state.zones.shared.battlefield.filter(
+      (id) =>
+        state.objects[id]?.controller === me &&
+        computeCharacteristics(state, this.registry, id).types.includes("creature"),
+    );
+    const taken = ours.filter((id) => this.sweepTakesOurs(state, effect, (each) => each === id));
+    if (taken.length === 0) return null;
+    const order = state.turnOrder.filter((p) => !state.players[p].hasLost);
+    const from = order.indexOf(me);
+    const passes = [...order.slice(from), ...order.slice(0, from)].map((p) => passFor(p));
+    for (const offer of offers) {
+      if (offer.type !== "cast-spell" || offer.face !== undefined || offer.card === wipe.card) continue;
+      const name = state.objects[offer.card]?.cardName ?? "";
+      if (!this.registry.has(name)) continue;
+      const def = this.registry.get(name);
+      if (def.types.includes("instant") || def.types.includes("sorcery")) continue;
+      const sees = def.triggered.some((ability) => {
+        const trigger = ability.trigger as { readonly on?: unknown; readonly filter?: CardFilter };
+        if (trigger.on !== "dies" && trigger.on !== "leaves-battlefield") return false;
+        const filter = trigger.filter;
+        return taken.some((id) => filter === undefined || matchesFilter(state, this.registry, id, filter, { you: me }));
+      });
+      if (!sees) continue;
+      const after = view.legalActionsAfter?.([offer, ...passes]);
+      if (after?.some((a) => a.kind === "cast-spell" && a.card === wipe.card)) return offer;
+    }
+    return null;
+  }
+
   /** Whether `effect` sweeps away a creature of ours that `counts`. */
-  private sweepTakesOurs(
+  protected sweepTakesOurs(
     state: GameState,
     effect: EffectSpec | null | undefined,
     counts: (id: ObjectId) => boolean,
@@ -2416,6 +2491,49 @@ export class HeuristicBotController extends AutomaticController {
     return mana !== null && mana !== "" && mana !== "{0}";
   }
 
+  /**
+   * Whether `offer` sets up a copy of the next instant or sorcery we cast
+   * this turn — a delayed trigger at `nextSpell` (Adaptive Training Post's
+   * counters, Galvanic Iteration, Ral, Storm Conduit's -2) — with no other
+   * spell on offer that it would copy. Spent then, it copies nothing: carol
+   * spent the Post's three counters with no spell to follow (capture HB5MR
+   * t31, 2026-10-05). The search can't tell, since under the `"acting"`
+   * rollout v1 spends it later in the turn all the same, and passing ties.
+   */
+  protected holdsForNextSpell(offer: LegalAction, options: readonly LegalAction[]): boolean {
+    const at = this.nextSpellOf(offer);
+    if (at === null) return false;
+    const types = at.typesAnyOf ?? ["instant", "sorcery"];
+    return !options.some((o) => {
+      if (o.kind !== "cast-spell" || (offer.kind === "cast-spell" && o.card === offer.card)) return false;
+      if (!this.registry.has(o.cardName)) return false;
+      const def = this.registry.get(o.cardName);
+      return def.types.some((t) => (types as readonly string[]).includes(t));
+    });
+  }
+
+  /** The `nextSpell` a cast or activation's own delayed trigger waits for,
+   * or null when it has none. */
+  private nextSpellOf(offer: LegalAction): { readonly typesAnyOf?: readonly string[] } | null {
+    const effect = this.offerEffect(offer);
+    let found: { readonly typesAnyOf?: readonly string[] } | null = null;
+    const visit = (node: unknown): void => {
+      if (found !== null || node === null || typeof node !== "object") return;
+      if (Array.isArray(node)) {
+        for (const child of node) visit(child);
+        return;
+      }
+      const spec = node as { readonly kind?: unknown; readonly at?: { readonly nextSpell?: unknown } };
+      if (spec.kind === "delayed-trigger" && spec.at !== undefined && typeof spec.at.nextSpell === "object") {
+        found = spec.at.nextSpell as { readonly typesAnyOf?: readonly string[] };
+        return;
+      }
+      for (const child of Object.values(node)) visit(child);
+    };
+    visit(effect);
+    return found;
+  }
+
   /** The effect a cast or activation offer resolves with, or `undefined`
    * where it isn't read here: a granted ability, a modal or multi-face
    * spell, anything else. */
@@ -2491,6 +2609,21 @@ export class HeuristicBotController extends AutomaticController {
         -DEFAULT_WEIGHTS.crackbackMargin + gained,
       );
     return !lethal() && lethal(lost, delta);
+  }
+
+  /**
+   * An `{X}` ability that can only be activated for X = 0 right now, whose
+   * effect is all X: Necropolis Fiend's -X/-X, Helix Pinnacle's X tower
+   * counters. Activated, it does nothing but pay the rest of its cost (the
+   * Fiend tapped itself for a -0/-0 — a decision diff, 2026-10-06).
+   */
+  protected inertAtZeroX(legal: ActivateAbilityLegal): boolean {
+    if (legal.xCost === undefined || legal.xCost.maxX > 0) return false;
+    const ability = this.registry.has(legal.cardName)
+      ? this.registry.get(legal.cardName).activated?.[legal.abilityIndex]
+      : undefined;
+    if (ability === undefined || !legal.text.startsWith(ability.text)) return false;
+    return onlyScalesWithX(ability.effect);
   }
 
   private activationWorth(state: GameState, legal: ActivateAbilityLegal): number | null {
@@ -3075,13 +3208,21 @@ export class HeuristicBotController extends AutomaticController {
     if (reducer !== null) return reducer;
 
     const spells = options.filter(
-      (o): o is CastSpellLegal => o.kind === "cast-spell" && this.wouldCast(view.state, o),
+      (o): o is CastSpellLegal =>
+        o.kind === "cast-spell" && this.wouldCast(view.state, o) && !this.holdsForNextSpell(o, options),
     );
     if (spells.length > 0) {
       const best = spells.reduce((a, b) =>
         this.manaValueOf(b.cardName) > this.manaValueOf(a.cardName) ? b : a,
       );
-      return this.toCastSpell(view.state, best);
+      const cast = this.toCastSpell(view.state, best);
+      // A "dies" payoff for what the wipe takes goes first (`payoffBeforeWipe`).
+      const payoff = this.payoffBeforeWipe(
+        view,
+        cast,
+        spells.map((o) => this.toCastSpell(view.state, o)),
+      );
+      return payoff ?? cast;
     }
 
     if (view.state.turn.number !== this.activationTurn) {
@@ -3101,7 +3242,9 @@ export class HeuristicBotController extends AutomaticController {
         this.aimsOnlyAtWrongSide(view.state, o) ||
         this.wastedNow(view.state, o) ||
         this.holdsManaForMain(view.state, o) ||
-        this.activationTapsIntoCrackback(view.state, o)
+        this.activationTapsIntoCrackback(view.state, o) ||
+        this.inertAtZeroX(o) ||
+        this.holdsForNextSpell(o, options)
       ) {
         continue;
       }

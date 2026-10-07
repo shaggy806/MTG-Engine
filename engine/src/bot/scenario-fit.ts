@@ -25,7 +25,7 @@
 
 import type { Action } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
-import { EvalBotController } from "./eval-bot.js";
+import { EvalBotController, TIE, UNSAFE } from "./eval-bot.js";
 import { normalizeWeights, outcomeOf, scoreOutcome } from "./evaluate.js";
 import type { EvalOutcome, EvalWeights } from "./evaluate.js";
 import type { BotScenario, ScenarioResult } from "./scenarios.js";
@@ -60,6 +60,12 @@ export interface ScenarioRecord {
   /** Candidates the bot plays as a pass if one scores best — wipes held for
    * after combat (`EvalBotController.lastHeldForCombat`). */
   readonly heldAsPass?: readonly Action[];
+  /** Whether a tie with passing went to acting (`lastTiesAct`). */
+  readonly tiesAct?: boolean;
+  /** Candidates ranked below every safe one for the crackback (`lastUnsafe`). */
+  readonly unsafe?: readonly Action[];
+  /** A wipe the bot played a payoff before (`lastWipePayoff`). */
+  readonly wipePayoff?: { readonly wipe: Action; readonly payoff: Action } | null;
 }
 
 /**
@@ -100,6 +106,9 @@ export function recordScenario(
     exact,
     passFallback: bot.lastPassFallback,
     heldAsPass: bot.lastHeldForCombat,
+    tiesAct: bot.lastTiesAct,
+    unsafe: bot.lastUnsafe,
+    wipePayoff: bot.lastWipePayoff,
   };
 }
 
@@ -107,12 +116,21 @@ export function recordScenario(
  * best, as the search takes it — the first answer when every one failed. */
 export function replayChoice(record: ScenarioRecord, weights: EvalWeights): number {
   const w = normalizeWeights(weights);
+  const key = (a: Action | undefined): string => JSON.stringify(a);
+  const unsafe = new Set((record.unsafe ?? []).map(key));
   let best = 0;
   let bestScore = -Infinity;
   record.answers.forEach((answer, i) => {
     if (answer.outcome === null) return;
-    const score = scoreOutcome(answer.outcome, w);
-    if (score > bestScore) {
+    const score = scoreOutcome(answer.outcome, w) + (unsafe.has(key(answer.action)) ? UNSAFE : 0);
+    // A tie with passing goes to acting under the `"acting"` rollout, as
+    // the search breaks it.
+    const tie =
+      record.tiesAct === true &&
+      record.answers[best]?.action.type === "pass-priority" &&
+      answer.action.type !== "pass-priority" &&
+      score >= bestScore - TIE;
+    if (score > bestScore || tie) {
       best = i;
       bestScore = score;
     }
@@ -124,6 +142,13 @@ export function replayChoice(record: ScenarioRecord, weights: EvalWeights): numb
   if (heldBest) {
     const pass = record.answers.findIndex((a) => a.action.type === "pass-priority");
     if (pass !== -1) return pass;
+  }
+  // A wipe that takes our creatures goes after a payoff that sees them go
+  // (`payoffBeforeWipe`).
+  const wipePayoff = record.wipePayoff;
+  if (wipePayoff != null && key(record.answers[best]?.action) === key(wipePayoff.wipe)) {
+    const at = record.answers.findIndex((a) => key(a.action) === key(wipePayoff.payoff));
+    if (at !== -1) return at;
   }
   const fallback = record.passFallback;
   if (fallback != null && record.answers[best]?.action.type === "pass-priority") {

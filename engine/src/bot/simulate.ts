@@ -214,6 +214,59 @@ export function simulatePlan(
   }
 }
 
+/**
+ * `simulateAction` for an action put off until after combat: from our first
+ * main phase, we pass, the rollout plays our combat (our seat attacking as
+ * the policy has it), and at our second main phase, with priority back and
+ * nothing on the stack, `action` is dispatched as it was given; then the
+ * usual rollout to `horizon`. Read for a cast that taps a vigilance creature
+ * for mana (`EvalBotController.holdsTapForCombat`): put off, it gets its
+ * attack in first. `null` if it never gets back to us, or the engine
+ * refuses the action then.
+ */
+export function simulateAfterCombat(
+  state: GameState,
+  registry: CardRegistry,
+  me: PlayerId,
+  action: Action,
+  horizon: Horizon,
+  policy: RolloutPolicy,
+  self: PlayerController | undefined,
+): GameState | null {
+  const startingTurn = state.turn.number;
+  try {
+    const sim = Game.fromSnapshot(
+      { ...state, eventLog: [] },
+      { registry, controllers: rolloutControllers(state, registry, me, policy, self) },
+    );
+    sim.dispatch({ type: "pass-priority", player: me });
+    let steps = 0;
+    sim.advanceUntil((s) => {
+      steps += 1;
+      if (steps > MAX_STEPS) return true;
+      return (
+        s.turn.number !== startingTurn ||
+        (s.turn.step === "postcombat-main" &&
+          s.priority.holder === me &&
+          s.awaiting === null &&
+          s.zones.shared.stack.length === 0)
+      );
+    });
+    if (sim.state.turn.number !== startingTurn || sim.state.turn.step !== "postcombat-main") return null;
+    sim.dispatch(action);
+    sim.advanceUntil((s) => {
+      steps += 1;
+      if (steps > MAX_STEPS) return true;
+      return horizon === "stack"
+        ? s.zones.shared.stack.length === 0 && s.awaiting === null
+        : s.turn.number !== startingTurn;
+    });
+    return sim.state;
+  } catch {
+    return null;
+  }
+}
+
 /** Whether `action`, an activation just dispatched, can be dispatched again
  * right now: its player still holds priority with nothing to answer, and the
  * engine still offers that ability. */

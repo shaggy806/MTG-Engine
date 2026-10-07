@@ -40,6 +40,7 @@
 import type { Action } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
 import { createDefaultRegistry } from "../cards.js";
+import { HeuristicBotController } from "../controller.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -1626,6 +1627,115 @@ const SCENARIOS: readonly BotScenario[] = [
       });
     },
   },
+  {
+    name: "does not activate Necropolis Fiend for X = 0",
+    rule: "An {X} ability whose effect is all X does nothing at X = 0: not worth tapping for.",
+    run(weights, registry, makeBot) {
+      // A decision diff (2026-10-06): Necropolis Fiend tapped for a -0/-0.
+      // Its X is paid in mana and in cards exiled from the graveyard, and
+      // with the graveyard empty the most it can be is 0 (`inertAtZeroX`).
+      // Asked as bob's Bears attack, where -X/-X could matter.
+      const game = table(registry, [A, B], B);
+      lands(game, "Swamp", A, 4);
+      const fiend = onBoard(game, "Necropolis Fiend", A);
+      const bears = onBoard(game, "Grizzly Bears", B);
+      game.state.zones.perPlayer[A].graveyard = [];
+      const attacked = bobAttacks(game, [bears]);
+      if (attacked !== null) return attacked;
+      game.dispatch({ type: "declare-blockers", player: A, blocks: [] });
+      game.advanceUntil((s) => s.priority.holder === A || s.result.over);
+      if (game.state.priority.holder !== A) return { passed: false, detail: "alice never had priority after blocks" };
+      // v1 asked as well: its pick is v2's fallback under a clock and the first
+      // candidate v2 scores, and v1 is the one that activated it.
+      const v1 = new HeuristicBotController(A, registry).act(viewOf(game, A));
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const activates = [v1, action].some((a) => a.type === "activate-ability" && a.source === fiend);
+      return { passed: !activates, detail: `chose ${describeAction(action)}` };
+    },
+  },
+  {
+    name: "attacks with Faeburrow Elder before tapping it for an Arcane Signet",
+    rule: "A vigilance creature attacks and still taps for mana afterwards; tapped for mana first, it can't attack.",
+    run(weights, registry, makeBot) {
+      // A capture (2026-10-06, NZP7Q turn 17): bob cast Orzhov Signet before
+      // combat off Faeburrow Elder's mana, so the Elder couldn't attack. The
+      // user: "creatures with tap abilities and vigilance usually should use
+      // these abilities after combat." The search's rollouts pass our seat
+      // and never see main 2; fixed by `holdsTapForCombat`, which puts the
+      // play off when "after combat" scores at least as well.
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Faeburrow Elder", A);
+      const signet = game.debugSpawn("Arcane Signet", A, "hand");
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const casts = action.type === "cast-spell" && action.card === signet;
+      return { passed: !casts && game.state.turn.step === "precombat-main", detail: `chose ${describeAction(action)}` };
+    },
+  },
+  {
+    name: "keeps a held Wrath of God's mana through combat",
+    rule: "A wipe held for after combat needs its mana in main 2: a combat pump that isn't lethal doesn't spend it.",
+    run(weights, registry, makeBot) {
+      // From capture 9M59N t17 (2026-10-07): once a wipe is held for after
+      // combat (`holdsWipeForCombat`), nothing stopped a combat pump spending
+      // its mana (there, Lathliss's "{1}{R}: Dragons get +1/+0" four times),
+      // and the rollouts never cast the wipe in main 2. Two Plains and two
+      // Mountains pay for Wrath of God, and any firebreathing on the
+      // attacking Shivan Dragon leaves too little; its 5 or 6 isn't lethal at
+      // 20. Fixed: `spendsHeldMana`.
+      const game = table(registry, [A, B], A);
+      lands(game, "Plains", A, 2);
+      lands(game, "Mountain", A, 2);
+      const dragon = onBoard(game, "Shivan Dragon", A);
+      for (const name of ["Hill Giant", "Serra Angel", "Craw Wurm"]) onBoard(game, name, B, true);
+      const wrath = game.debugSpawn("Wrath of God", A, "hand");
+      const bot = makeBot(A, registry, weights);
+      const turn = game.state.turn.number;
+      const played: string[] = [];
+      for (let i = 0; i < 80 && game.state.turn.number === turn && !game.state.result.over; i += 1) {
+        const awaiting = game.state.awaiting;
+        const who = awaiting !== null && "player" in awaiting ? awaiting.player : game.state.priority.holder;
+        if (who !== A) {
+          game.advanceUntil((s) => {
+            const w = s.awaiting !== null && "player" in s.awaiting ? s.awaiting.player : s.priority.holder;
+            return s.turn.number !== turn || s.result.over || w === A;
+          });
+          continue;
+        }
+        const action = bot.act(viewOf(game, A));
+        if (action.type === "cast-spell") played.push(`${game.state.objects[action.card]?.cardName} in ${game.state.turn.step}`);
+        if (action.type === "activate-ability" && action.source === dragon) played.push(`firebreathing in ${game.state.turn.step}`);
+        game.dispatch(action);
+      }
+      const pumped = played.some((p) => p.startsWith("firebreathing") && !p.endsWith("main"));
+      const wiped = game.state.objects[wrath]?.zone !== "hand";
+      return { passed: !pumped && wiped, detail: played.join(", ") || "cast nothing" };
+    },
+  },
+  asked({
+    name: "casts Colfenor's Urn before the Citywide Bust that fills it",
+    rule: "A dies payoff goes down before the wipe that kills what it pays off: the Urn exiles the Walls the Bust destroys, and brings them back.",
+    position(registry) {
+      // A capture (2026-10-04, HB5MR turn 22): bob cast Citywide Bust with
+      // Colfenor's Urn in hand and mana for both. Urn first, it exiles the
+      // three Walls of Omens the Bust destroys and returns them at the end
+      // step. The search's rollouts pass our seat, so "the Urn, then the
+      // Bust" was never a line it saw. Fixed: `payoffBeforeWipe`.
+      const game = table(registry, [A, B], A);
+      lands(game, "Plains", A, 8);
+      for (let i = 0; i < 3; i += 1) onBoard(game, "Wall of Omens", A);
+      for (const name of ["Craw Wurm", "Serra Angel", "Colossal Dreadmaw"]) onBoard(game, name, B);
+      const urn = game.debugSpawn("Colfenor's Urn", A, "hand");
+      game.debugSpawn("Citywide Bust", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === urn,
+          detail: `chose ${action.type === "cast-spell" ? `Cast ${game.state.objects[action.card]?.cardName}` : action.type}`,
+        }),
+      };
+    },
+  }),
   {
     name: "does not station a Spacecraft past its last threshold",
     rule: "Charge counters past a Spacecraft's last station threshold do nothing; the creature tapped for them is a blocker lost.",

@@ -32,6 +32,9 @@ import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import { computeCharacteristics, withComputedCache } from "../characteristics.js";
+import { whyCannotAttack } from "../combat/eligibility.js";
+import { Game } from "../game.js";
+import { phaseOfStep } from "../turn.js";
 import { polarityBias } from "../deck-bias.js";
 import { newColorsFirst } from "../land-colors.js";
 import { onlyUntilEndOfTurn } from "../effect-worth.js";
@@ -61,6 +64,7 @@ import {
   CombatRolloutController,
   MAX_BATCH,
   simulateAction,
+  simulateAfterCombat,
   simulateCombat,
   simulatePlan,
   simulateRepeated,
@@ -231,7 +235,7 @@ type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
 
 /** An attack that would leave us dead to the crackback scores below every safe
  * one, while still ordering the unsafe ones among themselves. */
-const UNSAFE = -1e8;
+export const UNSAFE = -1e8;
 
 /** Menace blocker pairs tried per attacker — pairs are quadratic in the
  * blockers, and the first few cover what matters. */
@@ -266,7 +270,7 @@ const SPREAD_BONUS = 0.5;
 
 /** Two scores this close are a tie: the same end state reached by a
  * different order of floating-point sums. */
-const TIE = 1e-9;
+export const TIE = 1e-9;
 
 /** What a creature is worth to the evaluation, roughly: its creature, power
  * and toughness terms. Only used to rank moves, never to choose one. The
@@ -567,6 +571,9 @@ export class EvalBotController extends HeuristicBotController {
   /** This priority decision's `crackbackGuard`: null when nothing a cast or
    * activation taps or sacrifices could make the crackback lethal. */
   private tapGuard: { readonly grown: boolean } | null = null;
+  /** A play held for after combat this turn (`holdsWipeForCombat`,
+   * `holdsTapForCombat`): our combat steps keep its mana (`spendsHeldMana`). */
+  private heldPlay: { readonly turn: number; readonly action: Action } | null = null;
   private readonly rolloutDecisions: boolean;
   private readonly maxSimulations: number;
   private readonly timeBudgetMs: number;
@@ -611,6 +618,15 @@ export class EvalBotController extends HeuristicBotController {
    * (`holdsWipeForCombat`): scored like any candidate, but one that scores
    * best is played as a pass. For `scenario-fit.ts`'s replay. */
   lastHeldForCombat: readonly Action[] = [];
+  /** Whether the last priority search broke a tie with passing toward
+   * acting (the `"acting"` rollout), for `scenario-fit.ts`'s replay. */
+  lastTiesAct = false;
+  /** The candidates the last priority search ranked unsafe for the
+   * crackback (`tapsIntoCrackback`), for the replay. */
+  lastUnsafe: Action[] = [];
+  /** The wipe the last priority search chose and the payoff it cast first
+   * instead (`payoffBeforeWipe`), for the replay. */
+  lastWipePayoff: { readonly wipe: Action; readonly payoff: Action } | null = null;
 
   constructor(
     playerId: PlayerId,
@@ -668,6 +684,18 @@ export class EvalBotController extends HeuristicBotController {
     // Whether a cast or activation could leave us dead to the crackback by
     // what it taps or sacrifices (`crackbackGuard`), read once per decision.
     this.tapGuard = this.crackbackGuard(view.state);
+    this.lastUnsafe = [];
+    this.lastWipePayoff = null;
+    // A cast payoff in play or about to be (Shiko and Narset's Flurry, a
+    // prowess creature, Young Pyromancer): the rollouts play the rest of our
+    // turn (`"acting"`), or a cheap first spell is never worth the second
+    // spell it sets up — they'd pass our seat and never cast that one. Set
+    // before anything is scored: the pass baseline and the land search were
+    // scored under the previous decision's policy, and the batches under the
+    // bot's own, so with a payoff out a candidate was compared with a pass
+    // rolled out differently (a diagnosis, 2026-10-07).
+    this.decisionRollout =
+      this.rollout !== "acting" && castPayoff(view.state, this.cards, this.playerId) ? "acting" : this.rollout;
 
     const candidates: Action[] = [];
     // Candidates that help an opponent's attacker with something lasting:
@@ -687,6 +715,12 @@ export class EvalBotController extends HeuristicBotController {
         // and on a wide board they're nearly every candidate there is — 27 of
         // 30 on one 38-permanent board, which made a single decision a 2s search.
         if (legal.kind === "activate-ability" && this.isManaOnlyAbility(legal)) continue;
+        // An {X} ability affordable only at X = 0, whose effect is all X
+        // (`inertAtZeroX`): Necropolis Fiend's -0/-0.
+        if (legal.kind === "activate-ability" && this.inertAtZeroX(legal)) continue;
+        // A copy of the next instant or sorcery with none to cast
+        // (`holdsForNextSpell`): Adaptive Training Post's counters wasted.
+        if (this.holdsForNextSpell(legal, view.legalActions())) continue;
         // An until-end-of-turn pump where it can't matter (`wastedNow`): the
         // rollout plays our own seat passively, so mana it would have cast
         // spells with looks free to spend, and v2 pumped away its upkeep.
@@ -719,6 +753,11 @@ export class EvalBotController extends HeuristicBotController {
           const verdict = this.opponentPump(view.state, legal, action);
           if (verdict === "drop") continue;
           if (verdict !== "ok") mustKill.set(action, verdict.kills);
+          // Mana a play held for after combat needs, spent on a combat trick:
+          // kept only if it kills the player it's aimed at this combat.
+          const spends = this.spendsHeldMana(view.state, action);
+          if (spends === "drop") continue;
+          if (spends !== "ok" && !mustKill.has(action)) mustKill.set(action, spends.kills);
           if (heldWipe) heldForCombat.add(action);
           candidates.push(action);
         }
@@ -869,13 +908,8 @@ export class EvalBotController extends HeuristicBotController {
     // now; the tie goes to acting — to passing, the bot would put every play
     // off until the last window of its turn. Against each other, candidates
     // still need to be strictly better.
-    // A cast payoff in play or about to be (Shiko and Narset's Flurry, a
-    // prowess creature, Young Pyromancer): the rollouts play the rest of our
-    // turn (`"acting"`), or a cheap first spell is never worth the second
-    // spell it sets up — they'd pass our seat and never cast that one.
-    this.decisionRollout =
-      this.rollout !== "acting" && castPayoff(view.state, this.cards, this.playerId) ? "acting" : this.rollout;
     const tiesAct = this.decisionRollout === "acting";
+    this.lastTiesAct = tiesAct;
     for (const action of candidates) {
       if (spent(budget)) break;
       budget.left -= 1;
@@ -919,7 +953,7 @@ export class EvalBotController extends HeuristicBotController {
             this.cards,
             action,
             this.horizon,
-            this.rollout,
+            this.decisionRollout,
             this.rolloutDecisions ? this.selfInRollouts() : undefined,
             MAX_BATCH,
             (game, previous) =>
@@ -999,11 +1033,32 @@ export class EvalBotController extends HeuristicBotController {
     // A cantrip or a suspend scores a wash against passing — see
     // `isCantripDue` and `isSuspendDue`.
     // A held wipe that scored best waits for the second main phase, and
-    // nothing else spends its mana now (not even a cantrip).
+    // nothing else spends its mana now (not even a cantrip). So does a play
+    // that taps a vigilance creature that could attack first
+    // (`holdsTapForCombat`).
+    if (
+      plan === null &&
+      batch === null &&
+      !heldForCombat.has(best) &&
+      this.holdsTapForCombat(view.state, best, bestScore, budget)
+    ) {
+      heldForCombat.add(best);
+    }
     this.lastHeldForCombat = [...heldForCombat];
+    if (heldForCombat.has(best)) this.heldPlay = { turn: view.state.turn.number, action: best };
     if (heldForCombat.has(best)) {
       best = pass;
       cantrip = null;
+    }
+    // A wipe that takes our creatures waits for a castable "dies" payoff
+    // that sees them go (`payoffBeforeWipe`: Colfenor's Urn, then Citywide
+    // Bust).
+    if (best.type === "cast-spell" && plan === null && batch === null) {
+      const payoff = this.payoffBeforeWipe(view, best, candidates);
+      if (payoff !== null) {
+        this.lastWipePayoff = { wipe: best, payoff };
+        best = payoff;
+      }
     }
     this.lastPassFallback = cantrip;
     if (best.type === "pass-priority" && cantrip !== null) best = cantrip;
@@ -1862,7 +1917,9 @@ export class EvalBotController extends HeuristicBotController {
     if (after === null) return null;
     if (mustKill !== undefined && after.players[mustKill]?.hasLost !== true) return null;
     const value = evaluateState(after, this.cards, this.playerId, this.weights);
-    return this.tapsIntoCrackback(view.state, action, budget) ? UNSAFE + value : value;
+    if (!this.tapsIntoCrackback(view.state, action, budget)) return value;
+    this.lastUnsafe.push(action);
+    return UNSAFE + value;
   }
 
   /**
@@ -1886,6 +1943,88 @@ export class EvalBotController extends HeuristicBotController {
   }
 
   /**
+   * Whether `action`, in one of our own combat steps, spends mana the play
+   * held for after combat this turn needs (`heldPlay`): played out to an
+   * empty stack, the held play is no longer on offer in our second main
+   * phase (asked of the engine on that board, the pool emptied as the step
+   * ends). A combat pump spent the wipe's mana and the wipe never came (from
+   * capture 9M59N t17, 2026-10-07). `"drop"` it, or keep it only if it kills
+   * the attacked player with the least life; `"ok"` otherwise.
+   */
+  private spendsHeldMana(state: GameState, action: Action): "ok" | "drop" | { readonly kills: PlayerId } {
+    const held = this.heldPlay;
+    const me = this.playerId;
+    if (held === null || held.turn !== state.turn.number) return "ok";
+    if (state.turnOrder[state.turn.activePlayerIndex] !== me) return "ok";
+    if (phaseOfStep(state.turn.step) !== "combat") return "ok";
+    if (action.type !== "cast-spell" && action.type !== "activate-ability") return "ok";
+    if (sameAction(action, held.action)) return "ok";
+    const offered = (board: GameState): boolean => heldOnOffer(board, this.cards, me, held.action);
+    if (!offered(state)) return "ok";
+    const resolved = simulateAction(state, this.cards, action, "stack", "passive");
+    if (resolved === null || offered(resolved)) return "ok";
+    const attacked = [
+      ...new Set(
+        state.zones.shared.battlefield
+          .map((id) => state.objects[id]?.attacking)
+          .filter((d): d is PlayerId => d != null && state.players[d as PlayerId] !== undefined),
+      ),
+    ];
+    if (attacked.length === 0) return "drop";
+    const weakest = attacked.reduce((a, b) => (state.players[b].life < state.players[a].life ? b : a));
+    return { kills: weakest };
+  }
+
+  /**
+   * Whether the search's best play, in our first main phase, taps a vigilance
+   * creature of ours that could attack — Faeburrow Elder's mana paying for an
+   * Orzhov Signet (a capture, 2026-10-06, NZP7Q turn 17; the user: "creatures
+   * with tap abilities and vigilance usually should use these abilities after
+   * combat") — and the same play put off to our second main phase
+   * (`simulateAfterCombat`) scores at least as well. Vigilance lets it attack
+   * and still tap afterwards; tapped first, it can't attack at all. The
+   * rollouts pass our seat, so the search never sees main 2. Only for the
+   * play it chose, so it costs one or two simulations a turn; and a play
+   * worth making before combat (a haste creature, a blocker removed) scores
+   * worse put off, and stays.
+   */
+  private holdsTapForCombat(state: GameState, action: Action, score: number, budget: SearchBudget): boolean {
+    if (action.type !== "cast-spell" && action.type !== "activate-ability") return false;
+    const me = this.playerId;
+    if (state.turn.step !== "precombat-main" || state.turnOrder[state.turn.activePlayerIndex] !== me) return false;
+    if (state.zones.shared.stack.length > 0) return false;
+    const opponents = state.turnOrder.filter((p) => p !== me && !state.players[p].hasLost);
+    const attackers = withComputedCache(() =>
+      state.zones.shared.battlefield.filter((id) => {
+        const object = state.objects[id];
+        if (object === undefined || object.controller !== me || object.tapped) return false;
+        const c = computeCharacteristics(state, this.cards, id);
+        return (
+          c.types.includes("creature") &&
+          c.keywords.has("vigilance") &&
+          opponents.some((p) => whyCannotAttack(state, this.cards, me, id, p) === null)
+        );
+      }),
+    );
+    if (attackers.length === 0) return false;
+    const resolved = timed(budget, () => simulateAction(state, this.cards, action, "stack", "passive"));
+    if (resolved === null || !attackers.some((id) => resolved.objects[id]?.tapped === true)) return false;
+    budget.left -= 1;
+    const later = timed(budget, () =>
+      simulateAfterCombat(
+        state,
+        this.cards,
+        me,
+        action,
+        this.horizon,
+        this.decisionRollout,
+        this.rolloutDecisions ? this.selfInRollouts() : undefined,
+      ),
+    );
+    return later !== null && evaluateState(later, this.cards, me, this.weights) >= score;
+  }
+
+  /**
    * Read once per priority decision: whether anything we tap or sacrifice
    * this turn could leave us dead to the crackback. Only on our own turn
    * (what we tap then stays tapped through every opponent's turn), and as
@@ -1901,6 +2040,37 @@ export class EvalBotController extends HeuristicBotController {
     const grown = !this.crackbackLethal(state, true);
     if (!this.crackbackLethal(state, grown, "all")) return null;
     return { grown };
+  }
+}
+
+/**
+ * Whether `held` — a cast or activation put off until our second main phase
+ * — would be on offer there, with `board` as it is: the board read as our
+ * second main phase with nothing on the stack and our pool emptied (mana
+ * empties as each step ends), and asked of the engine, so its payment
+ * planner says whether the mana left still pays for it, colours and all.
+ */
+function heldOnOffer(board: GameState, cards: CardRegistry, me: PlayerId, held: Action): boolean {
+  if (held.type !== "cast-spell" && held.type !== "activate-ability") return false;
+  try {
+    const game = Game.fromSnapshot(
+      {
+        ...board,
+        eventLog: [],
+        awaiting: null,
+        turn: { ...board.turn, step: "postcombat-main" },
+        priority: { ...board.priority, holder: me },
+        players: { ...board.players, [me]: { ...board.players[me], manaPool: [] } },
+      },
+      { registry: cards },
+    );
+    return game.legalActions(me).some((legal: LegalAction) =>
+      held.type === "cast-spell"
+        ? legal.kind === "cast-spell" && legal.card === held.card
+        : legal.kind === "activate-ability" && legal.source === held.source && legal.abilityIndex === held.abilityIndex,
+    );
+  } catch {
+    return false;
   }
 }
 
