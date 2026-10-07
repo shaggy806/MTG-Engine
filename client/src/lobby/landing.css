@@ -224,19 +224,17 @@
   border: 1px solid var(--border);
   border-radius: 0;
 }
+/* Each panel's control (the Create button, the room-code row) sits at its
+   foot, so the two line up across the "or" whatever each holds above it. */
+.landing-card > :last-child {
+  margin-top: auto;
+}
 .landing-card h2 {
   font-size: clamp(17px, 1.7vw, 21px);
 }
 /* Grows to fill, which pushes the CTA and the join form to the bottom of
    their panels so the two actions sit on the same line as each other however
    differently the copy above them wraps. */
-.landing-card-body {
-  flex: 1;
-  margin: 0;
-  font-size: var(--text-md);
-  line-height: 1.5;
-  color: var(--muted);
-}
 
 .landing-or {
   display: flex;
@@ -284,15 +282,6 @@
   flex-direction: column;
   gap: 5px;
 }
-/* Label left, hint right, one line — which leaves the input itself as the
-   last thing in this panel, so it sits level with the "Create a game" button
-   in the panel beside it rather than a hint's height above it. */
-.landing-field-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
 .landing-field-label {
   font-size: var(--text-xs);
   letter-spacing: 0.08em;
@@ -337,10 +326,6 @@
   padding: 0 18px;
   font-weight: 600;
   border-radius: 0;
-}
-.landing-field-hint {
-  font-size: var(--text-xs);
-  color: var(--muted-dim);
 }
 
 /* Blitzing (BlitzPanel.tsx): one button across the foot of the page, its
@@ -455,11 +440,6 @@
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--accent);
-}
-.landing-nav-desc {
-  font-size: var(--text-sm);
-  line-height: 1.45;
-  color: var(--muted);
 }
 
 /* Below this the two action panels no longer have room to sit beside each

@@ -114,10 +114,6 @@ export function LandingScreen({
       <div className="landing-actions">
         <section className="landing-card">
           <h2>Start a game</h2>
-          <p className="landing-card-body">
-            You'll get a five-letter room code to share. Pick decks and choose
-            how many are playing on the next screen.
-          </p>
           <button type="button" className="landing-cta" onClick={() => game.createRoom()}>
             Create a game
           </button>
@@ -129,9 +125,6 @@ export function LandingScreen({
 
         <section className="landing-card">
           <h2>Join a game</h2>
-          <p className="landing-card-body">
-            Enter the code a friend gave you. Pasting the whole link works too.
-          </p>
           <form
             className="landing-join-form"
             onSubmit={(e) => {
@@ -139,16 +132,9 @@ export function LandingScreen({
               join(joinCode)
             }}
           >
-            {/* Label and hint share a line so the input stays the last thing
-                in this panel, level with the other panel's button. */}
-            <div className="landing-field-head">
-              <label className="landing-field-label" htmlFor="landing-room-code">
-                Room code
-              </label>
-              <span className="landing-field-hint" id="landing-code-hint">
-                Five letters and numbers
-              </span>
-            </div>
+            <label className="landing-field-label" htmlFor="landing-room-code">
+              Room code
+            </label>
             <div className="landing-join-row">
               <input
                 id="landing-room-code"
@@ -165,7 +151,6 @@ export function LandingScreen({
                   join(code)
                 }}
                 placeholder="ABC23"
-                aria-describedby="landing-code-hint"
                 // Deliberately no `maxLength`: the browser applies it to
                 // pasted text too, so a pasted room *link* would arrive here
                 // already chopped to its first five characters ("HTTP") and
@@ -189,25 +174,15 @@ export function LandingScreen({
       <nav className="landing-nav" aria-label="Other pages">
         <a className="landing-nav-card" href="/deck-builder">
           <span className="landing-nav-name">Deck builder</span>
-          <span className="landing-nav-desc">
-            Build a Commander deck with live format checking, or import a
-            decklist you already have.
-          </span>
         </a>
         <a className="landing-nav-card" href="/library">
           <span className="landing-nav-name">Card library</span>
-          <span className="landing-nav-desc">
-            Browse every card the engine implements, with its real rules text.
-          </span>
         </a>
         {/* A dev build only (and a server started with --builder): it puts
             any card anywhere, which the public site mustn't offer. */}
         {import.meta.env.DEV ? (
           <button type="button" className="landing-nav-card landing-nav-dev" onClick={() => game.createBuilder()}>
             <span className="landing-nav-name">Scenario builder</span>
-            <span className="landing-nav-desc">
-              Dev only: build a board from scratch, then play it to test cards and interactions.
-            </span>
           </button>
         ) : null}
       </nav>
