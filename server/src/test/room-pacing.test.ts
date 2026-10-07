@@ -110,6 +110,7 @@ function makePacedRoom(
           type: "state",
           roomId: r.id,
           seq: r.frameSeq,
+          game: r.gameNumber,
           seat,
           view: r.game.viewFor(seat),
           actions: r.game.legalActions(seat),

@@ -38,6 +38,7 @@ import type {
   ControllerView,
   DecisionAudit,
   EvalBotOptions,
+  GameConfig,
   GameState,
   ObjectId,
   PlayerController,
@@ -268,9 +269,29 @@ export interface RoomOptions {
    */
   readonly frozen?: boolean;
   /** The frame number to count on from: a scenario builder rebuilds its room
-   * on every edit, and a client drops a frame numbered no higher than the
-   * last it saw. */
+   * on every edit, and a rematch deals a new room under the same code, and a
+   * client drops a frame numbered no higher than the last it saw. */
   readonly startSeq?: number;
+  /** How this room's game was dealt, so a rematch can deal another the same
+   * way — see `GameRecipe`. Absent (a scenario builder's room, or one a
+   * script built by hand) means the room can't be rematched. */
+  readonly recipe?: GameRecipe;
+  /** Which game this is under the room's code: 1 for the first, one more for
+   * each rematch. Said on every frame, so a client knows a new game from a
+   * later frame of the old one. */
+  readonly gameNumber?: number;
+}
+
+/**
+ * What a rematch deals from: the finished `GameConfig` the waiting room
+ * built (every seat's deck, the starting life, mulligans), and who the host
+ * said goes first. The config's own seed and starting player are the first
+ * game's; a rematch replaces both — a fresh shuffle and, left to the
+ * highroll, a fresh highroll.
+ */
+export interface GameRecipe {
+  readonly config: GameConfig;
+  readonly firstPlayer: "random" | PlayerId;
 }
 
 /** A human seat's claim, as `Room.humanClaims` hands it to a room built to
@@ -374,12 +395,18 @@ export class Room {
   /** What a scenario builder adds to each `state` push (`builder.ts`), or
    * `null` in any other room. */
   builder: BuilderInfo | null = null;
+  /** See `RoomOptions.recipe`; `null` when this room can't be rematched. */
+  readonly recipe: GameRecipe | null;
+  /** See `RoomOptions.gameNumber`. */
+  readonly gameNumber: number;
 
   constructor(id: string, game: Game, options: RoomOptions = {}) {
     this.id = id;
     this.game = game;
     this.frozen = options.frozen === true;
     this.seq = options.startSeq ?? 0;
+    this.recipe = options.recipe ?? null;
+    this.gameNumber = options.gameNumber ?? 1;
     this.host = options.host ?? new HostRole(null);
     this.botSpeed = options.botSpeed ?? "normal";
     this.firstPlayerChosen = options.firstPlayerChosen === true;
@@ -586,6 +613,25 @@ export class Room {
       out.push({ player: s.player, clientToken: s.clientToken, connection: s.connection, displayName: s.displayName });
     }
     return out;
+  }
+
+  /** The seats a bot plays that no human holds — a player who handed theirs
+   * to a bot is in `humanClaims` instead — with each bot's name, for seating
+   * the same bots in a rematch. */
+  botSeats(): { readonly player: PlayerId; readonly displayName: string | null }[] {
+    return this.seats
+      .filter((s) => this.bots.has(s.player) && s.clientToken === null)
+      .map((s) => ({ player: s.player, displayName: s.displayName }));
+  }
+
+  /** Holds `player`'s seat for `clientToken` with nobody connected to it: a
+   * rematch carrying over a player who had dropped. Their token reclaims it on
+   * reconnect (`claimSeat`), as after any other disconnect. */
+  reserveSeat(player: PlayerId, clientToken: string, displayName: string | null): void {
+    const seat = this.seatFor(player);
+    if (seat.clientToken !== null || this.bots.has(player)) throw new Error(`seat ${player} is already taken`);
+    seat.clientToken = clientToken;
+    seat.displayName = displayName;
   }
 
   /**

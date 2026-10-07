@@ -46,6 +46,7 @@ function broadcast(room: Room): void {
       type: "state",
       roomId: room.id,
       seq: room.frameSeq,
+      game: room.gameNumber,
       seat,
       view: room.game.viewFor(seat),
       actions: room.frozen ? [] : room.game.legalActions(seat),
@@ -56,6 +57,7 @@ function broadcast(room: Room): void {
       botSpeed: room.botSpeed,
       botsPaused: room.botsPaused,
       ...(room.firstPlayerChosen ? { firstPlayerChosen: true as const } : {}),
+      ...(room.recipe !== null ? { canRematch: true as const } : {}),
       ...(room.stopped !== null ? { stopped: room.stopped } : {}),
       ...(room.captures !== null ? { capture: true as const } : {}),
       ...(room.builder !== null ? { builder: room.builder } : {}),
@@ -65,7 +67,8 @@ function broadcast(room: Room): void {
 }
 
 /** The connections that have had this game's art manifest — each gets it
- * with its first frame, a reconnecting one (a new connection) again. */
+ * with its first frame, a reconnecting one (a new connection) again. Not
+ * again for a rematch: it deals the same decks, so the art is already in. */
 const sentArtManifest = new WeakSet<Connection>();
 const artManifests = new WeakMap<Room, readonly ArtManifestEntry[]>();
 
@@ -415,6 +418,13 @@ export function attachRoomServer(
           if (activeRoom !== null) boundRoom = activeRoom;
           return;
         }
+        case "rematch": {
+          const room = requireActiveRoom(manager, message.roomId);
+          requireHost(room, connection, "start a rematch");
+          // Deals the new game and publishes its opening frame to every seat.
+          boundRoom = manager.rematch(room.id);
+          return;
+        }
         case "set-bot-speed": {
           const room = requireRoom(manager, message.roomId);
           requireHost(room, connection, "set the bot speed");
@@ -581,8 +591,12 @@ export function attachRoomServer(
       // to with each rebuild: the one under the code now is the one it's in.
       const room = manager.get(boundRoom.id) ?? boundRoom;
       room.disconnect(connection);
-      // The host leaving hands the role to someone still here.
+      // The host leaving hands the role to someone still here. A finished
+      // game publishes no more frames of its own, so it says so with one:
+      // otherwise whoever holds the role now would never be offered the
+      // rematch.
       if (room instanceof PendingRoom) broadcastPending(room);
+      else if (room.game.state.result.over) room.publish();
     });
   });
 }

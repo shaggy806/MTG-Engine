@@ -19,7 +19,9 @@ that file.
 - **`broadcast` is never called from a message handler.** A room publishes its own frames
   (`room.publish()` → `onUpdate`).
 - **The host** (`host.ts`) is whoever created the room. Only they may add or remove seats and
-  bots, set bot decks and speed, and start the game (`requireHost` in `ws-server.ts`).
+  bots, set bot decks and speed, start the game, and deal a rematch once it's over
+  (`requireHost` in `ws-server.ts`). A rematch is a new `Room` under the same code
+  (`RoomManager.rematch`), its frames carrying the next `game` number.
 - **The wire protocol lives in the `protocol/` workspace**, imported as types by both server
   and client. Change it there, never restate it here.
 - **Security-relevant:** printings are accepted only as a bare Scryfall card id

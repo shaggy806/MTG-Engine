@@ -266,6 +266,17 @@ export type ClientMessage =
       readonly roomId: string;
     }
   | {
+      /** Deals a new game into this room once its game is over, under the
+       * same code: the same seats, players, decks and settings, a fresh
+       * shuffle and (unless the host picked who goes first) a fresh
+       * highroll. Everyone at the table is carried into it, with no seat
+       * board in between; the new game's frames carry the next `game`
+       * number. Host only, and only in a room whose frames say
+       * `canRematch`. */
+      readonly type: "rematch";
+      readonly roomId: string;
+    }
+  | {
       /** Sets how fast this room's bots play. Host only; allowed before and
        * during the game, and takes effect from the next bot move. */
       readonly type: "set-bot-speed";
@@ -473,6 +484,12 @@ export type ServerMessage =
        * `seq` for the same frame.
        */
       readonly seq: number;
+      /** Which game of this room the frame is from: 1 for the first, one
+       * more for each `rematch`. `seq` keeps counting across a rematch, so
+       * this is what tells a client the board is a new game's, to start
+       * showing afresh rather than animate it as what the old game did
+       * next. */
+      readonly game: number;
       readonly seat: PlayerId;
       readonly view: PlayerView;
       readonly actions: readonly LegalAction[];
@@ -494,6 +511,10 @@ export type ServerMessage =
        * nobody won a highroll. Absent when the first player was drawn at
        * random. */
       readonly firstPlayerChosen?: true;
+      /** This room can deal a `rematch` once its game is over: it was
+       * started from a waiting room. Absent in a scenario builder's room or
+       * one a script built. */
+      readonly canRematch?: true;
       /** The engine threw while advancing this game, so the room stopped it
        * (`Room.stop`): why, in the engine's words. No move is taken after. */
       readonly stopped?: string;
