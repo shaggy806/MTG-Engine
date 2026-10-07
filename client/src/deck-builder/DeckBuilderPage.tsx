@@ -2,12 +2,6 @@ import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { SAMPLE_DECKS, commandersOf, validateCommanderDeck } from 'engine/client'
 import type { PreconSubstitution } from 'engine/client'
-import type {
-  DeckFormatReport,
-  ImportDeckLine,
-  ImportedCardReport,
-  ReplacementOption,
-} from 'protocol'
 import {
   createDeck,
   createDeckFromImport,
@@ -21,42 +15,14 @@ import {
 } from './decks.ts'
 import type { SavedDeck } from './decks.ts'
 import { DeckEditor } from './DeckEditor.tsx'
+import { importDecklist, resolveImport } from './importDeck.ts'
+import type { ImportProgress, ImportReport } from './importDeck.ts'
 import { ReplacementReview } from './ReplacementReview.tsx'
 import { CONFIDENCE_LABEL } from './replacement-labels.ts'
 import { cardPool } from '../cards/cardData.ts'
 import './deck-builder.css'
 
-// Same host/port convention as useNetworkGame's SERVER_URL, but http(s) for
-// this one-off request/response endpoint rather than the room's WebSocket.
-const IMPORT_DECK_URL = `${
-  ((import.meta.env.VITE_SERVER_URL as string | undefined) ?? `ws://${window.location.hostname}:4000`)
-    .replace(/^ws/, 'http')
-}/import-deck`
-
-
-
-
-
 type Selection = { readonly kind: 'saved'; readonly id: string } | { readonly kind: 'starter'; readonly index: number } | null
-
-/** What the import panel hands back once it's resolved a pasted decklist
- * into a real, saved deck — shown once, above the editor, then dismissed. */
-export interface ImportSubstitution {
-  readonly from: string
-  /** The stand-in currently in the deck. */
-  readonly to: string
-  /** Every stand-in the server suggested, best first — `to` is one of them. */
-  readonly options: readonly ReplacementOption[]
-}
-
-export interface ImportReport {
-  readonly total: number
-  readonly asIs: number
-  readonly substituted: readonly ImportSubstitution[]
-  readonly dropped: readonly string[]
-  /** How many cards kept the specific printing the pasted list named. */
-  readonly printings: number
-}
 
 export function DeckBuilderPage() {
   const [decks, setDecks] = useState<readonly SavedDeck[]>(() => listDecks())
@@ -291,62 +257,6 @@ export function DeckBuilderPage() {
   )
 }
 
-/** How far along the server is, as reported by the import endpoint's
- * `progress` lines. `name` is the card just resolved (null before the first
- * one lands). */
-interface ImportProgress {
-  readonly done: number
-  readonly total: number
-  readonly name: string | null
-}
-
-/**
- * POSTs a pasted decklist and consumes the endpoint's newline-delimited JSON
- * response, calling `onProgress` as each card is resolved and returning the
- * terminal `result` line. Streamed rather than awaited whole because every
- * card the engine doesn't implement costs a throttled Scryfall round-trip —
- * a 100-card list is tens of seconds of otherwise-silent waiting.
- */
-async function importDecklist(
-  text: string,
-  onProgress: (progress: ImportProgress) => void,
-): Promise<{ readonly cards: readonly ImportedCardReport[]; readonly format: DeckFormatReport | null }> {
-  const res = await fetch(IMPORT_DECK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
-  })
-  if (!res.ok) {
-    const data = (await res.json().catch(() => null)) as { error?: string } | null
-    throw new Error(data?.error ?? `import failed (${res.status})`)
-  }
-  const reader = res.body?.getReader()
-  if (!reader) throw new Error('import failed: no response body')
-
-  const decoder = new TextDecoder()
-  let buffer = ''
-  let outcome: { cards: readonly ImportedCardReport[]; format: DeckFormatReport | null } | null = null
-  let finished = false
-  while (!finished) {
-    const chunk = await reader.read()
-    finished = chunk.done
-    if (chunk.value) buffer += decoder.decode(chunk.value, { stream: true })
-    const parts = buffer.split('\n')
-    // The last piece is a partial line until the stream ends, at which point
-    // everything left is complete.
-    buffer = finished ? '' : (parts.pop() ?? '')
-    for (const part of parts) {
-      if (part.trim() === '') continue
-      const line = JSON.parse(part) as ImportDeckLine
-      if (line.type === 'progress') onProgress(line)
-      else if (line.type === 'result') outcome = { cards: line.cards, format: line.format }
-      else throw new Error(line.error)
-    }
-  }
-  if (outcome === null) throw new Error('import ended before the deck was resolved')
-  return outcome
-}
-
 /**
  * Paste a decklist export, resolve it into a deck the engine can actually
  * play right now: an implemented card is kept as-is, an unimplemented one
@@ -377,55 +287,9 @@ function ImportPanel({
     setError(null)
     importDecklist(text, setProgress)
       .then(({ cards: cardReports, format }) => {
-        const commanderNames = format?.commanders ?? []
-
-        const finalCards: string[] = []
-        const substituted: ImportSubstitution[] = []
-        const dropped: string[] = []
-        // Which printing each kept card arrived with, from the pasted list's
-        // own `(SET) number` suffixes — only ever present for a card kept
-        // as-is, since a substitution is a different card entirely.
-        const printings: Record<string, string> = {}
-        // What each of the list's commanders resolved to, kept apart from
-        // the loop's order so a pair stays in the order the list gave it.
-        const commanderAs = new Map<string, string>()
-
-        for (const c of cardReports) {
-          let resolvedName: string | null = null
-          if (c.implemented) {
-            resolvedName = c.name
-            if (c.printingId !== null) printings[c.name] = c.printingId
-          } else if (c.suggestedReplacement) {
-            resolvedName = c.suggestedReplacement
-            substituted.push({ from: c.name, to: c.suggestedReplacement, options: c.replacements })
-          } else {
-            dropped.push(c.name)
-            continue
-          }
-          if (commanderNames.includes(c.name)) {
-            commanderAs.set(c.name, resolvedName)
-          } else {
-            for (let i = 0; i < c.count; i += 1) finalCards.push(resolvedName)
-          }
-        }
-        const commanders = commanderNames.flatMap((n) => {
-          const as = commanderAs.get(n)
-          return as === undefined ? [] : [as]
-        })
-
-        const deck = createDeckFromImport(
-          commanders.length > 0 ? `Imported: ${commanders.join(' & ')}` : 'Imported deck',
-          finalCards,
-          commanders,
-          printings,
-        )
-        onImported(deck, {
-          total: cardReports.length,
-          asIs: cardReports.length - substituted.length - dropped.length,
-          substituted,
-          dropped,
-          printings: Object.keys(printings).length,
-        })
+        const resolved = resolveImport(cardReports, format)
+        const deck = createDeckFromImport(resolved.name, resolved.cards, resolved.commanders, resolved.printings)
+        onImported(deck, resolved.report)
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setLoading(false))
