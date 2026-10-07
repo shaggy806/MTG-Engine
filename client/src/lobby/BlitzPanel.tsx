@@ -11,7 +11,8 @@ type Phase =
   | { readonly kind: 'importing'; readonly progress: ImportProgress | null }
 
 /**
- * Blitzing — goldfishing against bots: the decklist on the clipboard, run
+ * Blitzing — goldfishing against bots. One button at the foot of the landing
+ * page, no explanation beyond its label: the decklist on the clipboard, run
  * through the deck import (an unimplemented card swapped for its stand-in,
  * one with none dropped), saved as the active deck, and played at once
  * against three bots on random starter decks (`NetworkGame.blitz`), with no
@@ -80,20 +81,10 @@ export function BlitzPanel({ game }: { readonly game: NetworkGame }) {
   }
 
   return (
-    <section className="landing-blitz" aria-labelledby="landing-blitz-title">
-      <div className="landing-blitz-head">
-        <div>
-          <h2 id="landing-blitz-title">Blitz a deck</h2>
-          <p className="landing-card-body">
-            Copy a Commander decklist (Moxfield, Archidekt, or any list of "1 Card Name" lines), then
-            Blitz it: you're straight into a game against three bots. Cards not in the engine yet are
-            swapped for close stand-ins.
-          </p>
-        </div>
-        <button type="button" className="landing-cta landing-blitz-btn" onClick={fromClipboard} disabled={busy}>
-          Blitz from clipboard
-        </button>
-      </div>
+    <section className="landing-blitz" aria-label="Blitz a deck">
+      <button type="button" className="landing-cta landing-blitz-btn" onClick={fromClipboard} disabled={busy}>
+        Have a deck copied? Click here to blitz!
+      </button>
 
       {phase.kind === 'paste' && !busy ? (
         <form

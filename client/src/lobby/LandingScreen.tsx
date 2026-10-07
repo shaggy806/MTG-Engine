@@ -48,10 +48,10 @@ function normalizeCode(raw: string): string {
 
 /**
  * The app's front door: the screen anyone who isn't already in a room lands
- * on. First the site's headline act, blitzing a deck against bots
- * (`BlitzPanel`); then two jobs, deliberately given two separate panels with
- * an "or" between them — start a game, or join one someone else started —
- * plus a footer row for the two pages that need no room at all.
+ * on. Two jobs, deliberately given two separate panels with an "or" between
+ * them — start a game, or join one someone else started — plus a footer row
+ * for the two pages that need no room at all, and at the very bottom the
+ * blitz button (`BlitzPanel`).
  *
  * It does *not* ask how many players. That question used to sit above the
  * "Create a game" button as three count buttons, where (a) nothing said the
@@ -110,8 +110,6 @@ export function LandingScreen({
           ⚠ {game.error}
         </p>
       ) : null}
-
-      <BlitzPanel game={game} />
 
       <div className="landing-actions">
         <section className="landing-card">
@@ -213,6 +211,8 @@ export function LandingScreen({
           </button>
         ) : null}
       </nav>
+
+      <BlitzPanel game={game} />
     </div>
   )
 }

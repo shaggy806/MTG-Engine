@@ -73,7 +73,7 @@ test('blitzing the clipboard starts a game against three bots', async ({ page, c
 
   await page.goto('/')
   await page.evaluate((text) => navigator.clipboard.writeText(text), LIST)
-  await page.getByRole('button', { name: 'Blitz from clipboard' }).click()
+  await page.getByRole('button', { name: 'Have a deck copied? Click here to blitz!' }).click()
 
   await expectBlitzStarted(page)
   // The deck was saved, and is now the active one.
@@ -88,7 +88,7 @@ test('with no list on the clipboard, a box to paste it into', async ({ page, con
 
   await page.goto('/')
   await page.evaluate(() => navigator.clipboard.writeText('not a decklist'))
-  await page.getByRole('button', { name: 'Blitz from clipboard' }).click()
+  await page.getByRole('button', { name: 'Have a deck copied? Click here to blitz!' }).click()
 
   await expect(page.getByText("Your clipboard doesn't hold a decklist")).toBeVisible()
   await page.locator('#landing-blitz-list').fill(LIST)

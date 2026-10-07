@@ -343,33 +343,16 @@
   color: var(--muted-dim);
 }
 
-/* Blitzing (BlitzPanel.tsx): the site's headline act, so it comes first and
-   carries the accent on its frame: the copy on the left, the button on the
-   right, and under them the paste box (when the clipboard can't be read) or
-   the import's progress. */
+/* Blitzing (BlitzPanel.tsx): one button across the foot of the page, its
+   label the only explanation; under it, when needed, the paste box (the
+   clipboard couldn't be read), the import's progress, or an error. */
 .landing-blitz {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: clamp(15px, 2.6vh, 26px);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--panel) 88%, var(--accent)), var(--panel));
-  border: 1px solid var(--accent-dim);
-  border-radius: 0;
-}
-.landing-blitz h2 {
-  font-size: clamp(17px, 1.7vw, 21px);
-  color: var(--accent);
-}
-.landing-blitz-head {
-  display: flex;
-  align-items: center;
-  gap: clamp(12px, 2vw, 28px);
-}
-.landing-blitz-head .landing-card-body {
-  margin-top: 6px;
+  gap: 10px;
 }
 .landing-blitz-btn {
-  flex: none;
+  width: 100%;
 }
 .landing-blitz-paste {
   display: flex;
@@ -427,13 +410,6 @@
 .landing-blitz-error {
   color: var(--bad);
 }
-@media (max-width: 640px) {
-  .landing-blitz-head {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
 /* The library and the deck builder — the two things that make the app look
    like more than a tech demo, and previously two underlined text links at the
    bottom of a dialog. */
