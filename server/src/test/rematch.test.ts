@@ -259,6 +259,31 @@ describe("rematch", () => {
     expect(resumed.view.awaiting?.kind).toBe("mulligan");
   });
 
+  it("restarts a game still in progress when the host asks to, and only the host", async () => {
+    const { alice, bob, roomId, room: first } = await startRoom();
+    await keepHands(alice, bob, roomId);
+    expect(first.game.state.result.over).toBe(false);
+
+    // Not Bob: he isn't the host.
+    bob.drain();
+    bob.send({ type: "rematch", roomId, restart: true });
+    expect(await bob.next(isError)).toMatchObject({ type: "error" });
+    expect(manager.get(roomId)).toBe(first);
+
+    // Alice restarts it mid-game: a new game for both, back at its mulligans.
+    alice.drain();
+    alice.send({ type: "rematch", roomId, restart: true });
+    const frame = await alice.next((m) => isState(m) && m.game === 2);
+    if (!isState(frame)) throw new Error("unreachable");
+    expect(frame.view.result.over).toBe(false);
+    expect(frame.view.awaiting?.kind).toBe("mulligan");
+    const forBob = await bob.next((m) => isState(m) && m.game === 2);
+    expect(isState(forBob) && forBob.seat).toBe(BOB);
+    const second = manager.get(roomId);
+    expect(second).not.toBe(first);
+    expect(second instanceof Room && second.game.state.seed).not.toBe(first.game.state.seed);
+  });
+
   it("refuses a room that can't be rematched", async () => {
     const pending = manager.createPending(2, { seed: 1 });
     expect(() => manager.rematch(pending.id)).toThrow(/hasn't started/);

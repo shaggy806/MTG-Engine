@@ -275,6 +275,10 @@ export type ClientMessage =
        * `canRematch`. */
       readonly type: "rematch";
       readonly roomId: string;
+      /** The host's "Restart game": deal it even though the game in
+       * progress isn't over, which is otherwise refused (a rematch belongs
+       * after a result, and a stray one mid-game would throw a game away). */
+      readonly restart?: true;
     }
   | {
       /** Sets how fast this room's bots play. Host only; allowed before and

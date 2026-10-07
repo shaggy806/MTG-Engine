@@ -177,3 +177,51 @@ test("the host's rematch carries the other player into the new game", async ({ b
   await hostContext.close()
   await guestContext.close()
 })
+
+test('the host restarts a game mid-way, and the other player is told', async ({ browser, request }) => {
+  const hostContext = await browser.newContext()
+  const guestContext = await browser.newContext()
+  const host = await hostContext.newPage()
+  const guest = await guestContext.newPage()
+  const hostErrors = pageErrors(host)
+  const guestErrors = pageErrors(guest)
+
+  await host.goto('/')
+  await host.getByRole('button', { name: 'Create a game' }).click()
+  await host.getByRole('button', { name: 'Ready', exact: true }).click()
+  const room = await roomOf(host)
+  await guest.goto(`/?room=${room}`)
+  await guest.getByRole('button', { name: 'Ready', exact: true }).click()
+  await host.getByRole('button', { name: 'Start Game' }).click()
+  for (const page of [host, guest]) {
+    await expect(keepPrompt(page)).toBeVisible(paced)
+    await page.getByRole('button', { name: 'Keep', exact: true }).click()
+  }
+  await expect(keepPrompt(host)).toHaveCount(0, paced)
+
+  // Only the host is offered it, and only mid-game.
+  await guest.getByRole('button', { name: 'Seat', exact: true }).click()
+  await expect(guest.getByRole('button', { name: 'Restart game…' })).toHaveCount(0)
+  await guest.keyboard.press('Escape')
+
+  // Asked once more, then dealt.
+  await host.getByRole('button', { name: 'Seat', exact: true }).click()
+  await host.getByRole('button', { name: 'Restart game…' }).click()
+  await expect(host.getByText('Restart for everyone?')).toBeVisible()
+  await screenshots(host, 'host-restart-confirm')
+  await host.getByRole('button', { name: 'Restart', exact: true }).click()
+
+  // Both at a new game's opening hands in the same room, the guest told why.
+  for (const page of [host, guest]) {
+    await expect(keepPrompt(page)).toBeVisible(paced)
+    expect(await roomOf(page)).toBe(room)
+  }
+  await expect(guest.getByText(/restarted the game$/)).toBeVisible()
+  await expect(host.getByText(/restarted the game$/)).toHaveCount(0)
+  expect(await command(request, { op: 'eval', room, js: 'return room.gameNumber' })).toBe(2)
+  await screenshots(guest, 'guest-restarted')
+  expect(hostErrors).toEqual([])
+  expect(guestErrors).toEqual([])
+  await hostContext.close()
+  await guestContext.close()
+})

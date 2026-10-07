@@ -992,6 +992,14 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         ) : null}
         <ErrorLine game={game} />
         {game.blitzReport !== null ? <BlitzReportToast report={game.blitzReport} onDismiss={game.dismissBlitzReport} /> : null}
+        {game.restarted && !game.isHost ? (
+          <HighrollToast onDismiss={game.dismissRestarted}>
+            {(() => {
+              const host = game.seats.find((s) => s.isHost)
+              return `${host ? playerLabel(host.player, game.seats) : 'The host'} restarted the game`
+            })()}
+          </HighrollToast>
+        ) : null}
         {showHighroll ? (
           <HighrollToast onDismiss={dismissHighroll}>
             {game.firstPlayerChosen

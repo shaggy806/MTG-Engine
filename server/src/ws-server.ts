@@ -420,9 +420,9 @@ export function attachRoomServer(
         }
         case "rematch": {
           const room = requireActiveRoom(manager, message.roomId);
-          requireHost(room, connection, "start a rematch");
+          requireHost(room, connection, message.restart === true ? "restart the game" : "start a rematch");
           // Deals the new game and publishes its opening frame to every seat.
-          boundRoom = manager.rematch(room.id);
+          boundRoom = manager.rematch(room.id, { restart: message.restart === true });
           return;
         }
         case "set-bot-speed": {

@@ -5,7 +5,10 @@ import type { NetworkGame } from '../net/useNetworkGame.ts'
 /**
  * What a player can do with their own seat mid-game, in one button in the top
  * strip (which has no room for three): hand it to a bot and take it back,
- * concede, and leave — and, once the game is over, reopen its result.
+ * concede, and leave — and, once the game is over, reopen its result. The
+ * host can restart the game mid-way: the same seats and decks dealt afresh
+ * for everyone (`NetworkGame.rematch(true)`), asked once more first, since
+ * the game in progress is lost.
  * Conceding asks once more inside the panel rather than through a browser
  * dialog: rule 104.3a lets a player concede at any time, and it can't be
  * undone.
@@ -23,6 +26,7 @@ export function SeatMenu({
 }) {
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [confirmingRestart, setConfirmingRestart] = useState(false)
   const boxRef = useRef<HTMLDivElement>(null)
 
   // Closes on a click anywhere else, or Escape, as the animations panel does.
@@ -61,6 +65,7 @@ export function SeatMenu({
         onClick={() => {
           // Opening it never starts on a half-finished concession.
           setConfirming(false)
+          setConfirmingRestart(false)
           setOpen((o) => !o)
         }}
       >
@@ -94,6 +99,30 @@ export function SeatMenu({
             ) : (
               <button type="button" onClick={() => setConfirming(true)}>
                 Concede…
+              </button>
+            )
+          ) : null}
+          {game.isHost && game.canRematch && !view.result.over ? (
+            confirmingRestart ? (
+              <div className="seat-menu-confirm">
+                <span>Restart for everyone?</span>
+                <button
+                  type="button"
+                  className="seat-menu-danger"
+                  onClick={() => {
+                    game.rematch(true)
+                    setOpen(false)
+                  }}
+                >
+                  Restart
+                </button>
+                <button type="button" onClick={() => setConfirmingRestart(false)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setConfirmingRestart(true)}>
+                Restart game…
               </button>
             )
           ) : null}

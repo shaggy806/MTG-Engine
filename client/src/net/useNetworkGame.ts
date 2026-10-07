@@ -251,8 +251,14 @@ export interface NetworkGame {
   /** The room can deal a rematch once its game is over (`state.canRematch`). */
   readonly canRematch: boolean
   /** Host only, once the game is over: deal the next game into this room,
-   * everyone at the table carried into it. */
-  rematch: () => void
+   * everyone at the table carried into it. `restart` deals it mid-game, the
+   * game in progress thrown away (the Seat menu's "Restart game"). */
+  rematch: (restart?: boolean) => void
+  /** The game was restarted before it was over: a rematch's first frame
+   * arrived while the last one's game was still going. For everyone but the
+   * host, who asked, to be told why the board just changed. */
+  readonly restarted: boolean
+  dismissRestarted: () => void
   joinRoom: (roomId: string) => void
   /** Walks back out of a room that hasn't started yet, to the landing page —
    * giving up my seat, if I hold one, so the table can fill it again. */
@@ -394,6 +400,9 @@ export function useNetworkGame(): NetworkGame {
   const [blitzRoomId, setBlitzRoomId] = useState<string | null>(null)
   const [gameNumber, setGameNumber] = useState(0)
   const [canRematch, setCanRematch] = useState(false)
+  const [restarted, setRestarted] = useState(false)
+  /** Whether the last frame's game was over, to tell a restart from a rematch. */
+  const lastOverRef = useRef(false)
   const view = frame?.view ?? null
   const actions = frame?.actions ?? EMPTY_ACTIONS
 
@@ -548,8 +557,12 @@ export function useNetworkGame(): NetworkGame {
           // A rematch: what the blitz's import changed was the last game's
           // news, not this one's.
           const game: GameKey = { roomId: message.roomId, game: message.game }
-          if (isRematch(lastGameRef.current, game)) setBlitzReport(null)
+          if (isRematch(lastGameRef.current, game)) {
+            setBlitzReport(null)
+            setRestarted(!lastOverRef.current)
+          }
           lastGameRef.current = game
+          lastOverRef.current = message.view.result.over
           setGameNumber(message.game)
           setCanRematch(message.canRematch === true)
           setSeats(message.seats)
@@ -875,11 +888,15 @@ export function useNetworkGame(): NetworkGame {
     send({ type: 'start-game', roomId: id })
   }, [send])
 
-  const rematch = useCallback(() => {
-    const id = roomIdRef.current
-    if (id === null) return
-    send({ type: 'rematch', roomId: id })
-  }, [send])
+  const rematch = useCallback(
+    (restart = false) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'rematch', roomId: id, ...(restart ? { restart: true as const } : {}) })
+    },
+    [send],
+  )
+  const dismissRestarted = useCallback(() => setRestarted(false), [])
 
   const passTurn = useCallback(() => {
     const id = roomIdRef.current
@@ -1050,6 +1067,8 @@ export function useNetworkGame(): NetworkGame {
     gameNumber,
     canRematch,
     rematch,
+    restarted,
+    dismissRestarted,
     joinRoom,
     leaveRoom,
     claimSeat,

@@ -127,12 +127,15 @@ export class RoomManager {
    * keeps the seat for their token to reclaim on reconnect. A player who had
    * handed their seat to a bot plays it themselves again. Bots keep their
    * seats and names. Returns the new room.
+   *
+   * `restart` deals it mid-game, the game in progress thrown away: the
+   * host's "Restart game". Without it, a game still going is refused.
    */
-  rematch(id: string): Room {
+  rematch(id: string, options: { readonly restart?: boolean } = {}): Room {
     const old = this.rooms.get(id);
     if (!(old instanceof Room)) throw new Error(`room ${id} hasn't started a game yet`);
     if (old.recipe === null) throw new Error("this room can't deal a rematch");
-    if (!old.game.state.result.over) throw new Error("the game isn't over yet");
+    if (!old.game.state.result.over && options.restart !== true) throw new Error("the game isn't over yet");
 
     const recipe: GameRecipe = old.recipe;
     const players = recipe.config.decks.map((d) => d.player);
