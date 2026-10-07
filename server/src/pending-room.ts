@@ -16,7 +16,7 @@
  * null-checks through `Room`'s entire API for no benefit.
  */
 
-import { colorIdentityOf, commandersOf, createDefaultRegistry } from "engine";
+import { colorIdentityOf, commandersOf, createDefaultRegistry, validateCommanderDeck } from "engine";
 import type { Color, DeckList, GameConfig, PlayerId } from "engine";
 import { botNameFits, botNameFor } from "./bot-names.js";
 import type { Connection } from "./room.js";
@@ -77,6 +77,13 @@ function deckIdentity(deck: PendingDeck): Set<Color> {
  * This is a live risk rather than a theoretical one: a deck saved in a
  * browser's `localStorage` outlives any card the pool later renames or drops.
  */
+/** Why `deck` isn't a Commander-legal deck (the first reason), or `null`. */
+function deckProblemOf(deck: PendingDeck | null): string | null {
+  if (deck === null) return null;
+  const result = validateCommanderDeck({ commanders: commandersOf(deck), cards: deck.cards, size: 100 }, REGISTRY);
+  return result.legal ? null : (result.violations[0] ?? "not a Commander-legal deck");
+}
+
 function assertDeckIsBuildable(deck: PendingDeck): void {
   assertPrintingsAreSafe(deck);
   const commanders = commandersOf(deck);
@@ -165,7 +172,7 @@ export class PendingRoom {
   constructor(id: string, players: number, config: PendingGameConfig, hostToken?: string) {
     this.id = id;
     this.config = config;
-    this.settings = { startingLife: config.rules?.startingLife ?? 40, firstPlayer: "random" };
+    this.settings = { startingLife: config.rules?.startingLife ?? 40, firstPlayer: "random", commanderLegalOnly: false };
     this.host = new HostRole(hostToken ?? null);
     this.seats = SEATS.slice(0, players).map((s) => emptySeat(s.id));
     this.lastActivityAt = Date.now();
@@ -194,6 +201,7 @@ export class PendingRoom {
             },
       ready: s.isBot || s.ready,
       isHost: s.connection !== null && s.connection === this.hostConnection(),
+      deckProblem: deckProblemOf(s.deck),
     }));
   }
 
@@ -238,8 +246,27 @@ export class PendingRoom {
       }
       next.firstPlayer = first;
     }
+    if (change.commanderLegalOnly !== undefined) {
+      if (typeof change.commanderLegalOnly !== "boolean") throw new Error("commanderLegalOnly must be true or false");
+      next.commanderLegalOnly = change.commanderLegalOnly;
+    }
     this.settings = next;
+    // Turned on: a seat readied with a deck it now refuses isn't ready any
+    // more — its player picks another deck, or the host turns it off.
+    if (next.commanderLegalOnly) {
+      for (const seat of this.seats) {
+        if (!seat.isBot && seat.ready && deckProblemOf(seat.deck) !== null) seat.ready = false;
+      }
+    }
     this.lastActivityAt = Date.now();
+  }
+
+  /** Refuses `deck` while only Commander-legal decks may play
+   * (`RoomSettings.commanderLegalOnly`), saying why. */
+  private assertDeckAllowed(deck: PendingDeck | null): void {
+    if (!this.settings.commanderLegalOnly) return;
+    const problem = deckProblemOf(deck);
+    if (problem !== null) throw new Error(`only Commander-legal decks may play here: ${problem}`);
   }
 
   /** The host's connection when they haven't claimed a seat — everyone
@@ -300,6 +327,7 @@ export class PendingRoom {
       if (seat.ready) throw new Error(`seat ${player} is readied up — un-ready before changing decks`);
       assertDeckIsBuildable(deck);
     }
+    if (ready === true) this.assertDeckAllowed(deck ?? seat.deck ?? this.fallbackDeck(player));
     seat.connection = connection;
     seat.clientToken = clientToken;
     const trimmed = displayName?.trim();
@@ -376,6 +404,7 @@ export class PendingRoom {
   setReady(connection: Connection, ready: boolean): void {
     const player = this.seatOf(connection);
     if (player === null) throw new Error("claim a seat before readying up");
+    if (ready) this.assertDeckAllowed(this.seatFor(player).deck);
     this.seatFor(player).ready = ready;
     this.lastActivityAt = Date.now();
   }
@@ -389,6 +418,7 @@ export class PendingRoom {
     if (seat.clientToken !== null) throw new Error(`seat ${player} is already claimed`);
     if (seat.isBot) throw new Error(`seat ${player} already has a bot`);
     if (deck !== undefined) assertDeckIsBuildable(deck);
+    this.assertDeckAllowed(deck ?? this.fallbackDeck(player));
     seat.isBot = true;
     seat.deck = deck ?? this.fallbackDeck(player);
     seat.displayName = this.botName(player, seat.deck);
@@ -402,6 +432,7 @@ export class PendingRoom {
     const seat = this.seatFor(player);
     if (!seat.isBot) throw new Error(`seat ${player} isn't played by a bot`);
     assertDeckIsBuildable(deck);
+    this.assertDeckAllowed(deck);
     seat.deck = deck;
     if (seat.displayName === null || !botNameFits(seat.displayName, deckIdentity(deck))) {
       seat.displayName = this.botName(player, deck);
@@ -458,7 +489,11 @@ export class PendingRoom {
    * `start-game`. Stricter than `isReady`: a table can be entirely filled
    * and still not start until every human seat says go. */
   allReady(): boolean {
-    return this.seats.every((s) => s.isBot || (s.clientToken !== null && s.ready));
+    return this.seats.every(
+      (s) =>
+        (s.isBot || (s.clientToken !== null && s.ready)) &&
+        (!this.settings.commanderLegalOnly || deckProblemOf(s.deck) === null),
+    );
   }
 
   /** The finished `GameConfig` — only meaningful once `isReady()`. The

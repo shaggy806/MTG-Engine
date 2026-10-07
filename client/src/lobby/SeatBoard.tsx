@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import type { PlayerId } from 'engine/client'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
 import type { SeatCommander, WireDeck } from 'protocol'
@@ -37,7 +37,7 @@ const toWire = (d: DeckContents): WireDeck => ({
  * at the bottom only lights up once every seat has. Un-readying (mine only)
  * reopens my own deck slot for editing; a readied deck is locked until then.
  *
- * This is also where the table gets its size (2-4 seats), via an "Add seat"
+ * This is also where the table gets its size (2-4 seats), via an "Add player"
  * tile the size of a seat on the end of the row and a small × on any seat
  * nobody is sitting in.
  * That question used to be asked on the landing page instead, as three "N
@@ -71,7 +71,7 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
   const nextSeat = nextSeatIndex === -1 ? null : game.seats[nextSeatIndex]
   // The seat this device either already holds, or would claim on "Ready" —
   // `null` once every seat is spoken for and I'm not one of them.
-  const mySeatPlayer = joined ? game.seat : nextSeat?.player ?? null
+  const mySeatPlayer = game.spectating ? null : joined ? game.seat : nextSeat?.player ?? null
   const mySeatStatus = joined ? game.seats.find((s) => s.player === game.seat) : undefined
   const amReady = mySeatStatus?.ready ?? false
 
@@ -84,12 +84,12 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
   // open seat, so two people joining both showed as Player 1. Once per
   // mount, so a refusal (a full four-seat table) doesn't retry in a loop.
   const tookSeat = useRef(false)
-  const { takeSeat, roomPending } = game
+  const { takeSeat, roomPending, spectating } = game
   useEffect(() => {
-    if (joined || !roomPending || tookSeat.current) return
+    if (joined || !roomPending || spectating || tookSeat.current) return
     tookSeat.current = true
     takeSeat(undefined, myDeck ? toWire(myDeck) : undefined)
-  }, [joined, roomPending, takeSeat, myDeck])
+  }, [joined, roomPending, spectating, takeSeat, myDeck])
 
   const readyUp = () => {
     if (mySeatPlayer === null) return
@@ -147,11 +147,14 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
       : `Player ${game.seats.indexOf(s) + 1}`
 
   return (
-    <div className="seat-board" style={{ '--seat-count': game.seats.length } as CSSProperties}>
+    <div className="seat-board">
       <div className="seat-board-main">
         <div className="overlay-box seat-board-box">
           {children}
-          <div className={`seat-board-grid${canAddSeat ? ' has-add' : ''}`}>
+          {/* Always four places, so the board never moves as seats come and
+              go: the seats, then an Add player tile in each place left —
+              a plain empty place for anyone but the host. */}
+          <div className="seat-board-grid">
             {game.seats.map((s, i) => {
               const isMySeat = s.player === mySeatPlayer
               // My own seat draws from the local deck, which has the whole
@@ -168,6 +171,9 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
               // seat other than mine is never editable.
               const deckEditable = isMySeat ? !amReady : host && !s.claimed
               const removable = isRemovable(s)
+              // "Commander-legal decks only": what this seat's deck breaks,
+              // the server's reason.
+              const refused = game.roomSettings?.commanderLegalOnly === true ? s.deckProblem : null
 
               return (
                 <div
@@ -220,6 +226,11 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
                   </div>
 
                   <DeckSlot deck={deck} editable={deckEditable} onClick={() => setPickerSeat(s.player)} />
+                  {refused !== null ? (
+                    <span className="seat-deck-refused" title={refused}>
+                      Not Commander-legal: {refused}
+                    </span>
+                  ) : null}
 
                   {isMySeat ? (
                     amReady ? (
@@ -227,7 +238,13 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
                         ✓ Ready
                       </button>
                     ) : (
-                      <button type="button" className="seat-panel-ready-btn" onClick={readyUp}>
+                      <button
+                        type="button"
+                        className="seat-panel-ready-btn"
+                        onClick={readyUp}
+                        disabled={refused !== null}
+                        title={refused !== null ? 'Only Commander-legal decks may play in this room' : undefined}
+                      >
                         Ready
                       </button>
                     )
@@ -244,12 +261,16 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
               )
             })}
 
-            {canAddSeat ? (
-              <button type="button" className="seat-add-panel" onClick={game.addSeat}>
-                <span className="seat-add-plus">+</span>
-                <span className="seat-add-label">Add seat</span>
-              </button>
-            ) : null}
+            {Array.from({ length: MAX_SEATS - game.seats.length }, (_, i) =>
+              canAddSeat ? (
+                <button key={`add-${i}`} type="button" className="seat-add-panel" onClick={game.addSeat}>
+                  <span className="seat-add-plus">+</span>
+                  <span className="seat-add-label">Add player</span>
+                </button>
+              ) : (
+                <div key={`add-${i}`} className="seat-add-panel seat-add-empty" aria-hidden="true" />
+              ),
+            )}
           </div>
         </div>
 

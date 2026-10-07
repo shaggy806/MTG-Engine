@@ -18,22 +18,21 @@
      while the inner ones had 16px to breathe. */
   --seat-gap: 16px;
   container-type: inline-size;
-  /* The screen's width, so the settings box sits at its right edge; each box
+  /* The screen's width, the container the seats size against; each box
      inside sizes itself. Centred in `.overlay` the way an `.overlay-box` is. */
   width: 96vw;
   margin: auto;
 }
 
-/* Two boxes: the room's (its header over the seats) and, down the screen's
-   right edge, one for the room's settings and Start Game. The settings box
-   is pinned to that edge at every table size and the room box centres in
-   the rest, sized to its seats: centring the two as one group put the
-   settings in the middle of the screen beside a small table and moved them
-   every time a seat was added, and one box holding both ran the screen's
-   width, a long empty panel around two seats. */
+/* Two boxes side by side, centred as one group: the room's (its header over
+   the seats) and one for the room's settings and Start Game. The room box
+   is always four places wide (`.seat-board-grid`), so the group never moves
+   as seats come and go — the reason the settings were once pinned to the
+   screen's right edge, which left a wide screen a gap between the two. */
 .seat-board-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--side-w);
+  grid-template-columns: auto var(--side-w);
+  justify-content: center;
   gap: var(--seat-gap);
   align-items: start;
 }
@@ -60,9 +59,8 @@
      compact on one screen. A smaller table is now a narrower, centred row
      of the same seats. Measured against the whole board (`100cqw`, the
      `.seat-board` container) less the settings column and the room box's
-     side padding and border: four columns, since
-     the Add seat tile (below) only shows while there are three seats or
-     fewer. Capped against the card size, since the board runs the screen's
+     side padding and border: four columns, always — the places a table
+     doesn't fill hold Add player tiles (below). Capped against the card size, since the board runs the screen's
      full width: on a wide screen four seats would otherwise each be a third
      of a 1080p screen wide. */
   --seat-w: min(
@@ -70,16 +68,15 @@
     calc(var(--card-w) * 1.45)
   );
   display: grid;
-  grid-template-columns: repeat(var(--seat-count), var(--seat-w));
+  grid-template-columns: repeat(4, var(--seat-w));
   justify-content: center;
   gap: var(--seat-gap);
 }
-/* Add seat is a tile the size of a seat on the end of the row: the empty
-   chair it adds goes where it stands. `--seat-count` stays the number of
-   real seats. A seat drops with the × on its own head. */
-.seat-board-grid.has-add {
-  grid-template-columns: repeat(calc(var(--seat-count) + 1), var(--seat-w));
-}
+/* Add player is a tile the size of a seat in each place the table doesn't
+   fill: the chair it adds goes where it stands, and the board keeps its
+   four places, so nothing moves as seats come and go (the user,
+   2026-10-07). Anyone but the host sees the place empty. A seat drops with
+   the × on its own head. */
 
 .seat-add-panel {
   display: flex;
@@ -93,7 +90,19 @@
   border-radius: 0;
   color: var(--muted);
 }
-.seat-add-panel:hover {
+.seat-deck-refused {
+  font-size: var(--text-xs);
+  color: var(--warn);
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.seat-add-panel.seat-add-empty {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+}
+button.seat-add-panel:hover {
   border-color: var(--accent);
   color: var(--accent);
 }

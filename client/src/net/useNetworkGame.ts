@@ -276,6 +276,11 @@ export interface NetworkGame {
   takeSeat: (displayName?: string, deck?: WireDeck) => void
   /** Whether the joined room is still the waiting room. */
   readonly roomPending: boolean
+  /** Watching the room without a seat (`spectate`): its seat board, then its
+   * game with every hand hidden and nothing to do. */
+  readonly spectating: boolean
+  /** Watch the joined room without a seat — what a full table offers. */
+  spectate: () => void
   /** Concede the game (rule 104.3a): lose and leave it, and keep watching. */
   concede: () => void
   /** Hand my seat to a bot (`true`) or take it back (`false`). */
@@ -383,6 +388,7 @@ export function useNetworkGame(): NetworkGame {
   const [seat, setSeat] = useState<PlayerId | null>(null)
   /** Whether the joined room is still the waiting room (no `Game` yet). */
   const [roomPending, setRoomPending] = useState(false)
+  const [spectating, setSpectating] = useState(false)
   const [frame, setFrame] = useState<Frame | null>(null)
   const [autoPassing, setAutoPassing] = useState(false)
   const [autoPassPaused, setAutoPassPaused] = useState(false)
@@ -463,6 +469,13 @@ export function useNetworkGame(): NetworkGame {
           setBotSpeedState(message.botSpeed)
           setRoomSettingsState(message.settings ?? null)
           setRoomPending(message.pending === true)
+          // Watching, not seated: the seat board as it changes, no seat.
+          if (message.spectating === true) {
+            setSpectating(true)
+            setSeat(null)
+            setStatus('waiting-for-players')
+            return
+          }
           // A blitz's room, just made: take the first seat with the deck,
           // ready, fill the rest with bots and start, all in one go (the
           // server handles a socket's messages in order). Until the first
@@ -564,6 +577,7 @@ export function useNetworkGame(): NetworkGame {
           lastGameRef.current = game
           lastOverRef.current = message.view.result.over
           setGameNumber(message.game)
+          setSpectating(message.spectating === true)
           setCanRematch(message.canRematch === true)
           setSeats(message.seats)
           setSeat(message.seat)
@@ -852,10 +866,19 @@ export function useNetworkGame(): NetworkGame {
     setSeats([])
     setSeat(null)
     setRoomPending(false)
+    setSpectating(false)
     setIsHost(false)
     setError(null)
     setBlitzReport(null)
     setStatus('no-room')
+  }, [send])
+
+  const spectate = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    pendingClaimRef.current = null
+    setError(null)
+    send({ type: 'spectate-room', roomId: id })
   }, [send])
 
   const addSeat = useCallback(() => {
@@ -1074,6 +1097,8 @@ export function useNetworkGame(): NetworkGame {
     claimSeat,
     takeSeat,
     roomPending,
+    spectating,
+    spectate,
     concede,
     setBotTakeover,
     sendPassSettings,

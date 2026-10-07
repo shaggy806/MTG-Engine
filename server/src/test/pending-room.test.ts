@@ -10,8 +10,8 @@ describe("PendingRoom", () => {
   it("starts with every seat unclaimed and not ready", () => {
     const room = pendingRoom();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false },
+      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false, deckProblem: null },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false, deckProblem: null },
     ]);
     expect(room.isReady()).toBe(false);
     expect(room.allReady()).toBe(false);
@@ -393,5 +393,52 @@ describe("PendingRoom", () => {
       room.claimSeat(ALICE, "alice-token", conn, undefined, { cards: ["Island"] });
       expect(room.toGameConfig().decks.find((d) => d.player === ALICE)?.cards).toEqual(["Island"]);
     });
+  });
+});
+
+describe("PendingRoom: Commander-legal decks only", () => {
+  const twoForests = { cards: ["Forest", "Forest"], commanders: ["Ureni of the Unwritten"] };
+
+  it("reports why a seat's deck isn't Commander-legal", () => {
+    const room = pendingRoom();
+    const alice = { send: () => {} };
+    room.claimSeat(ALICE, "alice-token", alice, undefined, twoForests);
+    room.claimSeat(BOB, "bob-token", { send: () => {} });
+    const [a, b] = room.seatStatuses();
+    expect(a.deckProblem).toMatch(/100/);
+    // A starter deck is a legal one.
+    expect(b.deckProblem).toBeNull();
+  });
+
+  it("is off by default: any buildable deck readies up", () => {
+    const room = pendingRoom();
+    const alice = { send: () => {} };
+    room.claimSeat(ALICE, "alice-token", alice, undefined, twoForests);
+    room.setReady(alice, true);
+    expect(room.seatStatuses()[0].ready).toBe(true);
+  });
+
+  it("on, refuses to ready an illegal deck, un-readies one already ready, and won't start", () => {
+    const room = pendingRoom();
+    const alice = { send: () => {} };
+    const bob = { send: () => {} };
+    room.claimSeat(ALICE, "alice-token", alice, undefined, twoForests, true);
+    room.claimSeat(BOB, "bob-token", bob, undefined, undefined, true);
+    expect(room.allReady()).toBe(true);
+    room.setSettings({ commanderLegalOnly: true });
+    expect(room.seatStatuses().map((s) => s.ready)).toEqual([false, true]);
+    expect(room.allReady()).toBe(false);
+    expect(() => room.setReady(alice, true)).toThrow(/only Commander-legal decks/);
+    // Another deck — the starter — and it's welcome.
+    room.claimSeat(ALICE, "alice-token", alice, undefined, { cards: SEATS[0].cards, commanders: SEATS[0].commanders }, true);
+    expect(room.allReady()).toBe(true);
+  });
+
+  it("on, refuses an illegal deck for a bot", () => {
+    const room = pendingRoom();
+    room.setSettings({ commanderLegalOnly: true });
+    expect(() => room.addBot(BOB, twoForests)).toThrow(/only Commander-legal decks/);
+    room.addBot(BOB);
+    expect(room.seatStatuses()[1].isBot).toBe(true);
   });
 });

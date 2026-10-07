@@ -107,8 +107,9 @@ describe("room server (end to end over WebSocket)", () => {
         deck: { name: SEATS[0].name, commanders: [{ name: SEATS[0].commanders![0], printing: null }] },
         ready: false,
         isHost: true,
+        deckProblem: null,
       },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false, deckProblem: null },
     ]);
 
     bobWs.send(JSON.stringify({ type: "join-room", roomId }));
@@ -414,6 +415,38 @@ describe("room server (end to end over WebSocket)", () => {
     expect(err.message).toMatch(/already started/);
   });
 
+  it("lets a connection with no seat spectate: the seat board, then frames with no hand and no actions", async () => {
+    const ws = await openSocket();
+    const next = messageQueue(ws);
+    ws.send(JSON.stringify({ type: "create-room" }));
+    const created = await next();
+    if (created.type !== "room-created") throw new Error("unreachable");
+    const roomId = created.roomId;
+    ws.send(JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice", ready: true }));
+    await next();
+    ws.send(JSON.stringify({ type: "add-bot", roomId, seat: BOB }));
+    await next();
+
+    // A full table: the watcher spectates the waiting room.
+    const watcher = await openSocket();
+    const watcherNext = messageQueue(watcher);
+    watcher.send(JSON.stringify({ type: "spectate-room", roomId }));
+    const joined = await watcherNext();
+    expect(joined.type === "room-joined" && joined.spectating).toBe(true);
+    expect(joined.type === "room-joined" && joined.seat).toBeNull();
+
+    // The game starts: its frames reach the spectator too.
+    ws.send(JSON.stringify({ type: "start-game", roomId }));
+    let frame = await watcherNext();
+    while (frame.type !== "state") frame = await watcherNext();
+    expect(frame.spectating).toBe(true);
+    expect(frame.actions).toEqual([]);
+    // Every hand hidden: its cards are named in the zones, never shown.
+    const handCards = [ALICE, BOB].flatMap((p) => frame.type === "state" ? frame.view.zones.hands[p] ?? [] : []);
+    expect(handCards.length).toBeGreaterThan(0);
+    expect(handCards.filter((id) => frame.type === "state" && frame.view.objects[id] !== undefined)).toEqual([]);
+  });
+
   it("rate-limits a connection that sends a flood of messages", async () => {
     const ws = await openSocket();
     const nextMsg = messageQueue(ws);
@@ -470,6 +503,7 @@ describe("room server (end to end over WebSocket)", () => {
       deck: { name: SEATS[1].name, commanders: [{ name: SEATS[1].commanders![0], printing: null }] },
       ready: true,
       isHost: false,
+      deckProblem: null,
     });
   });
 

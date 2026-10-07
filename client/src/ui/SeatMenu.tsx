@@ -48,7 +48,8 @@ export function SeatMenu({
   }, [open])
 
   const seat = game.seat
-  const inGame = seat !== null && !view.result.over && view.players[seat]?.hasLost === false
+  // A spectator's seat is only whose side is drawn nearest: nothing to play.
+  const inGame = !game.spectating && seat !== null && !view.result.over && view.players[seat]?.hasLost === false
   const botPlaying = game.seats.find((s) => s.player === seat)?.isBot === true
   // The opening hands are answered in parallel before the game begins; the
   // server refuses a concession then (`Game.whyCannotConcede`).

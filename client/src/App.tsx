@@ -797,7 +797,16 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
         <div className="toast-stack">
           <ErrorLine game={game} />
         </div>
-        {roomFull ? <p className="muted">Room is full.</p> : null}
+        {/* A full table can still be watched: every hand hidden, nothing
+            to do (`spectate-room`). */}
+        {roomFull ? (
+          <p className="muted room-full">
+            Room is full.{' '}
+            <button type="button" onClick={game.spectate}>
+              Spectate
+            </button>
+          </p>
+        ) : null}
       </SeatBoard>
     </div>
   )
@@ -814,6 +823,9 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
       <SeatBoard game={game}>
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
+        {game.spectating ? (
+          <p className="muted">You're spectating: you'll watch the game when it starts, every hand hidden.</p>
+        ) : null}
         {game.roomId !== null ? <InviteLink roomId={game.roomId} /> : null}
         <div className="toast-stack">
           <ErrorLine game={game} />
@@ -891,10 +903,11 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   // My passing preferences live on this device and the server does the
   // passing: sent when the game screen opens and whenever they change.
   const passSettings = usePassSettings()
-  const { sendPassSettings, status } = game
+  const { sendPassSettings, status, spectating } = game
   useEffect(() => {
-    if (status === 'playing') sendPassSettings(passSettings)
-  }, [passSettings, sendPassSettings, status])
+    // A spectator has no seat to pass for.
+    if (status === 'playing' && !spectating) sendPassSettings(passSettings)
+  }, [passSettings, sendPassSettings, status, spectating])
   if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
@@ -909,7 +922,10 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           the step pips, who's actually waiting to act, and the menu, all in
           one place instead of stacked as separate banners. */}
       <header className="top-strip">
-        <span className="ts-room">room {game.roomId}</span>
+        <span className="ts-room">
+          room {game.roomId}
+          {game.spectating ? <span className="ts-spectating"> · spectating</span> : null}
+        </span>
         <TurnBanner view={view} seats={game.seats} />
         <PhaseTrack view={view} seat={seat} />
         <span className="ts-acting">
@@ -4494,44 +4510,49 @@ function Table({
             {`Waiting for ${playerLabel(who, game.seats)} to ${AWAITING_LABEL[awaiting.kind]}…`}
           </span>
         ) : null}
-        <button type="button" onClick={pass} disabled={!canPass}>
-          Pass (space)
-        </button>
-        {/* Only while something is actually on the stack: with an empty one
-            there is nothing to resolve, and the button would read as a
-            second, vaguer "Pass". */}
-        {view.zones.stack.length > 0 ? (
-          <button
-            type="button"
-            onClick={game.resolveAll}
-            disabled={!canPass}
-            title="Keep passing until the stack has resolved — stops if anything needs you"
-          >
-            Resolve stack (
-            {/* An entry standing for several identical triggers is that many. */}
-            {view.zones.stack.reduce((n, id) => n + (view.objects[id]?.stackCount ?? 1), 0)})
-          </button>
-        ) : null}
-        <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>
-          Pass Turn
-        </button>
-        {/* Short labels so all four fit one row; `title` carries the full
-            sentence, since that's the part that actually explains them. */}
-        <button
-          type="button"
-          onClick={game.autoPass}
-          title={
-            game.autoPassPaused
-              ? 'Paused so you can respond — resumes by itself once the stack is clear. Click to turn it off.'
-              : game.autoPassing
-                ? 'Stop passing automatically'
-                : 'Pass automatically until my own turn comes round again'
-          }
-        >
-          {/* Paused is still on: say so, or a button that reads "Stop
-              auto-pass" while the game waits on you looks like it broke. */}
-          {game.autoPassPaused ? 'Auto-pass paused' : game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
-        </button>
+        {/* A spectator only watches: no passing of any kind. */}
+        {game.spectating ? null : (
+          <>
+            <button type="button" onClick={pass} disabled={!canPass}>
+              Pass (space)
+            </button>
+            {/* Only while something is actually on the stack: with an empty one
+                there is nothing to resolve, and the button would read as a
+                second, vaguer "Pass". */}
+            {view.zones.stack.length > 0 ? (
+              <button
+                type="button"
+                onClick={game.resolveAll}
+                disabled={!canPass}
+                title="Keep passing until the stack has resolved — stops if anything needs you"
+              >
+                Resolve stack (
+                {/* An entry standing for several identical triggers is that many. */}
+                {view.zones.stack.reduce((n, id) => n + (view.objects[id]?.stackCount ?? 1), 0)})
+              </button>
+            ) : null}
+            <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>
+              Pass Turn
+            </button>
+            {/* Short labels so all four fit one row; `title` carries the full
+                sentence, since that's the part that actually explains them. */}
+            <button
+              type="button"
+              onClick={game.autoPass}
+              title={
+                game.autoPassPaused
+                  ? 'Paused so you can respond — resumes by itself once the stack is clear. Click to turn it off.'
+                  : game.autoPassing
+                    ? 'Stop passing automatically'
+                    : 'Pass automatically until my own turn comes round again'
+              }
+            >
+              {/* Paused is still on: say so, or a button that reads "Stop
+                  auto-pass" while the game waits on you looks like it broke. */}
+              {game.autoPassPaused ? 'Auto-pass paused' : game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
+            </button>
+          </>
+        )}
       </div>
     )
   }

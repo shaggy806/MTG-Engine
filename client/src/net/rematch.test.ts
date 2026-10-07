@@ -15,6 +15,7 @@ const seat = (player: PlayerId, isHost: boolean): SeatStatus => ({
   deck: null,
   ready: true,
   isHost,
+  deckProblem: null,
 })
 
 describe('isRematch', () => {

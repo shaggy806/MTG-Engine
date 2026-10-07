@@ -76,6 +76,32 @@ export function RoomSettingsPanel({
           )}
         </div>
 
+        {/* Commander's deck rules (rule 903.5 — 100 cards, singleton, the
+            commanders' colour identity), or any deck at all. */}
+        <div className="rs-field">
+          <span className="rs-label">Decks</span>
+          {host ? (
+            <div className="rs-options" role="group" aria-label="Decks">
+              {([
+                [false, 'Any deck'],
+                [true, 'Commander-legal'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={`seg-option${settings.commanderLegalOnly === value ? ' active' : ''}`}
+                  aria-pressed={settings.commanderLegalOnly === value}
+                  onClick={() => game.setRoomSettings({ commanderLegalOnly: value })}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <span className="rs-value">{settings.commanderLegalOnly ? 'Commander-legal only' : 'Any deck'}</span>
+          )}
+        </div>
+
         <div className="rs-field">
           <span className="rs-label">Bot speed</span>
           {host ? (

@@ -7,7 +7,7 @@
 
 import type { IncomingMessage } from "node:http";
 import type { WebSocket, WebSocketServer } from "ws";
-import { COMMANDER_RULES } from "engine";
+import { COMMANDER_RULES, SPECTATOR } from "engine";
 import type { ArtManifestEntry } from "engine";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
@@ -64,6 +64,57 @@ function broadcast(room: Room): void {
       ...(firstFrame ? { artManifest: artManifestFor(room) } : {}),
     });
   }
+  for (const connection of spectatorsOf(room.id)) connection.send(spectatorFrame(room, connection));
+}
+
+/**
+ * The connections watching each room without a seat (`spectate-room`), by
+ * room code: a waiting room's promotion and a rematch both put a new room
+ * under the same code, so spectators carry across them. They get every
+ * frame, never ack (so never hold up a bot), and go when they leave or drop.
+ */
+const spectators = new Map<string, Set<Connection>>();
+
+function spectatorsOf(roomId: string): readonly Connection[] {
+  return [...(spectators.get(roomId) ?? [])];
+}
+
+/** Stops `connection` watching anything — it left, or dropped. Returns
+ * whether it was watching `roomId`. */
+function stopSpectating(connection: Connection, roomId?: string): boolean {
+  let was = false;
+  for (const [id, set] of spectators) {
+    if (!set.delete(connection)) continue;
+    if (id === roomId) was = true;
+    if (set.size === 0) spectators.delete(id);
+  }
+  return was;
+}
+
+/** One frame of `room`'s game for a spectator: every hand hidden
+ * (`SPECTATOR`'s view), no actions, the first seat nearest. */
+function spectatorFrame(room: Room, connection: Connection): ServerMessage {
+  const firstFrame = !sentArtManifest.has(connection);
+  if (firstFrame) sentArtManifest.add(connection);
+  return {
+    type: "state",
+    roomId: room.id,
+    seq: room.frameSeq,
+    game: room.gameNumber,
+    seat: room.game.state.turnOrder[0],
+    view: room.game.viewFor(SPECTATOR),
+    actions: [],
+    seats: room.seatStatuses(),
+    autoPassing: false,
+    autoPassPaused: false,
+    isHost: false,
+    botSpeed: room.botSpeed,
+    botsPaused: room.botsPaused,
+    ...(room.firstPlayerChosen ? { firstPlayerChosen: true as const } : {}),
+    ...(room.stopped !== null ? { stopped: room.stopped } : {}),
+    spectating: true,
+    ...(firstFrame ? { artManifest: artManifestFor(room) } : {}),
+  };
 }
 
 /** The connections that have had this game's art manifest — each gets it
@@ -93,7 +144,7 @@ function requireCaptures(manager: RoomManager, roomId: string, connection: Conne
 }
 
 /** A `room-joined` for one connection — `isHost` differs per recipient. */
-function roomJoined(room: Room | PendingRoom, connection: Connection): ServerMessage {
+function roomJoined(room: Room | PendingRoom, connection: Connection): Extract<ServerMessage, { type: "room-joined" }> {
   return {
     type: "room-joined",
     roomId: room.id,
@@ -117,6 +168,9 @@ function broadcastPending(room: PendingRoom, except?: Connection): void {
   if (host !== null) connections.push(host);
   for (const connection of connections) {
     if (connection !== except) connection.send(roomJoined(room, connection));
+  }
+  for (const connection of spectatorsOf(room.id)) {
+    if (connection !== except) connection.send({ ...roomJoined(room, connection), spectating: true });
   }
 }
 
@@ -400,7 +454,22 @@ export function attachRoomServer(
           broadcastPending(room);
           return;
         }
+        case "spectate-room": {
+          const room = requireRoom(manager, message.roomId);
+          if (room.seatOf(connection) !== null) throw new Error("you have a seat in this room — play it");
+          stopSpectating(connection);
+          let set = spectators.get(room.id);
+          if (set === undefined) spectators.set(room.id, (set = new Set()));
+          set.add(connection);
+          if (room instanceof PendingRoom) send(ws, { ...roomJoined(room, connection), spectating: true });
+          else send(ws, spectatorFrame(room, connection));
+          return;
+        }
         case "leave-room": {
+          // A spectator walking away from a game just stops watching.
+          if (stopSpectating(connection, message.roomId) && !(manager.get(message.roomId) instanceof PendingRoom)) {
+            return;
+          }
           const room = requirePendingRoom(manager, message.roomId);
           room.leave(connection);
           boundRoom = null;
@@ -586,6 +655,7 @@ export function attachRoomServer(
     });
 
     ws.on("close", () => {
+      stopSpectating(connection);
       if (boundRoom === null) return;
       // A scenario builder has replaced the room this connection first bound
       // to with each rebuild: the one under the code now is the one it's in.

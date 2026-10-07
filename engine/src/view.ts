@@ -574,6 +574,12 @@ function exileHoldings(state: GameState): Map<ObjectId, ObjectId[]> {
   return out;
 }
 
+/** A viewer who isn't a player (a spectator watching a room): sees what's
+ * public — the battlefield, stack, graveyards, exile, every card a reveal
+ * shows everyone — and no hand, no library and nothing face down.
+ * `viewFor(state, registry, SPECTATOR)`. */
+export const SPECTATOR = "spectator" as PlayerId;
+
 export function viewFor(
   state: GameState,
   registry: CardRegistry,
@@ -705,7 +711,7 @@ function viewForUncached(
   // The viewer's own castable-from zones. A modified cost is only meaningful
   // (and only theirs to know) for cards they could actually cast.
   const ownCastable = new Set<ObjectId>([
-    ...state.zones.perPlayer[viewer].hand,
+    ...(state.zones.perPlayer[viewer]?.hand ?? []),
     ...state.zones.shared.command.filter((id) => state.objects[id]?.owner === viewer),
   ]);
   for (const id of visibleIds) {

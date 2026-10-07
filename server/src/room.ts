@@ -472,6 +472,7 @@ export class Room {
       // going to play is, definitionally, already in.
       ready: true,
       isHost: s.connection !== null && s.connection === this.hostConnection(),
+      deckProblem: null,
     }));
   }
 

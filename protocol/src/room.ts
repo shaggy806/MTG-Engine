@@ -102,6 +102,11 @@ export interface SeatStatus {
   /** This seat's connection currently holds the host role (see `HostRole`).
    * `false` for every seat when the host hasn't claimed one. */
   readonly isHost: boolean;
+  /** Why this seat's deck isn't Commander-legal (the first reason
+   * `validateCommanderDeck` gives), or `null` when it is — or there's no
+   * deck, or the room is promoted. What `RoomSettings.commanderLegalOnly`
+   * refuses. */
+  readonly deckProblem: string | null;
 }
 
 /**
@@ -124,6 +129,11 @@ export interface RoomSettings {
    * random as the game starts — or the seat the host picked. Back to
    * `"random"` if that seat is removed. */
   readonly firstPlayer: "random" | PlayerId;
+  /** Only Commander-legal decks may play (`validateCommanderDeck`: 100
+   * cards, singleton, within the commanders' colour identity, …): a seat
+   * can't ready up with one that isn't, and turning this on un-readies any
+   * such seat. Off by default — any deck the server can build is welcome. */
+  readonly commanderLegalOnly: boolean;
 }
 
 export type ClientMessage =
@@ -147,6 +157,14 @@ export type ClientMessage =
       /** The token from this room's `create-room`, if this client created it
        * — binds this connection as the host. */
       readonly hostToken?: string;
+    }
+  | {
+      /** Watch this room without a seat — what a full table offers instead
+       * of one. The waiting room's seat board, then every frame of its game
+       * as a `state` with `spectating: true`: no hand, no actions. Leaving
+       * (`leave-room`) or closing the connection stops it. */
+      readonly type: "spectate-room";
+      readonly roomId: string;
     }
   | {
       /** This seat's priority-passing preferences (`PassSettings`). */
@@ -475,6 +493,8 @@ export type ServerMessage =
       readonly seat?: PlayerId | null;
       /** Whether the room is still the waiting room (no `Game` yet). */
       readonly pending?: boolean;
+      /** This connection is watching, not seated (`spectate-room`). */
+      readonly spectating?: true;
     }
   | {
       /** Pushed to every connected seat after a room is created/joined or any dispatch settles. */
@@ -527,6 +547,10 @@ export type ServerMessage =
       readonly capture?: true;
       /** Present in a scenario builder room — see `scenario.ts`. */
       readonly builder?: BuilderInfo;
+      /** This connection is a spectator (`spectate-room`): `seat` is only
+       * whose side of the table is drawn nearest, `view` hides every hand,
+       * and `actions` is empty. */
+      readonly spectating?: true;
       /** On a connection's first frame of a game only: every card in every
        * player's deck, as the art its tiles will ask for, for the client to
        * load quietly ahead of time (`artManifest` in the engine). It names
