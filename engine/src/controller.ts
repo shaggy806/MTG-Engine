@@ -2140,16 +2140,44 @@ export class HeuristicBotController extends AutomaticController {
     const sweeps = sweepsOf(effect);
     if (sweeps.length === 0) return false;
     const me = this.playerId;
+    // "Each *other* creature", dealt by a creature the spell targets (Chandra's
+    // Ignition: `exceptSource` with `from: { target: n }`): that creature is
+    // spared, and deals damage equal to its power. Only the offer is known
+    // here, not the target, so it's taken to be our most powerful creature,
+    // the one the spell is cast for. Read as taking that creature too, the
+    // wipe was held for after combat and its mana spent on pumps (capture
+    // 9M59N t17).
+    const ours = state.zones.shared.battlefield.filter((id) => {
+      const object = state.objects[id];
+      return object?.controller === me && computeCharacteristics(state, this.registry, id).types.includes("creature");
+    });
+    const dealer =
+      ours.length === 0
+        ? undefined
+        : ours.reduce((best, id) =>
+            computeCharacteristics(state, this.registry, id).power > computeCharacteristics(state, this.registry, best).power
+              ? id
+              : best,
+          );
+    const dealtByTarget = (sweep: (typeof sweeps)[number]): boolean =>
+      sweep.kind === "damage-all" && sweep.exceptSource === true && typeof sweep.from === "object";
     return state.zones.shared.battlefield.some((id) => {
       if (state.objects[id]?.controller !== me) return false;
       if (!counts(id)) return false;
       const c = computeCharacteristics(state, this.registry, id);
       return sweeps.some((sweep) => {
+        if (dealtByTarget(sweep) && id === dealer) return false;
         if (!matchesFilter(state, this.registry, id, sweep.filter, { you: me })) return false;
         if (sweep.kind === "destroy-all") return !c.keywords.has("indestructible");
         if (sweep.kind === "damage-all") {
           if (sweep.whose !== undefined && sweep.whose !== "each-player") return false;
-          return typeof sweep.amount !== "number" || sweep.amount >= c.toughness - (state.objects[id]?.damageMarked ?? 0);
+          const amount =
+            typeof sweep.amount === "number"
+              ? sweep.amount
+              : dealtByTarget(sweep) && dealer !== undefined && typeof sweep.amount === "object" && "powerOf" in sweep.amount
+                ? computeCharacteristics(state, this.registry, dealer).power
+                : undefined;
+          return amount === undefined || amount >= c.toughness - (state.objects[id]?.damageMarked ?? 0);
         }
         return true;
       });
@@ -3070,6 +3098,32 @@ export class HeuristicBotController extends AutomaticController {
           chosen.set(b, attacker);
           used.add(b);
         }
+      }
+    }
+
+    // A free block: a blocker that survives the attacker stops its damage for
+    // nothing, so it blocks the strongest unblocked one it can — not a
+    // deathtouch attacker (it kills any blocker), nor a menace one (one
+    // blocker alone is illegal). Without it, v2's attack search, which
+    // predicts every defender with these blocks, swung a 2/2 Scavenging Ooze
+    // into an untapped 1/3 as though the 2 damage would land (capture AGB72
+    // t15): it only ever tapped the Ooze.
+    for (const entry of legal.eligible) {
+      if (used.has(entry.blocker)) continue;
+      const taken = new Set(chosen.values());
+      const safe = entry.canBlock
+        .filter(
+          (a) =>
+            !taken.has(a) &&
+            !legal.menaceAttackers.includes(a) &&
+            power(a) > 0 &&
+            toughness(entry.blocker) > power(a) &&
+            !computeCharacteristics(state, this.registry, a).keywords.has("deathtouch"),
+        )
+        .sort((a, b) => power(b) - power(a))[0];
+      if (safe !== undefined) {
+        chosen.set(entry.blocker, safe);
+        used.add(entry.blocker);
       }
     }
 

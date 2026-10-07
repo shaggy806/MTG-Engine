@@ -2542,6 +2542,71 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   },
   asked({
+    name: "casts Chandra's Ignition before combat when it spares its own attacker",
+    rule: "A wipe of each *other* creature spares the one dealing it: no attack is lost, so it isn't held for after combat.",
+    position(registry) {
+      // Reported from a live game (2026-10-06, capture 9M59N t17): carol held
+      // Chandra's Ignition for after combat, read as killing the Lathliss it
+      // would be cast for, then spent the mana on four Lathliss pumps.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 5);
+      onBoard(game, "Shivan Dragon", A);
+      for (let i = 0; i < 2; i += 1) onBoard(game, "Serra Angel", B);
+      const ignition = game.debugSpawn("Chandra's Ignition", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === ignition,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "exiles a dying creature with Colfenor's Urn",
+    rule: "Colfenor's Urn's 'you may exile it' is taken: a card under the Urn comes back, one in the graveyard doesn't.",
+    position(registry) {
+      // Reported from a live game (2026-10-06, capture 9M59N t22): bob
+      // declined every Urn exile as a Magmaquake took three of his creatures,
+      // which would all have come back at the end step.
+      const game = table(registry, [A, B], B);
+      lands(game, "Plains", B, 4);
+      onBoard(game, "Colfenor's Urn", A);
+      for (let i = 0; i < 3; i += 1) onBoard(game, "Wall of Omens", A);
+      onBoard(game, "Craw Wurm", B);
+      const wrath = game.debugSpawn("Wrath of God", B, "hand");
+      game.dispatch({ type: "cast-spell", player: B, card: wrath, targets: [] });
+      game.advanceUntil((s) => (s.awaiting?.kind === "choose-modes" && s.awaiting.player === A) || s.result.over);
+      if (game.state.awaiting?.kind !== "choose-modes") return { passed: false, detail: "the Urn never asked" };
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "choose-modes" && action.modes.includes(0),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  {
+    name: "does not attack into a free block",
+    rule: "A 2/2 swung at an untapped 1/3 is blocked for nothing; it only taps the attacker.",
+    run(weights, registry, makeBot) {
+      // Reported from a live game (2026-10-06, capture AGB72 t15): Scavenging
+      // Ooze attacked a 40-life player whose 1/3 blocks it for free.
+      const game = table(registry, [A, B, C, D], A);
+      onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Troyan, Gutsy Explorer", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return {
+        passed: !attackers.some((d) => d.defender === B),
+        detail: `attacked ${attackers.map((d) => d.defender).join(", ") || "nobody"}`,
+      };
+    },
+  },
+  asked({
     name: "lets its own trigger resolve before spending mana",
     rule: "In our main phase, with only our own trigger on the stack, the mana waits for the sorcery-speed play.",
     position(registry) {

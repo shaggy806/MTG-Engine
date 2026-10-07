@@ -306,6 +306,44 @@ function hasTapManaAbility(registry: CardRegistry, object: GameObject): boolean 
   return (registry.get(name).activated ?? []).some((a) => a.cost.tap && isManaAbility(a));
 }
 
+/** Cards whose abilities put the cards exiled with them back onto the
+ * battlefield (`return-exiled-by-source` with `linked: "battlefield"` —
+ * Colfenor's Urn), by name, read once. */
+const returnsExiledToBattlefield = new Map<string, boolean>();
+
+function returnsExiledCards(registry: CardRegistry, name: string): boolean {
+  let known = returnsExiledToBattlefield.get(name);
+  if (known === undefined) {
+    const def = registry.has(name) ? registry.get(name) : undefined;
+    const text = def === undefined ? "" : JSON.stringify([def.triggered, def.activated]);
+    known = text.includes('"return-exiled-by-source"') && text.includes('"linked":"battlefield"');
+    returnsExiledToBattlefield.set(name, known);
+  }
+  return known;
+}
+
+/**
+ * Whether `object`, one of `player`'s cards in exile, waits there to come
+ * back: exiled *with* a permanent of theirs, still in the stint it was
+ * exiled by (rule 607.2a), that returns its cards to the battlefield — a
+ * creature under Colfenor's Urn. Counted as a card still in reach, like one
+ * castable from the graveyard; without it a card under the Urn was worth
+ * nothing, less than one in the graveyard, and the bot never took the Urn's
+ * "you may exile it" (capture 9M59N t22).
+ */
+function waitsToReturn(state: GameState, registry: CardRegistry, player: PlayerId, object: GameObject): boolean {
+  const link = object.exiledWith;
+  if (link === undefined || object.owner !== player) return false;
+  const source = state.objects[link.source];
+  return (
+    source !== undefined &&
+    source.zone === "battlefield" &&
+    source.controller === player &&
+    (source.zoneChangeCount ?? 0) === link.zoneChangeCount &&
+    returnsExiledCards(registry, printedCardName(source))
+  );
+}
+
 function castableFromGraveyard(registry: CardRegistry, object: GameObject): boolean {
   if (object.grantedFlashback) return true;
   if (!registry.has(object.cardName)) return false;
@@ -1016,6 +1054,11 @@ function playerFeaturesUncached(
   for (const id of zones.graveyard) {
     const object = state.objects[id];
     if (object !== undefined && castableFromGraveyard(registry, object)) graveyardCastable += 1;
+  }
+  // And a card of ours waiting under a permanent that returns it.
+  for (const id of state.zones.shared.exile) {
+    const object = state.objects[id];
+    if (object !== undefined && waitsToReturn(state, registry, player, object)) graveyardCastable += 1;
   }
 
   const cap = Math.max(0, landCap);

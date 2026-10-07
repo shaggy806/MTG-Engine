@@ -182,18 +182,61 @@ under count budgets).
 - **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
   Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
   token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
-- **Adaptive Training Post activated with nothing to copy** (a capture, HB5MR turn 31, open): it passes from its saved position on every build at every clock, with either view; the clock, randomness, carried state (`continueBatch`, `holdPass`) and a shallow copy are ruled out (5a62a1e8's message). Captures now save the live search's path and scores (`diagnosis`): the next such capture says which branch it took.
 - **Shiko or the other spell, when only one fits** (since the chained-spells change, 2026-10-04):
   with a cast payoff in reach the priority search rolls our turn out as v1 (`"acting"`), and where
   only one of Shiko and another spell is affordable it now often casts the other (16 times in 12
   games, `bot:diff`), where the old search cast Shiko. Bench level; worth a scenario from a live
   game before changing it.
 - **A payoff permanent before the spell that triggers it, beyond cast triggers** (a capture,
-  2026-10-04, HB5MR turn 22): bob cast Citywide Bust without casting Colfenor's Urn first, which
-  would have caught his Tree of Redemption and Felothar as they died. The search scores the Urn
-  alone (its rollouts pass our seat for the rest of the turn); `castPayoff`/`payoffFirst` cover
-  only "whenever you cast" payoffs. The same reach for "dies" and "leaves" payoffs in hand would
-  catch it.
+  2026-10-04, HB5MR turn 22, open): bob cast Citywide Bust without casting Colfenor's Urn first.
+  Re-diagnosed 2026-10-07: he could afford both, and Urn-first sets the Tree under the Urn (Felothar
+  goes to the command zone before the Urn's trigger, rule 903.9a), so the payoff is deferred, not
+  this turn. The search never has "Urn, then Bust" as a candidate: its rollouts pass our seat. Since
+  the Urn's exile is now valued (`waitsToReturn`, linked exile in `effect-worth.ts`), the cheapest
+  fix is a `payoffFirst`-style rule (`controller.ts` ~1507) applied after the search: when the best
+  move is a wipe that takes our own creatures (`sweepTakesOurs`) and a "dies"/"leaves" payoff whose
+  filter matches them is castable with the wipe still affordable after, cast the payoff first.
+  Gate: Colfenor's Urn and Citywide Bust in hand, three Walls of Omens out. Risk: deterministic, so
+  it must check the filter and the mana; the alternative is widening the `"acting"` rollout
+  (`eval-bot.ts` ~843) to these windows, about 1.7× dearer there.
+- **A vigilance creature tapped for mana before it attacks** (a capture, 2026-10-06, NZP7Q turn
+  17, open — the user: "creatures with tap abilities and vigilance usually should use these
+  abilities after combat"): bob cast Orzhov Signet precombat off Faeburrow Elder's mana, so it
+  couldn't attack; with vigilance it attacks and still taps for the Signet in main 2. The search
+  can't see main 2 (rollouts pass our seat). Fix outline: a `holdsTapForCombat` beside
+  `holdsWipeForCombat` (`controller.ts` ~2108): our precombat main, the candidate taps an untapped
+  vigilance creature of ours that could attack (seen from the cast-now rollout's end state); hold
+  it (`heldForCombat`, `eval-bot.ts`) only if one more simulation, pass then the same cast in main
+  2, scores at least as well, which keeps the right pre-combat plays (a haste creature, removing a
+  blocker). Gate: Faeburrow Elder alone with Arcane Signet in hand passes. The capture's own
+  position is the attack, which is fine, so it resolves `--force` against that gate.
+- **Spread attackers between opponents** (a capture, 2026-10-05, HB5MR turn 20, open — the user:
+  "Bot should attempt to spread out attackers"; reads right today only by accident): v2 piles every
+  attacker on one player. Equal scores keep the first defender in `hillClimb` (`eval-bot.ts`
+  ~289), and the climb never re-aims an attacker once placed (~1396). Outline: a re-aim move in
+  the attack climb and a small bonus per distinct defending player in the attack score (~0.1
+  breaks ties; ~0.5 also flips this capture, where commander damage favoured one player).
+  Lethal is unaffected (`alphaStrike` runs first). A weight with trade-offs (fewer focused kills),
+  so it waits on the user's say; a training scenario: four Grizzly Bears, two open opponents.
+- **Damage aimed at what it doesn't kill** (a capture, 2026-10-06, NZP7Q turn 26, open — reads
+  right today only because the bot pumps instead): Explosion X=3 at a 6/6 Lathliss when Kiora (3
+  loyalty) or a 3-toughness creature died to it. Both aimers rank by `targetValue`
+  (`target-polarity.ts` ~747), which ignores whether the damage kills, and `targetCombos` crosses
+  slot 0 with every player for the draw slot, so the 8-combo cap tried two damage targets. Outline:
+  a slot's damage amount (X at its max) passed to `rankTargets`, putting what it kills, and players,
+  ahead of what it doesn't (both v1's `aimedTargets` and v2's `aimOffer`); optionally vary one slot
+  at a time in `targetCombos`. Changes every damage spell's aim: needs its own `bot:diff`. Gate:
+  Explosion with Garruk at 3 loyalty and Grizzly Bears among bigger creatures.
+- **A held wipe's mana isn't kept through combat** (from capture 9M59N t17, 2026-10-07): once a
+  wipe is held for after combat (`heldForCombat`), nothing stops a combat pump spending its mana,
+  and the rollouts never cast the wipe in main 2. Remember the held wipe for the turn and, in our
+  own combat steps, drop candidates that leave less than its cost (as `holdsManaForMain` does),
+  unless the pump is lethal. The existing gate covers only precombat.
+- **The priority search scores pass before choosing its rollout policy** (diagnosis, 2026-10-07):
+  `eval-bot.ts` ~819 scores the pass baseline before `decisionRollout` is set (~843), so with a
+  cast payoff out, pass is scored under `"combat"` and the candidates under `"acting"`, and the
+  batch loop uses `this.rollout` (~889). Live and replayed searches can disagree. Move the
+  assignment above the baseline; changes Shiko/prowess decisions, so `bot:diff` it.
 - **`crackbackGrowth` is unbenched since its last change** (2026-10-05, merged to main on the user's call with the tests, scenario gate and a 20-game fuzzer pass clean): the scaled crackback check now applies only while holding back passes it. Still to do: rerun the paired `bot:crackback` (0.5 against `--weights '{"crackbackGrowth":0}'`, 120+ seeds) to confirm the 25 swings into a plainly lethal board are gone and the 3.5% → 2.0% holds, re-bench against main, and add a training scenario (`docs/plans/smarter-bots.md`, "Combat: the alpha strike and crackback").
 - **Crackback counts later opponents at half** (2026-10-05, `bot:crackback`): over 198 four-player games, 166 full swings into a board lethal with every opponent all-in passed the bot's check because `crackbackParanoia` weighs all but the next opponent at 0.5, and 17% of them died before the bot's next turn (2.7% when nothing showed lethal). `crackbackGrowth` doesn't touch it; a paranoia that rises as life falls, or as fewer opponents remain to split the attacks, is the lever (`docs/plans/smarter-bots.md`, "Combat: the alpha strike and crackback").
 - **Haste enablers in the crackback** (2026-10-05, low): `combat-math.ts`'s `crackback` sees only creatures on the board; haste decided 10 of 70 crackback deaths, and an opponent's visible enabler (Swiftfoot Boots, Anger in a graveyard, Dragon Tempest, Crashing Drawbridge) raised the death rate about a point, inside the noise.
