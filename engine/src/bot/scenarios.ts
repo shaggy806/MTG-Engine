@@ -238,6 +238,56 @@ function landfallMill(
 
 /** Take `game` from Alice's first main phase to her second, attacking with
  * nothing; a failure if it doesn't get there. */
+/**
+ * Two damage triggers from one payoff (Terror of the Peaks, Scourge of
+ * Valkas), as `entering` creatures enter under `payoff`: the first trigger is
+ * aimed at `first` by hand, and the bot — one simulation, so v1's aim stands
+ * — aims the second, which passes if it goes at `right`.
+ */
+function secondDamageTrigger(
+  registry: CardRegistry,
+  weights: EvalWeights,
+  spec: {
+    readonly payoff: string;
+    readonly entering: readonly string[];
+    readonly across: readonly string[];
+    readonly first: string;
+    readonly right: string;
+  },
+): ScenarioResult {
+  const game = table(registry, [A, B], A);
+  onBoard(game, spec.payoff, A);
+  const across = spec.across.map((name) => onBoard(game, name, B));
+  const named = (name: string): ObjectId | undefined =>
+    across.find((id) => game.state.objects[id]?.cardName === name);
+  for (const name of spec.entering) game.debugSpawn(name, A, "battlefield", { announceEntry: true });
+  const bot = new EvalBotController(A, registry, { weights, maxSimulations: 1 });
+  const name = (ref: TargetRef | null | undefined): string =>
+    ref?.kind === "object" ? (game.state.objects[ref.object]?.cardName ?? ref.object) : String(ref?.kind ?? ref);
+  const next = (): boolean => {
+    for (let i = 0; i < 20; i += 1) {
+      game.advanceUntil((s) => s.awaiting !== null || s.result.over);
+      const awaiting = game.state.awaiting;
+      if (awaiting === null || game.state.result.over) return false;
+      if (awaiting.kind === "choose-targets") return true;
+      game.dispatch(bot.act(viewOf(game, A)));
+    }
+    return false;
+  };
+  if (!next()) return { passed: false, detail: "the first trigger never asked for a target" };
+  const first = named(spec.first);
+  if (first === undefined) return { passed: false, detail: `no ${spec.first}` };
+  game.dispatch({ type: "choose-targets", player: A, targets: [{ kind: "object", object: first }] });
+  if (!next()) return { passed: false, detail: "the second trigger never asked for a target" };
+  const action = bot.act(viewOf(game, A));
+  const aimed = action.type === "choose-targets" ? (action.targets[0] ?? null) : null;
+  const right = named(spec.right);
+  return {
+    passed: aimed?.kind === "object" && aimed.object === right,
+    detail: `second at ${name(aimed)}`,
+  };
+}
+
 function toSecondMain(game: Game): ScenarioResult | null {
   game.advanceUntil(
     (s) =>
@@ -1461,6 +1511,45 @@ const SCENARIOS: readonly BotScenario[] = [
       }
       const same = first?.kind === "object" && second?.kind === "object" && first.object === second.object;
       return { passed: !same && second !== null, detail: `first ${name(first)}, second ${name(second)}` };
+    },
+  },
+  {
+    name: "aims a Terror of the Peaks trigger to finish what the one before it started",
+    rule: "Damage already on the stack at a permanent counts: a second trigger that finishes it kills more than one that starts on something else.",
+    run(weights, registry) {
+      // The user (2026-10-07): count how much damage on the stack is already
+      // going at a permanent when aiming the next trigger. Two Grizzly Bears
+      // enter under Terror of the Peaks: two triggers of 2. The first is aimed
+      // here at Hill Giant; the second should finish the Giant (2 + 2), not
+      // scratch Serra Angel, the bigger creature it can't kill, and leave the
+      // Giant's 2 to wear off. One simulation, so v1's aim (`aimedTargets`,
+      // `rankTargets`) is what's tested; before, a trigger's aim read no
+      // damage at all and took the most valuable creature.
+      return secondDamageTrigger(registry, weights, {
+        payoff: "Terror of the Peaks",
+        entering: ["Grizzly Bears", "Grizzly Bears"],
+        across: ["Serra Angel", "Hill Giant"],
+        first: "Hill Giant",
+        right: "Hill Giant",
+      });
+    },
+  },
+  {
+    name: "aims a Scourge of Valkas trigger to finish what the one before it started",
+    rule: "Damage already on the stack at a permanent counts, a counted amount too: three Dragons' 3 and 3 kill a Craw Wurm.",
+    run(weights, registry) {
+      // The same for Scourge of Valkas (the user: "something like scourge of
+      // valkas"), whose X is the Dragons we control rather than a snapshot:
+      // two Dragons enter beside it, two triggers of 3. The first is aimed at
+      // Craw Wurm (6/4); the second should finish it, not scratch Colossal
+      // Dreadmaw (6/6).
+      return secondDamageTrigger(registry, weights, {
+        payoff: "Scourge of Valkas",
+        entering: ["Shivan Dragon", "Shivan Dragon"],
+        across: ["Craw Wurm", "Colossal Dreadmaw"],
+        first: "Craw Wurm",
+        right: "Craw Wurm",
+      });
     },
   },
   {

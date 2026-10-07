@@ -35,10 +35,12 @@ import type { LegalAction } from "./actions.js";
 import type { CardRegistry } from "./cards.js";
 import type { CardDefinition } from "./cards/define.js";
 import { computeCharacteristics } from "./characteristics.js";
+import { matchesFilter } from "./filter.js";
+import type { CardFilter } from "./filter.js";
 import type { EffectAmount, EffectSpec } from "./effects.js";
 import { manaValue, parseManaCost } from "./mana.js";
-import type { PlayerId } from "./primitives.js";
-import type { GameState } from "./state.js";
+import type { ObjectId, PlayerId } from "./primitives.js";
+import type { GameObject, GameState } from "./state.js";
 import { printedCardName } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
@@ -786,8 +788,19 @@ export function rankTargets(
   // targets a harmful slot's damage is aimed at, what it kills, and players,
   // come before what it only scratches (capture NZP7Q t26: Explosion for 3 at
   // a 6/6 with a 3-loyalty Kiora beside it). The rest stay, just later.
-  const lands = (ref: TargetRef): boolean =>
-    damage === undefined || polarity !== "harm" || damageLands(state, registry, ref, damage);
+  // Damage already on its way to a permanent (`damageOnStack`) adds to this:
+  // a second Terror of the Peaks trigger finishes what the first started, and
+  // a permanent already dead to what's coming is a waste (the user,
+  // 2026-10-07).
+  let pending: ReadonlyMap<ObjectId, number> | undefined;
+  const pendingAt = (ref: TargetRef): number =>
+    ref.kind === "object" ? ((pending ??= damageOnStack(state, registry)).get(ref.object) ?? 0) : 0;
+  const lands = (ref: TargetRef): boolean => {
+    if (damage === undefined || polarity !== "harm") return true;
+    const already = pendingAt(ref);
+    if (already > 0 && ref.kind === "object" && damageLands(state, registry, ref, already)) return false;
+    return damageLands(state, registry, ref, damage + already);
+  };
   const scored = options.map((ref, index) => ({
     ref,
     index,
@@ -808,7 +821,7 @@ export function rankTargets(
  * (life lost stays lost), or a permanent it destroys — a creature whose
  * toughness it meets (less damage already marked), not indestructible; a
  * planeswalker's loyalty or a battle's defence it removes. */
-function damageLands(state: GameState, registry: CardRegistry, ref: TargetRef, amount: number): boolean {
+export function damageLands(state: GameState, registry: CardRegistry, ref: TargetRef, amount: number): boolean {
   if (ref.kind === "player") return true;
   const object = state.objects[ref.object];
   if (object === undefined || object.zone !== "battlefield") return true;
@@ -843,7 +856,39 @@ export function offerDamage(
     const face = offer.face !== undefined ? def.faces?.[offer.face] : undefined;
     effect = face !== undefined && face !== def.name ? (registry.has(face) ? registry.get(face).effect : null) : def.effect;
   }
-  const maxX = offer.xCost?.maxX;
+  return slotDamage(effect, { x: offer.xCost?.maxX });
+}
+
+/** What a damage amount reads that can be told without resolving it. */
+interface DamageContext {
+  readonly x?: number;
+  /** A trigger's snapshotted quantity (`{ triggerValue: true }`). */
+  readonly triggerValue?: number;
+  /** For a `countOf` amount: the board, and whose "you" it counts from. */
+  readonly board?: { readonly state: GameState; readonly registry: CardRegistry; readonly you: PlayerId };
+}
+
+/** A damage amount, where it can be told: a fixed number, X, a trigger's
+ * snapshotted value (Terror of the Peaks: the entering creature's power), or
+ * a count of permanents (Scourge of Valkas: the Dragons you control, counted
+ * now; it's counted again as it resolves). */
+function knownAmount(amount: unknown, ctx: DamageContext): number | undefined {
+  if (typeof amount === "number") return amount;
+  if (amount === "x") return ctx.x;
+  if (amount === null || typeof amount !== "object") return undefined;
+  const live = amount as { readonly triggerValue?: unknown; readonly countOf?: CardFilter };
+  if (live.triggerValue === true) return ctx.triggerValue;
+  if (live.countOf !== undefined && ctx.board !== undefined) {
+    const { state, registry, you } = ctx.board;
+    const filter = live.countOf;
+    return state.zones.shared.battlefield.filter((id) => matchesFilter(state, registry, id, filter, { you })).length;
+  }
+  return undefined;
+}
+
+/** The damage each target slot of `effect` is dealt (a `damage` effect aimed
+ * at that slot, not divided), or `undefined` where there's no telling. */
+function slotDamage(effect: unknown, ctx: DamageContext): (number | undefined)[] {
   const out: (number | undefined)[] = [];
   const visit = (node: unknown): void => {
     if (Array.isArray(node)) {
@@ -853,13 +898,85 @@ export function offerDamage(
     if (node === null || typeof node !== "object") return;
     const spec = node as { kind?: unknown; target?: unknown; amount?: unknown; divided?: unknown };
     if (spec.kind === "damage" && typeof spec.target === "number" && spec.divided === undefined) {
-      const amount = typeof spec.amount === "number" ? spec.amount : spec.amount === "x" ? maxX : undefined;
+      const amount = knownAmount(spec.amount, ctx);
       if (amount !== undefined) out[spec.target] = (out[spec.target] ?? 0) + amount;
     }
     for (const child of Object.values(node)) visit(child);
   };
   visit(effect);
   return out;
+}
+
+/** What a stack object does, read off its card: a spell's effect, or the
+ * activated, triggered or chapter ability it is. */
+export function stackEffectOf(registry: CardRegistry, object: GameObject): EffectSpec | undefined {
+  if (object.kind === "card") {
+    return registry.has(object.cardName) ? (registry.get(object.cardName).effect ?? undefined) : undefined;
+  }
+  if (object.sourceObjectId === null || object.abilityIndex === null) return undefined;
+  if (!registry.has(object.cardName)) return undefined;
+  const def = registry.get(object.cardName);
+  const index = object.abilityIndex;
+  if (object.abilityKind === "activated") return def.activated[index]?.effect ?? undefined;
+  if (object.abilityKind === "triggered") return def.triggered[index]?.effect ?? undefined;
+  if (object.abilityKind === "chapter") return def.chapters?.[index]?.effect ?? undefined;
+  return undefined;
+}
+
+/**
+ * The damage the spells and abilities on the stack are already sending at
+ * each permanent, where it can be told (`slotDamage`): two Terror of the
+ * Peaks triggers, or two of Scourge of Valkas's, aimed at one creature add
+ * up. Read off each object's card, its X and its trigger's snapshotted value;
+ * a delayed or reflexive trigger, or a granted ability, isn't counted.
+ */
+export function damageOnStack(state: GameState, registry: CardRegistry): Map<ObjectId, number> {
+  const out = new Map<ObjectId, number>();
+  for (const id of state.zones.shared.stack) {
+    const object = state.objects[id];
+    if (object === undefined || object.targets === null) continue;
+    if (object.delayedTrigger !== undefined || object.reflexiveTrigger !== undefined) continue;
+    const effect = stackEffectOf(registry, object);
+    if (effect === undefined) continue;
+    const damages = slotDamage(effect, {
+      x: object.xValue ?? 0,
+      triggerValue: object.triggerValue,
+      board: { state, registry, you: object.controller },
+    });
+    damages.forEach((amount, slot) => {
+      const target = object.targets?.[slot];
+      if (amount !== undefined && amount > 0 && target?.kind === "object") {
+        out.set(target.object, (out.get(target.object) ?? 0) + amount);
+      }
+    });
+  }
+  return out;
+}
+
+/** The damage each asked slot of the trigger being put on the stack
+ * (`pendingTargetedTrigger`) deals, in the order its slots are asked, so its
+ * target is aimed at what that damage kills as a cast's is (`offerDamage`).
+ * Empty when there's no telling. */
+export function pendingTargetDamage(state: GameState, registry: CardRegistry): readonly (number | undefined)[] {
+  const pending = state.pendingTargetedTrigger;
+  if (pending === null || pending.reflexive !== undefined || pending.grantedAbility !== undefined) return [];
+  if (!registry.has(pending.cardName)) return [];
+  const def = registry.get(pending.cardName);
+  const effect =
+    pending.abilityKind === "chapter"
+      ? def.chapters?.[pending.abilityIndex]?.effect
+      : def.triggered[pending.abilityIndex]?.effect;
+  if (effect === undefined || effect === null) return [];
+  const all = slotDamage(effect, {
+    x: pending.x ?? 0,
+    triggerValue: pending.triggerValue,
+    board: { state, registry, you: pending.controller },
+  });
+  const asked: (number | undefined)[] = [];
+  pending.slots.forEach((slot, index) => {
+    if ("spec" in slot) asked.push(all[index]);
+  });
+  return asked;
 }
 
 /**

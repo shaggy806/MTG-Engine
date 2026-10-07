@@ -54,13 +54,17 @@ import { stateTargetFacts } from "./targeting.js";
 import { fitTargetCount, maxXForTargets, minXForTargets } from "./target-count.js";
 import {
   auraPolarity,
+  damageLands,
+  damageOnStack,
   modalPolarities,
   offerDamage,
   offerPolarities,
   onlyWrongSide,
+  pendingTargetDamage,
   pendingTargetPolarities,
   rankTargets,
   sideOf,
+  stackEffectOf,
   slotPolarities,
   targetValue,
 } from "./target-polarity.js";
@@ -1485,7 +1489,9 @@ export function isLandfallPermanent(registry: CardRegistry, name: string): boole
  * exiling: an object target of a `destroy` or `exile` it does outright (at
  * its top level or in a `sequence`) — what a second removal at it would
  * waste itself on. Read off the card: a delayed or reflexive trigger, or a
- * granted ability, isn't counted.
+ * granted ability, isn't counted. And any permanent the damage already on
+ * the stack kills (`damageOnStack`): a third Terror of the Peaks trigger
+ * doesn't join two that already kill the creature (the user, 2026-10-07).
  */
 function doomedByOurStack(state: GameState, registry: CardRegistry, me: PlayerId): Set<ObjectId> {
   const doomed = new Set<ObjectId>();
@@ -1500,24 +1506,12 @@ function doomedByOurStack(state: GameState, registry: CardRegistry, me: PlayerId
       if (target?.kind === "object") doomed.add(target.object);
     }
   }
-  return doomed;
-}
-
-/** What a stack object does, read off its card: a spell's effect, or the
- * activated, triggered or chapter ability it is. */
-function stackEffectOf(registry: CardRegistry, object: GameObject): EffectSpec | undefined {
-  if (object.kind === "card") {
-    return registry.has(object.cardName) ? (registry.get(object.cardName).effect ?? undefined) : undefined;
+  for (const [id, damage] of damageOnStack(state, registry)) {
+    if (state.objects[id]?.zone === "battlefield" && damageLands(state, registry, { kind: "object", object: id }, damage)) {
+      doomed.add(id);
+    }
   }
-  if (object.sourceObjectId === null || object.abilityIndex === null) return undefined;
-  const name = object.cardName;
-  if (!registry.has(name)) return undefined;
-  const def = registry.get(name);
-  const index = object.abilityIndex;
-  if (object.abilityKind === "activated") return def.activated[index]?.effect ?? undefined;
-  if (object.abilityKind === "triggered") return def.triggered[index]?.effect ?? undefined;
-  if (object.abilityKind === "chapter") return def.chapters?.[index]?.effect ?? undefined;
-  return undefined;
+  return doomed;
 }
 
 /** The target slots `effect` destroys or exiles outright. */
@@ -2697,9 +2691,12 @@ export class HeuristicBotController extends AutomaticController {
     // A copy's new targets are read off the copied spell — a trigger may be
     // resolving around it (Shiko and Narset's Flurry makes the copy), and its
     // own slots aren't the copy's.
-    const polarities =
-      (current !== undefined ? this.copyPolarities(state, bias) : null) ??
-      pendingTargetPolarities(state, this.registry, bias);
+    const copied = current !== undefined ? this.copyPolarities(state, bias) : null;
+    const polarities = copied ?? pendingTargetPolarities(state, this.registry, bias);
+    // A trigger's damage (Terror of the Peaks, Scourge of Valkas) is aimed at
+    // what it kills, with the damage already on the stack counted, as a
+    // cast's is.
+    const damages = copied === null ? pendingTargetDamage(state, this.registry) : [];
     const options =
       current === undefined || polarities === null
         ? legalOptions
@@ -2711,7 +2708,7 @@ export class HeuristicBotController extends AutomaticController {
             );
             return elsewhere.length > 0 ? elsewhere : slot;
           });
-    return this.aimedTargets(state, options, specs, polarities);
+    return this.aimedTargets(state, options, specs, polarities, damages);
   }
 
   /** A spell copy's slots (`GameState.pendingCopyTargets`), by the copied
