@@ -1696,7 +1696,12 @@ export class HeuristicBotController extends AutomaticController {
    * leaves the choice to the pip count.
    */
   private castableAfter(view: ControllerView, land: PlayLandLegal): number {
-    const play = this.toPlayLand(land);
+    return this.castableAfterPlay(view, this.toPlayLand(land));
+  }
+
+  /** {@link castableAfter} for a `play-land` action already built — what v2's
+   * land search asks of each land it might play. */
+  protected castableAfterPlay(view: ControllerView, play: Action): number {
     let after = view.legalActionsAfter?.(play);
     // A land that asks "choose a colour" as it enters (Valgavoth's Lair)
     // stops there, with nothing castable yet: answer it as we would, and look
@@ -1707,6 +1712,14 @@ export class HeuristicBotController extends AutomaticController {
     if (choice !== undefined) {
       const creatureType = this.chooseCreatureType(view, choice.source, choice.options, choice.suggested);
       after = view.legalActionsAfter?.([play, { type: "choose-creature-type", player: this.playerId, creatureType }]);
+    }
+    // A shock land asks "pay 2 life?" as it enters, and stopped the look
+    // there too: Stomping Ground read as casting nothing, a tie with a
+    // Mountain, when paid it casts a turn-one Birds of Paradise (reported from
+    // a live game, 2026-10-07). Look past it as paid: whether to pay is
+    // asked again when it enters, and paid only if something's cast.
+    if (after?.some((a) => a.kind === "pay-life-for-untapped")) {
+      after = view.legalActionsAfter?.([play, { type: "pay-life-for-untapped", player: this.playerId, pay: true }]);
     }
     if (after === null || after === undefined) return 0;
     // Only what we'd actually cast: a land that "lets us cast" Sticky

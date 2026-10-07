@@ -797,10 +797,17 @@ export class EvalBotController extends HeuristicBotController {
       // v1's pick goes first, so it wins every tie: the rollouts pass our own
       // seat for the rest of the turn, so a land that lets us cast a spell now
       // scores no better than one that doesn't, and every basic ties. v1
-      // weighs exactly that (`bestLand`).
+      // weighs exactly that (`bestLand`). For the same reason a land that
+      // casts fewer of our spells this turn isn't searched against one that
+      // casts more: a shock land paid for a turn-one Birds of Paradise scored
+      // as 2 life for nothing and lost to a Mountain (reported from a live
+      // game, 2026-10-07).
+      const castable = new Map(lands.map((l) => [l, this.castableAfterPlay(view, l)]));
+      const most = Math.max(...castable.values());
+      const fits = lands.filter((l) => castable.get(l) === most);
       const order = [
-        ...lands.filter((l) => sameLand(l, inherited)),
-        ...lands.filter((l) => !sameLand(l, inherited)),
+        ...fits.filter((l) => sameLand(l, inherited)),
+        ...fits.filter((l) => !sameLand(l, inherited)),
       ];
       let bestLand = order[0];
       let bestLandScore = -Infinity;

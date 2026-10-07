@@ -1424,6 +1424,35 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "plays Stomping Ground over a Mountain to cast Birds of Paradise",
+    rule: "With no Forest, an untapped Stomping Ground (2 life paid) is the land that casts a turn-one Birds of Paradise; a Mountain casts nothing.",
+    position(registry) {
+      // Reported from a live game (2026-10-07, no capture): on turn one alice
+      // played a Mountain with Stomping Ground and Birds of Paradise in hand.
+      // v1's `castableAfter` reads Stomping Ground as casting nothing — the
+      // land stops at its "pay 2 life?" question, which it doesn't look past
+      // as it does Valgavoth's Lair's colour — and v2's land search rolls the
+      // turn out passing our seat, so Birds is never cast and the shock reads
+      // as 2 life for nothing. Fixed: `castableAfter` looks past the shock as
+      // paid, and v2 only searches lands that cast the most this turn.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 1;
+      game.debugSpawn("Mountain", A, "hand");
+      const ground = game.debugSpawn("Stomping Ground", A, "hand");
+      for (const name of ["Birds of Paradise", "Arcane Signet", "Old Gnawbone", "Terror of the Peaks", "Frostcliff Siege", "Decanter of Endless Water"]) {
+        game.debugSpawn(name, A, "hand");
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === ground,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "lets Stomping Ground enter tapped with nothing to cast",
     rule: "A shock land's 2 life buys nothing when no spell this turn needs the land untapped.",
     position(registry) {

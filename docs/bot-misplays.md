@@ -4,6 +4,30 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-07 — a Mountain played over Stomping Ground with Birds of Paradise in hand
+
+- **Seen:** on turn one, alice played a Mountain with Stomping Ground and Birds of Paradise in
+  hand (and no Forest), so nothing was cast.
+- **Right:** Stomping Ground, paying 2 life so it enters untapped, then Birds of Paradise: three
+  mana on turn two.
+- **Scenario:** "plays Stomping Ground over a Mountain to cast Birds of Paradise" (training) —
+  plays the Mountain.
+- **Why:** two halves. v1's `bestLand` ranks lands by `castableAfter`, the spells it could cast
+  after playing each; for Stomping Ground the engine's next question is "pay 2 life?"
+  (`pay-life-for-untapped`), so the look-ahead stops there and counts 0, a tie with the Mountain
+  (Valgavoth's Lair's colour choice is answered and looked past; this isn't). And v2's land search
+  (`eval-bot.ts`, `lands.length > 1`) scores each land with rollouts that pass our own seat for the
+  rest of the turn, so Birds is never cast in them: the shock reads as 2 life for nothing and the
+  Mountain wins outright, not just on a tie.
+- **Fix (outline):** in `castableAfter`, answer a shock land's pay-or-not as we would (pay when it
+  casts something) and look past it, as for the Lair, so v1 counts Birds. Then in v2's land
+  search, don't let a land that casts fewer spells this turn (`castableAfter`) beat one that casts
+  more, since its rollouts can't see the cast — or score each land together with v1's first cast
+  after it. Might break: the land search's other uses of its score (a fetch, a land that draws);
+  check with the gate's land scenarios and `bot:diff`.
+- **Status:** fixed (2026-10-07, the user asked): `castableAfter` looks past the shock as paid,
+  and v2's land search keeps to the lands that cast the most this turn; the scenario gates.
+
 ## 2026-10-06 — Felothar sacrificed Seedborn Muse over Tree of Redemption
 
 - **Seen:** a bot activated Felothar the Steadfast ("{3}, {T}, Sacrifice another creature: draw
