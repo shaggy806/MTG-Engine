@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
 import { PINNED_ART } from 'engine/client'
 import { cssUrl, resolveArtUrl } from '../ui/art.ts'
@@ -46,6 +47,35 @@ function normalizeCode(raw: string): string {
   return raw.toUpperCase().replace(ROOM_CODE_CHARS, '').slice(0, ROOM_CODE_LENGTH)
 }
 
+/** The window the page is laid out for at its natural size; a bigger one
+ * scales it up, up to {@link MAX_ZOOM}. */
+const BASE_WIDTH = 1440
+const BASE_HEIGHT = 860
+const MAX_ZOOM = 1.75
+
+/**
+ * How much to scale the page for this window: 1 up to {@link BASE_WIDTH} x
+ * {@link BASE_HEIGHT}, then in step with whichever of the two runs out
+ * first, so the page grows on a big monitor without outgrowing a short one.
+ * Every size on the page is in px, sized for a laptop, so on a 1440p screen
+ * it was a small island of small text. A number, not CSS: no CSS length
+ * divides into the unitless factor `zoom` takes.
+ */
+function landingZoom(width: number, height: number): number {
+  return Math.min(MAX_ZOOM, Math.max(1, Math.min(width / BASE_WIDTH, height / BASE_HEIGHT)))
+}
+
+function useLandingZoom(): number {
+  const [zoom, setZoom] = useState(() => landingZoom(window.innerWidth, window.innerHeight))
+  // A layout effect, so a resize never paints a frame at the old size.
+  useLayoutEffect(() => {
+    const update = () => setZoom(landingZoom(window.innerWidth, window.innerHeight))
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return zoom
+}
+
 /**
  * The app's front door: the screen anyone who isn't already in a room lands
  * on. Two jobs, deliberately given two separate panels with an "or" between
@@ -69,6 +99,7 @@ export function LandingScreen({
   readonly notFound?: boolean
 }) {
   const [joinCode, setJoinCode] = useState('')
+  const zoom = useLandingZoom()
 
   const join = (code: string) => {
     if (code.length === ROOM_CODE_LENGTH) game.joinRoom(code)
@@ -78,7 +109,7 @@ export function LandingScreen({
   const heroArt = resolveArtUrl(PINNED_ART[HERO_CARD], HERO_CARD, 'art_crop')
 
   return (
-    <div className="landing">
+    <div className="landing" style={{ '--landing-zoom': zoom } as CSSProperties}>
       {/* A zoomed-in crop of the top-100-commanders tile, drifting diagonally
           behind everything. Two elements, not one: the outer holds the angle
           and clips, the inner does the moving — see landing.css for why the
