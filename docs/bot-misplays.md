@@ -4,6 +4,33 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-07 — a fetch land not counted as this turn's mana
+
+- **Seen:** the bots don't see a fetch land that can get an untapped land as mana for this turn,
+  so they don't favour it even when cracking it would let them cast a spell that turn.
+- **Right:** a fetch that finds an untapped land (Wooded Foothills for a Forest) is as good as
+  that land this turn. Played and cracked, it casts what the land would.
+- **Scenario:** "plays Wooded Foothills over a tapped Jungle Hollow to cast Birds of Paradise"
+  (training) — turn one, Wooded Foothills, Jungle Hollow and Birds of Paradise in hand, a library
+  of Forests: plays Jungle Hollow.
+- **Why:** both bots rank land drops by what each casts right after it's played: v1's
+  `bestLand` by `castableAfter` (`controller.ts`, `castableAfterPlay`), and v2 only searches the
+  lands that cast the most. That look stops at the land drop, before the crack, and a fetch
+  makes no mana itself, so the fetch reads as casting nothing: a tie with Jungle Hollow, and on
+  a tie `bestLand` takes the tapped land. (Cracking itself is fine: once the fetch is down,
+  `isFreeFetch` cracks it at once.)
+- **Fix (outline):** in `castableAfterPlay`, look past a fetch as it does past a shock land's
+  "pay 2 life?": when the land just played has a free fetch ability (`isFreeFetch`), carry the
+  look on through activating it, every player passing so it resolves (as `reducerFirst`
+  resolves a reducer), and answering its search as the bot would (the land its
+  `choose-from-zone` answer picks), then count what's castable. A fetched land that enters
+  tapped (Evolving Wilds, Terramorphic Expanse) then rightly counts as nothing, and a fetch
+  whose life payment the bot wouldn't make (`FETCH_LIFE_FLOOR`) isn't looked past. Might break:
+  the extra simulated steps cost time on every land drop holding a fetch (a few
+  `legalActionsAfter` calls, each a cloned game), and the search's answer has to be the same
+  one the bot gives later, or the land drop counts a land the crack won't find.
+- **Status:** open.
+
 ## 2026-10-07 — a second destroy trigger aimed at what the first was already destroying
 
 - **Seen:** with two Summon: Bahamuts, one's "destroy up to one target nonland permanent" chapter

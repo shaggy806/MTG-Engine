@@ -1852,6 +1852,35 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "plays Wooded Foothills over a tapped Jungle Hollow to cast Birds of Paradise",
+    rule: "A fetch that finds an untapped land is this turn's mana: cracked for a Forest it casts a turn-one Birds of Paradise, where a tapped land casts nothing.",
+    kind: "training",
+    position(registry) {
+      // Reported from a live game (2026-10-07, no capture): the bots don't
+      // see a fetch land that can get an untapped land as mana for this
+      // turn, so they don't favour it even when it would let them cast a
+      // spell that turn. Both bots rank land drops by what each casts right
+      // after it's played (v1's `bestLand` via `castableAfter`, and v2 only
+      // searches the lands that cast the most). A fetch makes no mana itself
+      // and the look stops at the land drop, before the crack, so Wooded
+      // Foothills reads as casting nothing: a tie with Jungle Hollow, and on
+      // a tie `bestLand` takes the tapped land.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 1;
+      const fetch = game.debugSpawn("Wooded Foothills", A, "hand");
+      game.debugSpawn("Jungle Hollow", A, "hand");
+      game.debugSpawn("Birds of Paradise", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === fetch,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "lets Stomping Ground enter tapped with nothing to cast",
     rule: "A shock land's 2 life buys nothing when no spell this turn needs the land untapped.",
     position(registry) {
