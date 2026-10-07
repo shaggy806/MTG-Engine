@@ -1854,7 +1854,6 @@ const SCENARIOS: readonly BotScenario[] = [
   asked({
     name: "plays Wooded Foothills over a tapped Jungle Hollow to cast Birds of Paradise",
     rule: "A fetch that finds an untapped land is this turn's mana: cracked for a Forest it casts a turn-one Birds of Paradise, where a tapped land casts nothing.",
-    kind: "training",
     position(registry) {
       // Reported from a live game (2026-10-07, no capture): the bots don't
       // see a fetch land that can get an untapped land as mana for this
@@ -1864,7 +1863,9 @@ const SCENARIOS: readonly BotScenario[] = [
       // searches the lands that cast the most). A fetch makes no mana itself
       // and the look stops at the land drop, before the crack, so Wooded
       // Foothills reads as casting nothing: a tie with Jungle Hollow, and on
-      // a tie `bestLand` takes the tapped land.
+      // a tie `bestLand` takes the tapped land. Fixed: `castableAfterPlay`
+      // looks past a free fetch's crack (`afterFetchCrack`) to the land its
+      // search finds. `docs/bot-misplays.md`.
       const game = table(registry, [A, B, C, D], A);
       game.state.turn.number = 1;
       const fetch = game.debugSpawn("Wooded Foothills", A, "hand");
@@ -1875,6 +1876,28 @@ const SCENARIOS: readonly BotScenario[] = [
         player: A,
         judge: (action) => ({
           passed: action.type === "play-land" && action.card === fetch,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "plays a Forest for Birds of Paradise, not Evolving Wilds",
+    rule: "A fetch whose land enters tapped buys nothing this turn: a Forest casts the turn-one Birds of Paradise.",
+    position(registry) {
+      // The other side of the Wooded Foothills fix: looking past the crack
+      // finds Evolving Wilds' Forest entering tapped, so it still counts as
+      // casting nothing, and the Forest that casts Birds stays the pick.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 1;
+      game.debugSpawn("Evolving Wilds", A, "hand");
+      const forest = game.debugSpawn("Forest", A, "hand");
+      game.debugSpawn("Birds of Paradise", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === forest,
           detail: `chose ${describeAction(action)}`,
         }),
       };

@@ -1937,6 +1937,15 @@ export class Game {
           return null;
         }
       },
+      viewAfter: (action) => {
+        try {
+          const copy = Game.fromSnapshot({ ...this.state, eventLog: [] }, { registry: this.registry });
+          for (const each of Array.isArray(action) ? action : [action]) copy.dispatch(each);
+          return copy.controllerView(player);
+        } catch {
+          return null;
+        }
+      },
     };
   }
 

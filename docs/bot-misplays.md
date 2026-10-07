@@ -29,7 +29,14 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   the extra simulated steps cost time on every land drop holding a fetch (a few
   `legalActionsAfter` calls, each a cloned game), and the search's answer has to be the same
   one the bot gives later, or the land drop counts a land the crack won't find.
-- **Status:** open.
+- **Status:** fixed: `castableAfterPlay` looks past a free fetch's crack (`fetchCrack`, `settledAfter`, on
+  `ControllerView.viewAfter`, a new whole view of the throwaway copy): the activation, every player
+  passing so it resolves, and its search answered through `answerAwaited`, the bot's own answer.
+  The scenario gates, beside "plays a Forest for Birds of Paradise, not Evolving Wilds" (a fetch
+  whose land enters tapped still counts as nothing)). Settling the stack fixed an older miscount on the way: a land with
+  an enters trigger (a scry land, a gain land, Bojuka Bog) read as casting nothing while the trigger
+  waited, so an untapped basic always beat it; now a tie plays the tapped land, as `bestLand` intends
+  (bot:diff: 16 of 14,295 v2 decisions and 61 of 82,489 v1, all land drops of that kind).
 
 ## 2026-10-07 — a second destroy trigger aimed at what the first was already destroying
 

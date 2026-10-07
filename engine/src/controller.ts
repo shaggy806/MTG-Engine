@@ -93,6 +93,11 @@ export interface ControllerView {
    * may not offer it, and a controller must still decide without.
    */
   legalActionsAfter?(action: Action | readonly Action[]): readonly LegalAction[] | null;
+  /** The whole view of that throwaway copy after `action` (or each of
+   * several, in order) — for a look ahead that has to answer what the copy
+   * then asks (a fetch's search, `castableAfterPlay`) as this player would.
+   * `null` if the engine refused one; optional, as `legalActionsAfter`. */
+  viewAfter?(action: Action | readonly Action[]): ControllerView | null;
 }
 
 /**
@@ -1884,7 +1889,8 @@ export class HeuristicBotController extends AutomaticController {
   /** {@link castableAfter} for a `play-land` action already built — what v2's
    * land search asks of each land it might play. */
   protected castableAfterPlay(view: ControllerView, play: Action): number {
-    let after = view.legalActionsAfter?.(play);
+    const steps: Action[] = [play];
+    let after = view.legalActionsAfter?.(steps);
     // A land that asks "choose a colour" as it enters (Valgavoth's Lair)
     // stops there, with nothing castable yet: answer it as we would, and look
     // past it. Read before, it cast nothing and lost to any untapped land.
@@ -1893,7 +1899,8 @@ export class HeuristicBotController extends AutomaticController {
     );
     if (choice !== undefined) {
       const creatureType = this.chooseCreatureType(view, choice.source, choice.options, choice.suggested);
-      after = view.legalActionsAfter?.([play, { type: "choose-creature-type", player: this.playerId, creatureType }]);
+      steps.push({ type: "choose-creature-type", player: this.playerId, creatureType });
+      after = view.legalActionsAfter?.(steps);
     }
     // A shock land asks "pay 2 life?" as it enters, and stopped the look
     // there too: Stomping Ground read as casting nothing, a tie with a
@@ -1901,9 +1908,19 @@ export class HeuristicBotController extends AutomaticController {
     // a live game, 2026-10-07). Look past it as paid: whether to pay is
     // asked again when it enters, and paid only if something's cast.
     if (after?.some((a) => a.kind === "pay-life-for-untapped")) {
-      after = view.legalActionsAfter?.([play, { type: "pay-life-for-untapped", player: this.playerId, pay: true }]);
+      steps.push({ type: "pay-life-for-untapped", player: this.playerId, pay: true });
+      after = view.legalActionsAfter?.(steps);
     }
     if (after === null || after === undefined) return 0;
+    // A fetch makes no mana itself, so the look stopped at it too: Wooded
+    // Foothills read as casting nothing, a tie with a tapped Jungle Hollow,
+    // when cracked for a Forest it casts a turn-one Birds of Paradise
+    // (reported from a live game, 2026-10-07). Look past the crack, and past
+    // whatever the land puts on the stack (Bojuka Bog's enters trigger, a
+    // Titania token for the fetch gone to the graveyard): a spell can't be
+    // cast at sorcery speed over it, so it read as casting nothing too.
+    const crack = this.fetchCrack(view, play, steps, after);
+    after = this.settledAfter(view, crack === undefined ? steps : [...steps, crack]) ?? after;
     // Only what we'd actually cast: a land that "lets us cast" Sticky
     // Fingers with nothing of ours to enchant buys nothing (reported from a
     // live game, 2026-10-05 — an Island played over a Glacial Fortress on
@@ -1911,6 +1928,58 @@ export class HeuristicBotController extends AutomaticController {
     return new Set(
       after.flatMap((a) => (a.kind === "cast-spell" && this.wouldCast(view.state, a) ? [a.card] : [])),
     ).size;
+  }
+
+  /**
+   * The activation cracking the land `play` just put down (after `steps`),
+   * when it's a fetch this bot cracks at once (`isFreeFetch`) — for the look
+   * to carry on past it. `undefined` when it isn't such a fetch, or the view
+   * can't look that far.
+   */
+  private fetchCrack(
+    view: ControllerView,
+    play: Action,
+    steps: readonly Action[],
+    after: readonly LegalAction[],
+  ): Action | undefined {
+    if (play.type !== "play-land" || view.viewAfter === undefined) return undefined;
+    const crack = after.find(
+      (a): a is ActivateAbilityLegal => a.kind === "activate-ability" && a.source === play.card,
+    );
+    if (crack === undefined) return undefined;
+    const landed = view.viewAfter(steps);
+    if (landed === null || !this.isFreeFetch(landed.state, crack.source, crack.abilityIndex)) return undefined;
+    return this.toActivateAbility(landed.state, crack);
+  }
+
+  /**
+   * What we could do after `path` once the stack it leaves has resolved:
+   * every player passing round until it's empty, and what's asked of us on
+   * the way — a fetch's search, a trigger's target — answered as this bot
+   * will answer it (`answerAwaited`), so the land a crack counts is the one
+   * it will find, untapped or not (Evolving Wilds' enters tapped, and buys
+   * nothing this turn). `undefined` when the view can't look ahead, a choice
+   * is someone else's, or it doesn't settle in a few steps.
+   */
+  private settledAfter(view: ControllerView, path: readonly Action[]): readonly LegalAction[] | undefined {
+    if (view.viewAfter === undefined) return undefined;
+    let steps = [...path];
+    for (let i = 0; i < 8; i += 1) {
+      const next = view.viewAfter(steps);
+      if (next === null) return undefined;
+      const state = next.state;
+      if (state.awaiting !== null) {
+        const answer = answerAwaited(this, next);
+        if (answer === null) return undefined;
+        steps = [...steps, answer];
+        continue;
+      }
+      if (state.zones.shared.stack.length === 0) return next.legalActions();
+      const order = state.turnOrder.filter((p) => !state.players[p].hasLost);
+      const from = Math.max(0, order.indexOf(state.priority.holder ?? this.playerId));
+      steps = [...steps, ...[...order.slice(from), ...order.slice(0, from)].map((p) => passFor(p))];
+    }
+    return undefined;
   }
 
   private toPlayLand(legal: PlayLandLegal): Action {
