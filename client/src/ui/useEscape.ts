@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 /** Calls `onEscape` when Escape is pressed, while `onEscape` is given — how a
- * popup closes from the keyboard, as the Settings and Seat menus always have. */
+ * popup closes from the keyboard, as the Settings and Game menus always have. */
 export function useEscape(onEscape: (() => void) | undefined): void {
   useEffect(() => {
     if (onEscape === undefined) return

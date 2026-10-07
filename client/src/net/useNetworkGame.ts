@@ -252,7 +252,7 @@ export interface NetworkGame {
   readonly canRematch: boolean
   /** Host only, once the game is over: deal the next game into this room,
    * everyone at the table carried into it. `restart` deals it mid-game, the
-   * game in progress thrown away (the Seat menu's "Restart game"). */
+   * game in progress thrown away (the Game menu's "Restart game"). */
   rematch: (restart?: boolean) => void
   /** The game was restarted before it was over: a rematch's first frame
    * arrived while the last one's game was still going. For everyone but the

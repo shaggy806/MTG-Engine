@@ -145,7 +145,7 @@ test("the host's rematch carries the other player into the new game", async ({ b
     await expect(keepPrompt(page)).toBeVisible(paced)
     await page.getByRole('button', { name: 'Keep', exact: true }).click()
   }
-  await host.getByRole('button', { name: 'Seat', exact: true }).click()
+  await host.getByRole('button', { name: 'Game', exact: true }).click()
   await host.getByRole('button', { name: 'Concede…' }).click(paced)
   await host.getByRole('button', { name: 'Concede', exact: true }).click()
 
@@ -158,10 +158,10 @@ test("the host's rematch carries the other player into the new game", async ({ b
   await expect(resultPanel(host)).toBeVisible(paced)
   await screenshots(host, 'host-result')
 
-  // Put aside, the panel comes back from the Seat menu.
+  // Put aside, the panel comes back from the Game menu.
   await resultPanel(host).getByRole('button', { name: 'View the board' }).click()
   await expect(resultPanel(host)).toHaveCount(0)
-  await host.getByRole('button', { name: 'Seat', exact: true }).click()
+  await host.getByRole('button', { name: 'Game', exact: true }).click()
   await host.getByRole('button', { name: 'Game result' }).click()
   await resultPanel(host).getByRole('button', { name: 'Rematch' }).click()
 
@@ -200,12 +200,12 @@ test('the host restarts a game mid-way, and the other player is told', async ({ 
   await expect(keepPrompt(host)).toHaveCount(0, paced)
 
   // Only the host is offered it, and only mid-game.
-  await guest.getByRole('button', { name: 'Seat', exact: true }).click()
+  await guest.getByRole('button', { name: 'Game', exact: true }).click()
   await expect(guest.getByRole('button', { name: 'Restart game…' })).toHaveCount(0)
   await guest.keyboard.press('Escape')
 
   // Asked once more, then dealt.
-  await host.getByRole('button', { name: 'Seat', exact: true }).click()
+  await host.getByRole('button', { name: 'Game', exact: true }).click()
   await host.getByRole('button', { name: 'Restart game…' }).click()
   await expect(host.getByText('Restart for everyone?')).toBeVisible()
   await screenshots(host, 'host-restart-confirm')

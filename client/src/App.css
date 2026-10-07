@@ -211,7 +211,7 @@
   padding: 3px 9px;
   font-size: var(--text-xs);
 }
-/* Your seat's menu (ui/SeatMenu.tsx): the animations panel's box, its
+/* The Game menu (ui/SeatMenu.tsx): the animations panel's box, its
    entries stacked. */
 .seat-menu-panel {
   align-items: stretch;

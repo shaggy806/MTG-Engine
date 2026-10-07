@@ -3,10 +3,11 @@ import type { PlayerView } from 'engine/client'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
 
 /**
- * What a player can do with their own seat mid-game, in one button in the top
- * strip (which has no room for three): hand it to a bot and take it back,
- * concede, and leave — and, once the game is over, reopen its result. The
- * host can restart the game mid-way: the same seats and decks dealt afresh
+ * The top strip's "Game" menu: what a player can do with this game, in one
+ * button (the strip has no room for several) — hand their seat to a bot and
+ * take it back, concede, and leave, and once the game is over, reopen its
+ * result. It was "Seat", which said little about what was in it (the user,
+ * 2026-10-07). The host can restart the game mid-way: the same seats and decks dealt afresh
  * for everyone (`NetworkGame.rematch(true)`), asked once more first, since
  * the game in progress is lost.
  * Conceding asks once more inside the panel rather than through a browser
@@ -60,7 +61,7 @@ export function SeatMenu({
         // Amber while a bot has the seat, as the bots' pause button is when
         // paused; the strip has no room for a longer label.
         className={botPlaying ? 'ts-paused' : undefined}
-        title={botPlaying ? 'A bot is playing your seat' : 'Your seat'}
+        title={botPlaying ? 'A bot is playing your seat' : 'This game: a bot for your seat, concede, restart, leave'}
         aria-expanded={open}
         onClick={() => {
           // Opening it never starts on a half-finished concession.
@@ -69,10 +70,10 @@ export function SeatMenu({
           setOpen((o) => !o)
         }}
       >
-        Seat
+        Game
       </button>
       {open ? (
-        <div className="motion-panel seat-menu-panel" role="dialog" aria-label="Your seat">
+        <div className="motion-panel seat-menu-panel" role="dialog" aria-label="Game">
           {inGame ? (
             <button type="button" onClick={() => game.setBotTakeover(!botPlaying)}>
               {botPlaying ? 'Take back control' : 'Let a bot play for me'}
