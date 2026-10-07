@@ -891,16 +891,20 @@ function planManaPaymentOrdered(
     }
     return makes;
   };
-  // How many sources make each colour: a colour wanted once and made by one
-  // Swamp is scarce, one wanted three times and made by twenty Islands isn't.
-  const supply: Partial<Record<ManaType, number>> = {};
-  for (const src of sources) for (const m of makesOf(src)) supply[m] = (supply[m] ?? 0) + 1;
+  // How many sources this payment leaves making each colour: a colour wanted
+  // once and made by one Swamp is scarce, one wanted three times and made by
+  // twenty Islands isn't. Counted as the payment goes, not once up front: a
+  // fixed count scored all three Forests below either Island, and a {3} took
+  // every Forest (a live bot misplay, 2026-10-07: Urza's Incubator, then no
+  // green for Miirym).
+  const supplyLeft = (m: ManaType): number =>
+    sources.filter((src) => !isTapped(src.id) && makesOf(src).has(m)).length;
   // A source's worth to the rest of the hand: for each colour it makes, how
-  // much that colour is wanted over how many sources make it.
+  // much that colour is wanted over how many untapped sources still make it.
   const keepScore = (src: ManaSource): number => {
     if (keep === undefined) return 0;
     let score = 0;
-    for (const m of makesOf(src)) score += (keep[m] ?? 0) / Math.max(1, supply[m] ?? 0);
+    for (const m of makesOf(src)) score += (keep[m] ?? 0) / Math.max(1, supplyLeft(m));
     return score;
   };
   const colourCount = (src: ManaSource): number =>
@@ -916,22 +920,24 @@ function planManaPaymentOrdered(
   // with no other card to weigh, Sol Ring's colourless pays an Arcane Signet
   // before two coloured lands do (a bug report, 2026-10-06: the lands went
   // first, in battlefield order, as `Game.manaSources` lists them).
-  const byKeep = sources
-    .map((src, i) => ({
-      src,
-      i,
-      group: isConverter(src) === convertersFirst ? 0 : 1,
-      avoided: src.id === avoid ? 1 : 0,
-      creature: src.isCreature === true ? 1 : 0,
-      keep: keepScore(src),
-      colours: colourCount(src),
-    }))
-    .sort((a, b) => a.group - b.group || a.avoided - b.avoided || a.creature - b.creature || a.keep - b.keep || a.colours - b.colours || a.i - b.i)
-    .map((e) => e.src);
+  // The keep score is read afresh for each unit of generic, as sources go.
+  const ranked = sources.map((src, i) => ({
+    src,
+    i,
+    group: isConverter(src) === convertersFirst ? 0 : 1,
+    avoided: src.id === avoid ? 1 : 0,
+    creature: src.isCreature === true ? 1 : 0,
+    colours: colourCount(src),
+  }));
+  const byKeep = (): ManaSource[] =>
+    ranked
+      .filter((e) => !isTapped(e.src.id))
+      .map((e) => ({ ...e, keep: keepScore(e.src) }))
+      .sort((a, b) => a.group - b.group || a.avoided - b.avoided || a.creature - b.creature || a.keep - b.keep || a.colours - b.colours || a.i - b.i)
+      .map((e) => e.src);
   const coverGeneric = (): boolean => {
     for (const t of tapped) if (takeGeneric(t) !== null) return true;
-    for (const next of byKeep) {
-      if (isTapped(next.id)) continue;
+    for (const next of byKeep()) {
       const t = openFunded(next, null);
       if (t !== null && takeGeneric(t) !== null) return true;
     }

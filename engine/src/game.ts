@@ -11999,13 +11999,34 @@ export class Game {
       ...(this.state.zones.perPlayer[player]?.hand ?? []),
       ...this.state.zones.shared.command.filter((id) => this.state.objects[id]?.owner === player),
     ];
+    // A cost reducer being paid for (Urza's Incubator) makes the cards it
+    // reduces cheaper once it's out: weighed at their printed cost, Miirym,
+    // Sentinel Wyrm read as uncastable with what the Incubator left and held
+    // no colour back (a live bot misplay, 2026-10-07). Its own chosen
+    // creature type isn't named yet, so any card its filter otherwise takes.
+    const payingObject = paying !== undefined ? this.state.objects[paying] : undefined;
+    const reductions =
+      payingObject !== undefined && this.registry.has(payingObject.cardName)
+        ? this.registry.get(payingObject.cardName).static.flatMap((ability) => {
+            const modification = ability.costModification;
+            return modification !== undefined &&
+              typeof modification.reduceGeneric === "number" &&
+              modification.caster !== "opponent"
+              ? [{ applies: modification.applies, by: modification.reduceGeneric }]
+              : [];
+          })
+        : [];
     for (const id of ids) {
       if (id === paying) continue;
       const object = this.state.objects[id];
       if (object === undefined || object.kind !== "card" || !this.registry.has(object.cardName)) continue;
       const cost = this.registry.get(object.cardName).manaCost;
       if (cost === null) continue;
-      costs.push(parseManaCost(cost));
+      const parsed = parseManaCost(cost);
+      const by = reductions
+        .filter((r) => matchesFilter(this.state, this.registry, id, r.applies, { you: player }))
+        .reduce((n, r) => n + r.by, 0);
+      costs.push(by > 0 ? { ...parsed, generic: Math.max(0, parsed.generic - by) } : parsed);
     }
     return costs;
   }

@@ -118,3 +118,44 @@ describe("generic mana from colourless sources first", () => {
     expect(lands.map((id) => game.state.objects[id].tapped)).toEqual([true, true]);
   });
 });
+
+/**
+ * A live bot misplay (2026-10-07): with three Forests, two Islands and two
+ * Mountains, Urza's Incubator's {3} tapped all three Forests, and Miirym,
+ * Sentinel Wyrm ({3}{G}{U}{R}, {2} less naming Dragon) couldn't follow it.
+ * Two halves: each source was scored against the whole supply of its colour,
+ * not what this payment leaves of it, so every Forest scored lowest; and a
+ * card the spell being paid for makes cheaper was weighed at its printed cost,
+ * which the mana left can't reach.
+ */
+describe("generic mana leaves a source of each colour the hand still needs", () => {
+  const board = (game: Game) => {
+    for (const id of game.battlefield) if (game.state.objects[id].controller === A) game.state.objects[id].tapped = true;
+    return {
+      forests: [land(game, "Forest"), land(game, "Forest"), land(game, "Forest")],
+      islands: [land(game, "Island"), land(game, "Island")],
+      mountains: [land(game, "Mountain"), land(game, "Mountain")],
+    };
+  };
+  const untapped = (game: Game, ids: readonly ObjectId[]) => ids.filter((id) => !game.state.objects[id].tapped).length;
+
+  it("Commander's Sphere leaves a Forest, an Island and a Mountain for Animar", () => {
+    const game = setUp();
+    const { forests, islands, mountains } = board(game);
+    const sphere = game.debugSpawn("Commander's Sphere", A, "hand");
+    game.debugSpawn("Animar, Soul of Elements", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: sphere, targets: [] });
+    expect(game.state.zones.shared.stack).toContain(sphere);
+    expect([untapped(game, forests), untapped(game, islands), untapped(game, mountains)].every((n) => n > 0)).toBe(true);
+  });
+
+  it("Urza's Incubator leaves the colours Miirym needs at its reduced cost", () => {
+    const game = setUp();
+    const { forests, islands, mountains } = board(game);
+    const incubator = game.debugSpawn("Urza's Incubator", A, "hand");
+    game.debugSpawn("Miirym, Sentinel Wyrm", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: incubator, targets: [] });
+    expect(game.state.zones.shared.stack).toContain(incubator);
+    expect([untapped(game, forests), untapped(game, islands), untapped(game, mountains)].every((n) => n > 0)).toBe(true);
+  });
+});
