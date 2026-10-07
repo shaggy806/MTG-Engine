@@ -1423,6 +1423,29 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  {
+    name: "does not station a Spacecraft past its last threshold",
+    kind: "training",
+    rule: "Charge counters past a Spacecraft's last station threshold do nothing; the creature tapped for them is a blocker lost.",
+    run(weights, registry, makeBot) {
+      // Reported from a live game (2026-10-07): "stationing a spaceship
+      // beyond its final threshold is almost never worth it." Hearthhull's
+      // last band is 8+; at 10 counters, more add nothing. The evaluation
+      // counts every charge counter in `counters` (0.5 each, uncapped), so
+      // tapping a 6-power Craw Wurm reads as +3 against about 0.5 for keeping
+      // it home as a blocker. `docs/bot-misplays.md`.
+      const game = table(registry, [A, B], A);
+      const hull = onBoard(game, "Hearthhull, the Worldseed", A);
+      game.state.objects[hull].counters.charge = 10;
+      onBoard(game, "Craw Wurm", A);
+      onBoard(game, "Centaur Courser", B);
+      const reached = toSecondMain(game);
+      if (reached !== null) return reached;
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const stations = action.type === "activate-ability" && action.source === hull;
+      return { passed: !stations, detail: `chose ${describeAction(action)}` };
+    },
+  },
   asked({
     name: "plays Stomping Ground over a Mountain to cast Birds of Paradise",
     rule: "With no Forest, an untapped Stomping Ground (2 life paid) is the land that casts a turn-one Birds of Paradise; a Mountain casts nothing.",

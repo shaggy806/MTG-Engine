@@ -4,6 +4,27 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-07 — a Spacecraft stationed past its last threshold
+
+- **Seen:** bots station Spacecraft that already have every station band lit, tapping a creature
+  for charge counters that do nothing.
+- **Right:** past a Spacecraft's highest station threshold (rule 721.2; Hearthhull's 8+), more
+  charge counters add nothing, so stationing only costs the tapped creature — a blocker or an
+  attacker lost. Almost never worth it.
+- **Scenario:** "does not station a Spacecraft past its last threshold" (training) — Hearthhull,
+  the Worldseed at 10 charge counters, Craw Wurm untapped, a Centaur Courser across the table,
+  postcombat main: the bot stations with the Wurm.
+- **Why:** nothing in the bots knows about station. The evaluation's `counters` term
+  (`bot/features.ts`) counts every counter not in `UNSCORED_COUNTERS` — charge counters included,
+  uncapped — at weight 0.5 each (`bot/evaluate.ts`), so tapping a 6-power Wurm reads as +3.0
+  against about 0.5 for keeping it untapped (`untappedCreatures`).
+- **Fix (outline):** in `features.ts`, cap a station card's charge counters at its highest
+  `stationBand` threshold (the largest `gte n` among its statics' charge-counter conditions), so
+  counters past it score nothing and stationing reads as just the tapped creature. Might break: a
+  Spacecraft whose own ability spends or counts charge counters (check the pool's Spacecraft for
+  one before capping), and the gate's station scenarios.
+- **Status:** open.
+
 ## 2026-10-07 — a Mountain played over Stomping Ground with Birds of Paradise in hand
 
 - **Seen:** on turn one, alice played a Mountain with Stomping Ground and Birds of Paradise in
