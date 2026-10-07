@@ -29,6 +29,7 @@ import type {
   WireDeck,
 } from 'protocol'
 import { prefetchArt } from '../ui/art.ts'
+import { randomBotDecks } from '../lobby/randomBotDeck.ts'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??
@@ -48,6 +49,16 @@ export type ConnectionStatus =
   | 'disconnected'
 
 const MAX_RECONNECT_DELAY_MS = 8000
+
+/** A blitz game's seats: mine and three bots, the table its decks are built for. */
+const BLITZ_PLAYERS = 4
+
+/** What a blitz did to the pasted list, shown over its game until dismissed. */
+export interface BlitzReport {
+  readonly deckName: string
+  readonly substituted: readonly { readonly from: string; readonly to: string }[]
+  readonly dropped: readonly string[]
+}
 
 /** A stable empty list, so "no frame yet" doesn't look like a changed
  * `actions` prop on every re-render. */
@@ -215,6 +226,15 @@ export interface NetworkGame {
   /** Opens a two-seat room with this tab as its host. The table is sized
    * from the seat board afterwards (`addSeat`/`removeSeat`). */
   createRoom: () => void
+  /** Blitzing: plays `deck` against three bots on random starter decks at
+   * once — a four-seat room, my seat claimed and readied, the bots added and
+   * the game started, with no seat board in between. `report` is what the
+   * import changed, shown over the game (`blitzReport`). */
+  blitz: (deck: WireDeck, report: BlitzReport) => void
+  /** A blitz between its click and the game's first frame. */
+  readonly blitzing: boolean
+  readonly blitzReport: BlitzReport | null
+  dismissBlitzReport: () => void
   joinRoom: (roomId: string) => void
   /** Walks back out of a room that hasn't started yet, to the landing page —
    * giving up my seat, if I hold one, so the table can fill it again. */
@@ -318,6 +338,9 @@ export function useNetworkGame(): NetworkGame {
   /** Set by `createBuilder` until its room is joined: a builder room seats
    * its creator at once, with no seat board to choose from. */
   const pendingBuilderRef = useRef(false)
+  /** Set by `blitz` until its game's first frame: the deck and bots to seat
+   * once the room is joined, and whether that's been sent. */
+  const pendingBlitzRef = useRef<{ deck: WireDeck; bots: readonly WireDeck[]; sent: boolean } | null>(null)
   const unmountedRef = useRef(false)
   const reconnectAttemptRef = useRef(0)
   const reconnectTimeoutRef = useRef<number | null>(null)
@@ -346,6 +369,8 @@ export function useNetworkGame(): NetworkGame {
   const [captureEnabled, setCaptureEnabled] = useState(false)
   const [capture, setCapture] = useState<CaptureState>(NO_CAPTURE)
   const [builder, setBuilder] = useState<BuilderInfo | null>(null)
+  const [blitzing, setBlitzing] = useState(false)
+  const [blitzReport, setBlitzReport] = useState<BlitzReport | null>(null)
   const view = frame?.view ?? null
   const actions = frame?.actions ?? EMPTY_ACTIONS
 
@@ -405,6 +430,24 @@ export function useNetworkGame(): NetworkGame {
           setBotSpeedState(message.botSpeed)
           setRoomSettingsState(message.settings ?? null)
           setRoomPending(message.pending === true)
+          // A blitz's room, just made: take the first seat with the deck,
+          // ready, fill the rest with bots and start, all in one go (the
+          // server handles a socket's messages in order). Until the first
+          // frame, the landing page stays up saying so, rather than the
+          // seat board flashing past.
+          const blitz = pendingBlitzRef.current
+          if (blitz !== null && message.pending === true) {
+            if (!blitz.sent) {
+              blitz.sent = true
+              const [mine, ...others] = message.seats
+              const clientToken = newClientToken()
+              pendingClaimRef.current = { seat: mine.player, clientToken }
+              send({ type: 'claim-seat', roomId: message.roomId, seat: mine.player, clientToken, deck: blitz.deck, ready: true })
+              others.forEach((s, i) => send({ type: 'add-bot', roomId: message.roomId, seat: s.player, deck: blitz.bots[i] }))
+              send({ type: 'start-game', roomId: message.roomId })
+            }
+            return
+          }
           const pending = pendingClaimRef.current
           if (pending && pending.seat === null) {
             // A `take-seat` in flight: the server names the seat it gave us.
@@ -466,6 +509,8 @@ export function useNetworkGame(): NetworkGame {
         case 'state': {
           const wasPlaying = isPlayingRef.current
           isPlayingRef.current = true
+          pendingBlitzRef.current = null
+          setBlitzing(false)
           // The game's first frame names every card in it: load their art now.
           if (message.artManifest) prefetchArt(message.artManifest)
           // A `state` for our pending seat confirms the claim — persist it now,
@@ -527,6 +572,10 @@ export function useNetworkGame(): NetworkGame {
           }
           setError(message.message)
           setErrorSeq((n) => n + 1)
+          // A blitz that went wrong on the way in leaves its room's seat
+          // board up, error and all, to carry on from by hand.
+          pendingBlitzRef.current = null
+          setBlitzing(false)
           if (!isPlayingRef.current && roomIdRef.current !== null) {
             // A rejected seat claim — drop the unconfirmed claim and any stored
             // token for it, so nothing (an auto-reclaim included) retries it in
@@ -546,6 +595,8 @@ export function useNetworkGame(): NetworkGame {
     ws.onclose = () => {
       if (!isCurrent() || unmountedRef.current) return
       isPlayingRef.current = false
+      pendingBlitzRef.current = null
+      setBlitzing(false)
       setStatus('disconnected')
       const delay = Math.min(1000 * 2 ** reconnectAttemptRef.current, MAX_RECONNECT_DELAY_MS)
       reconnectAttemptRef.current += 1
@@ -578,13 +629,33 @@ export function useNetworkGame(): NetworkGame {
   const createRoom = useCallback(() => {
     const hostToken = newClientToken()
     pendingHostTokenRef.current = hostToken
+    setBlitzReport(null)
     send({ type: 'create-room', hostToken })
   }, [send])
+
+  const blitz = useCallback(
+    (deck: WireDeck, report: BlitzReport) => {
+      const hostToken = newClientToken()
+      pendingHostTokenRef.current = hostToken
+      pendingBlitzRef.current = {
+        deck,
+        bots: randomBotDecks(BLITZ_PLAYERS - 1, deck.name === undefined ? [] : [deck.name]),
+        sent: false,
+      }
+      setBlitzing(true)
+      setBlitzReport(report.substituted.length > 0 || report.dropped.length > 0 ? report : null)
+      send({ type: 'create-room', hostToken, players: BLITZ_PLAYERS })
+    },
+    [send],
+  )
+
+  const dismissBlitzReport = useCallback(() => setBlitzReport(null), [])
 
   const joinRoom = useCallback(
     (id: string) => {
       joiningRef.current = true
       roomIdRef.current = id
+      setBlitzReport(null)
       window.history.replaceState(null, '', roomUrl(id))
       send({ type: 'join-room', roomId: id, hostToken: loadHostToken(id) })
     },
@@ -739,6 +810,7 @@ export function useNetworkGame(): NetworkGame {
     setRoomPending(false)
     setIsHost(false)
     setError(null)
+    setBlitzReport(null)
     setStatus('no-room')
   }, [send])
 
@@ -933,6 +1005,10 @@ export function useNetworkGame(): NetworkGame {
     revision: frame?.seq ?? 0,
     ackFrame,
     createRoom,
+    blitz,
+    blitzing,
+    blitzReport,
+    dismissBlitzReport,
     joinRoom,
     leaveRoom,
     claimSeat,

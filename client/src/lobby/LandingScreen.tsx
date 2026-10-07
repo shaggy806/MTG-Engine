@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
 import { PINNED_ART } from 'engine/client'
 import { cssUrl, resolveArtUrl } from '../ui/art.ts'
+import { BlitzPanel } from './BlitzPanel.tsx'
 import './landing.css'
 
 /** Room codes are five characters from a deliberately unambiguous alphabet —
@@ -47,9 +48,10 @@ function normalizeCode(raw: string): string {
 
 /**
  * The app's front door: the screen anyone who isn't already in a room lands
- * on. Two jobs, deliberately given two separate panels with an "or" between
- * them — start a game, or join one someone else started — plus a footer row
- * for the two pages that need no room at all.
+ * on. First the site's headline act, blitzing a deck against bots
+ * (`BlitzPanel`); then two jobs, deliberately given two separate panels with
+ * an "or" between them — start a game, or join one someone else started —
+ * plus a footer row for the two pages that need no room at all.
  *
  * It does *not* ask how many players. That question used to sit above the
  * "Create a game" button as three count buttons, where (a) nothing said the
@@ -90,9 +92,9 @@ export function LandingScreen({
         <div className="landing-hero-text">
           <h1 className="landing-title">MTG Deck Blitz</h1>
           <p className="landing-tagline">
-            A Magic: The Gathering rules engine that runs in your browser. Play
-            Commander against friends — or fill the empty seats with bots and
-            play right now.
+            Goldfishing tests a deck against nobody. Blitzing tests it against
+            three bots: copy a Commander decklist, hit Blitz, and you're playing.
+            Or start a table with friends.
           </p>
         </div>
       </header>
@@ -108,6 +110,8 @@ export function LandingScreen({
           ⚠ {game.error}
         </p>
       ) : null}
+
+      <BlitzPanel game={game} />
 
       <div className="landing-actions">
         <section className="landing-card">

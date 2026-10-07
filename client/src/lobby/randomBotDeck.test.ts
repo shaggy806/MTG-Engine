@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BENCH_DECKS, SAMPLE_DECKS } from 'engine/client'
 import type { SeatStatus } from 'protocol'
-import { randomBotDeck } from './randomBotDeck.ts'
+import { randomBotDeck, randomBotDecks } from './randomBotDeck.ts'
 
 const seatWith = (name: string | null): SeatStatus =>
   ({ deck: name === null ? null : { name, commanders: [] } }) as unknown as SeatStatus
@@ -29,5 +29,12 @@ describe('randomBotDeck', () => {
     expect(deck.name).toBe(SAMPLE_DECKS[0].name)
     expect(deck.cards).toEqual(SAMPLE_DECKS[0].cards)
     expect(deck.commanders).toEqual(SAMPLE_DECKS[0].commanders)
+  })
+})
+
+describe('randomBotDecks', () => {
+  it('gives each bot a different deck, none the table already plays', () => {
+    const decks = randomBotDecks(3, [SAMPLE_DECKS[0].name], () => 0)
+    expect(decks.map((d) => d.name)).toEqual([SAMPLE_DECKS[1].name, SAMPLE_DECKS[2].name, SAMPLE_DECKS[3].name])
   })
 })

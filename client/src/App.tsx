@@ -35,7 +35,7 @@ import {
 } from 'engine/client'
 import type { SeatStatus } from 'protocol'
 import { useNetworkGame } from './net/useNetworkGame.ts'
-import type { NetworkGame } from './net/useNetworkGame.ts'
+import type { BlitzReport, NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { waitingLabel } from './game/waitingLabel.ts'
 import { gameStats } from './game/gameStats.ts'
@@ -620,6 +620,38 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
   )
 }
 
+/** How many stand-ins a blitz's notice names before "and N more". */
+const BLITZ_REPORT_SHOWN = 6
+
+/**
+ * What a blitz changed in the pasted list — the stand-ins for cards the
+ * engine doesn't have yet, and any card with none — over the board until
+ * clicked, since a player should know they're not playing exactly their list.
+ */
+function BlitzReportToast({ report, onDismiss }: { readonly report: BlitzReport; readonly onDismiss: () => void }) {
+  const { substituted, dropped } = report
+  const shown = substituted.slice(0, BLITZ_REPORT_SHOWN)
+  const more = substituted.length - shown.length
+  const counts = [
+    substituted.length > 0 ? `${substituted.length} stand-in${substituted.length === 1 ? '' : 's'}` : null,
+    dropped.length > 0 ? `${dropped.length} card${dropped.length === 1 ? '' : 's'} left out` : null,
+  ].filter((c) => c !== null)
+  return (
+    <div className="toast info toast-sticky blitz-report" role="status" onClick={onDismiss} title="Click to dismiss">
+      <div>
+        {report.deckName}: {counts.join(', ')}. Change them in the deck builder.
+      </div>
+      {shown.length > 0 ? (
+        <div className="blitz-report-list">
+          {shown.map((s) => `${s.from} → ${s.to}`).join(' · ')}
+          {more > 0 ? ` · and ${more} more` : ''}
+        </div>
+      ) : null}
+      {dropped.length > 0 ? <div className="blitz-report-list">No match: {dropped.join(', ')}</div> : null}
+    </div>
+  )
+}
+
 /** Who won the highroll (or who the host picked to go first), as the same toast a refusal is (in the accent
  * colours rather than the error's): over the board while the opening hands
  * are decided, gone on its own after {@link TOAST_LINGER_MS} or on a click. */
@@ -924,6 +956,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           </div>
         ) : null}
         <ErrorLine game={game} />
+        {game.blitzReport !== null ? <BlitzReportToast report={game.blitzReport} onDismiss={game.dismissBlitzReport} /> : null}
         {showHighroll ? (
           <HighrollToast onDismiss={dismissHighroll}>
             {game.firstPlayerChosen

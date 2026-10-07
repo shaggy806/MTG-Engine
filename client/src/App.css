@@ -410,6 +410,20 @@
   background: color-mix(in srgb, var(--panel) 92%, var(--accent));
   border: 1px solid var(--accent);
 }
+/* Stays until clicked: a blitz's report of what it changed in the list. */
+.toast.toast-sticky {
+  animation: toast-in 140ms ease-out;
+}
+.blitz-report {
+  font-weight: 600;
+}
+.blitz-report-list {
+  margin-top: 4px;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--text);
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

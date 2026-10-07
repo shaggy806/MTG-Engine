@@ -15,3 +15,22 @@ export function randomBotDeck(seats: readonly SeatStatus[], random: () => number
   const deck = pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))]
   return { cards: deck.cards, commanders: deck.commanders, name: deck.name }
 }
+
+/**
+ * Decks for `count` bots at once, all different from each other and from
+ * `taken` (the names already at the table) while the starter decks last —
+ * a blitz game's three opponents, picked before its room exists.
+ */
+export function randomBotDecks(
+  count: number,
+  taken: readonly string[] = [],
+  random: () => number = Math.random,
+): WireDeck[] {
+  const picked: WireDeck[] = []
+  for (let i = 0; i < count; i += 1) {
+    const names = [...taken, ...picked.map((d) => d.name ?? '')]
+    const seats = names.map((name) => ({ deck: { name, commanders: [] } }) as unknown as SeatStatus)
+    picked.push(randomBotDeck(seats, random))
+  }
+  return picked
+}
