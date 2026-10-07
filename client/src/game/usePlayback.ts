@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { GameEvent, LegalAction, ObjectId, Phase, PlayerView } from 'engine/client'
+import type { GameEvent, LegalAction, ObjectId, Phase, PlayerId, PlayerView } from 'engine/client'
 import { phaseOfStep } from 'engine/client'
 import { retimeFlights, scheduleEvents } from './animationSchedule.ts'
 import type { ScheduledEvent } from './animationSchedule.ts'
@@ -89,11 +89,38 @@ function arrivingOnStack(event: GameEvent, putDown: boolean): ObjectId[] {
  * `ack` the server paces its bots against, so a bot's next move can't start
  * until this client has finished showing the last one.
  */
+/**
+ * The cards `events` drew into `seat`'s own hand that are still there on
+ * `view`, the board the frame ends on: each flies into its place in the fan
+ * once that board is shown (`ScheduleOptions.handDraws`). A spectator has no
+ * hand of its own (`seat` null).
+ */
+export function handDrawsOf(
+  events: readonly GameEvent[],
+  view: PlayerView,
+  seat: PlayerId | null,
+): ReadonlySet<ObjectId> {
+  const drawn = new Set<ObjectId>()
+  if (seat === null) return drawn
+  const hand = new Set(view.zones.hands[seat] ?? [])
+  for (const ev of events) {
+    if (ev.type === 'card-drawn' && ev.player === seat && hand.has(ev.object) && view.objects[ev.object]) {
+      drawn.add(ev.object)
+    }
+  }
+  return drawn
+}
+
 export function usePlayback(
   frame: Frame | null,
   bus: AnimationBus,
   onShown: (seq: number) => void,
+  /** Whose hand is drawn at the bottom of the screen, for its draws' flights
+   * (`handDrawsOf`); null for a spectator. */
+  seat: PlayerId | null = null,
 ): Playback & PlaybackControls {
+  const seatRef = useRef(seat)
+  seatRef.current = seat
   const [displayed, setDisplayed] = useState<Playback>({
     view: frame?.view ?? null,
     previousView: null,
@@ -213,6 +240,7 @@ export function usePlayback(
     const schedule = scheduleEvents(events, startPhase, {
       scale: prefs.animScale,
       reduced: prefs.reduced,
+      handDraws: handDrawsOf(events, next.view, seatRef.current),
     })
     // A hidden tab has nobody watching, and the browser throttles its timers
     // to about one tick a second, so playing the frame out would only hold up

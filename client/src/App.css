@@ -3702,9 +3702,9 @@
    glance, which is the whole point of animating it. --fly-x/--fly-y are the
    offset from screen centre to that cell's centre, measured off the live DOM
    and set inline by AnimationLayer (see its flyOrigin); the fallback here is
-   straight up from the bottom, for a card whose cell isn't on screen. It
-   isn't tweened from the exact hand/board element, since Table remounts
-   wholesale on every frame and there's no stable "before" node to start at. */
+   straight up from the bottom, for a card whose cell isn't on screen. A
+   card from your own hand starts from its exact place in the fan instead
+   (`.from-hand`, below). */
 .played-card-fly {
   position: absolute;
   /* Name, duration and fill all have to sit on the element that actually
@@ -3942,6 +3942,103 @@
     opacity: 1;
   }
 }
+/* A card played from your own hand lifts out of its very place in the fan
+   (the user, 2026-10-07): it starts where the hand card was drawn -- its
+   size, its angle, a hovered card's grown pose -- and straightens up into
+   the spotlight, rather than rising from below while the hand still showed
+   it. --hand-dx/--hand-dy/--hand-r/--hand-s are that start, measured as the
+   spotlight mounts (handMotion.ts's placeLiftedSpotlight); the hand card is
+   hidden as it lifts. The same hold and way out as `rise`; one function list
+   in every keyframe, so each step interpolates rather than jumping. Not
+   under reduced motion, which never sets the class. */
+:root .played-card-fly.from-hand,
+:root[data-cast-entrance] .played-card-fly.from-hand {
+  animation-name: played-card-from-hand;
+}
+:root .played-card-fly.from-hand.holds,
+:root[data-cast-entrance] .played-card-fly.from-hand.holds {
+  animation-name: played-card-from-hand-hold;
+}
+.played-card-fly.from-hand .played-card-caption {
+  animation: played-caption-in calc(420ms * var(--anim-scale, 1)) ease-out both;
+}
+@keyframes played-card-from-hand {
+  0% {
+    transform: translate(var(--hand-dx, 0px), var(--hand-dy, 0px)) rotate(var(--hand-r, 0deg))
+      scale(var(--hand-s, 1));
+    opacity: 1;
+  }
+  18%,
+  72% {
+    transform: translate(0px, 0px) rotate(0deg) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0px, -4vh) rotate(0deg) scale(0.92);
+    opacity: 0;
+  }
+}
+@keyframes played-card-from-hand-hold {
+  0% {
+    transform: translate(var(--hand-dx, 0px), var(--hand-dy, 0px)) rotate(var(--hand-r, 0deg))
+      scale(var(--hand-s, 1));
+    opacity: 1;
+  }
+  25%,
+  100% {
+    transform: translate(0px, 0px) rotate(0deg) scale(1.08);
+    opacity: 1;
+  }
+}
+@keyframes played-caption-in {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* A card drawn into your own hand (handMotion.ts's flyIntoHand): the card
+   held hidden in the fan while a copy leaves the library as a cardback,
+   turns face up on the way and settles into its place, turned about its
+   bottom centre as the fan turns its tiles. Two faces back to back in a 3D
+   flipper; the copy's box is the hand tile's own layout box, --card-w
+   pinned on it. `data-arriving` because React never writes it, so a
+   re-render of the hand can't show the card early. */
+.hand-cards .hand-card[data-arriving] {
+  visibility: hidden;
+}
+.hand-draw-ghost {
+  transform-origin: 50% 100%;
+  perspective: calc(var(--card-w) * 5);
+}
+.hand-draw-flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.hand-draw-flipper > * {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  backface-visibility: hidden;
+}
+.hand-draw-face:disabled {
+  opacity: 1;
+}
+.hand-draw-back {
+  transform: rotateY(180deg);
+}
+.hand-draw-back .card-back {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  box-shadow: var(--shadow-raised);
+}
+
 /* Reduced motion: the played card still shows up in the middle for the same
    time -- it's the information -- but fades in and out in place instead of
    flying from its owner's side. */

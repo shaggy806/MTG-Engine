@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { GameEvent } from 'engine/client'
+import type { GameEvent, ObjectId } from 'engine/client'
 import {
   CARD_HOLD_MS,
   CARD_STEP_MS,
@@ -15,10 +15,13 @@ import {
   MOVE_STEP_MS,
   FLIGHT_MAX_MS,
   FLIGHT_MIN_MS,
+  HAND_DRAW_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
   flightMs,
+  handDrawBeatMs,
+  handDrawStaggerMs,
   libraryPeels,
   millDurationMs,
   retimeFlights,
@@ -42,6 +45,9 @@ const hit = () =>
     combat: true,
   })
 const draw = () => ev({ type: 'card-drawn', player: 'p1', object: `c${seq}` })
+/** The cards `draws` put in the viewer's hand (`ScheduleOptions.handDraws`). */
+const inHand = (...draws: readonly GameEvent[]): ReadonlySet<ObjectId> =>
+  new Set(draws.flatMap((d) => (d.type === 'card-drawn' ? [d.object] : [])))
 /** Cards put into exile in one move, each `[object, owner]`, from `from`. */
 const exiled = (cards: readonly (readonly [string, string])[], from = 'library') =>
   ev({
@@ -367,6 +373,66 @@ describe('scheduleEvents', () => {
     )
     expect(s.totalMs).toBe(0)
     expect(s.afterMs).toBe(0)
+  })
+})
+
+describe("scheduleEvents: a card drawn into the viewer's own hand", () => {
+  it('settles into its place over the new board, after the untaps, and the frame waits', () => {
+    const own = draw()
+    const s = scheduleEvents([untap('u1'), own], 'beginning', {
+      scale: 1,
+      reduced: false,
+      handDraws: inHand(own),
+    })
+    expect(types(s.items)).toEqual([])
+    expect(s.after.map((i) => [i.event.type, i.offset])).toEqual([
+      ['permanent-untapped', 0],
+      ['card-drawn', TAP_STEP_MS],
+    ])
+    expect(s.afterMs).toBe(TAP_STEP_MS + HAND_DRAW_STEP_MS)
+  })
+
+  it('deals a run of draws as one beat, a stagger per card after the first', () => {
+    const draws = [draw(), draw(), draw()]
+    const s = scheduleEvents(draws, 'precombat-main', {
+      scale: 2,
+      reduced: false,
+      handDraws: inHand(...draws),
+    })
+    // One shared beat: every cue at its start, the layer staggering them.
+    expect(s.after.map((i) => i.offset)).toEqual([0, 0, 0])
+    expect(s.afterMs).toBe(2 * handDrawBeatMs(3))
+    expect(handDrawBeatMs(3)).toBe(HAND_DRAW_STEP_MS + 2 * handDrawStaggerMs(3))
+  })
+
+  it("keeps an opponent's draw as the cardback over the old board, costing nothing", () => {
+    const mine = draw()
+    const theirs = ev({ type: 'card-drawn', player: 'p2', object: 'x9' })
+    const s = scheduleEvents([theirs, mine], 'precombat-main', {
+      scale: 1,
+      reduced: false,
+      handDraws: inHand(mine),
+    })
+    expect(s.items.map((i) => i.event)).toEqual([theirs])
+    expect(s.totalMs).toBe(0)
+    expect(s.after.map((i) => i.event)).toEqual([mine])
+  })
+
+  it('shows nothing under reduced motion: the card is simply in the hand', () => {
+    const own = draw()
+    const s = scheduleEvents([own], 'precombat-main', {
+      scale: 1,
+      reduced: true,
+      handDraws: inHand(own),
+    })
+    expect(s.items).toEqual([])
+    expect(s.after).toEqual([])
+  })
+
+  it('keeps a long run inside one spread of staggers', () => {
+    expect(handDrawStaggerMs(1)).toBe(0)
+    expect(handDrawBeatMs(7)).toBeLessThanOrEqual(HAND_DRAW_STEP_MS + 720)
+    expect(handDrawBeatMs(20)).toBeLessThanOrEqual(HAND_DRAW_STEP_MS + 720)
   })
 })
 

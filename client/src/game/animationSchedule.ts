@@ -39,6 +39,31 @@ export const TURN_STEP_MS = 1300
 export const PHASE_STEP_MS = 700
 /** A cardback travelling from a library to its owner's hand. */
 export const DRAW_STEP_MS = 520
+/**
+ * A card drawn into the viewer's own hand: off their library as a cardback,
+ * turning face up on the way, and settling into its own place in the fan —
+ * over the new board, where that place is (see {@link ScheduleOptions.handDraws}).
+ * Paced, unlike an opponent's draw: the card is held hidden in the hand until
+ * it lands, so the frame waits for it.
+ */
+export const HAND_DRAW_STEP_MS = 640
+/** How far apart a run of draws into the viewer's hand is dealt: an opening
+ * hand or a "draw three" arrives card by card. Tightened for a long run so
+ * the whole run's stagger stays within {@link HAND_DRAW_SPREAD_MS}. */
+const HAND_DRAW_STAGGER_MS = 120
+const HAND_DRAW_SPREAD_MS = 720
+
+/** How far apart the `count` cards of one run of draws into the viewer's
+ * hand start, at normal speed. */
+export function handDrawStaggerMs(count: number): number {
+  return count <= 1 ? 0 : Math.min(HAND_DRAW_STAGGER_MS, HAND_DRAW_SPREAD_MS / (count - 1))
+}
+
+/** How long a run of `count` draws into the viewer's hand takes, at normal
+ * speed: one flight, and a stagger for each card after the first. */
+export function handDrawBeatMs(count: number): number {
+  return count <= 0 ? 0 : HAND_DRAW_STEP_MS + (count - 1) * handDrawStaggerMs(count)
+}
 /** A permanent tilting to tapped, or back upright. One beat for every tap in
  * the frame (a spell's mana, an untap step), not one each. */
 export const TAP_STEP_MS = 260
@@ -293,6 +318,12 @@ export interface ScheduledEvent {
 export interface ScheduleOptions {
   readonly scale: number
   readonly reduced: boolean
+  /** The cards this frame's draws put in the viewer's own hand, which is on
+   * screen: each of those draws flies into its place in the fan over the new
+   * board (`handDraw`) rather than as a cardback toward a seat's edge over
+   * the old one. Any other draw — an opponent's, or a card that left the
+   * hand again within the frame — is the cardback. */
+  readonly handDraws?: ReadonlySet<ObjectId>
 }
 
 const NORMAL_SPEED: ScheduleOptions = { scale: 1, reduced: false }
@@ -386,6 +417,7 @@ type SlotKind =
   | 'hit'
   | 'death'
   | 'draw'
+  | 'handDraw'
   | 'turn'
   | 'phase'
   | 'reveal'
@@ -422,6 +454,9 @@ const AFTER_ORDER: readonly SlotKind[] = [
   'putDown',
   'untap',
   'tap',
+  // A drawn card settling into the hand, once the tiles have tapped or
+  // untapped (an untap step and its draw read in that order).
+  'handDraw',
   'enter',
   'move',
   'flip',
@@ -444,6 +479,7 @@ const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(AFTER_ORDER)
  */
 const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'card',
+  'handDraw',
   'hit',
   'death',
   'tap',
@@ -696,7 +732,7 @@ export function scheduleEvents(
   // it — and the frame is laid out again without it. Each pass drops at least
   // one, so this ends.
   for (;;) {
-    const { schedule, paired } = layOutFrame(events, startPhase, scale, reduced, landings)
+    const { schedule, paired } = layOutFrame(events, startPhase, scale, reduced, landings, options.handDraws)
     const lost = [...landings.byBefore.values()].filter((key) => !paired.has(key))
     if (lost.length === 0) return schedule
     for (const key of lost) {
@@ -714,10 +750,18 @@ function layOutFrame(
   scale: number,
   reduced: boolean,
   landings: Landings,
+  handDraws: ReadonlySet<ObjectId> = new Set(),
 ): { schedule: EventSchedule; paired: Set<number> } {
   const phase = { current: startPhase }
   const slots: Slot[] = []
-  for (const event of events) slots.push(...slotsFor(event, phase, reduced, landings))
+  for (const event of events) {
+    for (const slot of slotsFor(event, phase, reduced, landings)) {
+      // A draw into the viewer's own hand settles into its place there, over
+      // the new board.
+      const own = slot.kind === 'draw' && slot.event.type === 'card-drawn' && handDraws.has(slot.event.object)
+      slots.push(own ? { ...slot, kind: 'handDraw', duration: HAND_DRAW_STEP_MS } : slot)
+    }
+  }
 
   // Announce only the phase a frame *lands* in, not every one it passed
   // through. A frame shows exactly one board — its own end state — so a
@@ -801,6 +845,15 @@ export function retimeFlights(
  * next paced slot of another kind, as `layOut` shares the beat. */
 function beatDuration(slots: readonly Slot[], index: number): number {
   const first = slots[index]
+  if (first.kind === 'handDraw') {
+    // The second half is grouped by kind, so the run is the slots from here.
+    let count = 0
+    for (const slot of slots.slice(index)) {
+      if (slot.kind !== 'handDraw') break
+      count += 1
+    }
+    return handDrawBeatMs(count)
+  }
   if (first.kind !== 'mill') return first.duration
   const run: GameEvent[] = []
   for (const slot of slots.slice(index)) {

@@ -97,6 +97,8 @@ import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { emblemToVisible } from './ui/defToVisible.ts'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
 import { carryHover } from './ui/hoverCarry.ts'
+import { handPlacesBefore, slideHand } from './ui/handMotion.ts'
+import { motionPrefs } from './game/motionPrefs.ts'
 import { LibraryTopCard } from './ui/LibraryTopCard.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
 import { LandingScreen } from './lobby/LandingScreen.tsx'
@@ -887,7 +889,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   // Called unconditionally (before the loading-guard below) per the rules of
   // hooks. `ackFrame` is what lets the server pace its bots against these
   // animations rather than racing ahead of them.
-  const shown = usePlayback(game.frame, bus, game.ackFrame)
+  const shown = usePlayback(game.frame, bus, game.ackFrame, game.spectating ? null : game.seat)
   const view = shown.view
   // The seats around me as the frame being *shown* has them, not the newest
   // one: a scenario builder can change how many players there are between
@@ -3207,6 +3209,26 @@ function Table({
     const col = playerColRef.current
     return col === null ? undefined : carryHover(col)
   }, [handCardGap])
+  // The fan glides from the last board's hand to this one's — closing round
+  // a card played, opening for one drawn — rather than jumping at the
+  // remount (`handMotion.ts`). Again from the same places while the
+  // spacing settles before this board paints; after that, a re-layout (a
+  // resize) only records where the cards are.
+  const [handBefore] = useState(handPlacesBefore)
+  const handPainted = useRef(false)
+  useLayoutEffect(() => {
+    const id = requestAnimationFrame(() => {
+      handPainted.current = true
+    })
+    return () => cancelAnimationFrame(id)
+  }, [])
+  useLayoutEffect(() => {
+    const row = handRowRef.current
+    if (row === null) return
+    const prefs = motionPrefs()
+    const glide = !handPainted.current && !prefs.reduced && document.visibilityState !== 'hidden'
+    return slideHand(row, glide ? handBefore : null, prefs.animScale)
+  }, [handCardGap, handIds.length, handBefore])
 
   /** Sizes `boardEl`'s tiles to the largest width at which its rows still fit
    * the height its quadrant gives it (`.quadrant-body`'s content box),

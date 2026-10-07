@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { createRoot } from 'react-dom/client'
@@ -13,6 +13,7 @@ import type {
 } from 'engine/client'
 import { publicNameAt } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
+import { flyIntoHand, liftFromHand, placeLiftedSpotlight } from './handMotion.ts'
 import { closeStackGap } from './stackDepth.ts'
 import { defToVisible } from './defToVisible.ts'
 import { loadCard, peekCard } from '../cards/cardData.ts'
@@ -23,6 +24,8 @@ import {
   CARD_STEP_MS,
   DEATH_STEP_MS,
   DRAW_STEP_MS,
+  HAND_DRAW_STEP_MS,
+  handDrawStaggerMs,
   ENTER_STEP_MS,
   FLIP_STEP_MS,
   HURT_STEP_MS,
@@ -134,6 +137,10 @@ interface PlayedCard {
    * whose that is. */
   readonly caption: string
   readonly seatClass: SeatClass | null
+  /** Where it stood in the viewer's own hand, when it was played from there:
+   * the spotlight lifts out of that very place (`placeLiftedSpotlight`)
+   * rather than coming in from below. */
+  readonly fromHand?: { readonly x: number; readonly y: number; readonly width: number; readonly rotate: number }
 }
 
 /** The centre of `player`'s cell in the table grid, relative to the centre of
@@ -221,6 +228,13 @@ function drawFlight(
     toY: to.y,
     seat: getComputedStyle(cell).getPropertyValue('--seat').trim(),
   }
+}
+
+/** `player`'s seat colour, off their quadrant, for a cardback's tint. */
+function seatColourOf(player: PlayerId): string {
+  const panel = document.querySelector<HTMLElement>(`[data-player-id="${CSS.escape(player)}"]`)
+  const cell = panel?.closest<HTMLElement>('.quadrant-cell')
+  return cell ? getComputedStyle(cell).getPropertyValue('--seat').trim() : ''
 }
 
 /** The card `player`'s library pile shows — its cardback, or the top card
@@ -2189,6 +2203,9 @@ export function AnimationLayer({
         if (!obj) return
         const key = `card-${ev.seq}`
         const origin = handOrigin(ev.object) ?? flyOrigin(ev.player, seatRef.current)
+        // Out of its own place in the viewer's hand, which it leaves empty.
+        // Reduced motion fades the card in place instead, so the hand keeps it.
+        const fromHand = motionPrefs().reduced ? null : liftFromHand(ev.object)
         const who = playerLabel(ev.player, seatsRef.current)
         const verb = ev.type === 'land-played' ? 'plays' : 'casts'
         // Where it came from, when that isn't the hand: flashback, a
@@ -2199,7 +2216,16 @@ export function AnimationLayer({
         const holds = cue.putDown === true
         setPlayedCards((cur) => [
           ...cur,
-          { key, obj, holds, originX: origin.x, originY: origin.y, caption, seatClass },
+          {
+            key,
+            obj,
+            holds,
+            originX: origin.x,
+            originY: origin.y,
+            caption,
+            seatClass,
+            ...(fromHand ? { fromHand } : {}),
+          },
         ])
         const remove = (): void => setPlayedCards((cur) => cur.filter((c) => c.key !== key))
         if (holds) {
@@ -2275,6 +2301,9 @@ export function AnimationLayer({
       const stackLandings = new Map<ObjectId, number>()
       // Abilities flying in from their sources, which hold their own entries.
       const abilitiesFlying = new Set<ObjectId>()
+      // Cards drawn into the viewer's own hand, a run per beat (`handDraw`):
+      // dealt one after another into their places (`flyIntoHand`).
+      const handDraws = new Map<number, { player: PlayerId; objects: ObjectId[] }>()
       for (const cue of cues) {
         if (cue.half === 'after') {
           // Started now, in the task that mounted the new board, with the
@@ -2321,6 +2350,10 @@ export function AnimationLayer({
             cue.event.type === 'keyword-granted'
           ) {
             runMark(cue.event, cue.delay)
+          } else if (cue.event.type === 'card-drawn') {
+            const run = handDraws.get(cue.delay) ?? { player: cue.event.player, objects: [] }
+            run.objects.push(cue.event.object)
+            handDraws.set(cue.delay, run)
           } else if (cue.event.type === 'permanent-transformed') runFlip(cue.event.object, cue.delay)
           else if (cue.event.type === 'control-changed' || cue.event.type === 'permanent-attached') {
             runMove(cue.event, cue.delay)
@@ -2351,10 +2384,34 @@ export function AnimationLayer({
         window.setTimeout(() => fire(cue), cue.delay)
       }
       runEnters(enters)
+      for (const [delay, run] of handDraws) {
+        const stagger = scaled(handDrawStaggerMs(run.objects.length))
+        const pile = libraryCardOf(run.player)
+        const seatColour = seatColourOf(run.player)
+        run.objects.forEach((object, i) => {
+          flyIntoHand(object, pile, seatColour, delay + i * stagger, scaled(HAND_DRAW_STEP_MS))
+        })
+      }
       holdEntriesAbove(stackLandings, abilitiesFlying)
       for (const [delay, run] of mills) window.setTimeout(() => runMill(run.events, run.view), delay)
     })
   }, [bus])
+
+  // A card played from the viewer's hand starts its spotlight where it stood
+  // there: placed as it mounts, before it paints (`placeLiftedSpotlight`).
+  const placedSpotlights = useRef(new Set<string>())
+  useLayoutEffect(() => {
+    const placed = placedSpotlights.current
+    const live = new Set(playedCards.map((c) => c.key))
+    for (const key of placed) if (!live.has(key)) placed.delete(key)
+    for (const c of playedCards) {
+      if (c.fromHand === undefined || placed.has(c.key)) continue
+      const el = document.querySelector<HTMLElement>(`.played-card-fly[data-played-key="${CSS.escape(c.key)}"]`)
+      if (el === null) continue
+      placeLiftedSpotlight(el, c.fromHand)
+      placed.add(c.key)
+    }
+  }, [playedCards])
 
   // Only this layer knows where a held card is, so it measures the flights
   // `usePlayback` retimes the second half by.
@@ -2374,7 +2431,8 @@ export function AnimationLayer({
       {playedCards.map((c) => (
         <div
           key={c.key}
-          className={`played-card-fly${c.holds ? ' holds' : ''}`}
+          className={`played-card-fly${c.holds ? ' holds' : ''}${c.fromHand ? ' from-hand' : ''}`}
+          data-played-key={c.key}
           // Read by `liftSpotlight` to find the card its flight takes.
           data-played-obj={c.obj.id}
           style={
