@@ -564,6 +564,9 @@ export class EvalBotController extends HeuristicBotController {
   /** The rollout this priority decision is scored with: `rollout`, or
    * `"acting"` while we have a cast payoff (`castPayoff`). */
   private decisionRollout: RolloutPolicy;
+  /** This priority decision's `crackbackGuard`: null when nothing a cast or
+   * activation taps or sacrifices could make the crackback lethal. */
+  private tapGuard: { readonly grown: boolean } | null = null;
   private readonly rolloutDecisions: boolean;
   private readonly maxSimulations: number;
   private readonly timeBudgetMs: number;
@@ -662,6 +665,9 @@ export class EvalBotController extends HeuristicBotController {
 
     const player = this.playerId;
     const pass: Action = { type: "pass-priority", player };
+    // Whether a cast or activation could leave us dead to the crackback by
+    // what it taps or sacrifices (`crackbackGuard`), read once per decision.
+    this.tapGuard = this.crackbackGuard(view.state);
 
     const candidates: Action[] = [];
     // Candidates that help an opponent's attacker with something lasting:
@@ -1779,9 +1785,10 @@ export class EvalBotController extends HeuristicBotController {
 
   /** Would every opponent swinging at us before we untap again be lethal,
    * keeping `crackbackMargin` life in reserve — and, when `grown`, with the
-   * damage through scaled up by `crackbackGrowth`? */
-  private crackbackLethal(state: GameState, grown = true): boolean {
-    const through = crackback(state, this.cards, this.playerId, this.weights.crackbackParanoia);
+   * damage through scaled up by `crackbackGrowth`? With `lost`, as though
+   * those blockers (or all of them) weren't home. */
+  private crackbackLethal(state: GameState, grown = true, lost?: ReadonlySet<ObjectId> | "all"): boolean {
+    const through = crackback(state, this.cards, this.playerId, this.weights.crackbackParanoia, lost);
     const scale = grown ? 1 + this.weights.crackbackGrowth : 1;
     const scaled =
       scale === 1
@@ -1854,7 +1861,46 @@ export class EvalBotController extends HeuristicBotController {
     this.trace?.(action, after);
     if (after === null) return null;
     if (mustKill !== undefined && after.players[mustKill]?.hasLost !== true) return null;
-    return evaluateState(after, this.cards, this.playerId, this.weights);
+    const value = evaluateState(after, this.cards, this.playerId, this.weights);
+    return this.tapsIntoCrackback(view.state, action, budget) ? UNSAFE + value : value;
+  }
+
+  /**
+   * Whether a priority candidate's own resolution — what it taps or
+   * sacrifices to pay for itself, a mana creature its payment taps, a
+   * creature it convokes with or stations — leaves us dead to the crackback
+   * where we weren't, read on the board right after it resolves (horizon
+   * `"stack"`, everyone passing). A tapped creature is a blocker gone until
+   * our next untap step, just as an attacker is, and the attack declaration
+   * has always held back what the crackback needs (`declareAttackers`); a
+   * main-phase tap never did (the user, 2026-10-07: World Shaper stationed
+   * Hearthhull with practically every creature it had and couldn't block).
+   * The rollouts end with our turn, so they never see the swing back.
+   */
+  private tapsIntoCrackback(state: GameState, action: Action, budget: SearchBudget): boolean {
+    const guard = this.tapGuard;
+    if (guard === null || (action.type !== "cast-spell" && action.type !== "activate-ability")) return false;
+    const resolved = timed(budget, () => simulateAction(state, this.cards, action, "stack", "passive"));
+    if (resolved === null || resolved.result.over) return false;
+    return this.crackbackLethal(resolved, guard.grown);
+  }
+
+  /**
+   * Read once per priority decision: whether anything we tap or sacrifice
+   * this turn could leave us dead to the crackback. Only on our own turn
+   * (what we tap then stays tapped through every opponent's turn), and as
+   * the attack declaration reads it: not when we're dead to it already,
+   * holding everything (then holding back buys nothing), with the plain
+   * check standing in for the scaled one when the scaled one fails even now
+   * (`grown`), and not when even nothing left home isn't lethal — then no
+   * tap can matter, and no candidate pays for the extra simulation.
+   */
+  private crackbackGuard(state: GameState): { readonly grown: boolean } | null {
+    if (state.turnOrder[state.turn.activePlayerIndex] !== this.playerId) return null;
+    if (this.crackbackLethal(state, false)) return null;
+    const grown = !this.crackbackLethal(state, true);
+    if (!this.crackbackLethal(state, grown, "all")) return null;
+    return { grown };
   }
 }
 

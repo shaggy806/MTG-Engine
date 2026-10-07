@@ -136,7 +136,9 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   The Eternity Elevator, which counts them for mana, stays uncapped). A partner gate scenario
   checks the bot still stations Hearthhull from 4 counters to 10. This was most of World Shaper's
   trouble (the user: Hearthhull stationed with practically every creature); the wider point — any
-  tapped creature is a blocker gone — is `BACKLOG.md`'s crackback line.
+  tapped creature is a blocker gone — landed the same day: a cast or activation that leaves the
+  crackback lethal ranks below every safe move (`tapsIntoCrackback`; gate: "does not station its
+  only blocker into a lethal crackback").
 
 ## 2026-10-07 — a Mountain played over Stomping Ground with Birds of Paradise in hand
 

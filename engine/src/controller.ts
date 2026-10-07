@@ -31,6 +31,8 @@ import type { RandomSource } from "./decisions/contract.js";
 import { assignedCombatDamage, combatDamageOf, computeCharacteristics, staticConditionMet } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
+import { crackback, isLethal } from "./bot/combat-math.js";
+import { DEFAULT_WEIGHTS } from "./bot/evaluate.js";
 import { allColors, colorToName, newColorsFirst } from "./land-colors.js";
 import { scryAway } from "./scry-pick.js";
 import { COLORS, manaValue, parseManaCost } from "./mana.js";
@@ -1612,6 +1614,29 @@ export function payoffFirst<T extends Action>(
   return null;
 }
 
+/**
+ * How much an ability's own effect changes its controller's life, where it
+ * can be told: a fixed "you gain N life", or Tree of Redemption's exchange of
+ * our life with its toughness. 0 for anything else.
+ */
+function lifeDelta(
+  state: GameState,
+  registry: CardRegistry,
+  effect: EffectSpec | null | undefined,
+  source: ObjectId,
+  me: PlayerId,
+): number {
+  if (effect === null || effect === undefined) return 0;
+  if (effect.kind === "sequence") {
+    return effect.effects.reduce((n, each) => n + lifeDelta(state, registry, each, source, me), 0);
+  }
+  if (effect.kind === "gain-life" && effect.who === undefined && typeof effect.amount === "number") return effect.amount;
+  if (effect.kind === "exchange-life-toughness" && effect.target === "source") {
+    return computeCharacteristics(state, registry, source).toughness - state.players[me].life;
+  }
+  return 0;
+}
+
 /** Whether `def` makes its controller's own spells cheaper: a static cost
  * reduction for spells "you cast" (or anyone's), Urza's Incubator's included. */
 function reducesOwnSpells(def: CardDefinition): boolean {
@@ -2421,6 +2446,57 @@ export class HeuristicBotController extends AutomaticController {
    * v1 activated the first non-mana ability it found, whatever it did —
    * Viscera Seer's "Sacrifice a creature: Scry 1" four times a turn.
    */
+  /**
+   * Whether activating `legal` on our own turn would leave us dead to the
+   * crackback where we weren't, by the creatures its cost taps or sacrifices
+   * — its own {T} on a creature, the creatures station or another
+   * "tap N untapped creatures" cost taps, a sacrificed creature. Each is a
+   * blocker gone until our next untap step, as an attacker is (the user,
+   * 2026-10-07: World Shaper stationed Hearthhull with practically every
+   * creature it had). v2's `combat-math.ts` arithmetic at v2's default
+   * thresholds, read off the cost rather than a simulation; v2 checks its own
+   * candidates by playing them out (`EvalBotController.tapsIntoCrackback`).
+   */
+  private activationTapsIntoCrackback(state: GameState, legal: ActivateAbilityLegal): boolean {
+    if (state.turnOrder[state.turn.activePlayerIndex] !== this.playerId) return false;
+    const lost = new Set<ObjectId>();
+    const isMyCreature = (id: ObjectId | undefined): id is ObjectId =>
+      id !== undefined &&
+      state.objects[id]?.controller === this.playerId &&
+      state.objects[id]?.zone === "battlefield" &&
+      computeCharacteristics(state, this.registry, id).types.includes("creature");
+    const ability = this.registry.has(legal.cardName)
+      ? this.registry.get(legal.cardName).activated?.[legal.abilityIndex]
+      : undefined;
+    if (ability !== undefined && legal.text.startsWith(ability.text) && ability.cost.tap && isMyCreature(legal.source)) {
+      lost.add(legal.source);
+    }
+    if (legal.tapCost !== undefined || legal.sacrifice !== undefined) {
+      const action = this.toActivateAbility(state, legal);
+      if (action.type === "activate-ability") {
+        // Left out when the offer leaves no choice: then the engine takes the
+        // only ones there are.
+        const tapped = action.tap ?? legal.tapCost?.choices.slice(0, legal.tapCost.count) ?? [];
+        for (const id of tapped) if (isMyCreature(id)) lost.add(id);
+        const sacrificed =
+          action.sacrifice ?? (legal.sacrifice?.choices.length === 1 ? legal.sacrifice.choices[0] : undefined);
+        if (isMyCreature(sacrificed)) lost.add(sacrificed);
+      }
+    }
+    if (lost.size === 0) return false;
+    // The life the activation itself sets or gains counts on its side of the
+    // check: Tree of Redemption's exchange takes our life to its toughness.
+    const delta = ability !== undefined ? lifeDelta(state, this.registry, ability.effect, legal.source, this.playerId) : 0;
+    const lethal = (gone?: ReadonlySet<ObjectId>, gained = 0): boolean =>
+      isLethal(
+        state,
+        this.playerId,
+        crackback(state, this.registry, this.playerId, DEFAULT_WEIGHTS.crackbackParanoia, gone),
+        -DEFAULT_WEIGHTS.crackbackMargin + gained,
+      );
+    return !lethal() && lethal(lost, delta);
+  }
+
   private activationWorth(state: GameState, legal: ActivateAbilityLegal): number | null {
     const ability = this.registry.has(legal.cardName)
       ? this.registry.get(legal.cardName).activated?.[legal.abilityIndex]
@@ -3013,7 +3089,8 @@ export class HeuristicBotController extends AutomaticController {
         (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) >= MAX_ACTIVATIONS_PER_TURN ||
         this.aimsOnlyAtWrongSide(view.state, o) ||
         this.wastedNow(view.state, o) ||
-        this.holdsManaForMain(view.state, o)
+        this.holdsManaForMain(view.state, o) ||
+        this.activationTapsIntoCrackback(view.state, o)
       ) {
         continue;
       }

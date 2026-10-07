@@ -237,14 +237,21 @@ export function isLethal(
  * opponent's damage is weighted by `paranoia`, except the one whose turn is
  * next, which always counts in full: at a four-player table the others have
  * each other to attack as well. Commander damage is summed per commander.
+ *
+ * `lost` are blockers to count as gone — ones a cost is about to tap or
+ * sacrifice — or `"all"`, for the crackback with nothing left home.
  */
 export function crackback(
   state: GameState,
   registry: CardRegistry,
   me: PlayerId,
   paranoia: number,
+  lost?: ReadonlySet<ObjectId> | "all",
 ): DamageThrough {
-  const blockers = combatCreatures(state, registry, me, true);
+  const blockers =
+    lost === "all"
+      ? []
+      : combatCreatures(state, registry, me, true).filter((c) => lost === undefined || !lost.has(c.id));
   const order = state.turnOrder.filter((p) => !state.players[p].hasLost);
   const mine = order.indexOf(me);
   const opponents = [...order.slice(mine + 1), ...order.slice(0, Math.max(0, mine))];

@@ -1488,6 +1488,49 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   },
   {
+    name: "does not station its only blocker into a lethal crackback",
+    rule: "A creature tapped to station is a blocker gone until our next untap, as an attacker is: not when the swing back would then be lethal.",
+    run(weights, registry, makeBot) {
+      // The user (2026-10-07): "tapping a creature costs the same crackback
+      // as attacking with it" — World Shaper stationed Hearthhull with
+      // practically every creature it had and couldn't block. At 6 life, our
+      // Grizzly Bears holds off Hill Giant (2 gets through); tapped for
+      // Hearthhull's 2+ band, 5 does: the attack declaration would never send
+      // it, and the priority search, whose rollouts end with our turn, saw
+      // only `untappedCreatures`' 0.5. Fixed: `tapsIntoCrackback`.
+      const game = table(registry, [A, B], A);
+      game.state.players[A].life = 6;
+      const hull = onBoard(game, "Hearthhull, the Worldseed", A);
+      onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Hill Giant", B);
+      onBoard(game, "Grizzly Bears", B);
+      const reached = toSecondMain(game);
+      if (reached !== null) return reached;
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const stations = action.type === "activate-ability" && action.source === hull;
+      return { passed: !stations, detail: `chose ${describeAction(action)}` };
+    },
+  },
+  {
+    name: "stations with a creature it can spare from the crackback",
+    rule: "With life to spare, a creature tapped to station costs only its block: still worth Hearthhull's next band.",
+    run(weights, registry, makeBot) {
+      // The partner of the one above: the same board at 30 life, where the
+      // swing back with nothing home is 5, nowhere near lethal.
+      const game = table(registry, [A, B], A);
+      game.state.players[A].life = 30;
+      const hull = onBoard(game, "Hearthhull, the Worldseed", A);
+      onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Hill Giant", B);
+      onBoard(game, "Grizzly Bears", B);
+      const reached = toSecondMain(game);
+      if (reached !== null) return reached;
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const stations = action.type === "activate-ability" && action.source === hull;
+      return { passed: stations, detail: `chose ${describeAction(action)}` };
+    },
+  },
+  {
     name: "stations a Spacecraft up to its last threshold",
     rule: "Charge counters that reach a Spacecraft's last station threshold turn on what it holds; that's worth a tapped creature.",
     run(weights, registry, makeBot) {
