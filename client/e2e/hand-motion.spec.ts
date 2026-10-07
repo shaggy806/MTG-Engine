@@ -150,8 +150,14 @@ for (const { room, size, animScale } of [
       ;(window as unknown as { __trail: typeof trail }).__trail = trail
       const record = () => {
         // The fan opening round the cards coming in: its cards glide.
+        // The fan opening round the cards coming in: its cards' tiles glide,
+        // never their hitboxes, which a resting pointer would then hover.
         for (const el of document.querySelectorAll<HTMLElement>('.hand-cards .hand-card:not([data-arriving])')) {
-          if (el.getAnimations().length > 0) (window as unknown as { __glided: boolean }).__glided = true
+          if (el.getAnimations().length > 0) (window as unknown as { __hitboxMoved: boolean }).__hitboxMoved = true
+          const tile = el.querySelector('.card-tile')
+          if (tile?.getAnimations().some((a) => !(a instanceof CSSTransition))) {
+            ;(window as unknown as { __glided: boolean }).__glided = true
+          }
         }
         for (const ghost of document.querySelectorAll<HTMLElement>('.hand-draw-ghost')) {
           const face = ghost.querySelector<HTMLElement>('.hand-draw-face')
@@ -162,6 +168,11 @@ for (const { room, size, animScale } of [
             .querySelector(`.hand-cards .hand-card[data-obj-id="${CSS.escape(id)}"] .card-tile`)
             ?.getBoundingClientRect()
           if (card === undefined) continue
+          // Flown inside its own card's slot, so drawn in its place in the
+          // fan's stacking: under its more central neighbour.
+          if (ghost.parentElement?.getAttribute('data-obj-id') !== id) {
+            ;(window as unknown as { __outOfSlot: boolean }).__outOfSlot = true
+          }
           ;(trail[id] ??= []).push({
             x: r.left + r.width / 2,
             y: r.top + r.height / 2,
@@ -184,6 +195,8 @@ for (const { room, size, animScale } of [
     await expect(ghost).toHaveCount(0, { timeout: 10_000 })
     await expect(page.locator('.hand-card[data-arriving]')).toHaveCount(0)
     expect(await page.evaluate(() => (window as unknown as { __glided?: boolean }).__glided)).toBe(true)
+    expect(await page.evaluate(() => (window as unknown as { __hitboxMoved?: boolean }).__hitboxMoved)).toBeUndefined()
+    expect(await page.evaluate(() => (window as unknown as { __outOfSlot?: boolean }).__outOfSlot)).toBeUndefined()
     // Each copy's last place is its card's place in the fan, wherever the
     // hand had moved to by then.
     const trail = await page.evaluate(

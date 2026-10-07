@@ -4003,16 +4003,30 @@
 /* A card drawn into your own hand (handMotion.ts's flyIntoHand): the card
    held hidden in the fan while a copy leaves the library as a cardback,
    turns face up on the way and settles into its place, turned about its
-   bottom centre as the fan turns its tiles. Two faces back to back in a 3D
-   flipper; the copy's box is the hand tile's own layout box, --card-w
-   pinned on it. `data-arriving` because React never writes it, so a
-   re-render of the hand can't show the card early. */
+   bottom centre as the fan turns its tiles. The copy is a child of the
+   card's own .hand-card, over the tile's layout box, so it is drawn in the
+   card's place in the fan's stacking (--z), under its more central
+   neighbour, and moves with the hand. It is visible inside the hidden card,
+   and its face takes none of the fan's turn or hover, which the copy's own
+   transform does. Two faces back to back in a 3D flipper. `data-arriving`
+   because React never writes it, so a re-render of the hand can't show the
+   card early. */
 .hand-cards .hand-card[data-arriving] {
   visibility: hidden;
 }
 .hand-draw-ghost {
+  position: absolute;
+  visibility: visible;
+  pointer-events: none;
   transform-origin: 50% 100%;
   perspective: calc(var(--card-w) * 5);
+  will-change: transform, opacity;
+}
+.hand-cards .hand-card .hand-draw-ghost .hand-draw-face.card-tile {
+  rotate: none;
+  translate: none;
+  scale: none;
+  transition: none;
 }
 .hand-draw-flipper {
   position: relative;

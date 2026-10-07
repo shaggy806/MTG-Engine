@@ -133,6 +133,19 @@ function ease(t: number): number {
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
 
+/** The fan's own turn on a hand tile: its rotation (deg), offset (px) and
+ * scale, about the tile's bottom centre. */
+function fanPoseOf(tile: HTMLElement): { rotate: number; tx: number; ty: number; scale: number } {
+  const style = getComputedStyle(tile)
+  const [tx, ty] = style.translate === 'none' ? [] : style.translate.split(' ')
+  return {
+    rotate: style.rotate === 'none' ? 0 : px(style.rotate),
+    tx: px(tx),
+    ty: px(ty),
+    scale: style.scale === 'none' ? 1 : px(style.scale),
+  }
+}
+
 /**
  * A card drawn into the viewer's hand, flown in over the new board: the hand
  * card is held hidden (`data-arriving`, which App.css hides and React never
@@ -141,13 +154,17 @@ const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
  * `delay` ms; then the card shows. A pile showing its top card face up
  * (Oracle of Mul Daya) was already face up, so it doesn't turn.
  *
- * The copy is steered frame by frame (`requestAnimationFrame`) rather than
- * given fixed keyframes, re-measuring the card's place each time: the hand
- * moves under it — the peek tray rising or falling, the fan opening up for
- * it — and a flight aimed where the place was when it set off landed beside
- * it. Hidden at once, in the task that mounted the board; the copy is made
- * at the next frame, still before that board paints, once the hand's
- * spacing (a layout effect of its own) has settled.
+ * The copy flies *inside* the card's own `.hand-card`, in its place in the
+ * fan's stacking (`--z`): so it slides in under its more central neighbour
+ * and over its outer one, as the card it becomes is drawn, rather than over
+ * the whole fan and then dropping behind its neighbour as it lands. And it
+ * goes wherever the hand does (the peek tray rising or falling, the fan
+ * opening up for it), so only the pile's place relative to the card is
+ * re-measured each frame (`requestAnimationFrame`, not fixed keyframes: a
+ * flight aimed at where the slot was when it set off landed beside it).
+ * Hidden at once, in the task that mounted the board; the copy is made at
+ * the next frame, still before that board paints, once the hand's spacing (a
+ * layout effect of its own) has settled.
  */
 export function flyIntoHand(
   object: ObjectId,
@@ -165,17 +182,17 @@ export function flyIntoHand(
     const now = handCardOf(object)
     if (now) delete now.dataset.arriving
   }
+  const realTile = (host: HTMLElement) => host.querySelector<HTMLElement>('.card-tile:not(.hand-draw-face)')
   requestAnimationFrame(() => {
     const handCard = handCardOf(object)
-    const tile = handCard?.querySelector<HTMLElement>('.card-tile')
-    const from = pile.getBoundingClientRect()
-    if (!handCard || !tile || tile.offsetWidth === 0 || from.width === 0) {
+    const tile = handCard ? realTile(handCard) : null
+    if (!handCard || !tile || tile.offsetWidth === 0 || pile.getBoundingClientRect().width === 0) {
       show()
       return
     }
     const faceUp = pile.classList.contains('card-tile')
     const box = document.createElement('div')
-    box.className = 'ghost-flight hand-draw-ghost'
+    box.className = 'hand-draw-ghost'
     // Which card it's flying in, for anyone looking (the e2e spec).
     box.dataset.for = object
     const flipper = document.createElement('div')
@@ -191,29 +208,35 @@ export function flyIntoHand(
       flipper.appendChild(back)
     }
     box.appendChild(flipper)
-    document.body.appendChild(box)
+    handCard.appendChild(box)
 
-    let last = poseOf(handCard, tile)
     const step = (now: number): boolean => {
       const elapsed = now - started - delay
       const t = Math.min(1, Math.max(0, elapsed / duration))
-      // Where the card's place is now; its last known one if it has gone.
+      // Its card, should a re-render have replaced the element.
       const card = handCardOf(object)
-      const cardTile = card?.querySelector<HTMLElement>('.card-tile')
-      if (card && cardTile && cardTile.offsetWidth > 0) last = poseOf(card, cardTile)
-      const pose = last
+      if (card !== null && box.parentElement !== card) card.appendChild(box)
+      const host = box.parentElement
+      const cardTile = host ? realTile(host) : null
+      if (host === null || cardTile === null) return false
+      // The tile's layout box in its `.hand-card` is the copy's box too; the
+      // fan turns it about its bottom centre.
+      const w = cardTile.offsetWidth
+      const h = cardTile.offsetHeight
       Object.assign(box.style, {
-        left: `${pose.left}px`,
-        top: `${pose.top}px`,
-        width: `${pose.width}px`,
-        height: `${pose.height}px`,
+        left: `${cardTile.offsetLeft}px`,
+        top: `${cardTile.offsetTop}px`,
+        width: `${w}px`,
+        height: `${h}px`,
       })
-      box.style.setProperty('--card-w', `${pose.width}px`)
-      // About the box's bottom centre, as the fan turns its tiles: the start
-      // puts the copy's centre on the pile's, at the pile card's size.
-      const s0 = from.width / pose.width
-      const x0 = from.left + from.width / 2 - (pose.left + pose.width / 2)
-      const y0 = from.top + from.height / 2 - (pose.top + pose.height) + (s0 * pose.height) / 2
+      const pose = fanPoseOf(cardTile)
+      // The pile, in the card's own coordinates: the start puts the copy's
+      // centre on the pile card's, at its size.
+      const at = host.getBoundingClientRect()
+      const from = pile.getBoundingClientRect()
+      const s0 = from.width / w
+      const x0 = from.left + from.width / 2 - at.left - (cardTile.offsetLeft + w / 2)
+      const y0 = from.top + from.height / 2 - at.top - (cardTile.offsetTop + h) + (s0 * h) / 2
       const e = ease(t)
       // A touch big on the way in, settling to the card's size.
       const swell = Math.sin(Math.PI * Math.min(1, t / 0.9)) * 0.06
@@ -228,15 +251,16 @@ export function flyIntoHand(
       }
       return t < 1
     }
+    const land = (): void => {
+      box.remove()
+      show()
+    }
     const frame = (now: number): void => {
       if (step(now)) requestAnimationFrame(frame)
-      else {
-        box.remove()
-        show()
-      }
+      else land()
     }
-    step(performance.now())
-    requestAnimationFrame(frame)
+    if (step(performance.now())) requestAnimationFrame(frame)
+    else land()
   })
 }
 
@@ -295,27 +319,30 @@ export function slideHand(row: HTMLElement, before: ReadonlyMap<ObjectId, Place>
     const timing: KeyframeAnimationOptions = { duration, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }
     for (const [id, at] of now) {
       const was = before.get(id)
-      if (was === undefined) continue
+      const tile = at.el.querySelector<HTMLElement>('.card-tile:not(.hand-draw-face)')
+      if (was === undefined || tile === null) continue
       const dx = was.x - at.x
       const dy = was.y - at.y
-      if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-        running.push(at.el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], timing))
-      }
-      // The fan's angle and droop change with the hand's size too. Not on a
-      // card grown under the pointer, whose own pose isn't the fan's.
-      const tile = at.el.querySelector<HTMLElement>('.card-tile')
+      // A card grown under the pointer keeps its own pose, not the fan's.
       const grown = at.el.matches(':hover') || at.el.classList.contains('hover-carry')
-      if (tile && !grown && (was.r !== at.r || was.ty !== at.ty)) {
-        running.push(
-          tile.animate(
-            [
-              { rotate: was.r, translate: `0 ${was.ty}` },
-              { rotate: at.r, translate: `0 ${at.ty}` },
-            ],
-            timing,
-          ),
-        )
+      const moved = Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5
+      const turned = !grown && (was.r !== at.r || was.ty !== at.ty)
+      if (!moved && !turned) continue
+      // The tile glides, never the `.hand-card` hitbox (App.css): a hitbox
+      // gliding under a resting pointer hovered its card, which grew and
+      // shrank again as it slid past. `translate` is applied outside the
+      // fan's `rotate`, so the offset is the screen's.
+      const [ex, ey] = (getComputedStyle(tile).translate === 'none' ? '0px 0px' : getComputedStyle(tile).translate)
+        .split(' ')
+        .map((v) => px(v))
+      const from: Keyframe = { translate: `${ex + dx}px ${(grown ? (ey ?? 0) : px(was.ty)) + dy}px` }
+      const to: Keyframe = { translate: `${ex}px ${ey ?? 0}px` }
+      // The fan's angle and droop change with the hand's size too.
+      if (turned) {
+        from.rotate = was.r
+        to.rotate = at.r
       }
+      running.push(tile.animate([from, to], timing))
     }
   }
   lastPlaces.clear()
