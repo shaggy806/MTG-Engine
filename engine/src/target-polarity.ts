@@ -778,21 +778,88 @@ export function rankTargets(
   options: readonly TargetRef[],
   polarity: Polarity,
   value: (state: GameState, registry: CardRegistry, ref: TargetRef) => number = targetValue,
+  damage?: number,
 ): TargetRef[] {
   if (polarity === "either" || options.length < 2) return [...options];
   const want = polarity === "harm" ? "opponent" : "own";
+  // Damage that doesn't kill is gone at cleanup (rule 514.2): among the
+  // targets a harmful slot's damage is aimed at, what it kills, and players,
+  // come before what it only scratches (capture NZP7Q t26: Explosion for 3 at
+  // a 6/6 with a 3-loyalty Kiora beside it). The rest stay, just later.
+  const lands = (ref: TargetRef): boolean =>
+    damage === undefined || polarity !== "harm" || damageLands(state, registry, ref, damage);
   const scored = options.map((ref, index) => ({
     ref,
     index,
     right: polarity === "take" || sideOf(state, ref, me) === want,
+    lands: lands(ref),
     value: value(state, registry, ref),
   }));
   scored.sort((a, b) => {
     if (a.right !== b.right) return a.right ? -1 : 1;
+    if (a.right && a.lands !== b.lands) return a.lands ? -1 : 1;
     const byValue = a.right ? b.value - a.value : a.value - b.value;
     return byValue !== 0 ? byValue : a.index - b.index;
   });
   return scored.map((s) => s.ref);
+}
+
+/** Whether `amount` damage to `ref` does something that lasts: a player
+ * (life lost stays lost), or a permanent it destroys — a creature whose
+ * toughness it meets (less damage already marked), not indestructible; a
+ * planeswalker's loyalty or a battle's defence it removes. */
+function damageLands(state: GameState, registry: CardRegistry, ref: TargetRef, amount: number): boolean {
+  if (ref.kind === "player") return true;
+  const object = state.objects[ref.object];
+  if (object === undefined || object.zone !== "battlefield") return true;
+  const c = computeCharacteristics(state, registry, ref.object);
+  if (c.types.includes("planeswalker") && (object.counters.loyalty ?? 0) <= amount) return true;
+  if (c.types.includes("battle") && (object.counters.defense ?? 0) <= amount) return true;
+  return (
+    c.types.includes("creature") &&
+    !c.keywords.has("indestructible") &&
+    c.toughness - (object.damageMarked ?? 0) <= amount
+  );
+}
+
+/**
+ * The damage each target slot of an offered cast or activation is dealt —
+ * a `damage` effect aimed at that slot, at a fixed amount or X at the most
+ * the offer can pay — or `undefined` where there's no telling (a live
+ * amount, divided damage, no damage at all). Read as `offerPolarities` reads
+ * the definition.
+ */
+export function offerDamage(
+  registry: CardRegistry,
+  offer: CastOffer | ActivateOffer,
+): readonly (number | undefined)[] {
+  if (!registry.has(offer.cardName)) return [];
+  const def = registry.get(offer.cardName);
+  let effect: EffectSpec | null | undefined;
+  if (offer.kind === "activate-ability") {
+    effect = def.activated[offer.abilityIndex]?.effect;
+  } else {
+    if (offer.castModal !== undefined) return [];
+    const face = offer.face !== undefined ? def.faces?.[offer.face] : undefined;
+    effect = face !== undefined && face !== def.name ? (registry.has(face) ? registry.get(face).effect : null) : def.effect;
+  }
+  const maxX = offer.xCost?.maxX;
+  const out: (number | undefined)[] = [];
+  const visit = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      for (const child of node) visit(child);
+      return;
+    }
+    if (node === null || typeof node !== "object") return;
+    const spec = node as { kind?: unknown; target?: unknown; amount?: unknown; divided?: unknown };
+    if (spec.kind === "damage" && typeof spec.target === "number" && spec.divided === undefined) {
+      const amount = typeof spec.amount === "number" ? spec.amount : spec.amount === "x" ? maxX : undefined;
+      if (amount !== undefined) out[spec.target] = (out[spec.target] ?? 0) + amount;
+    }
+    for (const child of Object.values(node)) visit(child);
+  };
+  visit(effect);
+  return out;
 }
 
 /**

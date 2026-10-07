@@ -51,6 +51,7 @@ import { fitTargetCount, maxXForTargets, minXForTargets } from "./target-count.j
 import {
   auraPolarity,
   modalPolarities,
+  offerDamage,
   offerPolarities,
   onlyWrongSide,
   pendingTargetPolarities,
@@ -1773,6 +1774,7 @@ export class HeuristicBotController extends AutomaticController {
         legal.targetOptions,
         legal.targetSpecs,
         offerPolarities(this.registry, legal, polarityBias(state, this.playerId)),
+        offerDamage(this.registry, legal),
       ),
       legal.targetOptions,
       legal.targetSpecs,
@@ -1985,6 +1987,7 @@ export class HeuristicBotController extends AutomaticController {
         legal.targetOptions,
         legal.targetSpecs,
         offerPolarities(this.registry, legal, polarityBias(state, this.playerId)),
+        offerDamage(this.registry, legal),
       ),
       ...(sac !== undefined && sac.choices.length > 0
         ? { sacrifice: this.cheapestPermanents(state, sac.choices, 1)[0] }
@@ -2269,6 +2272,7 @@ export class HeuristicBotController extends AutomaticController {
       legal.targetOptions,
       legal.targetSpecs,
       offerPolarities(this.registry, legal, polarityBias(state, this.playerId)),
+      offerDamage(this.registry, legal),
     );
     let worth = effectWorth(ability.effect, {
       state,
@@ -2309,6 +2313,9 @@ export class HeuristicBotController extends AutomaticController {
     legalOptions: readonly (readonly TargetRef[])[],
     specs: readonly TargetSpec[],
     polarities: readonly Polarity[] | null,
+    /** Each slot's damage (`offerDamage`), so a burn spell is aimed at what
+     * it kills. */
+    damages: readonly (number | undefined)[] = [],
   ): ChosenTargets {
     if (polarities === null) return firstOfEach(legalOptions, specs, stateTargetFacts(state, this.registry));
     const picked: (TargetRef | null)[] = [];
@@ -2316,7 +2323,7 @@ export class HeuristicBotController extends AutomaticController {
     for (let i = 0; i < legalOptions.length; i += 1) {
       const polarity = polarities[i] ?? "either";
       const fillable = fillableOptions(specs, legalOptions, i, picked, stateTargetFacts(state, this.registry));
-      const best = rankTargets(state, this.registry, this.playerId, fillable, polarity)[0];
+      const best = rankTargets(state, this.registry, this.playerId, fillable, polarity, targetValue, damages[i])[0];
       // An "any number of" group (always last) takes one member, or none,
       // as `firstOfEach` does.
       if (i === group) {

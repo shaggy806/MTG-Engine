@@ -2589,6 +2589,51 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  asked({
+    name: "aims Explosion at what it kills",
+    rule: "Damage that doesn't kill is gone at cleanup (rule 514.2): X=3 goes at a 3-loyalty planeswalker or a 2/2, not a 5/5.",
+    position(registry) {
+      // Reported from a live game (2026-10-06, capture NZP7Q t26): Explosion
+      // for 3 at a 6/6 Lathliss, with a 3-loyalty Kiora beside it.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Island", A, 2);
+      lands(game, "Mountain", A, 5);
+      onBoard(game, "Shivan Dragon", B);
+      onBoard(game, "Craw Wurm", C);
+      const garruk = onBoard(game, "Garruk Wildspeaker", D);
+      game.state.objects[garruk].counters.loyalty = 3;
+      const bears = onBoard(game, "Grizzly Bears", D);
+      const explosion = game.debugSpawn("Expansion // Explosion", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => {
+          const target = action.type === "cast-spell" && action.card === explosion ? action.targets?.[0] : undefined;
+          const kills = target?.kind === "object" && (target.object === garruk || target.object === bears);
+          return { passed: kills, detail: `chose ${describeAction(action)}` };
+        },
+      };
+    },
+  }),
+  {
+    name: "spreads attackers between equal open opponents",
+    rule: "With nothing to choose between two open opponents, the attack is split, not piled on one.",
+    run(weights, registry, makeBot) {
+      // The user (2026-10-07, capture HB5MR t20): "Bot should attempt to
+      // spread out attackers". Bob's Centaur Courser blocks and kills a Bear,
+      // so carol and dave are the open ones.
+      const game = table(registry, [A, B, C, D], A);
+      for (let i = 0; i < 4; i += 1) onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Centaur Courser", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const at = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      const hit = (p: PlayerId) => at.some((d) => d.defender === p);
+      return {
+        passed: hit(C) && hit(D),
+        detail: `attacked ${at.map((d) => d.defender).join(", ") || "nobody"}`,
+      };
+    },
+  },
   {
     name: "does not attack into a free block",
     rule: "A 2/2 swung at an untapped 1/3 is blocked for nothing; it only taps the attacker.",

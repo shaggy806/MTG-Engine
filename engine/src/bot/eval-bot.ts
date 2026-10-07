@@ -38,6 +38,7 @@ import { onlyUntilEndOfTurn } from "../effect-worth.js";
 import { goadersOf } from "../goad.js";
 import {
   modalPolarities,
+  offerDamage,
   offerPolarities,
   pendingTargetPolarities,
   rankTargets,
@@ -256,6 +257,13 @@ function aimedOnlyAt(action: Action, player: PlayerId): boolean {
  */
 const MOVES_PER_ROUND = 8;
 
+/** What an attack scores for each opponent past the first it sends attackers
+ * at (the user, 2026-10-07: "Bot should attempt to spread out attackers").
+ * Small: it decides a near tie — two open opponents, or commander damage
+ * tipping it by a fraction (capture HB5MR t20) — and loses to a real
+ * difference, damage that puts a player in danger or a blow at the leader. */
+const SPREAD_BONUS = 0.5;
+
 /** Two scores this close are a tie: the same end state reached by a
  * different order of floating-point sums. */
 const TIE = 1e-9;
@@ -440,8 +448,8 @@ export function aimOffer(
   const bias = polarityBias(state, me);
   // Ranked, then twins cut to as many as there are slots (`bot/twins.ts`):
   // seven identical Scute Swarms are one option, not seven simulations.
-  const aim = (options: readonly TargetRef[], polarity: Polarity | undefined, slots: number) =>
-    collapseTwins(state, rankTargets(state, cards, me, options, polarity ?? "either", rankValue), slots);
+  const aim = (options: readonly TargetRef[], polarity: Polarity | undefined, slots: number, damage?: number) =>
+    collapseTwins(state, rankTargets(state, cards, me, options, polarity ?? "either", rankValue, damage), slots);
   if (legal.kind === "choose-targets") {
     const polarities = pendingTargetPolarities(state, cards, bias);
     return {
@@ -468,10 +476,12 @@ export function aimOffer(
   }
   if (legal.targetOptions.length === 0) return legal;
   const polarities = offerPolarities(cards, legal, bias);
+  // What each slot's damage comes to, so what it kills is tried first.
+  const damages = offerDamage(cards, legal);
   return {
     ...legal,
     targetOptions: legal.targetOptions.map((options, i) =>
-      aim(options, polarities?.[i], legal.targetOptions.length),
+      aim(options, polarities?.[i], legal.targetOptions.length, damages[i]),
     ),
   };
 }
@@ -1308,7 +1318,8 @@ export class EvalBotController extends HeuristicBotController {
         attackers: withRequiredAttackers(attackers, legal),
       });
       if (after === null) return null;
-      const value = evaluateState(after, this.cards, me, w);
+      const players = new Set(attackers.map((d) => defendingPlayer(d.defender)));
+      const value = evaluateState(after, this.cards, me, w) + SPREAD_BONUS * Math.max(0, players.size - 1);
       if (after.result.over || deadAnyway) return value;
       return this.crackbackLethal(after, grown) ? UNSAFE + value : value;
     };
@@ -1388,12 +1399,26 @@ export class EvalBotController extends HeuristicBotController {
       return Math.max(1, Math.ceil((loyalty - sent) / (mine.get(attacker)?.damage ?? 1)));
     };
 
+    // An attacker already sent, sent at another opponent instead: the climb
+    // only ever added attackers, so once every one was aimed at one player a
+    // spread between two could never be reached.
+    const reaims = (current: readonly AttackerDeclaration[]) =>
+      current.flatMap((d) =>
+        (legal.defendersFor[d.attacker] ?? [])
+          .filter((other) => defendingPlayer(other) !== defendingPlayer(d.defender))
+          .map((other) => ({
+            next: current.map((x) => (x === d ? { ...d, defender: other } : x)),
+            estimate: estimate({ attacker: d.attacker, defender: other }),
+          })),
+      );
+
     // Built one attacker (or part of a stack) at a time, keeping each only if
-    // it improves the simulated result.
+    // it improves the simulated result, or re-aimed.
     const [built, builtScore] = hillClimb<AttackerDeclaration>(
       [],
-      (current) =>
-        legal.eligible
+      (current) => [
+        ...reaims(current),
+        ...legal.eligible
           .filter((id) => (mine.get(id)?.damage ?? 0) > 0)
           .flatMap((attacker) => {
             const left = stackSize(attacker) - sentOf(current, attacker);
@@ -1410,6 +1435,7 @@ export class EvalBotController extends HeuristicBotController {
               }));
             });
           }),
+      ],
       score,
       budget,
     );

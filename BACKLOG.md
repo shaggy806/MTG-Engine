@@ -210,23 +210,6 @@ under count budgets).
   2, scores at least as well, which keeps the right pre-combat plays (a haste creature, removing a
   blocker). Gate: Faeburrow Elder alone with Arcane Signet in hand passes. The capture's own
   position is the attack, which is fine, so it resolves `--force` against that gate.
-- **Spread attackers between opponents** (a capture, 2026-10-05, HB5MR turn 20, open — the user:
-  "Bot should attempt to spread out attackers"; reads right today only by accident): v2 piles every
-  attacker on one player. Equal scores keep the first defender in `hillClimb` (`eval-bot.ts`
-  ~289), and the climb never re-aims an attacker once placed (~1396). Outline: a re-aim move in
-  the attack climb and a small bonus per distinct defending player in the attack score (~0.1
-  breaks ties; ~0.5 also flips this capture, where commander damage favoured one player).
-  Lethal is unaffected (`alphaStrike` runs first). A weight with trade-offs (fewer focused kills),
-  so it waits on the user's say; a training scenario: four Grizzly Bears, two open opponents.
-- **Damage aimed at what it doesn't kill** (a capture, 2026-10-06, NZP7Q turn 26, open — reads
-  right today only because the bot pumps instead): Explosion X=3 at a 6/6 Lathliss when Kiora (3
-  loyalty) or a 3-toughness creature died to it. Both aimers rank by `targetValue`
-  (`target-polarity.ts` ~747), which ignores whether the damage kills, and `targetCombos` crosses
-  slot 0 with every player for the draw slot, so the 8-combo cap tried two damage targets. Outline:
-  a slot's damage amount (X at its max) passed to `rankTargets`, putting what it kills, and players,
-  ahead of what it doesn't (both v1's `aimedTargets` and v2's `aimOffer`); optionally vary one slot
-  at a time in `targetCombos`. Changes every damage spell's aim: needs its own `bot:diff`. Gate:
-  Explosion with Garruk at 3 loyalty and Grizzly Bears among bigger creatures.
 - **A held wipe's mana isn't kept through combat** (from capture 9M59N t17, 2026-10-07): once a
   wipe is held for after combat (`heldForCombat`), nothing stops a combat pump spending its mana,
   and the rollouts never cast the wipe in main 2. Remember the held wipe for the turn and, in our
