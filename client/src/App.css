@@ -3408,28 +3408,9 @@
 /* The room-code styling that used to live here went to the landing page with
    the join form itself; the seat panel's name field is styled in lobby.css. */
 
-/* the seat-picker/waiting-room screen (SeatPickerScreen/WaitingForPlayersScreen
-   in App.tsx) needs a much wider box than the default overlay-box's small
-   centered-dialog width to fit a per-seat grid (see client/src/lobby/) */
-.seat-board-box {
-  /* The whole screen's width, so the room-settings column down its right
-     side (lobby.css's .seat-board-main) sits at the screen's right edge
-     rather than beside the seats in the middle; the seats cap their own
-     width (lobby.css's --seat-w) so they don't grow with it. */
-  width: 96vw;
-  max-width: none;
-  /* One rhythm across the whole board. The seat grid runs the full width of
-     this box, so the box's own side inset reads as part of the same row as
-     the gaps between seat panels — the two being different numbers is why
-     the outer panels sat flush against the dialog wall while the inner ones
-     had 16px to breathe. (Worse, `.seat-board` used to claim a width of its
-     own, 90vw against this box's 94vw, so on a wide screen it overran this
-     padding entirely rather than merely mismatching it.) `lobby.css` reads
-     the same token for both gaps. */
-  --seat-gap: 16px;
-  padding-inline: var(--seat-gap);
-  position: relative;
-}
+/* The seat-picker/waiting-room screen's boxes (the room's, over the seats,
+   and the settings box) are styled with the rest of the seat board, in
+   client/src/lobby/lobby.css. */
 /* Under the room code: the link to send a friend (lobby/InviteLink.tsx). */
 .invite-link {
   display: flex;

@@ -729,7 +729,7 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
   const roomFull = game.seats.every((s) => s.claimed || s.isBot)
   return (
     <div className="overlay">
-      <div className="overlay-box seat-board-box">
+      <SeatBoard game={game}>
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
         <p className="muted">Share this room code, then everyone joins.</p>
@@ -738,8 +738,7 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
           <ErrorLine game={game} />
         </div>
         {roomFull ? <p className="muted">Room is full.</p> : null}
-        <SeatBoard game={game} />
-      </div>
+      </SeatBoard>
     </div>
   )
 }
@@ -752,15 +751,14 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
 function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
   return (
     <div className="overlay">
-      <div className="overlay-box seat-board-box">
+      <SeatBoard game={game}>
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
         {game.roomId !== null ? <InviteLink roomId={game.roomId} /> : null}
         <div className="toast-stack">
           <ErrorLine game={game} />
         </div>
-        <SeatBoard game={game} />
-      </div>
+      </SeatBoard>
     </div>
   )
 }
