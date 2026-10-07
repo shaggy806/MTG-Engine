@@ -202,7 +202,7 @@ export interface DecisionAudit {
   readonly ms: number;
   /** Which path answered: `"search"`, or the shortcut taken instead of one
    * (`"batch replay"`, `"held pass"`, `"no candidates"`, `"payoff first"`,
-   * `"landfall first"`, `"fetch"`, `"only land"`, `"land search"`,
+   * `"reducer first"`, `"landfall first"`, `"fetch"`, `"only land"`, `"land search"`,
    * `"v1's answer"`). A capture records it (`server/src/capture.ts`), so a
    * decision the saved position can't reproduce says which branch it took. */
   readonly via: string;
@@ -753,10 +753,29 @@ export class EvalBotController extends HeuristicBotController {
       this.lastDecision = audit("priority", null, "payoff first");
       return payoff;
     }
+    // A cost reducer goes first when it lets a second spell fit in the turn
+    // (`reducerFirst`): the rollouts pass our own seat, so Urza's Incubator
+    // first read as three mana for nothing and Miirym's cheaper cast after it
+    // was never seen.
+    const reducer = this.reducerFirst(view, candidates);
+    if (reducer !== null) {
+      this.lastDecision = audit("priority", null, "reducer first");
+      return reducer;
+    }
     const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
+    const fetches = candidates.filter(
+      (a) =>
+        a.type === "activate-ability" &&
+        (this.isFreeFetch(view.state, a.source, a.abilityIndex) ||
+          this.isCreatureFetchDue(view.state, a.source, a.abilityIndex) ||
+          this.isManaLandFetchDue(view.state, a.source, a.abilityIndex)),
+    );
     // A landfall permanent this window would cast goes before the land drop,
     // so the land triggers it — the same mana either way (`isLandfallPermanent`).
-    if (lands.length > 0) {
+    // And before a fetch, for the land it finds: a fetch costs no mana, so the
+    // payoff is as castable after it as before (a live misplay, 2026-10-07:
+    // Kresh cracked five fetches, then cast Omnath, Locus of Rage).
+    if (lands.length > 0 || fetches.length > 0) {
       const landfall = candidates.find(
         (a) =>
           a.type === "cast-spell" &&
@@ -775,16 +794,7 @@ export class EvalBotController extends HeuristicBotController {
     // A creature that fetches by sacrificing itself (Sakura-Tribe Elder) joins
     // them at the end of the turn before ours (`isCreatureFetchDue`): the
     // evaluation kept the 0/2 over the land and never ramped.
-    const fetch =
-      lands.length === 0
-        ? candidates.find(
-            (a) =>
-              a.type === "activate-ability" &&
-              (this.isFreeFetch(view.state, a.source, a.abilityIndex) ||
-                this.isCreatureFetchDue(view.state, a.source, a.abilityIndex) ||
-                this.isManaLandFetchDue(view.state, a.source, a.abilityIndex)),
-          )
-        : undefined;
+    const fetch = lands.length === 0 ? fetches[0] : undefined;
     if (fetch !== undefined) {
       this.lastDecision = audit("priority", null, "fetch");
       return fetch;

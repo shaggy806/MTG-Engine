@@ -1425,7 +1425,6 @@ const SCENARIOS: readonly BotScenario[] = [
   }),
   {
     name: "aims a second Summon: Bahamut trigger away from the first one's target",
-    kind: "training",
     rule: "A destroy trigger already on the stack has its permanent dead; a second one goes at something else.",
     run(weights, registry) {
       // Reported from a live game (2026-10-07): "with a trigger that would
@@ -1436,8 +1435,10 @@ const SCENARIOS: readonly BotScenario[] = [
       // (`chooseTargets`: `aimedTargets`, `rankTargets`) scored first, and on
       // this small board the search finds the Bears. Live, the room's clock
       // (`timeBudgetMs`) cuts the search short on a big board and v1's pick
-      // stands — and nothing in it reads what is already on the stack. So the
-      // bot here searches one simulation, the clock run out.
+      // stands — and nothing in it read what is already on the stack. So the
+      // bot here searches one simulation, the clock run out. Fixed:
+      // `aimedTargets` skips what our own destroy or exile on the stack is
+      // already taking (`doomedByOurStack`).
       const game = table(registry, [A, B], A);
       onBoard(game, "Serra Angel", B);
       onBoard(game, "Grizzly Bears", B);
@@ -1464,7 +1465,6 @@ const SCENARIOS: readonly BotScenario[] = [
   },
   {
     name: "does not station a Spacecraft past its last threshold",
-    kind: "training",
     rule: "Charge counters past a Spacecraft's last station threshold do nothing; the creature tapped for them is a blocker lost.",
     run(weights, registry, makeBot) {
       // Reported from a live game (2026-10-07): "stationing a spaceship
@@ -1472,7 +1472,9 @@ const SCENARIOS: readonly BotScenario[] = [
       // last band is 8+; at 10 counters, more add nothing. The evaluation
       // counts every charge counter in `counters` (0.5 each, uncapped), so
       // tapping a 6-power Craw Wurm reads as +3 against about 0.5 for keeping
-      // it home as a blocker. `docs/bot-misplays.md`.
+      // it home as a blocker. `docs/bot-misplays.md`. Fixed: `features.ts`
+      // counts a station card's charge counters only up to its last threshold
+      // (`chargeCap`).
       const game = table(registry, [A, B], A);
       const hull = onBoard(game, "Hearthhull, the Worldseed", A);
       game.state.objects[hull].counters.charge = 10;
@@ -1483,6 +1485,25 @@ const SCENARIOS: readonly BotScenario[] = [
       const action = makeBot(A, registry, weights).act(viewOf(game, A));
       const stations = action.type === "activate-ability" && action.source === hull;
       return { passed: !stations, detail: `chose ${describeAction(action)}` };
+    },
+  },
+  {
+    name: "stations a Spacecraft up to its last threshold",
+    rule: "Charge counters that reach a Spacecraft's last station threshold turn on what it holds; that's worth a tapped creature.",
+    run(weights, registry, makeBot) {
+      // The partner of the one above: `chargeCap` stops counting at the last
+      // threshold, not before it. Hearthhull at 4 counters, a Craw Wurm to
+      // carry it to 10 (8+: a 6/7 flier that turns sacrificed lands into
+      // damage), nothing across the table to block.
+      const game = table(registry, [A, B], A);
+      const hull = onBoard(game, "Hearthhull, the Worldseed", A);
+      game.state.objects[hull].counters.charge = 4;
+      onBoard(game, "Craw Wurm", A);
+      const reached = toSecondMain(game);
+      if (reached !== null) return reached;
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const stations = action.type === "activate-ability" && action.source === hull;
+      return { passed: stations, detail: `chose ${describeAction(action)}` };
     },
   },
   asked({
@@ -3373,14 +3394,15 @@ const SCENARIOS: readonly BotScenario[] = [
   }),
   asked({
     name: "casts Urza's Incubator first so Miirym fits in the same turn",
-    kind: "training",
     rule: "A cost reducer that pays for itself this turn goes first: Incubator naming Dragon, then Miirym, is seven mana for both.",
     position(registry) {
       // Reported from a live game (2026-10-07): "Bot played Miirym instead of
       // Urza's Incubator; if it had played Urza's Incubator and chosen
       // Dragons it could have afforded to play Miirym too." Seven lands:
       // Incubator (3), then Miirym at {1}{G}{U}{R} (4). Miirym first leaves one
-      // mana and no Incubator.
+      // mana and no Incubator. Fixed: `reducerFirst` casts a reducer first when
+      // a second spell still fits after it, and the auto-payer leaves the
+      // colours Miirym needs (`mana-keep-colors.test.ts`).
       const game = table(registry, [A, B], A);
       lands(game, "Forest", A, 3);
       lands(game, "Island", A, 2);
@@ -3399,7 +3421,6 @@ const SCENARIOS: readonly BotScenario[] = [
   }),
   asked({
     name: "casts Omnath, Locus of Rage before cracking its fetch lands",
-    kind: "training",
     rule: "A landfall payoff goes down before the lands enter: each fetch cracked after it is another trigger.",
     position(registry) {
       // Reported from a live game (2026-10-07): "bot triggered a ton of lands
@@ -3407,12 +3428,12 @@ const SCENARIOS: readonly BotScenario[] = [
       // lands (and sacrificed a sixth land to Hearthhull), then cast Omnath,
       // Locus of Rage and played Cinder Glade: one Elemental where Omnath
       // first would have made six. Here: Omnath first, then three fetches,
-      // three 5/5s. The search scores each cracked fetch with rollouts that
-      // pass our own seat, so Omnath's later triggers are never seen —
-      // `castPayoff` turns the `"acting"` rollout on only for "whenever you
-      // cast" payoffs, not landfall.
+      // three 5/5s. Both bots cracked a free fetch the moment they could, by a
+      // rule ahead of the search; fixed: a castable landfall permanent goes
+      // first, as it already did before a land drop (`isLandfallPermanent`).
+      // Seven basics: Omnath costs seven, castable before any fetch.
       const game = table(registry, [A, B], A);
-      lands(game, "Mountain", A, 3);
+      lands(game, "Mountain", A, 4);
       lands(game, "Forest", A, 3);
       for (const fetch of ["Evolving Wilds", "Fabled Passage", "Terramorphic Expanse"]) onBoard(game, fetch, A);
       const omnath = game.debugSpawn("Omnath, Locus of Rage", A, "hand");
@@ -3428,7 +3449,6 @@ const SCENARIOS: readonly BotScenario[] = [
   }),
   asked({
     name: "casts Dragon Tempest before the Dragon it pays off",
-    kind: "training",
     rule: "An enters payoff goes down before the creature it pays off: the Dragon after it gets haste and deals damage.",
     position(registry) {
       // Reported from a live game (2026-10-07): "bot played Dragon Tempest
@@ -3437,7 +3457,9 @@ const SCENARIOS: readonly BotScenario[] = [
       // Bears. The search scores each cast with rollouts that pass our own
       // seat for the rest of the turn (`castPayoff` turns on the `"acting"`
       // rollout only for "whenever you cast" payoffs), so Tempest first reads
-      // as an inert enchantment and the Dragon first as a 5/5 flier.
+      // as an inert enchantment and the Dragon first as a 5/5 flier. Fixed:
+      // `payoffFirst` puts an enters payoff first when a creature it would see
+      // is still castable once it has resolved (`entersPayoffFilters`).
       const game = table(registry, [A, B], A);
       lands(game, "Mountain", A, 8);
       onBoard(game, "Furnace Whelp", A);

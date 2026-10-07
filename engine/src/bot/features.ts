@@ -296,6 +296,48 @@ const UNSCORED_COUNTERS: ReadonlySet<string> = new Set([
 /** A +X/+Y or -X/-Y counter (rule 122.1a), which the P/T already counts. */
 const PT_COUNTER = /^[+-]\d+\/[+-]\d+$/;
 
+const stationCaps = new WeakMap<CardDefinition, number>();
+
+/**
+ * The most charge counters worth counting on a station card (rule
+ * 702.184b): its highest station symbol's threshold (721.2), past which more
+ * counters give it nothing — so stationing it further only taps a creature,
+ * a blocker or an attacker lost (a live misplay, 2026-10-07: Hearthhull at 10
+ * counters stationed with a Craw Wurm, read as +3). Infinite for a card that
+ * isn't one, or that reads its charge counters itself (The Eternity
+ * Elevator's X mana).
+ */
+function chargeCap(def: CardDefinition): number {
+  const known = stationCaps.get(def);
+  if (known !== undefined) return known;
+  let cap = Infinity;
+  if (def.activated.some((ability) => ability.station === true) && !readsChargeCounters(def)) {
+    const thresholds = def.static.flatMap((s) => {
+      const condition = s.condition;
+      if (condition?.kind !== "source") return [];
+      const counters = condition.filter.counters;
+      const n = counters?.kind === "charge" && counters.compare.op === "gte" ? counters.compare.n : null;
+      return typeof n === "number" ? [n] : [];
+    });
+    if (thresholds.length > 0) cap = Math.max(...thresholds);
+  }
+  stationCaps.set(def, cap);
+  return cap;
+}
+
+/** Whether something on `def` counts its own charge counters (a
+ * `countersOn` amount naming them), so more always matter. */
+function readsChargeCounters(def: CardDefinition): boolean {
+  const seen = (value: unknown): boolean => {
+    if (value === null || typeof value !== "object") return false;
+    if (Array.isArray(value)) return value.some(seen);
+    const record = value as Record<string, unknown>;
+    if ("countersOn" in record && record.counter === "charge") return true;
+    return Object.values(record).some(seen);
+  };
+  return seen(def.activated) || seen(def.triggered) || seen(def.static);
+}
+
 function manaValueOf(registry: CardRegistry, name: string): number {
   return registry.has(name) ? manaValue(parseManaCost(registry.get(name).manaCost)) : 0;
 }
@@ -954,7 +996,10 @@ function playerFeaturesUncached(
     if (c.types.includes("planeswalker")) loyalty += (object.counters.loyalty ?? 0) * n;
     for (const [kind, amount] of Object.entries(object.counters)) {
       // A P/T counter of any size (Wall of Roots' -0/-1) is in the P/T already.
-      if (!UNSCORED_COUNTERS.has(kind) && !PT_COUNTER.test(kind)) counters += amount * n;
+      if (UNSCORED_COUNTERS.has(kind) || PT_COUNTER.test(kind)) continue;
+      const counted =
+        kind === "charge" && registry.has(name) ? Math.min(amount, chargeCap(registry.get(name))) : amount;
+      counters += counted * n;
     }
   }
 

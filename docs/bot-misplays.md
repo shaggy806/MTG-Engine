@@ -24,7 +24,11 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   unless no other worthwhile target is left. Might break: a permanent with indestructible or a
   regeneration shield, where a second destroy doesn't help either, and a target the first
   effect might lose (a hexproof grant in response) — rare, and still better aimed elsewhere.
-- **Status:** open.
+- **Status:** fixed: v1's `aimedTargets` (which v2 scores first, and falls back on when its clock
+  runs out) passes over, in a harmful slot, a permanent our own destroy or exile on the stack is
+  already taking (`doomedByOurStack`: the stack object's card effect, a `destroy`/`exile` of a slot
+  at its top level or in a `sequence`) while something else on the opponents' side is left. The
+  scenario gates, still at one simulation.
 
 ## 2026-10-07 — Miirym cast instead of Urza's Incubator, which would have paid for both
 
@@ -47,7 +51,14 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   type" answer must name the type that spell has (check `answerAwaited`'s `choose-creature-type`
   picks Dragon here). Might break: a reducer cast first when the bigger spell alone was the
   better play (a wipe, a must-answer threat); keep it to turns where both fit.
-- **Status:** open.
+- **Status:** fixed, in two parts. `reducerFirst` (`controller.ts`, both bots, beside
+  `payoffFirst`): a castable reducer goes first when, resolved with its creature type named as the
+  bot would (`chooseCreatureType`: Dragon), a spell castable now still is and that spell first
+  would leave the reducer uncastable. And the auto-payer had paid Incubator's {3} with all three
+  Forests, so even then Miirym had no green: generic mana now weighs each colour against the
+  sources the payment leaves, and a reducer being paid for counts the cards it reduces at their
+  reduced cost (`mana-keep-colors.test.ts`). The scenario gates; played out, the bot casts
+  Incubator, names Dragon and casts Miirym.
 
 ## 2026-10-07 — fetch lands cracked before a landfall payoff was cast
 
@@ -69,7 +80,11 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   Passage's land enters untapped at four lands): crack only what the cast needs, or compare
   `castableAfter` with and without the fetch. Might break: the gate's fetch scenarios and a turn
   where the payoff costs more than the mana on hand.
-- **Status:** open.
+- **Status:** fixed as outlined, both bots: a castable landfall permanent goes before a free fetch
+  as it did before a land drop. The scenario's board was given a seventh basic: Omnath costs seven,
+  so with six it wasn't castable before a fetch at all, and the right line there — crack only
+  Fabled Passage, whose land enters untapped, cast Omnath, then the rest — is still not one either
+  bot plays. The scenario gates.
 
 ## 2026-10-07 — Dragon Tempest cast after a Dragon instead of before it
 
@@ -93,7 +108,10 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   enters payoffs as well. Might break: turns where the wider `"acting"` rollout
   costs time (Soul Warden-style lifegain triggers are common enters payoffs); check with the gate
   and `bot:diff`.
-- **Status:** open.
+- **Status:** fixed through `payoffFirst` rather than the `"acting"` rollout: an enters payoff
+  (`entersPayoffFilters`) goes first when a creature it would see enter is castable now and still
+  castable once the payoff has resolved (every player passing once, asked of `legalActionsAfter`),
+  both bots. The scenario gates.
 
 ## 2026-10-07 — a Spacecraft stationed past its last threshold
 
@@ -114,7 +132,11 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   counters past it score nothing and stationing reads as just the tapped creature. Might break: a
   Spacecraft whose own ability spends or counts charge counters (check the pool's Spacecraft for
   one before capping), and the gate's station scenarios.
-- **Status:** open.
+- **Status:** fixed as outlined (`chargeCap`; no Spacecraft in the pool spends charge counters, and
+  The Eternity Elevator, which counts them for mana, stays uncapped). A partner gate scenario
+  checks the bot still stations Hearthhull from 4 counters to 10. This was most of World Shaper's
+  trouble (the user: Hearthhull stationed with practically every creature); the wider point — any
+  tapped creature is a blocker gone — is `BACKLOG.md`'s crackback line.
 
 ## 2026-10-07 — a Mountain played over Stomping Ground with Birds of Paradise in hand
 

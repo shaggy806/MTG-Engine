@@ -24,6 +24,8 @@ import { standardAssignment } from "./combat/damage.js";
 import type { DamageAssignmentOffer } from "./combat/damage.js";
 import { polarityBias } from "./deck-bias.js";
 import { matchesFilter } from "./filter.js";
+import type { CardFilter } from "./filter.js";
+import type { CardDefinition } from "./cards/define.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
 import type { RandomSource } from "./decisions/contract.js";
 import { assignedCombatDamage, combatDamageOf, computeCharacteristics, staticConditionMet } from "./characteristics.js";
@@ -1476,6 +1478,55 @@ export function isLandfallPermanent(registry: CardRegistry, name: string): boole
   });
 }
 
+/**
+ * The permanents a spell or ability of `me`'s on the stack is destroying or
+ * exiling: an object target of a `destroy` or `exile` it does outright (at
+ * its top level or in a `sequence`) — what a second removal at it would
+ * waste itself on. Read off the card: a delayed or reflexive trigger, or a
+ * granted ability, isn't counted.
+ */
+function doomedByOurStack(state: GameState, registry: CardRegistry, me: PlayerId): Set<ObjectId> {
+  const doomed = new Set<ObjectId>();
+  for (const id of state.zones.shared.stack) {
+    const object = state.objects[id];
+    if (object === undefined || object.controller !== me || object.targets === null) continue;
+    if (object.delayedTrigger !== undefined || object.reflexiveTrigger !== undefined) continue;
+    const effect = stackEffectOf(registry, object);
+    if (effect === undefined) continue;
+    for (const slot of removedSlots(effect)) {
+      const target = object.targets[slot];
+      if (target?.kind === "object") doomed.add(target.object);
+    }
+  }
+  return doomed;
+}
+
+/** What a stack object does, read off its card: a spell's effect, or the
+ * activated, triggered or chapter ability it is. */
+function stackEffectOf(registry: CardRegistry, object: GameObject): EffectSpec | undefined {
+  if (object.kind === "card") {
+    return registry.has(object.cardName) ? (registry.get(object.cardName).effect ?? undefined) : undefined;
+  }
+  if (object.sourceObjectId === null || object.abilityIndex === null) return undefined;
+  const name = object.cardName;
+  if (!registry.has(name)) return undefined;
+  const def = registry.get(name);
+  const index = object.abilityIndex;
+  if (object.abilityKind === "activated") return def.activated[index]?.effect ?? undefined;
+  if (object.abilityKind === "triggered") return def.triggered[index]?.effect ?? undefined;
+  if (object.abilityKind === "chapter") return def.chapters?.[index]?.effect ?? undefined;
+  return undefined;
+}
+
+/** The target slots `effect` destroys or exiles outright. */
+function removedSlots(effect: EffectSpec): number[] {
+  if (effect.kind === "sequence") return effect.effects.flatMap(removedSlots);
+  if ((effect.kind === "destroy" || effect.kind === "exile") && typeof effect.target === "number") {
+    return [effect.target];
+  }
+  return [];
+}
+
 /** Whether two targets name the same player or object. */
 function sameRef(a: TargetRef, b: TargetRef): boolean {
   return a.kind === "player"
@@ -1501,9 +1552,32 @@ export function isCastPayoff(registry: CardRegistry, name: string): boolean {
 }
 
 /**
- * The cast-payoff permanent among `offers` to cast before anything else: one
- * after which another spell can still be cast this turn (`legalActionsAfter`),
- * so the payoff sees it. Null when there's none, or nothing could follow.
+ * The filters of `name`'s "whenever a [permanent] you control enters"
+ * triggers, when it's a permanent spell — Dragon Tempest's flyers and
+ * Dragons: cast before the creature it pays off, it sees that creature enter
+ * (a live misplay, 2026-10-07: a Dragon cast first, Tempest after). A land
+ * filter is left to `isLandfallPermanent`.
+ */
+export function entersPayoffFilters(registry: CardRegistry, name: string): readonly CardFilter[] {
+  if (!registry.has(name)) return [];
+  const def = registry.get(name);
+  if (def.types.includes("instant") || def.types.includes("sorcery") || def.types.includes("land")) return [];
+  return def.triggered.flatMap((ability) => {
+    const trigger = ability.trigger as { readonly on?: unknown; readonly who?: unknown; readonly filter?: CardFilter };
+    if (trigger.on !== "enters-battlefield" || trigger.who !== "you-control" || trigger.filter === undefined) return [];
+    const filter = trigger.filter;
+    const land = filter.type === "land" || (Array.isArray(filter.types) && filter.types.includes("land"));
+    return land ? [] : [filter];
+  });
+}
+
+/**
+ * The payoff permanent among `offers` to cast before anything else: a cast
+ * payoff after which another spell can still be cast this turn
+ * (`legalActionsAfter`), so the payoff sees it; or an enters payoff once
+ * resolved after which a spell it would see enter (`entersPayoffFilters`)
+ * still can be. Null
+ * when there's none, or nothing could follow.
  */
 export function payoffFirst<T extends Action>(
   view: ControllerView,
@@ -1513,11 +1587,44 @@ export function payoffFirst<T extends Action>(
   for (const offer of offers) {
     if (offer.type !== "cast-spell" || offer.face !== undefined) continue;
     const name = view.state.objects[offer.card]?.cardName ?? "";
-    if (!isCastPayoff(registry, name)) continue;
-    const after = view.legalActionsAfter?.(offer);
-    if (after?.some((a) => a.kind === "cast-spell" && a.card !== offer.card)) return offer;
+    if (isCastPayoff(registry, name)) {
+      const after = view.legalActionsAfter?.(offer);
+      if (after?.some((a) => a.kind === "cast-spell" && a.card !== offer.card)) return offer;
+      continue;
+    }
+    const filters = entersPayoffFilters(registry, name);
+    if (filters.length === 0) continue;
+    const sees = (card: ObjectId): boolean =>
+      card !== offer.card &&
+      registry.has(view.state.objects[card]?.cardName ?? "") &&
+      isPermanentCard(registry, view.state.objects[card].cardName) &&
+      filters.some((filter) => matchesFilter(view.state, registry, card, filter, { you: offer.player }));
+    // Only worth asking what's castable after it when something castable now
+    // would trigger it. After it has resolved, every player passing once: the
+    // creature it pays off is usually cast at sorcery speed.
+    if (!offers.some((o) => o.type === "cast-spell" && sees(o.card))) continue;
+    const order = view.state.turnOrder.filter((p) => !view.state.players[p].hasLost);
+    const from = order.indexOf(offer.player);
+    const passes = [...order.slice(from), ...order.slice(0, from)].map((p) => passFor(p));
+    const after = view.legalActionsAfter?.([offer, ...passes]);
+    if (after?.some((a) => a.kind === "cast-spell" && sees(a.card))) return offer;
   }
   return null;
+}
+
+/** Whether `def` makes its controller's own spells cheaper: a static cost
+ * reduction for spells "you cast" (or anyone's), Urza's Incubator's included. */
+function reducesOwnSpells(def: CardDefinition): boolean {
+  return def.static.some((ability) => {
+    const modification = ability.costModification;
+    return modification?.reduceGeneric !== undefined && modification.caster !== "opponent";
+  });
+}
+
+/** Whether `name` is a permanent card: cast, it enters the battlefield. */
+function isPermanentCard(registry: CardRegistry, name: string): boolean {
+  const types = registry.get(name).types;
+  return !types.includes("instant") && !types.includes("sorcery");
 }
 
 /**
@@ -1949,6 +2056,47 @@ export class HeuristicBotController extends AutomaticController {
     return effect.includes('"search-library"') && effect.includes('"destination":"battlefield"');
   }
 
+  /**
+   * A cost reducer among `offers` to cast before anything else: once it has
+   * resolved (a creature type named as this bot would — Urza's Incubator),
+   * a spell castable now is still castable, where casting that spell first
+   * would leave the reducer uncastable — two spells this turn instead of one
+   * (a live misplay, 2026-10-07: Miirym, Sentinel Wyrm cast with Incubator
+   * in hand and seven lands, which pay for Incubator naming Dragon and then
+   * Miirym at {2} less). Null when there's none.
+   */
+  protected reducerFirst<T extends Action>(view: ControllerView, offers: readonly T[]): T | null {
+    for (const offer of offers) {
+      if (offer.type !== "cast-spell" || offer.face !== undefined) continue;
+      const name = view.state.objects[offer.card]?.cardName ?? "";
+      if (!this.registry.has(name) || !reducesOwnSpells(this.registry.get(name))) continue;
+      const others = offers.filter(
+        (o): o is T & CastSpellAction => o.type === "cast-spell" && o.card !== offer.card,
+      );
+      if (others.length === 0) continue;
+      const order = view.state.turnOrder.filter((p) => !view.state.players[p].hasLost);
+      const from = order.indexOf(offer.player);
+      let resolved: Action[] = [offer, ...[...order.slice(from), ...order.slice(0, from)].map((p) => passFor(p))];
+      let after = view.legalActionsAfter?.(resolved);
+      const choice = after?.find(
+        (a): a is Extract<LegalAction, { kind: "choose-creature-type" }> => a.kind === "choose-creature-type",
+      );
+      if (choice !== undefined) {
+        const creatureType = this.chooseCreatureType(view, choice.source, choice.options, choice.suggested);
+        resolved = [...resolved, { type: "choose-creature-type", player: this.playerId, creatureType }];
+        after = view.legalActionsAfter?.(resolved);
+      }
+      if (after === null || after === undefined) continue;
+      const still = others.filter((o) => after.some((a) => a.kind === "cast-spell" && a.card === o.card));
+      for (const other of still) {
+        const reducerAfter = view.legalActionsAfter?.(other);
+        if (reducerAfter === null || reducerAfter === undefined) continue;
+        if (!reducerAfter.some((a) => a.kind === "cast-spell" && a.card === offer.card)) return offer;
+      }
+    }
+    return null;
+  }
+
   /** A mana land's fetch at its moment — see `isManaLandFetch`. */
   protected isManaLandFetchDue(state: GameState, source: ObjectId, abilityIndex: number): boolean {
     return this.isManaLandFetch(state, source, abilityIndex) && this.isEndOfTurnBeforeOurs(state);
@@ -2333,9 +2481,18 @@ export class HeuristicBotController extends AutomaticController {
     if (polarities === null) return firstOfEach(legalOptions, specs, stateTargetFacts(state, this.registry));
     const picked: (TargetRef | null)[] = [];
     const group = anyNumberSlot(specs);
+    const doomed = polarities.includes("harm") ? doomedByOurStack(state, this.registry, this.playerId) : null;
     for (let i = 0; i < legalOptions.length; i += 1) {
       const polarity = polarities[i] ?? "either";
-      const fillable = fillableOptions(specs, legalOptions, i, picked, stateTargetFacts(state, this.registry));
+      let fillable = fillableOptions(specs, legalOptions, i, picked, stateTargetFacts(state, this.registry));
+      // A permanent our own destroy or exile on the stack is already taking
+      // isn't worth a second: a harmful slot goes at something else on the
+      // opponents' side while there is something (a live misplay,
+      // 2026-10-07: two Summon: Bahamut chapter triggers at one Serra Angel).
+      if (polarity === "harm" && doomed !== null && doomed.size > 0) {
+        const spared = fillable.filter((ref) => ref.kind !== "object" || !doomed.has(ref.object));
+        if (spared.some((ref) => sideOf(state, ref, this.playerId) === "opponent")) fillable = spared;
+      }
       const best = rankTargets(state, this.registry, this.playerId, fillable, polarity, targetValue, damages[i])[0];
       // An "any number of" group (always last) takes one member, or none,
       // as `firstOfEach` does.
@@ -2788,9 +2945,18 @@ export class HeuristicBotController extends AutomaticController {
     const options = view.legalActions();
 
     const lands = options.filter((o): o is PlayLandLegal => o.kind === "play-land");
-    if (lands.length > 0) {
+    const fetch = options.find(
+      (o): o is ActivateAbilityLegal =>
+        o.kind === "activate-ability" &&
+        (this.isFreeFetch(view.state, o.source, o.abilityIndex) ||
+          this.isManaLandFetchDue(view.state, o.source, o.abilityIndex)),
+    );
+    if (lands.length > 0 || fetch !== undefined) {
       // A landfall permanent castable now goes first, so the land drop
-      // triggers it (`isLandfallPermanent`).
+      // triggers it (`isLandfallPermanent`) — and so the land a fetch finds
+      // does: a fetch costs no mana, so the payoff is as castable after it
+      // (a live misplay, 2026-10-07: five fetches cracked before Omnath,
+      // Locus of Rage).
       const landfall = options.find(
         (o): o is CastSpellLegal =>
           o.kind === "cast-spell" &&
@@ -2799,15 +2965,8 @@ export class HeuristicBotController extends AutomaticController {
           !this.taxWouldKill(view.state, o),
       );
       if (landfall !== undefined) return this.toCastSpell(view.state, landfall);
-      return this.toPlayLand(this.bestLand(view, lands));
     }
-
-    const fetch = options.find(
-      (o): o is ActivateAbilityLegal =>
-        o.kind === "activate-ability" &&
-        (this.isFreeFetch(view.state, o.source, o.abilityIndex) ||
-          this.isManaLandFetchDue(view.state, o.source, o.abilityIndex)),
-    );
+    if (lands.length > 0) return this.toPlayLand(this.bestLand(view, lands));
     if (fetch !== undefined) return this.toActivateAbility(view.state, fetch);
 
     // A cast payoff goes before the turn's other spells (`payoffFirst`).
@@ -2819,6 +2978,14 @@ export class HeuristicBotController extends AutomaticController {
         .map((o) => this.toCastSpell(view.state, o)),
     );
     if (payoff !== null) return payoff;
+    // A cost reducer that lets a second spell fit this turn (`reducerFirst`).
+    const reducer = this.reducerFirst(
+      view,
+      options
+        .filter((o): o is CastSpellLegal => o.kind === "cast-spell" && this.wouldCast(view.state, o))
+        .map((o) => this.toCastSpell(view.state, o)),
+    );
+    if (reducer !== null) return reducer;
 
     const spells = options.filter(
       (o): o is CastSpellLegal => o.kind === "cast-spell" && this.wouldCast(view.state, o),
