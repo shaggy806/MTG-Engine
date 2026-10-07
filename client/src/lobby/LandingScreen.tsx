@@ -51,11 +51,12 @@ function normalizeCode(raw: string): string {
  * scales it up, by {@link ZOOM_GAIN} of the extra, up to {@link MAX_ZOOM}. */
 const BASE_WIDTH = 1440
 const BASE_HEIGHT = 860
-/** Half the window's growth past the base: in full step, a 1440p monitor
- * scaled the page 1.67x, too large (the user, 2026-10-07); half is ~1.34x
- * there and ~1.13x at 1080p. */
-const ZOOM_GAIN = 0.5
-const MAX_ZOOM = 1.4
+/** A fifth of the window's growth past the base: in full step a 1440p
+ * monitor scaled the page 1.67x, and at half 1.34x, both too large (the
+ * user, 2026-10-07: "closer to what it was"); a fifth is ~1.13x there and
+ * ~1.05x at 1080p. */
+const ZOOM_GAIN = 0.2
+const MAX_ZOOM = 1.15
 
 /**
  * How much to scale the page for this window: 1 up to {@link BASE_WIDTH} x
