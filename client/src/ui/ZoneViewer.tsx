@@ -213,6 +213,8 @@ export function ZoneViewer({
                   badge={
                     selection?.ordered === true && isPicked
                       ? `${picked.indexOf(obj.id) + 1}`
+                      : isPicked
+                      ? '✓ Picked'
                       : obj.suspended
                       ? `⏳${obj.counters.time ?? 0}`
                       : obj.foretold

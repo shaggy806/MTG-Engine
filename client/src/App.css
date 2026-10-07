@@ -2149,9 +2149,15 @@
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-bg);
 }
+/* Picked: a solid ring and a glow, not a recoloured hairline. Every card on
+   offer already wears a gold border (.highlight), and an orange one beside
+   them was all but invisible (a bug report, 2026-10-06: the Stomping Ground
+   picked in Farseek's search). */
 .card-tile.selected {
-  border-color: var(--warn);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 35%, transparent);
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 3px var(--gold),
+    0 0 18px 3px color-mix(in srgb, var(--gold) 45%, transparent);
 }
 .card-tile.activatable:not(.highlight):not(.selected) {
   border-color: var(--accent);
@@ -2709,9 +2715,10 @@
 .mini-tile.selected.clickable:hover,
 .mini-tile.selected.clickable:focus-visible,
 .card-tile.selected.clickable:hover {
-  border-color: var(--warn);
+  border-color: var(--gold);
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--gold) 35%, transparent),
+    0 0 0 3px var(--gold),
+    0 0 18px 3px color-mix(in srgb, var(--gold) 45%, transparent),
     var(--shadow-raised);
 }
 .mini-tile.dimmed {
