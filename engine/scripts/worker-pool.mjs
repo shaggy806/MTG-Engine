@@ -13,6 +13,7 @@
 
 import { Worker } from "node:worker_threads";
 
+import { progress, scriptLabel } from "./progress.mjs";
 import { WORKER_LIMITS } from "./worker-limits.mjs";
 
 export function runPool({
@@ -25,13 +26,17 @@ export function runPool({
   onMessage,
   onLost,
   onDone,
+  label = scriptLabel(),
 }) {
   const queue = [...jobs];
+  // One bar per pool run, for the job-progress mod (progress.mjs).
+  const bar = progress(label, queue.length);
   let live = 0;
   let finished = false;
   const finish = () => {
     if (finished || live > 0 || queue.length > 0) return;
     finished = true;
+    bar.finish();
     onDone();
   };
 
@@ -56,7 +61,10 @@ export function runPool({
       const lost = job;
       if (!retire()) return;
       void worker.terminate();
-      if (lost !== null) onLost(lost, reason);
+      if (lost !== null) {
+        bar.tick({ failed: true });
+        onLost(lost, reason);
+      }
       spawn();
     };
     const feed = () => {
@@ -75,6 +83,7 @@ export function runPool({
       onMessage(message, job);
       if (isFinal(message)) {
         clearTimeout(timer);
+        bar.tick();
         feed();
       }
     });

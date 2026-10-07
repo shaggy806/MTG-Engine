@@ -26,6 +26,7 @@ import { Worker } from "node:worker_threads";
 import { Game, RandomController, asPlayerId, createRng } from "../dist/index.js";
 import { coverage, seatsFor, unknownCards } from "./fuzz-decks.mjs";
 import { printLog, printSummary } from "./format.mjs";
+import { progress } from "./progress.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -96,6 +97,8 @@ if (args.includes("--coverage")) {
   process.exit(0);
 }
 
+// The job-progress mod draws this as a bar above Claude Code's prompt.
+const bar = progress(`fuzz ${numPlayers}p`, seedsToPlay.length);
 for (const seed of seedsToPlay) {
   if (showProgress) process.stderr.write(`seed ${seed}/${games}… `);
   const result = await play(seed);
@@ -104,16 +107,20 @@ for (const seed of seedsToPlay) {
       process.stderr.write(`${result.turns} turns, ${result.events} events, ${result.ms}ms\n`);
     }
     results.push(result);
+    bar.tick();
   } else if (result.timedOut) {
     const line = `FAILED seed ${seed}: TIMED OUT after ${timeoutMs / 1000}s (replay with --seed ${seed})`;
     process.stderr.write(`${showProgress ? "\n" : ""}${line}\n`);
     failures.push(line);
+    bar.tick({ failed: true });
   } else {
     const line = `FAILED seed ${seed}: ${result.error}`;
     process.stderr.write(`${showProgress ? "\n" : ""}${line}\n`);
     failures.push(`FAILED seed ${seed} (replay with --seed ${seed})`);
+    bar.tick({ failed: true });
   }
 }
+bar.finish();
 await worker.terminate();
 
 // `--log` needs the Game object itself, which can't cross the worker boundary.

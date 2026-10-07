@@ -41,6 +41,7 @@ import os from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { progress } from "./progress.mjs";
 import { WORKER_LIMITS } from "./worker-limits.mjs";
 import { DEFAULT_WEIGHTS } from "../dist/index.js";
 
@@ -102,9 +103,12 @@ function run() {
     report(readRows(out));
     return;
   }
+  // The job-progress mod's bar (progress.mjs).
+  const bar = progress("bot:crackback", total);
   const record = (row) => {
     appendFileSync(out, `${JSON.stringify(row)}\n`);
     finished += 1;
+    bar.tick({ failed: Boolean(row.error) });
     const elapsed = ((Date.now() - started) / 1000).toFixed(0);
     process.stderr.write(
       `[${elapsed}s] ${finished}/${total} seed ${row.seed}: ${row.error ? `ERROR ${row.error.split("\n")[0]}` : `${row.turns} turns`}\n`,

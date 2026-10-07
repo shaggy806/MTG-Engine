@@ -28,6 +28,9 @@ scratch-*
 # Claude Code agent worktrees (isolated checkouts for parallel card authoring)
 .claude/worktrees/
 
+# Long jobs' progress files (engine/scripts/progress.mjs), drawn by the job-progress Claude Code mod
+.claude/progress/
+
 # Playwright (client e2e)
 client/test-results/
 client/playwright-report/

@@ -51,6 +51,7 @@
 import os from "node:os";
 import { Worker } from "node:worker_threads";
 
+import { progress } from "./progress.mjs";
 import { WORKER_LIMITS } from "./worker-limits.mjs";
 import { fileURLToPath } from "node:url";
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -132,6 +133,8 @@ function runMatch(weights, opponents, seedOffset = 0, count = games, { skip, onR
     const results = [];
     let next = 0;
     const matchStartedAt = Date.now();
+    // The job-progress mod's bar for this match (progress.mjs).
+    const bar = progress(`bot:${mode}`, seeds.length);
 
     /**
      * A line every `PROGRESS_EVERY` games, because a four-player match is
@@ -165,8 +168,12 @@ function runMatch(weights, opponents, seedOffset = 0, count = games, { skip, onR
         clearTimeout(timer);
         results.push(result);
         onResult?.(result);
+        bar.tick({ failed: result.error !== undefined });
         report();
-        if (results.length === seeds.length) resolve(results);
+        if (results.length === seeds.length) {
+          bar.finish();
+          resolve(results);
+        }
       };
 
       const pump = () => {

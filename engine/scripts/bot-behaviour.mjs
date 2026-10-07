@@ -41,6 +41,7 @@
 
 import { Worker } from "node:worker_threads";
 
+import { progress } from "./progress.mjs";
 import { WORKER_LIMITS } from "./worker-limits.mjs";
 import { writeFileSync } from "node:fs";
 import os from "node:os";
@@ -82,6 +83,9 @@ console.log(
 );
 if (weights !== null) console.log(`weights: ${weightsFlag}`);
 
+// The job-progress mod's bar (progress.mjs).
+const bar = progress("bot:behaviour", games);
+
 function spawn() {
   const worker = new Worker(WORKER, { resourceLimits: WORKER_LIMITS });
   let timer = null;
@@ -98,6 +102,7 @@ function spawn() {
     next += 1;
     timer = setTimeout(() => {
       results.push({ seed, error: `timeout after ${timeoutMs / 1000}s` });
+      bar.tick({ failed: true });
       process.stderr.write(`seed ${seed} timed out\n`);
       worker.terminate();
       running -= 1;
@@ -109,6 +114,7 @@ function spawn() {
   worker.on("message", (message) => {
     clearTimeout(timer);
     results.push(message);
+    bar.tick({ failed: Boolean(message.error) });
     const elapsed = ((Date.now() - started) / 1000).toFixed(0);
     process.stderr.write(
       message.error
@@ -120,6 +126,7 @@ function spawn() {
   worker.on("error", (error) => {
     clearTimeout(timer);
     results.push({ seed, error: String(error) });
+    bar.tick({ failed: true });
     running -= 1;
     if (next <= last) spawn();
     else if (running === 0) finish();
@@ -131,6 +138,7 @@ let finished = false;
 function finish() {
   if (finished) return;
   finished = true;
+  bar.finish();
   if (jsonOut !== null) writeFileSync(jsonOut, JSON.stringify(results, null, 1));
   report();
 }

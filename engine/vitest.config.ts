@@ -1,5 +1,7 @@
 import { defineConfig } from "vitest/config";
 
+import { ProgressReporter } from "./scripts/vitest-progress.mjs";
+
 /**
  * Two things are configured here, the test timeout and module isolation
  * (below), and discovery is left at vitest's defaults on purpose — the suite relies on those finding tests
@@ -37,5 +39,8 @@ export default defineConfig({
     // that opens it. A test that needs `vi.mock` or other module-level
     // patching would need isolation back, in its own project.
     isolate: false,
+    // The default output, plus a progress file the job-progress Claude Code
+    // mod draws as a bar (scripts/progress.mjs).
+    reporters: ["default", new ProgressReporter()],
   },
 });
