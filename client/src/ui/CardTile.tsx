@@ -285,6 +285,8 @@ export function CardTile({
     // Nothing in the bottom corner (no P/T, loyalty or stack count): the
     // rules text may use the room kept for one (see .ct-text).
     !isCreature && obj.loyalty === null && !(stackCount !== null && stackCount > 1) ? 'no-corner-stat' : '',
+    // The loyalty shield stands taller than a P/T box: more room under the text.
+    obj.loyalty !== null ? 'has-loyalty' : '',
     obj.supertypes?.includes('legendary') ? 'legendary' : '',
     obj.tapped ? 'tapped' : '',
     highlight ? 'highlight' : '',

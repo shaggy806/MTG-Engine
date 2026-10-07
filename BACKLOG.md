@@ -216,9 +216,7 @@ item lands.
 - **Quality-of-life room options (house rules)**, opt-in per room.
 - **Server-side deck save and share** (decks live in `localStorage`).
 - **The library and the deck builder load every card definition** (~3.1 MB).
-- **Long rules text is hidden behind the creature stat line** in the title layout.
 - **"Same for all" covers only a trigger's yes-or-no "you may".**
-- **A new attack arrow's head lands before its line.**
 - **Animation follow-ups** (re-measure bot speeds, static buffs, library put-backs, the exile filter, the crown's flight, merged tokens, folding tokens with counters, dies-trigger pulses, history highlights, real sounds): `docs/plans/legibility-of-play.md`, "Follow-ups".
 
 ## Tooling / docs

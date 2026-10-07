@@ -210,18 +210,34 @@ export function ArrowLayer({
         className={`arrow ${d.kind} ${d.seat ?? ''}${d.isNew ? ' is-new' : ''}`}
         d={`M ${d.x1} ${d.y1} Q ${cx} ${cy} ${d.x2} ${d.y2}`}
         pathLength={1}
-        markerEnd={d.kind === 'block' || d.kind === 'resolve' ? undefined : head}
+        markerEnd={d.kind === 'target' ? head : undefined}
         data-arrow={d.key}
       />
     )
-    if (d.kind !== 'resolve') return path
-    // A resolving arrow's head rides on a sliver of its own at the line's
-    // end, pointing the way the curve arrives, so it can wait for the line to
-    // get there: on the line itself, a marker is drawn whole from the first
-    // frame, and the head sat on the target before the shot.
+    if (d.kind !== 'resolve' && d.kind !== 'attack') return path
+    // A line that draws itself in (a resolving arrow, a new attack) carries
+    // its head on a sliver of its own at the line's end, pointing the way the
+    // curve arrives, so it can wait for the line to get there: on the line
+    // itself, a marker is drawn whole from the first frame, and the head sat
+    // on the target (or the defender) before the line did.
     const tx = d.x2 - cx
     const ty = d.y2 - cy
     const tl = Math.hypot(tx, ty) || 1
+    const tip = (
+      <path
+        className={`arrow-tip ${d.kind} ${d.seat ?? ''}${d.isNew ? ' is-new' : ''}`}
+        d={`M ${d.x2 - tx / tl} ${d.y2 - ty / tl} L ${d.x2} ${d.y2}`}
+        markerEnd={head}
+      />
+    )
+    if (d.kind === 'attack') {
+      return (
+        <Fragment key={d.key}>
+          {path}
+          {tip}
+        </Fragment>
+      )
+    }
     // Where it lands, a ring flaring out as the line arrives: what the spell
     // hit, said once more than the line itself says it. Keyed as a whole, so
     // the three stay the same elements, their animations running on, however
@@ -229,11 +245,7 @@ export function ArrowLayer({
     return (
       <Fragment key={d.key}>
         {path}
-        <path
-          className={`arrow-tip resolve ${d.seat ?? ''}`}
-          d={`M ${d.x2 - tx / tl} ${d.y2 - ty / tl} L ${d.x2} ${d.y2}`}
-          markerEnd={head}
-        />
+        {tip}
         <circle className={`arrow-impact ${d.seat ?? ''}`} cx={d.x2} cy={d.y2} r={10} />
       </Fragment>
     )

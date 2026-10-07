@@ -2451,7 +2451,11 @@
   display: flex;
   flex-direction: column;
   gap: calc(2px * var(--ct-scale, 1));
-  padding: calc(4px * var(--ct-scale, 1)) calc(5px * var(--ct-scale, 1)) calc(16px * var(--ct-scale, 1));
+  /* The bottom padding is the P/T box's height (.ct-pt: 13px text, its
+     padding and border), so a last line long enough to reach the corner is
+     never under the box; it was 16px, and the box covered the bottom of
+     Abdel Adrian's last line. */
+  padding: calc(4px * var(--ct-scale, 1)) calc(5px * var(--ct-scale, 1)) calc(21px * var(--ct-scale, 1));
   /* --text-scale: set by CardTile.tsx only for the hand's art-first layout,
      when the printed text doesn't fit this fixed box at normal size
      (Wurmcoil Engine and the like) -- unset (1) everywhere else. */
@@ -2470,9 +2474,13 @@
   min-height: 0;
 }
 /* The bottom padding keeps the last line clear of the P/T or loyalty badge;
-   a card with neither gives that room to its text. */
+   a card with neither gives that room to its text, and the loyalty shield
+   (.ct-loyalty, 2.1em of 13px) needs more than a P/T box. */
 .card-tile.no-corner-stat .ct-text {
   padding-bottom: calc(4px * var(--ct-scale, 1));
+}
+.card-tile.has-loyalty .ct-text {
+  padding-bottom: calc(29px * var(--ct-scale, 1));
 }
 .ct-kw {
   color: #cbb26a;
@@ -2802,6 +2810,13 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
 }
+/* A creature's total toxic value (MiniTile.tsx): its number, in poison
+   green, as a chip in the keyword stack. */
+.mt-kw .mt-toxic {
+  font-weight: 700;
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 60%, transparent);
+}
 /* A keyword icon (KeywordIcon.tsx): one em square, in the text colour. */
 .kw-icon {
   display: block;
@@ -2810,13 +2825,6 @@
   fill: currentColor;
 }
 .mt-badge {
-/* A creature's total toxic value (MiniTile.tsx): its number, in poison
-   green, as a chip in the keyword stack. */
-.mt-kw .mt-toxic {
-  font-weight: 700;
-  color: var(--good);
-  border-color: color-mix(in srgb, var(--good) 60%, transparent);
-}
   position: absolute;
   top: 2px;
   right: 2px;
@@ -3996,7 +4004,7 @@
    the exit beat it rides on is short — with a ring flaring where it lands.
    Under reduced motion the line fades in and the ring only fades. */
 .arrow-layer .arrow.resolve,
-.arrow-layer .arrow-tip {
+.arrow-layer .arrow-tip.resolve {
   stroke-width: clamp(3px, 0.34vw, 6px);
   opacity: 1;
   filter: drop-shadow(0 0 4px var(--arrow, var(--warn))) drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
@@ -4005,16 +4013,31 @@
   animation-duration: calc(240ms * var(--anim-scale, 1));
 }
 /* The head, on a sliver of its own (its stroke-width sizes the marker as the
-   line's would), shown once the line has nearly reached it. */
+   line's would), shown once the line has nearly reached it: a resolving
+   arrow's at once (it always shoots out), an attack's only while its line
+   draws in — one already standing has its head. */
 .arrow-layer .arrow-tip {
   fill: none;
   stroke: transparent;
+}
+.arrow-layer .arrow-tip.resolve {
   opacity: 0;
   animation: arrow-tip-in 1ms linear calc(200ms * var(--anim-scale, 1)) forwards;
 }
+.arrow-layer .arrow-tip.attack {
+  --tip-opacity: 0.85;
+  stroke-width: clamp(2px, 0.22vw, 4px);
+  opacity: var(--tip-opacity);
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.9));
+}
+/* The line's draw-in is 420ms, eased out: nearly there by 360ms. */
+.arrow-layer .arrow-tip.attack.is-new {
+  opacity: 0;
+  animation: arrow-tip-in 1ms linear calc(360ms * var(--anim-scale, 1)) forwards;
+}
 @keyframes arrow-tip-in {
   to {
-    opacity: 1;
+    opacity: var(--tip-opacity, 1);
   }
 }
 .arrow-layer .arrow-impact {
@@ -4052,9 +4075,10 @@
 .arrow-layer.reduced .arrow-impact {
   animation-name: arrow-impact-fade;
 }
-.arrow-layer.reduced .arrow-tip {
+.arrow-layer.reduced .arrow-tip.resolve,
+.arrow-layer.reduced .arrow-tip.attack.is-new {
   animation: none;
-  opacity: 1;
+  opacity: var(--tip-opacity, 1);
 }
 @keyframes arrow-draw {
   from {

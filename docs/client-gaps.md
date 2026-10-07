@@ -50,21 +50,11 @@ title; when one lands, delete it in both. The animation follow-ups are in
   growing with the pool. They read only printed fields, each ability's text (colour identity)
   and the tokens a card makes. A generated catalog of just those, sharded the same way, would be
   a fraction of the size. The game page loads no definitions up front.
-- **Long rules text is hidden behind the creature stat line** (the user, 2026-10-03). The
-  art-first layout fits its text to the box (hand, cast spotlight); the title layout
-  (`CardTile.tsx`'s fit returns early for it: hover cards, the stack) doesn't fit at all, so
-  Abdel Adrian's text still runs under its 4/4 box there. Long text should fit or shrink so the
-  P/T box never covers it, in every layout.
 - **"Same for all" covers only a trigger's yes-or-no "you may"**
   (`GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
   "you may" asked after another decision in the same resolution (it parks, and loses
   `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
   granted (`grantedAbility` kind `modifier`, which has no signature).
-- **A new attack arrow's head lands before its line.** An attack arrow draws itself in along
-  its length (`arrow-draw`, `client/src/ui/ArrowLayer.tsx`), but its head is a marker on the
-  same path, drawn whole from the first frame, so it sits on the defender before the line gets
-  there. Resolving arrows put the head on a sliver path of its own that waits for the line
-  (`.arrow-tip`); attack arrows could do the same.
 - **A Paste button on the deck import** (the user, 2026-10-06). The deck builder's Import box
   (`DeckBuilderPage.tsx`, `.db-import-textarea`) takes a pasted list today only by Ctrl+V. A
   button that calls `navigator.clipboard.readText()` would fill it in one click: it needs a
