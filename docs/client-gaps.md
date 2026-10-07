@@ -59,10 +59,12 @@ title; when one lands, delete it in both. The animation follow-ups are in
   player's top card is revealed (`.library-top`, drawn in `App.tsx`), hovering it should show a
   blown-up version of the card, the way hovering a battlefield tile does (`MiniTile`'s popover,
   `useHoverPopover`).
-- **The hand's hover-grow replays when another player plays a card** (a bug report,
-  2026-10-07). With the pointer resting on a card in hand, every card another player plays makes
-  that card's grow-on-hover animation (`.hand-cards .hand-card:hover .card-tile` in `App.css`, a
-  0.15s scale/translate/rotate transition) play again. Not yet reproduced. The hand's keys are
+- **Hover effects reset when another player plays a card** (a bug report, 2026-10-07). With
+  the pointer resting on a card in hand, every card another player plays makes that card's
+  grow-on-hover animation (`.hand-cards .hand-card:hover .card-tile` in `App.css`, a 0.15s
+  scale/translate/rotate transition) play again; the user adds that hover effects on other cards
+  (the battlefield tiles' hover popovers, `MiniTile`/`useHoverPopover`) reset the same way. That
+  it reaches both points at one shared cause rather than the hand's own CSS. Not yet reproduced. The hand's keys are
   stable (`key={id}` in `App.tsx`'s hand row), so the leads are: something remounting the
   `.card-tile` or a parent of the hand row on the view update (Chrome re-hit-tests `:hover` after
   layout, so a fresh element starts unhovered and transitions up), or the play animation
