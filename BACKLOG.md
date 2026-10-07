@@ -171,7 +171,7 @@ under count budgets).
   once one is fixed, `-- resolve` moves it to `captures/resolved/`, where it gates.
 - **A wider pool of bot decks (later — raised 2026-09-26).** `SAMPLE_DECKS` is fourteen precons
   since 2026-10-02 (the five Tarkir: Dragonstorm decks, the five 2022 starter decks and four more —
-  `docs/plans/precon-decks.md`), five flagged `bench`, whose first four are the seats' fallbacks. Still unscoped: decks across
+  `docs/plans/precon-decks.md`), six flagged `bench`, whose first four are the seats' fallbacks. Still unscoped: decks across
   a range of power levels for bots to bring, and how a host picks one.
 - **More deck biases.** `engine/src/deck-bias.ts` (`docs/plans/deck-biases.md`) lets a
   commander's deck aim effects the other way and value its own board differently; Teval is the

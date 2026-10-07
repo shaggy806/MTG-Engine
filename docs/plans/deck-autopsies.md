@@ -105,6 +105,34 @@ bench wants. Temur Roar still wins about two games in three under v2 (against 42
 the search plays it well, not the deck alone), and World Shaper stays bottom under both bots.
 Sultai Arisen now holds its own (21%) if a graveyard deck is wanted back on the bench.
 
+**Re-run, 2026-10-07**, after five live misplays were fixed — above all a Spacecraft stationed
+past its last threshold, which had World Shaper tapping nearly every creature it had into
+Hearthhull, the Worldseed (the user's read of its 6–12% win rate). v2 over 168 games
+(`.scratch/deck-winrates-v2-4p-2026-10-07.ndjson`):
+
+| deck | v2 10-04 | v2 10-07 | 95% CI |
+|---|---|---|---|
+| Temur Roar | 65% | 60% | [46, 73] |
+| Abzan Armor* | 27% | 37.5% | [25, 52] |
+| Reign of Dragons* | 25% | 31% | [20, 45] |
+| Chaos Incarnate | 23% | 29% | [18, 43] |
+| Tramplesaurus Rex | 37.5% | 29% | [18, 43] |
+| World Shaper | 8% | 29% | [18, 43] |
+| Sultai Arisen* | 21% | 23% | [13, 37] |
+| Draconic Destruction | 27% | 19% | [10, 32] |
+| Grave Danger | 15% | 17% | [9, 30] |
+| Family Matters | 15% | 17% | [9, 30] |
+| Jeskai Striker* | 27% | 15% | [7, 27] |
+| Token Triumph* | 23% | 15% | [7, 27] |
+| First Flight | 19% | 12.5% | [6, 25] |
+| Mardu Surge | 19% | 10% | [5, 22] |
+
+World Shaper is the one move outside the noise: bottom in every run before, mid-field now. It
+joins the bench (the user's call, made ahead of the run: back on once fixed to an appropriate
+strength), which is six decks from here, so bench numbers aren't directly comparable with runs
+on five. Jeskai Striker and Token Triumph slipped to 15%, inside their intervals of the 10-04
+run; worth watching on the next re-run.
+
 ## What the autopsies found
 
 Four read-only autopsies (Grave Danger, Jeskai Striker, Sultai Arisen, Mardu Surge), each

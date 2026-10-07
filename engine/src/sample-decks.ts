@@ -17,7 +17,9 @@
  * Temur Roar (71%) and Mardu Surge (12.5%) stay starter decks but off the
  * bench; the two in their place keep a Dragon deck and a token deck on it.
  * Sultai Arisen rejoined on 2026-10-04 (21% in that day's re-run, its stand-ins
- * down from 25 to 1), so the bench is five decks.
+ * down from 25 to 1), and World Shaper joined on 2026-10-07 (29% once the bots
+ * stopped stationing Hearthhull past its last threshold, from 6-12%), so the
+ * bench is six decks.
  *
  * The bench decks are also the fallbacks: `SEATS` gives a seat nobody brought
  * a deck to — every bot's — the first four of them in this file's order.
@@ -1294,6 +1296,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   }),
   precon({
     name: "World Shaper",
+    bench: true,
     commander: "Hearthhull, the Worldseed",
     description: "Jund lands: ramp, sacrifice lands and replay them from the graveyard.",
     // Edge of Eternities Commander (MTGJSON `EOC`).
