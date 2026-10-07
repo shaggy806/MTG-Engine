@@ -40,7 +40,9 @@ const COLOR_NAME: Record<ColorFilter, string> = {
   C: 'Colourless',
 }
 
-const SORTS = ['name', 'edhrec', 'mana', 'color', 'type'] as const
+// Popularity first, the default (the user, 2026-10-07): the cards people
+// actually play at the top, rather than an alphabetical wall.
+const SORTS = ['edhrec', 'name', 'mana', 'color', 'type'] as const
 type Sort = (typeof SORTS)[number]
 
 const SORT_LABEL: Record<Sort, string> = {
@@ -250,7 +252,7 @@ export function LibraryPage() {
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<CardType | null>(null)
   const [colorFilter, setColorFilter] = useState<readonly ColorFilter[]>([])
-  const [sort, setSort] = useState<Sort>('name')
+  const [sort, setSort] = useState<Sort>('edhrec')
   const [descending, setDescending] = useState(false)
   const [showTokens, setShowTokens] = useState(() => {
     // A deep link straight to a token shouldn't land on an empty gallery.
@@ -372,7 +374,7 @@ export function LibraryPage() {
     setColorFilter((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))
 
   const anyFilter =
-    query !== '' || typeFilter !== null || colorFilter.length > 0 || sort !== 'name' || descending || showTokens
+    query !== '' || typeFilter !== null || colorFilter.length > 0 || sort !== 'edhrec' || descending || showTokens
 
   return (
     <div className="lib-page">
@@ -465,7 +467,7 @@ export function LibraryPage() {
                 setQuery('')
                 setTypeFilter(null)
                 setColorFilter([])
-                setSort('name')
+                setSort('edhrec')
                 setDescending(false)
                 setShowTokens(false)
               }}

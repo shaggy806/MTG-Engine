@@ -5,6 +5,7 @@ import {
   canCommandAlone,
   canPairCommanders,
   colorIdentityOf,
+  edhrecRankOf,
   flavorNamesOf,
   hasPartner,
   identityString,
@@ -40,9 +41,18 @@ let buildable: readonly CardDefinition[] | null = null
  * (rule 111.1), and a double-faced card is listed under its front face (rule
  * 712.3) — so they're filtered out here rather than offered and then rejected
  * by `validateCommanderDeck`. Built from the card pool on first use:
- * `main.tsx` loads the whole pool before rendering the deck builder. */
+ * `main.tsx` loads the whole pool before rendering the deck builder.
+ * Ordered by EDHREC rank, the most played first and unranked cards (too new
+ * for EDHREC, basics) last alphabetically, so a search lists the cards
+ * people actually play before an alphabetical wall (the user, 2026-10-07). */
 function buildableCards(): readonly CardDefinition[] {
-  buildable ??= cardPool().cards.filter(isDeckableCard)
+  buildable ??= cardPool()
+    .cards.filter(isDeckableCard)
+    .map((def) => ({ def, rank: edhrecRankOf(def.name) ?? Infinity }))
+    .sort((a, b) =>
+      a.rank === b.rank ? a.def.name.localeCompare(b.def.name) : a.rank === Infinity ? 1 : b.rank === Infinity ? -1 : a.rank - b.rank,
+    )
+    .map((r) => r.def)
   return buildable
 }
 
