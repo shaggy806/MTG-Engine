@@ -55,13 +55,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   "you may" asked after another decision in the same resolution (it parks, and loses
   `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
   granted (`grantedAbility` kind `modifier`, which has no signature).
-- **A Paste button on the deck import** (the user, 2026-10-06). The deck builder's Import box
-  (`DeckBuilderPage.tsx`, `.db-import-textarea`) takes a pasted list today only by Ctrl+V. A
-  button that calls `navigator.clipboard.readText()` would fill it in one click: it needs a
-  click to start it and HTTPS (tobyens.com has it); Chrome asks permission once, Firefox and
-  Safari show their own "Paste" bubble each time, and where it's refused (or `readText` is
-  missing) the button should fall back to saying "press Ctrl+V". The capture panel's image
-  paste (`ui/CapturePanel.tsx`, the `paste` event) is the other clipboard read in the client.
 - **A rematch from the end-of-game panel** (2026-10-06 UI review). A finished game shows
   `GameResultPanel` (App.tsx) with "View the board" and "Main menu". A rematch — the same seats
   and decks, a new game in the same room — would need the server to deal a new `Game` into a

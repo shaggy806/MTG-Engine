@@ -309,6 +309,15 @@
   gap: 8px;
   align-items: stretch;
 }
+.db-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.db-import-note {
+  margin: 0;
+  font-size: var(--text-sm);
+}
 .db-import-textarea {
   font: inherit;
   color: var(--text);

@@ -279,6 +279,26 @@ function ImportPanel({
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState<ImportProgress | null>(null)
   const [error, setError] = useState<string | null>(null)
+  /** Why the Paste button couldn't fill the box, when it couldn't. */
+  const [pasteNote, setPasteNote] = useState<string | null>(null)
+
+  // The clipboard, read on the click (which is what lets a browser allow
+  // it). Where it's refused, or the browser has no `readText`, the box still
+  // takes Ctrl+V, so the button says so rather than doing nothing.
+  const paste = () => {
+    setPasteNote(null)
+    const read = navigator.clipboard?.readText?.bind(navigator.clipboard)
+    if (read === undefined) {
+      setPasteNote("This browser won't let the page read the clipboard: press Ctrl+V in the box.")
+      return
+    }
+    read()
+      .then((clip) => {
+        if (clip.trim() === '') setPasteNote('The clipboard is empty.')
+        else setText(clip)
+      })
+      .catch(() => setPasteNote("The browser didn't allow reading the clipboard: press Ctrl+V in the box."))
+  }
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -317,9 +337,15 @@ function ImportPanel({
           rows={12}
           placeholder={'Commander\n1 Ureni of the Unwritten\n\nDeck\n1 Sol Ring\n...'}
         />
-        <button type="submit" disabled={!text.trim() || loading}>
-          {loading ? 'Importing…' : 'Import'}
-        </button>
+        <div className="db-import-actions">
+          <button type="button" onClick={paste} disabled={loading}>
+            Paste from clipboard
+          </button>
+          <button type="submit" disabled={!text.trim() || loading}>
+            {loading ? 'Importing…' : 'Import'}
+          </button>
+        </div>
+        {pasteNote !== null ? <p className="muted db-import-note">{pasteNote}</p> : null}
       </form>
       {loading ? <ImportProgressBar progress={progress} /> : null}
       {error ? <div className="error-banner">⚠ {error}</div> : null}
