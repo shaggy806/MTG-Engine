@@ -950,16 +950,6 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           ) : game.botsPaused ? (
             <span className="ts-paused-badge">Bots paused</span>
           ) : null}
-          <button
-            type="button"
-            className="ts-icon"
-            disabled={shown.busy || !shown.replayable}
-            onClick={shown.replay}
-            aria-label="Replay the last update"
-            title="Replay the last update's animations"
-          >
-            ↺
-          </button>
           {/* The bots' speed is in Settings: only the host sets it, and only a
               table with bots needs it. */}
           <MotionControl
@@ -1045,6 +1035,21 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           >
             <div className="zone-viewer-head">
               <h2>History</h2>
+              {/* Here rather than as a ↺ in the top strip, which read as a
+                  restart beside the Game menu's real one (the user,
+                  2026-10-07): this is where a player comes having missed
+                  something. It closes the log, so the board is in view. */}
+              <button
+                type="button"
+                disabled={shown.busy || !shown.replayable}
+                title="Play the last update's animations again"
+                onClick={() => {
+                  setShowHistory(false)
+                  shown.replay()
+                }}
+              >
+                Replay last move
+              </button>
               <button type="button" onClick={() => setShowHistory(false)}>
                 Close
               </button>
