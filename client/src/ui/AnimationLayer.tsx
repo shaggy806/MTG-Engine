@@ -663,7 +663,8 @@ interface LiftedCard {
   /** Casts the lifted shadow (a card picked up off the stack), which it
    * loses as it's put down. */
   readonly shadow: boolean
-  /** The spotlight's "Bob casts" caption, which fades as the card leaves. */
+  /** The spotlight's "Bob casts" caption, left standing where it was (its
+   * own box on `<body>`) to fade as the card leaves. */
   readonly caption: HTMLElement | null
   readonly timer: number
 }
@@ -672,12 +673,46 @@ const lifted = new Map<ObjectId, LiftedCard>()
 /** A held card whose landing never came: it fades where it hovers. */
 function dropLifted(card: LiftedCard, delay = 0): void {
   window.clearTimeout(card.timer)
+  if (card.caption) {
+    releaseWhenDone(
+      card.caption,
+      card.caption.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: scaled(ENTER_STEP_MS) * 0.6,
+        delay,
+        fill: 'forwards',
+      }),
+    )
+  }
   const fade = card.box.animate([{ opacity: 1 }, { opacity: 0 }], {
     duration: scaled(ENTER_STEP_MS) * 0.6,
     delay,
     fill: 'forwards',
   })
   releaseWhenDone(card.box, fade)
+}
+
+/** A copy of spotlight `el`'s caption fixed on `<body>` at the same place
+ * and size, to stand there while its card flies off; null with none. */
+function standingCaption(el: HTMLElement): HTMLElement | null {
+  const caption = el.querySelector<HTMLElement>('.played-card-caption')
+  if (!caption) return null
+  const r = caption.getBoundingClientRect()
+  if (r.width === 0) return null
+  const stand = caption.cloneNode(true) as HTMLElement
+  Object.assign(stand.style, {
+    position: 'fixed',
+    left: `${r.left}px`,
+    top: `${r.top}px`,
+    margin: '0',
+    translate: 'none',
+    // Its size came from the spotlight's own --card-w, which isn't in scope
+    // on `<body>`.
+    fontSize: getComputedStyle(caption).fontSize,
+    zIndex: '10001',
+    pointerEvents: 'none',
+  })
+  document.body.appendChild(stand)
+  return stand
 }
 
 /** Each spotlight held for its flight (`PlayedCard.holds`), by object id:
@@ -717,6 +752,13 @@ function liftSpotlight(object: ObjectId): LiftedCard | null {
   const copy = el.cloneNode(true) as HTMLElement
   copy.removeAttribute('data-played-obj')
   copy.classList.remove('holds')
+  // The caption stays where it stands, in a box of its own, and fades there:
+  // carried in the copy, "Player 1 plays" rode along with the card for the
+  // first part of its flight (a bug report, 2026-10-07). Hidden rather than
+  // removed in the copy, which keeps the card where it sits under it.
+  const caption = standingCaption(el)
+  const copied = copy.querySelector<HTMLElement>('.played-card-caption')
+  if (copied) copied.style.visibility = 'hidden'
   // The overlay's card sits under its caption; the copy is placed so its card
   // fills the face, the caption standing above it as it did.
   Object.assign(copy.style, {
@@ -766,7 +808,7 @@ function liftSpotlight(object: ObjectId): LiftedCard | null {
     y,
     scale,
     shadow: false,
-    caption: copy.querySelector<HTMLElement>('.played-card-caption'),
+    caption,
     timer: 0,
   }
 }
@@ -791,11 +833,15 @@ function heldCentre(object: ObjectId): { x: number; y: number } | null {
 
 /** A held spotlight's caption fades out over the first part of its flight. */
 function fadeCaption(held: LiftedCard, delay: number, duration: number): void {
-  held.caption?.animate([{ opacity: 1 }, { opacity: 0 }], {
-    duration: duration * 0.25,
-    delay,
-    fill: 'both',
-  })
+  if (!held.caption) return
+  releaseWhenDone(
+    held.caption,
+    held.caption.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: duration * 0.25,
+      delay,
+      fill: 'both',
+    }),
+  )
 }
 
 /**
