@@ -5,6 +5,7 @@ import { RoomManager } from "./room-manager.js";
 import { attachRoomServer } from "./ws-server.js";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
 import { loadOracleTagIndex } from "./oracle-tags.js";
+import { loadCardData } from "./card-data.js";
 import { startStatusServer } from "./status.js";
 import { CAPTURE_KEEP, DEFAULT_CAPTURE_DIR } from "./capture.js";
 
@@ -83,7 +84,7 @@ const httpServer = createServer((req, res) => {
             entries,
             registry,
             (p) => write({ type: "progress", ...p }),
-            { commanders, tags: loadOracleTagIndex() },
+            { commanders, tags: loadOracleTagIndex(), cardData: loadCardData() },
           );
           const format = formatCheck(entries, registry, commanders, commanderSource);
           write({ type: "result", cards, format });

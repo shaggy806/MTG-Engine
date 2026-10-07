@@ -61,9 +61,11 @@ export function looksLikeDecklist(text: string): boolean {
 /**
  * POSTs a pasted decklist and consumes the endpoint's newline-delimited JSON
  * response, calling `onProgress` as each card is resolved and returning the
- * terminal `result` line. Streamed rather than awaited whole because every
- * card the engine doesn't implement costs a throttled Scryfall round-trip —
- * a 100-card list is tens of seconds of otherwise-silent waiting.
+ * terminal `result` line. Streamed rather than awaited whole because a list
+ * can wait on the network: a card the server's Oracle snapshot doesn't have
+ * (one printed since it was made) or a named printing is looked up on
+ * Scryfall, 75 to a request. Most lists resolve locally, in well under a
+ * second.
  */
 export async function importDecklist(
   text: string,

@@ -190,6 +190,10 @@ export interface ScryfallCardSummary {
   readonly colorIdentity: readonly Color[];
 }
 
+/** A card's characteristics by name from a local copy of Scryfall's data
+ * (`card-data.ts`'s `loadCardData`), or `undefined` for a name it lacks. */
+export type LocalCardData = (name: string) => ScryfallCardSummary | undefined;
+
 interface ScryfallCardPayload {
   readonly id?: string;
   readonly set?: string;
@@ -362,22 +366,33 @@ export type LookupProgress = (done: number, lastName: string | null) => void;
  * unknown name isn't re-queried every time it comes up. Names that miss
  * under their printed form are retried once per alternate spelling (see
  * `scryfallNameVariants`), one extra batched round per variant.
+ *
+ * `local`, when given, is asked first, under each of those spellings: a name
+ * it knows costs no request at all, so Scryfall only hears about the rest —
+ * a card printed since the local copy was made, or a misspelling.
  */
 export async function lookupScryfallMany(
   names: readonly string[],
   onProgress?: LookupProgress,
+  local?: LocalCardData | null,
 ): Promise<Map<string, ScryfallCardSummary | null>> {
   const out = new Map<string, ScryfallCardSummary | null>();
   const pending: string[] = [];
   for (const name of names) {
     if (out.has(name)) continue;
+    const known = local ? scryfallNameVariants(name).map(local).find((s) => s !== undefined) : undefined;
+    if (known !== undefined) {
+      out.set(name, known);
+      continue;
+    }
     const cached = scryfallCache.get(name);
     out.set(name, cached ?? null);
     if (cached === undefined) pending.push(name);
   }
 
-  // Names already in the cache resolved for free, so they count as done
-  // from the outset — otherwise a partly-cached list never reaches 100%.
+  // Names already in the cache or the local data resolved for free, so they
+  // count as done from the outset — otherwise a partly-cached list never
+  // reaches 100%.
   const cachedCount = out.size - pending.length;
 
   let unresolved = pending;
@@ -481,8 +496,9 @@ export type CardReportEntry = ImportedCardReport;
 
 /** Called as the audit advances, so a caller streaming it to a client can
  * show real progress. Granularity follows the work: cards the engine already
- * implements resolve locally and are counted in one go, and the rest are
- * counted a Scryfall batch (up to `COLLECTION_BATCH_SIZE` names) at a time. */
+ * implements resolve locally and are counted in one go, and so do the
+ * unimplemented ones the Oracle snapshot has; the rest are counted a
+ * Scryfall batch (up to `COLLECTION_BATCH_SIZE` names) at a time. */
 export type EvaluateProgress = (progress: {
   readonly done: number;
   readonly total: number;
@@ -492,9 +508,10 @@ export type EvaluateProgress = (progress: {
 
 /** Cross-references each decklist entry against the engine's card registry
  * by exact name. Implemented cards are reported straight from their local
- * `CardDefinition` (no network call needed); everything else is looked up on
- * Scryfall — in batches, so a 100-card list costs two round-trips rather
- * than a hundred throttled ones — so its real characteristics can be
+ * `CardDefinition` (no network call needed); everything else is read from
+ * the engine's Oracle snapshot (`options.cardData`), or failing that looked
+ * up on Scryfall — in batches, so a 100-card list costs two round-trips
+ * rather than a hundred throttled ones — so its real characteristics can be
  * reviewed, and matched against the pool for a stand-in the deck builder's
  * import flow can use. */
 export interface EvaluateOptions {
@@ -504,6 +521,9 @@ export interface EvaluateOptions {
   /** Oracle tags for matching stand-ins on role (`loadOracleTagIndex`).
    * Without them, stand-ins are matched on type, cost and body only. */
   readonly tags?: OracleTagIndex | null;
+  /** Every paper card's characteristics (`loadCardData`): an unimplemented
+   * card found here costs no Scryfall request. */
+  readonly cardData?: LocalCardData | null;
 }
 
 export async function evaluateDecklist(
@@ -530,6 +550,7 @@ export async function evaluateDecklist(
   const scryfallByName = await lookupScryfallMany(
     unimplemented.map((e) => e.name),
     (done, lastName) => onProgress?.({ done: beforeNames + done, total, name: lastName }),
+    options.cardData,
   );
   // Nothing above fires when every name came from the process cache, and the
   // variant rounds deliberately don't report, so close the bar out here.
