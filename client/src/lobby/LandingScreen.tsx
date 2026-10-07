@@ -88,7 +88,7 @@ export function LandingScreen({
       <header className="landing-hero">
         <div className="landing-hero-art" style={{ backgroundImage: cssUrl(heroArt) }} aria-hidden="true" />
         <div className="landing-hero-text">
-          <h1 className="landing-title">MTG Engine</h1>
+          <h1 className="landing-title">MTG Deck Blitz</h1>
           <p className="landing-tagline">
             A Magic: The Gathering rules engine that runs in your browser. Play
             Commander against friends — or fill the empty seats with bots and

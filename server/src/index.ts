@@ -124,6 +124,6 @@ const wss = new WebSocketServer({ server: httpServer });
 attachRoomServer(wss, manager, { builder });
 
 httpServer.listen(port, () => {
-  console.log(`MTG-Engine room server listening on ws://localhost:${port}`);
+  console.log(`MTG Deck Blitz room server listening on ws://localhost:${port}`);
   console.log(`status (loopback only): curl localhost:${statusPort}/status`);
 });

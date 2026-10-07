@@ -207,7 +207,7 @@ curl localhost:4010/healthz       # just a 200, for a monitor
 ```
 
 ```
-MTG-Engine server
+MTG Deck Blitz server
   uptime   3h 12m    pid 8123    node v24.20.0
   memory   rss 210 MB, heap 88 MB
   rooms    3 live — 1 waiting, 2 playing, 0 finished   (47 created since start)

@@ -290,7 +290,7 @@ async function postCollection(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "MTG-Engine-DeckImport/1.0",
+        "User-Agent": "MTGDeckBlitz-DeckImport/1.0",
       },
       body: JSON.stringify({ identifiers }),
     });

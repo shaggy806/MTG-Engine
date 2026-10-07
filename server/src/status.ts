@@ -154,7 +154,7 @@ const duration = (ms: number): string => {
  * a terminal far more often than it is parsed. */
 export function renderStatus(snapshot: StatusSnapshot): string {
   const lines: string[] = [];
-  lines.push("MTG-Engine server");
+  lines.push("MTG Deck Blitz server");
   lines.push(
     `  uptime   ${duration(snapshot.uptimeSeconds * 1000).padEnd(10)}` +
       `pid ${String(snapshot.pid).padEnd(8)}node ${snapshot.node}`,
