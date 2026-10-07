@@ -11825,7 +11825,14 @@ export class Game {
         if (ability.cost.sacrifice === "self") sacrificeSelf = true;
       });
       if (options.length === 0) continue;
-      out.push({ id, isLand: def.types.includes("land"), options, sacrificeSelf });
+      out.push({
+        id,
+        isLand: def.types.includes("land"),
+        // Its current types (an animated land, a Mishra's Factory, is one).
+        isCreature: effectiveTypes(this.state, this.registry, object).includes("creature"),
+        options,
+        sacrificeSelf,
+      });
     }
     const flexibility = (s: ManaSource): number =>
       new Set(s.options.flatMap((o) => [...o.fixed])).size +

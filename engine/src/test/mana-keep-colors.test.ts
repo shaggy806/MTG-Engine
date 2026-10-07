@@ -88,3 +88,33 @@ describe("generic mana from the sources the hand needs least", () => {
     expect(game.state.zones.shared.stack).toContain(fervor);
   });
 });
+
+/**
+ * A bug report (2026-10-06): with Sol Ring untapped and nothing else in hand,
+ * casting Arcane Signet ({2}) tapped a Mountain and Temple of Abandon. With
+ * no other card to weigh the colours against, generic mana was paid in the
+ * order `Game.manaSources` lists sources, lands first.
+ */
+describe("generic mana from colourless sources first", () => {
+  it("Arcane Signet is paid with Sol Ring, not two coloured lands", () => {
+    const game = setUp();
+    for (const id of game.battlefield) if (game.state.objects[id].controller === A) game.state.objects[id].tapped = true;
+    const lands = [land(game, "Mountain"), land(game, "Temple of Abandon")];
+    const solRing = land(game, "Sol Ring");
+    const signet = game.debugSpawn("Arcane Signet", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: signet, targets: [] });
+    expect(game.state.objects[solRing].tapped).toBe(true);
+    expect(lands.map((id) => game.state.objects[id].tapped)).toEqual([false, false]);
+  });
+
+  it("a colourless mana creature still waits for the lands, so it can attack", () => {
+    const game = setUp();
+    for (const id of game.battlefield) if (game.state.objects[id].controller === A) game.state.objects[id].tapped = true;
+    const lands = [land(game, "Mountain"), land(game, "Temple of Abandon")];
+    const myr = land(game, "Palladium Myr");
+    const signet = game.debugSpawn("Arcane Signet", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: signet, targets: [] });
+    expect(game.state.objects[myr].tapped).toBe(false);
+    expect(lands.map((id) => game.state.objects[id].tapped)).toEqual([true, true]);
+  });
+});

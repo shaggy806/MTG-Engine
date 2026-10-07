@@ -129,6 +129,9 @@ function defaultUnitOf(
 export interface ManaSource {
   readonly id: ObjectId;
   readonly isLand: boolean;
+  /** A creature, whose tapping costs an attack or a block: generic mana
+   * reaches for one last. Absent reads as not one. */
+  readonly isCreature?: boolean;
   readonly options: readonly ManaOption[];
   readonly sacrificeSelf: boolean;
 }
@@ -906,13 +909,25 @@ function planManaPaymentOrdered(
     ).size;
   // Sorted within each group only: converters stay where `convertersFirst`
   // put them (last, or first on the second pass), which the plan depends on.
-  const byKeep =
-    keep === undefined
-      ? sources
-      : sources
-          .map((src, i) => ({ src, i, group: isConverter(src) === convertersFirst ? 0 : 1, keep: keepScore(src), colours: colourCount(src) }))
-          .sort((a, b) => a.group - b.group || a.keep - b.keep || a.colours - b.colours || a.i - b.i)
-          .map((e) => e.src);
+  // Then `avoid` last (a man-land paying its own animation stays untapped to
+  // attack), a creature after the rest (its tap costs an attack or a block),
+  // and among the rest the source the hand needs least, then the one making
+  // fewest colours:
+  // with no other card to weigh, Sol Ring's colourless pays an Arcane Signet
+  // before two coloured lands do (a bug report, 2026-10-06: the lands went
+  // first, in battlefield order, as `Game.manaSources` lists them).
+  const byKeep = sources
+    .map((src, i) => ({
+      src,
+      i,
+      group: isConverter(src) === convertersFirst ? 0 : 1,
+      avoided: src.id === avoid ? 1 : 0,
+      creature: src.isCreature === true ? 1 : 0,
+      keep: keepScore(src),
+      colours: colourCount(src),
+    }))
+    .sort((a, b) => a.group - b.group || a.avoided - b.avoided || a.creature - b.creature || a.keep - b.keep || a.colours - b.colours || a.i - b.i)
+    .map((e) => e.src);
   const coverGeneric = (): boolean => {
     for (const t of tapped) if (takeGeneric(t) !== null) return true;
     for (const next of byKeep) {
