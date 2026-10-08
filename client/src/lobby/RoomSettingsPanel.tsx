@@ -102,6 +102,32 @@ export function RoomSettingsPanel({
           )}
         </div>
 
+        {/* What "Add bot (random deck)" deals: the precons as printed, or
+            as players upgrade them (`RoomSettings.botDecks`). */}
+        <div className="rs-field">
+          <span className="rs-label">Bot decks</span>
+          {host ? (
+            <div className="rs-options" role="group" aria-label="Bot decks">
+              {([
+                ['precon', 'Precons'],
+                ['upgraded', 'Upgraded'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`seg-option${settings.botDecks === value ? ' active' : ''}`}
+                  aria-pressed={settings.botDecks === value}
+                  onClick={() => game.setRoomSettings({ botDecks: value })}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <span className="rs-value">{settings.botDecks === 'upgraded' ? 'Upgraded precons' : 'Precons'}</span>
+          )}
+        </div>
+
         <div className="rs-field">
           <span className="rs-label">Bot speed</span>
           {host ? (

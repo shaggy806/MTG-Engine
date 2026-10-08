@@ -102,6 +102,7 @@ section keeps only what to do next.
 One line each; the detail (rule numbers, code sites, the cards each blocks) is in
 **`docs/engine-gaps.md`**, under the same bold title. Delete both when a gap closes.
 
+- **At most 100 tokens of one stack can attack or block** (508.1a, 509.1a): a bug report (2026-10-07), 336 Scute Swarms and only 103 offered. `Game.MAX_MATERIALIZED` (with the client's `MEMBER_CAP`) overrides the player's declaration for performance.
 - **A mandatory loop throws instead of drawing the game** (104.4b, 732.4): the room stops that game rather than the server going down, but it should be a draw.
 - **Blitz is offered only from the hand and the command zone** (702.152a).
 - **A mana restriction reads the spell before it's cast** (Jasmine Boreal of the Seven waits).
@@ -169,8 +170,14 @@ under count budgets).
   once one is fixed, `-- resolve` moves it to `captures/resolved/`, where it gates.
 - **A wider pool of bot decks (later — raised 2026-09-26).** `SAMPLE_DECKS` is fourteen precons
   since 2026-10-02 (the five Tarkir: Dragonstorm decks, the five 2022 starter decks and four more —
-  `docs/plans/precon-decks.md`), six flagged `bench`, whose first four are the seats' fallbacks. Still unscoped: decks across
-  a range of power levels for bots to bring, and how a host picks one.
+  `docs/plans/precon-decks.md`), six flagged `bench`, whose first four are the seats' fallbacks.
+  Since 2026-10-07 the five TDC precons also come upgraded (`UPGRADED_DECKS`, a room's "Bot decks"
+  setting; `docs/plans/upgraded-decks.md`). Still unscoped: more power levels, and upgrades of the
+  other nine.
+- **Sultai Arisen and Jeskai Striker (Upgraded) didn't measure stronger than their precons**
+  (16.7% and 8.3% against 20.8% and 14.6%, 48 games each, within noise; Temur Roar's upgrade
+  went 35% to 69%). More rounds, autopsies of their losses for cards the bots misuse, and
+  revised swaps: `docs/plans/upgraded-decks.md`, "Open".
 - **More deck biases.** `engine/src/deck-bias.ts` (`docs/plans/deck-biases.md`) lets a
   commander's deck aim effects the other way and value its own board differently; Teval is the
   one entry. Add one when a live game shows a deck's bot playing against its plan, with a gate
@@ -206,6 +213,7 @@ item lands.
 - **Server-side deck save and share** (decks live in `localStorage`).
 - **The library and the deck builder load every card definition** (~3.1 MB).
 - **"Same for all" covers only a trigger's yes-or-no "you may".**
+- **Copied triggers without targets aren't condensed on the stack** (the user, 2026-10-07): Scute Swarm's, for example.
 - **Animation follow-ups** (re-measure bot speeds, static buffs, library put-backs, the exile filter, the crown's flight, merged tokens, folding tokens with counters, dies-trigger pulses, history highlights, real sounds): `docs/plans/legibility-of-play.md`, "Follow-ups".
 
 ## Tooling / docs

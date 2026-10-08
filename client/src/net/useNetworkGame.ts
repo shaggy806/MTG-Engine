@@ -697,7 +697,9 @@ export function useNetworkGame(): NetworkGame {
       pendingHostTokenRef.current = hostToken
       pendingBlitzRef.current = {
         deck,
-        bots: randomBotDecks(BLITZ_PLAYERS - 1, deck.name === undefined ? [] : [deck.name]),
+        // A blitz is a game against the bots at their best: the upgraded
+        // precons (`UPGRADED_DECKS`).
+        bots: randomBotDecks(BLITZ_PLAYERS - 1, deck.name === undefined ? [] : [deck.name], Math.random, 'upgraded'),
         sent: false,
       }
       setBlitzing(true)

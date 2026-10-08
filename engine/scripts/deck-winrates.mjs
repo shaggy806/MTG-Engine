@@ -20,7 +20,12 @@ import os from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { SAMPLE_DECKS } from "../dist/index.js";
+// `--pool upgraded`: the precons against their upgrades (`deck-pool.mjs`).
+// Set before the pool module loads, and inherited by the workers.
+const poolArg = process.argv.indexOf("--pool");
+if (poolArg >= 0) process.env.DECK_POOL = process.argv[poolArg + 1];
+const { SAMPLE_DECKS } = await import("../dist/index.js");
+const { DECK_POOL } = await import("./deck-pool.mjs");
 import { runPool } from "./worker-pool.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -34,7 +39,7 @@ const players = Math.min(4, Math.max(2, Number(flag("players", "4"))));
 const rounds = Number(flag("rounds", "30"));
 const workers = Number(flag("workers", String(Math.max(1, os.cpus().length - 4))));
 const timeoutMs = Number(flag("timeout", "900")) * 1000;
-const out = flag("out", join(ROOT, ".scratch", `deck-winrates-${bot}-${players}p.ndjson`));
+const out = flag("out", join(ROOT, ".scratch", `deck-winrates-${bot}-${players}p${process.env.DECK_POOL ? `-${process.env.DECK_POOL}` : ""}.ndjson`));
 mkdirSync(dirname(out), { recursive: true });
 
 // Deterministic tables.
@@ -48,7 +53,7 @@ function rng(seed) {
   };
 }
 const random = rng(0xdec5 + players);
-const n = SAMPLE_DECKS.length;
+const n = DECK_POOL.length;
 const stream = [];
 for (let r = 0; r < rounds; r += 1) {
   const order = [...Array(n).keys()];
@@ -100,7 +105,7 @@ function wilson(k, total) {
 
 function summary() {
   const rows = readFileSync(out, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
-  const stats = new Map(SAMPLE_DECKS.map((d) => [d.name, { games: 0, wins: 0, finish: 0, finished: 0, winTurns: 0 }]));
+  const stats = new Map(DECK_POOL.map((d) => [d.name, { games: 0, wins: 0, finish: 0, finished: 0, winTurns: 0 }]));
   let unfinished = 0;
   for (const r of rows) {
     if (r.error || r.outcome === "timeout" || r.winner === undefined) unfinished += 1;
@@ -158,6 +163,6 @@ else
     timeoutMs,
     onMessage: (row) => record(row),
     onLost: (job, reason) =>
-      record({ seed: job.seed, decks: job.decks.map((i) => SAMPLE_DECKS[i].name), outcome: reason === "timeout" ? "timeout" : "error", error: reason }),
+      record({ seed: job.seed, decks: job.decks.map((i) => DECK_POOL[i].name), outcome: reason === "timeout" ? "timeout" : "error", error: reason }),
     onDone: () => summary(),
   });

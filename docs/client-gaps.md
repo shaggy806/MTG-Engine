@@ -50,6 +50,11 @@ title; when one lands, delete it in both. The animation follow-ups are in
   growing with the pool. They read only printed fields, each ability's text (colour identity)
   and the tokens a card makes. A generated catalog of just those, sharded the same way, would be
   a fraction of the size. The game page loads no definitions up front.
+- **Copied triggers without targets aren't condensed on the stack** (the user, 2026-10-07).
+  The user wants triggers that are copies of one another and have no targets shown as one stack
+  entry, the way identical triggers already fold into one counted entry (`stackCount`). Scute
+  Swarm is the example: each copy of it triggers on its own landfall, and the triggers stand as
+  separate entries. Where the fold is decided hasn't been looked up yet.
 - **"Same for all" covers only a trigger's yes-or-no "you may"**
   (`GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
   "you may" asked after another decision in the same resolution (it parks, and loses

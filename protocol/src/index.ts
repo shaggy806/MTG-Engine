@@ -14,6 +14,7 @@
 export type {
   PassSettings,
   BotSpeed,
+  BotDeckPool,
   RoomSettings,
   CaptureSummary,
   ClientMessage,

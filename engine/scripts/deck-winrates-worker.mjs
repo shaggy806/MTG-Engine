@@ -16,6 +16,7 @@ import {
   asPlayerId,
   createDefaultRegistry,
 } from "../dist/index.js";
+import { DECK_POOL } from "./deck-pool.mjs";
 
 const registry = createDefaultRegistry();
 const SEATS = ["alice", "bob", "carol", "dave"].map(asPlayerId);
@@ -23,7 +24,7 @@ const { bot } = workerData;
 
 parentPort.on("message", ({ seed, decks: deckIndices }) => {
   const seats = SEATS.slice(0, deckIndices.length);
-  const decks = deckIndices.map((i) => SAMPLE_DECKS[i]);
+  const decks = deckIndices.map((i) => DECK_POOL[i]);
   const controllers = Object.fromEntries(
     seats.map((seat) => [
       seat,

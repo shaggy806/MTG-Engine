@@ -65,6 +65,11 @@ export interface SampleDeck {
   /** The 99 exactly as printed, for a real precon. */
   readonly printed?: readonly string[];
   readonly substitutions?: readonly PreconSubstitution[];
+  /** For an upgraded deck (`UPGRADED_DECKS`): the starter deck it upgrades,
+   * and what came out for what — its `cards` are that deck's with these
+   * swapped in. */
+  readonly upgradeOf?: string;
+  readonly swaps?: readonly (readonly [cut: string, add: string])[];
 }
 
 const list = (entries: readonly (readonly [string, number])[]): string[] =>
@@ -1398,3 +1403,258 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
 
 /** The decks the bots are benchmarked on — see the header's `bench`. */
 export const BENCH_DECKS: readonly SampleDeck[] = SAMPLE_DECKS.filter((d) => d.bench === true);
+
+/**
+ * `base` upgraded: each `[cut, add]` swaps a card of its list for one of the
+ * same kind (`lands` land for land, `cards` spell for spell), so the deck
+ * keeps its land count. Named "<base> (Upgraded)". Throws on a cut the deck
+ * doesn't hold or an add it already does, as `precon` does for a stray
+ * substitution; colour identity and legality are `sample-decks.test.ts`'.
+ */
+function upgraded(
+  base: string,
+  deck: {
+    readonly description: string;
+    readonly cards: readonly (readonly [string, string])[];
+    readonly lands: readonly (readonly [string, string])[];
+  },
+): SampleDeck {
+  const source = SAMPLE_DECKS.find((d) => d.name === base);
+  if (source === undefined) throw new Error(`no starter deck ${base} to upgrade`);
+  const name = `${base} (Upgraded)`;
+  const swaps = [...deck.cards, ...deck.lands];
+  const cards = [...source.cards];
+  for (const [cut, add] of swaps) {
+    const at = cards.indexOf(cut);
+    if (at < 0) throw new Error(`${name}: cuts ${cut}, which ${base} doesn't play`);
+    if (cards.includes(add)) throw new Error(`${name}: adds ${add}, which it already plays`);
+    cards[at] = add;
+  }
+  return {
+    name,
+    commanders: source.commanders,
+    description: deck.description,
+    cards,
+    upgradeOf: base,
+    swaps,
+  };
+}
+
+/**
+ * The upgraded decks: the five Tarkir: Dragonstorm precons as players upgrade
+ * them (the user's call, 2026-10-07: the precons' mana bases are mostly
+ * tapped lands, so the bots seldom had an untapped fetch or dual to play, and
+ * they wanted stronger opponents). A room picks which pool its bots are dealt
+ * from (`RoomSettings.botDecks`); a blitz deals from this one.
+ *
+ * **Source.** EDHREC's page for each precon (`json.edhrec.com/pages/precon/
+ * <name>.json`, fetched 2026-10-07) lists the cards players add to and cut
+ * from their copies, most-played first. Each deck takes its top adds the
+ * engine implements, in that order, for the top cuts, 18 spells in all; and
+ * 13 lands: EDHREC's lands to add, then the shocks, fetches, triomes and
+ * dual lands its commander page shows those decks running, for its lands to
+ * cut (the Temples, Evolving Wilds, Path of Ancestry). Left out: the Reserved
+ * List duals and the costliest utility lands (Ancient Tomb, Cavern of
+ * Souls), which make it a tuned deck rather than an upgraded precon. The most
+ * viewed upgrade lists on Moxfield were the other candidate: they mostly keep
+ * the precons' tapped lands, spend on tutors and fast mana, and need 7-15
+ * stand-ins each for cards the engine doesn't run yet. Design record:
+ * `docs/plans/upgraded-decks.md`.
+ */
+export const UPGRADED_DECKS: readonly SampleDeck[] = [
+  upgraded("Temur Roar", {
+    description: "Ureni's Dragons with an untapped mana base, more ramp and the Dragon payoffs players add most.",
+    cards: [
+      ["Stormshriek Feral", "Temur Battlecrier"],
+      ["Zenith Festival", "Miirym, Sentinel Wyrm"],
+      ["Rapacious Dragon", "Garruk's Uprising"],
+      ["Draconic Lore", "Bloomvine Regent"],
+      ["Gadrak, the Crown-Scourge", "Cultivate"],
+      ["Taurean Mauler", "Dragonspeaker Shaman"],
+      ["Harbinger of the Hunt", "Frostcliff Siege"],
+      ["Skarrgan Hellkite", "Terror of the Peaks"],
+      ["Verix Bladewing", "Drakuseth, Maw of Flames"],
+      ["Vengeful Ancestor", "Marang River Regent"],
+      ["Storm's Wrath", "Goreclaw, Terror of Qal Sisma"],
+      ["Glorybringer", "Dragonback Assault"],
+      ["Steel Hellkite", "Ganax, Astral Hunter"],
+      ["Nesting Dragon", "Rampant Growth"],
+      ["Hellkite Courser", "Savage Ventmaw"],
+      ["Opportunistic Dragon", "Stormscale Scion"],
+      ["Stormbreath Dragon", "Scourge of Valkas"],
+      ["Talisman of Creativity", "Goldspan Dragon"],
+    ],
+    lands: [
+      ["Evolving Wilds", "Maelstrom of the Spirit Dragon"],
+      ["Sheltered Thicket", "Stomping Ground"],
+      ["Temple of Mystery", "Breeding Pool"],
+      ["Mossfire Valley", "Steam Vents"],
+      ["Temple of Abandon", "Ketria Triome"],
+      ["Kessig Wolf Run", "Wooded Foothills"],
+      ["Temple of the Dragon Queen", "Misty Rainforest"],
+      ["Yavimaya Coast", "Scalding Tarn"],
+      ["Bountiful Landscape", "Spire Garden"],
+      ["Karplusan Forest", "Training Center"],
+      ["Shivan Reef", "Thornspire Verge"],
+      ["Path of Ancestry", "Willowrush Verge"],
+      ["Mosswort Bridge", "Riverpyre Verge"],
+    ],
+  }),
+  upgraded("Sultai Arisen", {
+    description: "Teval's self-mill with an untapped mana base, reanimation and the graveyard engines players add most.",
+    cards: [
+      ["Necropolis Fiend", "Muldrotha, the Gravetide"],
+      ["Woe Strider", "Kheru Goldkeeper"],
+      ["Lord of the Forsaken", "Sidisi, Brood Tyrant"],
+      ["Reassembling Skeleton", "Insidious Roots"],
+      ["Consuming Aberration", "Ripples of Undeath"],
+      ["Essence Anchor", "The Gitrog Monster"],
+      ["Tasigur, the Golden Fang", "Syr Konrad, the Grim"],
+      ["Amphin Mutineer", "The Scarab God"],
+      ["Junji, the Midnight Sky", "Icetill Explorer"],
+      ["Treasure Cruise", "Dread Return"],
+      ["Disciple of Bolas", "Tatyova, Benthic Druid"],
+      ["Lord of Extinction", "Reanimate"],
+      ["Forbidden Alchemy", "Eternal Witness"],
+      ["Noxious Gearhulk", "Assassin's Trophy"],
+      ["Millikin", "Aftermath Analyst"],
+      ["Grisly Salvage", "Glacierwood Siege"],
+      ["Diviner of Mist", "Counterspell"],
+      ["Necromantic Selection", "Tortured Existence"],
+    ],
+    lands: [
+      ["Contaminated Aquifer", "Overgrown Tomb"],
+      ["Haunted Mire", "Watery Grave"],
+      ["Temple of Malady", "Breeding Pool"],
+      ["Myriad Landscape", "Polluted Delta"],
+      ["Darkwater Catacombs", "Verdant Catacombs"],
+      ["Cephalid Coliseum", "Misty Rainforest"],
+      ["Drownyard Temple", "Zagoth Triome"],
+      ["Fetid Pools", "Fabled Passage"],
+      ["Crypt of Agadeem", "Undergrowth Stadium"],
+      ["Golgari Rot Farm", "Underground Mortuary"],
+      ["Terramorphic Expanse", "Hedge Maze"],
+      ["Foreboding Landscape", "Drowned Catacomb"],
+      ["Memorial to Folly", "Deathcap Glade"],
+    ],
+  }),
+  upgraded("Abzan Armor", {
+    description: "Felothar's defenders with an untapped mana base, ramp and the toughness payoffs players add most.",
+    cards: [
+      ["Staff of Compleation", "Betor, Kin to All"],
+      ["Protector of the Wastes", "Doran, Besieged by Time"],
+      ["Betor, Ancestor's Voice", "Tree of Perdition"],
+      ["Indulging Patrician", "Fecund Greenshell"],
+      ["Wall of Limbs", "The Walls of Ba Sing Se"],
+      ["Rhox Faithmender", "Bedrock Tortoise"],
+      ["Hornet Nest", "MacCready, Lamplight Mayor"],
+      ["Wakestone Gargoyle", "Smile at Death"],
+      ["Wall of Reverence", "Stalwart Shield-Bearers"],
+      ["Nyx-Fleece Ram", "Doran, the Siege Tower"],
+      ["Arasta of the Endless Web", "Stoneskin"],
+      ["Zetalpa, Primal Dawn", "Ohran Frostfang"],
+      ["Jaddi Offshoot", "Rammas Echor, Ancient Shield"],
+      ["Shadrix Silverquill", "Path to Exile"],
+      ["Wingmantle Chaplain", "Cultivate"],
+      ["Colfenor's Urn", "Last March of the Ents"],
+      ["Dragonlord Dromoka", "Farseek"],
+      ["Canopy Gargantuan", "Fell the Mighty"],
+    ],
+    lands: [
+      ["Radiant Grove", "Temple Garden"],
+      ["Evolving Wilds", "Overgrown Tomb"],
+      ["Temple of Malady", "Godless Shrine"],
+      ["Temple of Silence", "Indatha Triome"],
+      ["Temple of Plenty", "Windswept Heath"],
+      ["Sungrass Prairie", "Verdant Catacombs"],
+      ["Path of Ancestry", "Marsh Flats"],
+      ["Deceptive Landscape", "Brushland"],
+      ["Twilight Mire", "Caves of Koilos"],
+      ["Fortified Village", "Llanowar Wastes"],
+      ["Bojuka Bog", "Bountiful Promenade"],
+      ["Access Tunnel", "Vault of Champions"],
+      ["Exotic Orchard", "Undergrowth Stadium"],
+    ],
+  }),
+  upgraded("Mardu Surge", {
+    description: "Zurgo's tokens with an untapped mana base, sacrifice outlets and the attack payoffs players add most.",
+    cards: [
+      ["Myr Battlesphere", "Bone-Cairn Butcher"],
+      ["Beetleback Chief", "Impact Tremors"],
+      ["Shadow Summoning", "Zurgo, Thunder's Decree"],
+      ["Commander's Insignia", "Caesar, Legion's Emperor"],
+      ["Release the Dogs", "Windcrag Siege"],
+      ["Siege-Gang Commander", "Voice of Victory"],
+      ["Emeria Angel", "Isshin, Two Heavens as One"],
+      ["Mindblade Render", "Anim Pakal, Thousandth Moon"],
+      ["Aron, Benalia's Ruin", "Goblin Bombardment"],
+      ["Bone Devourer", "Pitiless Plunderer"],
+      ["Wayfarer's Bauble", "Garna, Bloodfist of Keld"],
+      ["Lingering Souls", "Ruinous Ultimatum"],
+      ["Grenzo, Havoc Raiser", "Elas il-Kor, Sadistic Pilgrim"],
+      ["Chittering Witch", "Teysa Karlov"],
+      ["Legion Loyalty", "Path to Exile"],
+      ["Solemn Simulacrum", "Warleader's Call"],
+      ["Angel of Invention", "Elspeth, Storm Slayer"],
+      ["Sun Titan", "Avenger of the Fallen"],
+    ],
+    lands: [
+      ["Terramorphic Expanse", "Godless Shrine"],
+      ["Canyon Slough", "Sacred Foundry"],
+      ["Temple of Triumph", "Blood Crypt"],
+      ["Temple of Silence", "Savai Triome"],
+      ["Windbrisk Heights", "Bloodstained Mire"],
+      ["Path of Ancestry", "Arid Mesa"],
+      ["Shattered Landscape", "Marsh Flats"],
+      ["Caves of Koilos", "Spectator Seating"],
+      ["Battlefield Forge", "Vault of Champions"],
+      ["Vault of the Archangel", "Sundown Pass"],
+      ["Fetid Heath", "Haunted Ridge"],
+      ["Bojuka Bog", "Sunbillow Verge"],
+      ["Exotic Orchard", "Bleachbone Verge"],
+    ],
+  }),
+  upgraded("Jeskai Striker", {
+    description: "Shiko and Narset's spells with an untapped mana base, counterspells and the spell payoffs players add most.",
+    cards: [
+      ["Shiny Impetus", "Hinata, Dawn-Crowned"],
+      ["Transforming Flourish", "Balmor, Battlemage Captain"],
+      ["Ancestral Vision", "Stormcatch Mentor"],
+      ["Mangara, the Diplomat", "Path to Exile"],
+      ["Tempest Technique", "Counterspell"],
+      ["Magma Opus", "Jeskai Ascendancy"],
+      ["Velomachus Lorehold", "Brainstorm"],
+      ["Curse of Opulence", "Kykar, Wind's Fury"],
+      ["Transcendent Dragon", "Lightning Bolt"],
+      ["Think Twice", "Bria, Riptide Rogue"],
+      ["Baral and Kari Zev", "Thousand-Year Storm"],
+      ["Expansion // Explosion", "Frostcliff Siege"],
+      ["Manaform Hellkite", "Archmage of Runes"],
+      ["Sublime Epiphany", "Arcane Denial"],
+      ["Vanquish the Horde", "Negate"],
+      ["Adaptive Training Post", "Niv-Mizzet, Parun"],
+      ["Time Wipe", "Boros Charm"],
+      ["Elsha, Threefold Master", "Talrand, Sky Summoner"],
+    ],
+    lands: [
+      ["Ash Barrens", "Steam Vents"],
+      ["Evolving Wilds", "Hallowed Fountain"],
+      ["Temple of Triumph", "Sacred Foundry"],
+      ["Irrigated Farmland", "Raugrin Triome"],
+      ["Temple of Enlightenment", "Flooded Strand"],
+      ["Temple of Epiphany", "Scalding Tarn"],
+      ["Perilous Landscape", "Arid Mesa"],
+      ["Skycloud Expanse", "Stormcarved Coast"],
+      ["Ferrous Lake", "Training Center"],
+      ["Path of Ancestry", "Spectator Seating"],
+      ["Battlefield Forge", "Sea of Clouds"],
+      ["Adarkar Wastes", "Riverpyre Verge"],
+      ["Rugged Prairie", "Floodfarm Verge"],
+    ],
+  }),
+];
+
+/** Every starter deck the deck builder and the deck pickers offer: the
+ * precons, then their upgrades. Appended, so a starter's index (a saved
+ * `starter` reference in the client) still names the same deck. */
+export const STARTER_DECKS: readonly SampleDeck[] = [...SAMPLE_DECKS, ...UPGRADED_DECKS];

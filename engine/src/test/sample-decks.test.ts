@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry } from "../cards.js";
 import { validateCommanderDeck } from "../deck-validation.js";
-import { SAMPLE_DECKS } from "../sample-decks.js";
+import { SAMPLE_DECKS, UPGRADED_DECKS } from "../sample-decks.js";
 
 const reg = createDefaultRegistry();
 
@@ -47,6 +47,35 @@ describe("SAMPLE_DECKS", () => {
         for (const s of deck.substitutions ?? []) {
           expect(printed, `${s.substitute} is already in the printed list`).not.toContain(s.substitute);
         }
+      });
+    });
+  }
+});
+
+describe("UPGRADED_DECKS", () => {
+  it("upgrades each Tarkir: Dragonstorm precon once", () => {
+    expect(UPGRADED_DECKS.map((d) => d.upgradeOf)).toEqual(SAMPLE_DECKS.slice(0, 5).map((d) => d.name));
+    expect(new Set(UPGRADED_DECKS.map((d) => d.name)).size).toBe(UPGRADED_DECKS.length);
+  });
+
+  for (const deck of UPGRADED_DECKS) {
+    describe(deck.name, () => {
+      it("is a legal 100-card Commander deck of implemented cards", () => {
+        const unimplemented = [...deck.commanders!, ...deck.cards].filter((n) => !reg.has(n));
+        expect(unimplemented).toEqual([]);
+        const result = validateCommanderDeck({ commanders: deck.commanders!, cards: deck.cards, size: 100 }, reg);
+        expect(result.violations).toEqual([]);
+        expect(result.legal).toBe(true);
+      });
+
+      it("swaps land for land and spell for spell, so the land count holds", () => {
+        const base = SAMPLE_DECKS.find((d) => d.name === deck.upgradeOf)!;
+        const isLand = (n: string) => reg.get(n).types.includes("land");
+        for (const [cut, add] of deck.swaps ?? []) {
+          expect(isLand(add), `${cut} -> ${add}`).toBe(isLand(cut));
+        }
+        expect(deck.cards.filter(isLand)).toHaveLength(base.cards.filter(isLand).length);
+        expect(deck.commanders).toEqual(base.commanders);
       });
     });
   }

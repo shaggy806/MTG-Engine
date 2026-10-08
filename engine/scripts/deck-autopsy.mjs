@@ -21,7 +21,7 @@ import {
   EvalBotController,
   Game,
   HeuristicBotController,
-  SAMPLE_DECKS,
+  STARTER_DECKS,
   asPlayerId,
   computeCharacteristics,
   createDefaultRegistry,
@@ -51,7 +51,7 @@ if (deckNames === undefined || deckNames === null) {
 }
 const registry = createDefaultRegistry();
 const decks = deckNames.map((n) => {
-  const d = SAMPLE_DECKS.find((x) => x.name === n);
+  const d = STARTER_DECKS.find((x) => x.name === n);
   if (!d) throw new Error(`no starter deck named ${n}`);
   return d;
 });

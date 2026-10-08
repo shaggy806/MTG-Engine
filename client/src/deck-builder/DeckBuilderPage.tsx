@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { SAMPLE_DECKS, commandersOf, validateCommanderDeck } from 'engine/client'
+import { STARTER_DECKS, commandersOf, validateCommanderDeck } from 'engine/client'
 import type { PreconSubstitution } from 'engine/client'
 import {
   createDeck,
@@ -52,7 +52,7 @@ export function DeckBuilderPage() {
   const selectedDeck =
     selection?.kind === 'saved' ? (decks.find((d) => d.id === selection.id) ?? null) : null
   const starterIndex = selection?.kind === 'starter' ? selection.index : null
-  const selectedStarter = starterIndex !== null ? (SAMPLE_DECKS[starterIndex] ?? null) : null
+  const selectedStarter = starterIndex !== null ? (STARTER_DECKS[starterIndex] ?? null) : null
 
   const isActive = (ref: NonNullable<Selection>): boolean =>
     activeRef !== null &&
@@ -154,7 +154,7 @@ export function DeckBuilderPage() {
           </div>
           <p className="muted db-note">Ready to play as-is, or duplicate to edit.</p>
           <ul>
-            {SAMPLE_DECKS.map((d, i) => (
+            {STARTER_DECKS.map((d, i) => (
               <li key={d.name}>
                 <button
                   type="button"

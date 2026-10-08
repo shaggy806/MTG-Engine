@@ -252,7 +252,9 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
                     <button
                       type="button"
                       className="seat-panel-add-bot"
-                      onClick={() => game.addBot(s.player, randomBotDeck(game.seats))}
+                      onClick={() =>
+                        game.addBot(s.player, randomBotDeck(game.seats, Math.random, game.roomSettings?.botDecks))
+                      }
                     >
                       Add bot (random deck)
                     </button>

@@ -134,7 +134,15 @@ export interface RoomSettings {
    * can't ready up with one that isn't, and turning this on un-readies any
    * such seat. Off by default — any deck the server can build is welcome. */
   readonly commanderLegalOnly: boolean;
+  /** Which starter decks "Add bot (random deck)" deals a bot: the precons
+   * (`SAMPLE_DECKS`) or their upgraded versions (`UPGRADED_DECKS`). A
+   * client-side choice the server only stores and shows everyone; a bot's
+   * deck still arrives with its `add-bot`. Precons by default. */
+  readonly botDecks: BotDeckPool;
 }
+
+/** The starter decks a bot is dealt from — see `RoomSettings.botDecks`. */
+export type BotDeckPool = "precon" | "upgraded";
 
 export type ClientMessage =
   | {

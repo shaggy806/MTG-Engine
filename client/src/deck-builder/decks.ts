@@ -8,11 +8,12 @@
  * claim.
  *
  * "Active" can point at one of the player's own saved decks *or* directly at
- * one of `engine`'s `SAMPLE_DECKS` (the curated starter decks) — playing a
- * starter deck as-is shouldn't require duplicating it into "my decks" first.
+ * one of `engine`'s `STARTER_DECKS` (the curated starter decks: the precons,
+ * then their upgrades) — playing a starter deck as-is shouldn't require
+ * duplicating it into "my decks" first.
  */
 
-import { SAMPLE_DECKS, commandersOf, nameForFlavorName } from 'engine/client'
+import { STARTER_DECKS, commandersOf, nameForFlavorName } from 'engine/client'
 import type { SeatCommander } from 'protocol'
 
 export interface SavedDeck {
@@ -173,7 +174,7 @@ export function duplicateDeck(id: string): SavedDeck | null {
 }
 
 export function duplicateStarter(index: number): SavedDeck | null {
-  const source = SAMPLE_DECKS[index]
+  const source = STARTER_DECKS[index]
   if (source === undefined) return null
   const copy: SavedDeck = {
     id: newId(),
@@ -218,7 +219,7 @@ export function commanderPrintings(deck: DeckContents): readonly SeatCommander[]
 }
 
 function starterContents(index: number): DeckContents | null {
-  const deck = SAMPLE_DECKS[index]
+  const deck = STARTER_DECKS[index]
   if (deck === undefined) return null
   return { name: deck.name, commanders: commandersOf(deck), cards: deck.cards }
 }
@@ -256,7 +257,7 @@ export function listPickableDecks(): readonly PickableDeck[] {
       cards: d.cards,
       printings: d.printings,
     })),
-    ...SAMPLE_DECKS.map((d, i) => ({
+    ...STARTER_DECKS.map((d, i) => ({
       key: `starter:${i}`,
       ref: { kind: 'starter', index: i } as ActiveRef,
       name: d.name,

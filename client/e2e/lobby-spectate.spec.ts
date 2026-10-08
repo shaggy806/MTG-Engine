@@ -92,6 +92,22 @@ test('the host can allow only Commander-legal decks, and everyone sees it', asyn
   await guest.context().close()
 })
 
+test("the host picks the bots' decks: upgraded precons for every bot added", async ({ browser }) => {
+  const { host, guest } = await twoPlayerRoom(browser)
+  const pool = (page: Page) => page.locator('.rs-options[aria-label="Bot decks"]')
+  await expect(pool(host).getByRole('button', { name: 'Precons' })).toHaveClass(/active/)
+  await pool(host).getByRole('button', { name: 'Upgraded' }).click()
+  await expect(pool(host).getByRole('button', { name: 'Upgraded' })).toHaveClass(/active/)
+  await expect(guest.getByText('Upgraded precons')).toBeVisible()
+  const grid = host.locator('.seat-board-grid')
+  await grid.getByRole('button', { name: /Add player/ }).first().click()
+  await host.getByRole('button', { name: 'Add bot (random deck)' }).first().click()
+  await expect(host.locator('.seat-deck-name', { hasText: '(Upgraded)' })).toHaveCount(1)
+  await shots(host, 'lobby-upgraded-bots')
+  await host.context().close()
+  await guest.context().close()
+})
+
 test('a full room can be watched: the seat board, then the game with no hand', async ({ browser }) => {
   // A waiting room grows a seat for each newcomer up to four, so it's full
   // at four: the host and three bots.

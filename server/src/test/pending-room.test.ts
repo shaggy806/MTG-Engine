@@ -396,6 +396,17 @@ describe("PendingRoom", () => {
   });
 });
 
+describe("PendingRoom: the bots' deck pool", () => {
+  it("starts on the precons, and takes only a pool it knows", () => {
+    const room = pendingRoom();
+    expect(room.settings.botDecks).toBe("precon");
+    room.setSettings({ botDecks: "upgraded" });
+    expect(room.settings.botDecks).toBe("upgraded");
+    expect(() => room.setSettings({ botDecks: "cedh" as never })).toThrow(/botDecks/);
+    expect(room.settings.botDecks).toBe("upgraded");
+  });
+});
+
 describe("PendingRoom: Commander-legal decks only", () => {
   const twoForests = { cards: ["Forest", "Forest"], commanders: ["Ureni of the Unwritten"] };
 

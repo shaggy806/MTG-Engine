@@ -172,7 +172,12 @@ export class PendingRoom {
   constructor(id: string, players: number, config: PendingGameConfig, hostToken?: string) {
     this.id = id;
     this.config = config;
-    this.settings = { startingLife: config.rules?.startingLife ?? 40, firstPlayer: "random", commanderLegalOnly: false };
+    this.settings = {
+      startingLife: config.rules?.startingLife ?? 40,
+      firstPlayer: "random",
+      commanderLegalOnly: false,
+      botDecks: "precon",
+    };
     this.host = new HostRole(hostToken ?? null);
     this.seats = SEATS.slice(0, players).map((s) => emptySeat(s.id));
     this.lastActivityAt = Date.now();
@@ -249,6 +254,12 @@ export class PendingRoom {
     if (change.commanderLegalOnly !== undefined) {
       if (typeof change.commanderLegalOnly !== "boolean") throw new Error("commanderLegalOnly must be true or false");
       next.commanderLegalOnly = change.commanderLegalOnly;
+    }
+    if (change.botDecks !== undefined) {
+      if (change.botDecks !== "precon" && change.botDecks !== "upgraded") {
+        throw new Error('botDecks must be "precon" or "upgraded"');
+      }
+      next.botDecks = change.botDecks;
     }
     this.settings = next;
     // Turned on: a seat readied with a deck it now refuses isn't ready any
