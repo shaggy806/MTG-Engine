@@ -192,31 +192,26 @@ describe("token stacking — combat stays bounded", () => {
     return { game, a, stack };
   };
 
-  it("an over-cap stack wakes up only 100 attackers and keeps the rest compacted", () => {
-    // Attacking is optional (rule 508.1a), so declaring a legal *subset* is a
-    // choice the engine may make — and it must, or one declaration mints
-    // millions of objects and the game stops responding.
+  it("an over-cap stack attacks with every token, as one counted attacker", () => {
+    // The player declared all 5000 (rule 508.1a): every one attacks — and
+    // none is woken into an object of its own, or one declaration would mint
+    // thousands and the game stop responding (`attackingStackPart`).
     const { game } = bigStackAtTurn3(5000);
     const objectsBefore = game.battlefield.length;
     const lifeBefore = game.state.players[B].life;
 
     game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "postcombat-main");
 
-    // 100 real 1/1 attackers got through; the other 4900 sat this one out.
-    expect(game.state.players[B].life).toBe(lifeBefore - 100);
-    expect(game.battlefield.length - objectsBefore).toBeLessThanOrEqual(100);
-    expect(totalScutes(game)).toBe(5000); // nothing was lost, only left home
+    expect(game.state.players[B].life).toBe(lifeBefore - 5000);
+    expect(game.battlefield.length).toBe(objectsBefore);
+    expect(totalScutes(game)).toBe(5000);
   });
 
-  it("recompacts the woken-up individuals in cleanup, so they don't accumulate", () => {
+  it("adds no objects through the turn, so nothing accumulates across turns", () => {
     const { game } = bigStackAtTurn3(5000);
-    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "postcombat-main");
-    const duringCombat = game.battlefield.length;
-
-    // Past this turn's cleanup the 100 individuals have folded back together —
-    // into their own (tapped) stack, distinct from the untapped remainder.
+    const before = game.battlefield.length;
     game.advanceUntil((s) => s.turn.number === 4 && s.turn.step === "upkeep");
-    expect(game.battlefield.length).toBeLessThan(duringCombat - 90);
+    expect(game.battlefield.length).toBeLessThanOrEqual(before);
     expect(totalScutes(game)).toBe(5000);
   });
 

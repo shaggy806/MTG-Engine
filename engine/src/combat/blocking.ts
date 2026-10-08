@@ -150,6 +150,69 @@ export function lurePlan(offer: BlockOffer): LurePlan {
  * The engine reports `[0]`, which preserves the order its messages have
  * always come out in; the client lists them all.
  */
+/**
+ * The creatures each block entry puts on each attacker, keyed by what they
+ * block: an ordinary attacker is one key; a token of an attacking stack
+ * (`offer.attackerTokens`) is `<attacker>#<member>` for an entry naming
+ * `attackerMember`, and a key of its own for each creature of an entry that
+ * doesn't (each blocks a token of its own).
+ */
+export function blockedTokens(
+  blocks: readonly BlockerDeclaration[],
+  offer: BlockOffer,
+  weight: (b: BlockerDeclaration) => number,
+): { readonly key: string; readonly attacker: ObjectId; readonly count: number }[] {
+  const out: { key: string; attacker: ObjectId; count: number }[] = [];
+  let fresh = 0;
+  for (const b of blocks) {
+    const stacked = (offer.attackerTokens?.[b.attacker] ?? 1) > 1;
+    if (!stacked) out.push({ key: b.attacker, attacker: b.attacker, count: weight(b) });
+    else if (b.attackerMember !== undefined) {
+      out.push({ key: `${b.attacker}#${b.attackerMember}`, attacker: b.attacker, count: weight(b) });
+    } else {
+      for (let i = 0; i < weight(b); i += 1) {
+        out.push({ key: `${b.attacker}#fresh${fresh}`, attacker: b.attacker, count: 1 });
+        fresh += 1;
+      }
+    }
+  }
+  return out;
+}
+
+/** Why `blocks` asks more of an attacking token stack than it has — more of
+ * its tokens blocked than it holds, a member number past its last token, or a
+ * member named of an attacker that isn't a stack — or `null`. */
+export function whyMembersInvalid(
+  blocks: readonly BlockerDeclaration[],
+  offer: BlockOffer,
+  stackCountOf: (id: ObjectId) => number,
+  name: (id: ObjectId) => string,
+): string | null {
+  const tokens = offer.attackerTokens ?? {};
+  for (const b of blocks) {
+    if (b.attackerMember === undefined) continue;
+    const n = tokens[b.attacker];
+    if (n === undefined) return `${name(b.attacker)} is one creature: there's no token of it to name`;
+    if (!Number.isInteger(b.attackerMember) || b.attackerMember < 0 || b.attackerMember >= n) {
+      return `${name(b.attacker)} has ${n} tokens: ${b.attackerMember} isn't one of them`;
+    }
+  }
+  const weight = (b: BlockerDeclaration): number => b.count ?? stackCountOf(b.blocker);
+  const used = new Map<ObjectId, Set<string>>();
+  for (const { key, attacker } of blockedTokens(blocks, offer, weight)) {
+    if (tokens[attacker] === undefined) continue;
+    const set = used.get(attacker) ?? new Set<string>();
+    set.add(key);
+    used.set(attacker, set);
+  }
+  for (const [attacker, keys] of used) {
+    if (keys.size > tokens[attacker]) {
+      return `${name(attacker)} is ${tokens[attacker]} tokens: ${keys.size} of them can't be blocked`;
+    }
+  }
+  return null;
+}
+
 export function blockingViolations(
   blocks: readonly BlockerDeclaration[],
   offer: BlockOffer,
@@ -160,12 +223,19 @@ export function blockingViolations(
   // or as many as the entry's `count` says (`combat/stack-counts.ts`).
   const copies = new Map(offer.eligible.map((e) => [e.blocker, e.copies ?? 1]));
   const weight = (b: BlockerDeclaration): number => b.count ?? copies.get(b.blocker) ?? 1;
-  const perAttacker = new Map<ObjectId, number>();
-  for (const b of blocks) {
-    perAttacker.set(b.attacker, (perAttacker.get(b.attacker) ?? 0) + weight(b));
+  // Per creature attacked: an attacking token stack is that many attackers,
+  // each blocking creature on a token of its own unless `attackerMember`
+  // puts several on one (`blockedTokens`).
+  const perAttacker = new Map<string, { attacker: ObjectId; count: number }>();
+  for (const { key, attacker, count } of blockedTokens(blocks, offer, weight)) {
+    const at = perAttacker.get(key);
+    if (at === undefined) perAttacker.set(key, { attacker, count });
+    else at.count += count;
   }
-  for (const [attacker, count] of perAttacker) {
-    if (count === 1 && offer.menaceAttackers.includes(attacker)) {
+  const flagged = new Set<ObjectId>();
+  for (const { attacker, count } of perAttacker.values()) {
+    if (count === 1 && offer.menaceAttackers.includes(attacker) && !flagged.has(attacker)) {
+      flagged.add(attacker);
       out.push({ kind: "menace", attacker });
     }
   }
@@ -202,7 +272,10 @@ export function blockingViolations(
   if (ifAble.length > 0) {
     const plan = ifAblePlan(offer);
     const need = (attacker: ObjectId): number => (offer.menaceAttackers.includes(attacker) ? 2 : 1);
-    const obeyed = ifAble.filter((a) => (perAttacker.get(a) ?? 0) >= need(a));
+    // Blocked enough: on one creature of it, for an attacking stack.
+    const most = (attacker: ObjectId): number =>
+      Math.max(0, ...[...perAttacker.values()].filter((v) => v.attacker === attacker).map((v) => v.count));
+    const obeyed = ifAble.filter((a) => most(a) >= need(a));
     if (obeyed.length < plan.required) {
       const planned = new Set(plan.assignment.values());
       for (const attacker of ifAble) {

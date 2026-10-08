@@ -3020,10 +3020,12 @@ export class Game {
   }
 
   /**
-   * The most members of one compacted stack that combat will ever wake up at
-   * once (see {@link materializeStack}). Comfortably above any board a human
-   * game reaches — a self-replicating generator (Scute Swarm) is the only
-   * thing that passes it, and it passes it by orders of magnitude.
+   * The most members of one compacted stack that combat wakes up into
+   * separate objects at once (see {@link materializeStack}). Past it, an
+   * attacking stack fights as one counted object instead
+   * ({@link attackingStackPart}) — every token still attacks — and a
+   * blocking stack wakes this many. A self-replicating generator (Scute
+   * Swarm) is the only thing that passes it, by orders of magnitude.
    */
   private static readonly MAX_MATERIALIZED = 100;
 
@@ -3085,6 +3087,47 @@ export class Game {
    * of an army back, or split it between defenders); the rest stays
    * compacted on `id`. Absent, it's the whole stack, up to the cap.
    */
+  /**
+   * The part of a compacted stack a declaration sends to attack — `wanted`
+   * of its tokens, or all of them — as the attacking objects. Up to
+   * {@link MAX_MATERIALIZED} it wakes into one object per token, as ever, so
+   * an ordinary board's combat is unchanged. Past that it attacks as one
+   * counted object (split off with that count when it's part of the stack):
+   * every token attacks, as the player declared (rule 508.1a), without
+   * minting an object per token. Each creature blocking it blocks a token of
+   * its own, split off then (`applyBlockerDeclarations`), so a counted
+   * attacker is always unblocked: its tokens' damage is dealt as one event
+   * from that many sources (`dealCombatDamage`, `dealDamage`'s `sources`),
+   * and anything that counts attackers counts its tokens.
+   */
+  private attackingStackPart(id: ObjectId, wanted?: number): ObjectId[] {
+    const count = this.state.objects[id]?.stackCount ?? 1;
+    if (count <= 1) return [id];
+    const n = Math.min(wanted ?? count, count);
+    if (n <= Game.MAX_MATERIALIZED) return this.materializeStack(id, n);
+    return [n < count ? this.splitCountFromStack(id, n) : id];
+  }
+
+  /** `n` tokens of stack `id` split off as a stack of their own (one
+   * ordinary object for `n` = 1), the rest staying on `id`; both marked
+   * split off, so they fold back together once nothing tells them apart
+   * (`refoldSplitTokens`, `recompactTokens`). */
+  private splitCountFromStack(id: ObjectId, n: number): ObjectId {
+    const stack = this.state.objects[id];
+    const count = stack?.stackCount ?? 1;
+    if (stack === undefined || n <= 1 || count <= 1) return this.splitOneFromStack(id);
+    if (n >= count) return id;
+    const newId = this.splitOneFromStack(id);
+    this.state.objects[newId].stackCount = n;
+    const left = count - n;
+    if (left <= 1) {
+      delete stack.stackCount;
+      stack.splitFromStack = true;
+    } else stack.stackCount = left;
+    invalidateComputedCache();
+    return newId;
+  }
+
   private materializeStack(id: ObjectId, wanted?: number): ObjectId[] {
     const stack = this.state.objects[id];
     const count = stack?.stackCount ?? 1;
@@ -6049,6 +6092,8 @@ export class Game {
   /** Whether no creature but `attacker` is attacking `defender` — "if no
    * other creatures are attacking that player" (`aloneAgainstDefender`). */
   private attackingAlone(attacker: ObjectId, defender: PlayerId | ObjectId): boolean {
+    // A counted attacking stack is that many creatures.
+    if ((this.state.objects[attacker]?.stackCount ?? 1) > 1) return false;
     return this.state.zones.shared.battlefield.every(
       (id) => id === attacker || this.state.objects[id].attacking !== defender,
     );
@@ -6203,9 +6248,10 @@ export class Game {
       readonly first: boolean;
     }[] = [];
     for (const { attacker, defender, count } of declarations) {
-      // A compacted stack materializes into real individual attackers here —
-      // all of it, or the entry's `count` — see `materializeStack`.
-      for (const id of this.materializeStack(attacker, count)) {
+      // A compacted stack attacks here — all of it, or the entry's `count`:
+      // woken into separate attackers, or past the wake-up cap as one
+      // counted attacker (`attackingStackPart`).
+      for (const id of this.attackingStackPart(attacker, count)) {
         const object = this.state.objects[id];
         object.attacking = defender;
         object.blockedBy = [];
@@ -6258,7 +6304,7 @@ export class Game {
     // once the whole declaration is known, rather than checking "how many
     // attackers so far" per `attacker-declared` (which would wrongly read as
     // "alone" for the first of several attackers declared in the same action).
-    if (allAttackers.length === 1) {
+    if (allAttackers.length === 1 && (this.state.objects[allAttackers[0]]?.stackCount ?? 1) === 1) {
       this.emit({ type: "attacked-alone", attacker: allAttackers[0] });
     }
     if (allAttackers.length > 0) {
@@ -6338,11 +6384,27 @@ export class Game {
     // Every block is made before any is announced, as with attackers: the
     // declaration is one action (rule 509.1) and its triggers see all of it.
     const blockedNow: { readonly blocker: ObjectId; readonly attacker: ObjectId }[] = [];
-    for (const { blocker: blockerId, attacker: attackerId, count } of blocks) {
+    // The token of an attacking stack each `attackerMember` named, split off
+    // the first time it's blocked.
+    const members = new Map<string, ObjectId>();
+    for (const { blocker: blockerId, attacker: stackOrAttacker, count, attackerMember } of blocks) {
       // A compacted stack materializes into real individual blockers here —
-      // all of it, or the entry's `count`. The attacker is never a stack
-      // itself by this point (it already materialized when declared, above).
+      // all of it, or the entry's `count`.
       for (const bId of this.materializeStack(blockerId, count)) {
+        // An attacking stack (`attackingStackPart`) is that many attackers:
+        // the blocked token splits off and is the one blocked — each blocker
+        // a token of its own, or a named member's shared one (rule 509.1a).
+        let attackerId = stackOrAttacker;
+        if ((this.state.objects[stackOrAttacker]?.stackCount ?? 1) > 1) {
+          const key = attackerMember === undefined ? undefined : `${stackOrAttacker}#${attackerMember}`;
+          const known = key === undefined ? undefined : members.get(key);
+          attackerId = known ?? this.splitOneFromStack(stackOrAttacker);
+          if (key !== undefined && known === undefined) members.set(key, attackerId);
+        } else if (attackerMember !== undefined) {
+          // A named member of a stack already down to its last token: that
+          // token is the stack itself.
+          attackerId = members.get(`${stackOrAttacker}#${attackerMember}`) ?? stackOrAttacker;
+        }
         const blocker = this.state.objects[bId];
         const attacker = this.state.objects[attackerId];
         blocker.blocking = attackerId;
@@ -6602,6 +6664,8 @@ export class Game {
       source: ObjectId;
       target: TargetRef;
       amount: number;
+      /** A counted attacking stack's tokens, each dealing `amount`. */
+      sources?: number;
     }[] = [];
     // Rule 510.1a: power — or toughness, under a `combatDamageByToughness`
     // static (Doran, the Siege Tower) — for attackers and blockers alike.
@@ -6619,10 +6683,14 @@ export class Game {
         if (power > 0) {
           if (!attacker.blocked) {
             if (attacker.attacking !== null) {
+              // A counted attacking stack (`attackingStackPart`) is that
+              // many unblocked attackers, each dealing its power.
+              const tokens = attacker.stackCount ?? 1;
               assignments.push({
                 source: attackerId,
                 target: this.attackTargetRef(attacker.attacking),
                 amount: power,
+                ...(tokens > 1 ? { sources: tokens } : {}),
               });
             }
           } else {
@@ -6673,8 +6741,8 @@ export class Game {
     }
 
     // All combat damage in a pass is dealt simultaneously.
-    for (const { source, target, amount } of assignments) {
-      const dealt = this.dealDamage(source, target, amount, true);
+    for (const { source, target, amount, sources } of assignments) {
+      const dealt = this.dealDamage(source, target, amount, true, undefined, sources);
       if (dealt > 0 && target.kind === "player") {
         const attacker = this.state.objects[source];
         if (attacker.isCommander) {
@@ -14428,18 +14496,20 @@ export class Game {
               : powerOfId !== undefined && this.state.objects[powerOfId] !== undefined
               ? computeCharacteristics(this.state, this.registry, powerOfId).power
               : (ability.trigger.on === "deals-combat-damage-to-player" ||
-                    ability.trigger.on === "dealt-damage" ||
                     ability.trigger.on === "deals-damage") &&
                   event.type === "damage-dealt"
+                ? // Each source's own: a counted stack's tokens share the event.
+                  event.amount / (event.sources ?? 1)
+                : ability.trigger.on === "dealt-damage" && event.type === "damage-dealt"
                 ? event.amount
                 : // A batched attack trigger's value is *how many* matched,
                   // which is what "draw that many cards" reads.
                   ability.trigger.on === "attacks-batch" &&
                     event.type === "attackers-declared"
-                  ? this.batchedAttackers(ability.trigger, event.attackers, object).length
+                  ? this.creatureCount(this.batchedAttackers(ability.trigger, event.attackers, object))
                   : // How many creatures attack that player.
                     ability.trigger.on === "attacks-player" && event.type === "player-attacked"
-                  ? event.attackers.length
+                  ? this.creatureCount(event.attackers)
                   : // How many cards left the graveyard, for "that many".
                     ability.trigger.on === "leaves-graveyard" &&
                       event.type === "cards-left-graveyard"
@@ -14580,6 +14650,20 @@ export class Game {
             event.target.object !== id
               ? (this.state.objects[event.target.object]?.stackCount ?? 1)
               : 1;
+          // A counted attacking stack (`attackingStackPart`) is every token in
+          // it attacking, and its combat damage every token's: "whenever a
+          // creature you control attacks" or "deals combat damage" fires
+          // once per token. Its own abilities already scale by `stackCount`.
+          const attacked =
+            event.type === "attacker-declared" && event.attacker !== id
+              ? (this.state.objects[event.attacker]?.stackCount ?? 1)
+              : 1;
+          const dealtBy =
+            event.type === "damage-dealt" &&
+            event.source !== id &&
+            (ability.trigger.on === "deals-damage" || ability.trigger.on === "deals-combat-damage-to-player")
+              ? (event.sources ?? 1)
+              : 1;
           // A compacted stack untapping is every token in it untapping, each
           // its own permanent: Mesmeric Orb mills once per token.
           const untapped =
@@ -14623,6 +14707,8 @@ export class Game {
               ? 1
               : departed *
                 recipients *
+                attacked *
+                dealtBy *
                 untapped *
                 countered *
                 (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1)) *
@@ -15122,6 +15208,12 @@ export class Game {
    * that fired on three Dragons must draw three cards, and computing the two
    * separately is how that kind of bug happens.
    */
+  /** How many creatures `ids` are: a counted attacking stack is every token
+   * in it (`attackingStackPart`). */
+  private creatureCount(ids: readonly ObjectId[]): number {
+    return ids.reduce((n, id) => n + (this.state.objects[id]?.stackCount ?? 1), 0);
+  }
+
   private batchedAttackers(
     spec: Extract<TriggerSpec, { on: "attacks-batch" }>,
     attackers: readonly ObjectId[],
@@ -15695,7 +15787,7 @@ export class Game {
     self: GameObject,
   ): boolean {
     if (spec.combat !== undefined && event.combat !== spec.combat) return false;
-    if (spec.exactly !== undefined && event.amount !== spec.exactly) return false;
+    if (spec.exactly !== undefined && event.amount / (event.sources ?? 1) !== spec.exactly) return false;
     if (spec.otherOnly === true && event.source === self.id) return false;
     // The source: a spell on the stack or a permanent is read as it is; one
     // that has left the battlefield since (a dies trigger's damage) as it
@@ -24730,6 +24822,12 @@ export class Game {
      * "When Juri dies, it deals damage …"): its colours for protection, its
      * lifelink and deathtouch, and its controller for the life. */
     sourceLastKnown?: LastKnownInfo,
+    /** How many identical sources deal `amount` each, at once: a counted
+     * attacking stack's tokens (`attackingStackPart`). A per-source
+     * replacement (Torbran's +2) applies to each; the damage, the life, the
+     * poison and the lifelink are the total, and the event says how many
+     * sources (`damage-dealt`'s `sources`). */
+    sources = 1,
   ): number {
     if (amount <= 0) return 0;
     // Who dealt it, for the log (a client's end-of-game damage tally).
@@ -24746,7 +24844,7 @@ export class Game {
         ) ??
           false))
     ) {
-      this.emit({ type: "damage-prevented", source, target, amount });
+      this.emit({ type: "damage-prevented", source, target, amount: amount * sources });
       return 0;
     }
 
@@ -24756,7 +24854,9 @@ export class Game {
     // amount, which is the printed interaction: doubling replaces the damage
     // event, and prevention then applies to what it became.
     const replaced = this.replacedDamage(source, target, amount, combat, sourceLastKnown);
-    amount = replaced.amount;
+    // Each identical source's damage is replaced alike; from here on it's
+    // their total.
+    amount = replaced.amount * sources;
     if (amount <= 0) return 0;
     if (replaced.prevention !== undefined) {
       this.emit({ type: "damage-prevented", source, target, amount });
@@ -24771,9 +24871,11 @@ export class Game {
       if (amount <= 0) return 0;
     }
 
+    // The event names how many identical sources dealt it, when several.
+    const many = sources > 1 ? { sources } : {};
     if (target.kind === "player") {
       if (this.state.players[target.player] === undefined) return 0;
-      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
+      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by, ...many });
       this.tallyDamage(source, target, amount);
       // The damage is dealt in full — lifelink, commander damage and "is
       // dealt damage" all see it — whatever it does to the life total.
@@ -24791,7 +24893,8 @@ export class Game {
       // total toxic value in poison counters — however much damage it was
       // (the rulings), and never for noncombat damage.
       if (combat) {
-        const toxic = this.toxicOf(source);
+        // Per creature: a counted stack's tokens each give theirs.
+        const toxic = this.toxicOf(source) * sources;
         if (toxic > 0) this.changePlayerCounters(target.player, "poison", toxic);
       }
       // A creature dealing combat damage to the monarch makes its controller
@@ -24831,7 +24934,7 @@ export class Game {
     // 120.3c / 306.7) — it's not "marked" like a creature.
     if (computeCharacteristics(this.state, this.registry, target.object).types.includes("planeswalker")) {
       object.counters.loyalty = (object.counters.loyalty ?? 0) - amount;
-      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
+      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by, ...many });
       this.emit({
         type: "loyalty-changed",
         object: target.object,
@@ -24852,7 +24955,7 @@ export class Game {
     if (this.sourceHasKeyword(source, "deathtouch", sourceLastKnown)) {
       object.markedByDeathtouch = true;
     }
-    this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
+    this.emit({ type: "damage-dealt", source, target, amount, combat, ...by, ...many });
     if (asCounters) {
       const by = sourceLastKnown?.controller ?? this.state.objects[source]?.controller;
       this.addCounter(target, "-1/-1", amount, false, by);

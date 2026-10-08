@@ -14,8 +14,12 @@
  * set-level checks (menace, Lure, must-attack) run on the expanded offer
  * with every member counting as one creature, which is what it is.
  *
- * Members stop at {@link MEMBER_CAP}, the most of one stack the engine wakes
- * up for a combat anyway.
+ * Members stop at {@link MEMBER_CAP} for a blocking stack, the most of one
+ * the engine wakes up to block, and at {@link ATTACK_MEMBER_CAP} for an
+ * attacking one: the engine attacks with every token declared, a stack past
+ * its wake-up cap as one counted attacker. A stack bigger than that is
+ * still declared whole when every member goes one way (`collapse` sends it
+ * without a `count`); only a part of it can't be more than the cap.
  */
 
 import type {
@@ -29,9 +33,13 @@ import type {
 type AttackOffer = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockOffer = Extract<LegalAction, { kind: 'declare-blockers' }>
 
-/** The engine's `MAX_MATERIALIZED`: past it a stack's extra tokens sit the
- * combat out whatever is declared. */
+/** The engine's `MAX_MATERIALIZED`: past it a blocking stack's extra tokens
+ * sit the combat out whatever is declared. */
 export const MEMBER_CAP = 100
+
+/** Members of one attacking stack: any number of its tokens attack, so this
+ * only bounds the bar's own bookkeeping (a self-copier reaches millions). */
+export const ATTACK_MEMBER_CAP = 2000
 
 /** Real id → its member ids, for every stack that has them. */
 export type Members = ReadonlyMap<ObjectId, readonly ObjectId[]>
@@ -42,10 +50,14 @@ export function realId(id: ObjectId): ObjectId {
   return (at === -1 ? id : id.slice(0, at)) as ObjectId
 }
 
-function membersOf(ids: readonly ObjectId[], tokensIn: (id: ObjectId) => number): Map<ObjectId, ObjectId[]> {
+function membersOf(
+  ids: readonly ObjectId[],
+  tokensIn: (id: ObjectId) => number,
+  cap: number = MEMBER_CAP,
+): Map<ObjectId, ObjectId[]> {
   const out = new Map<ObjectId, ObjectId[]>()
   for (const id of ids) {
-    const n = Math.min(tokensIn(id), MEMBER_CAP)
+    const n = Math.min(tokensIn(id), cap)
     if (n > 1) out.set(id, Array.from({ length: n }, (_, k) => `${id}#${k}` as ObjectId))
   }
   return out
@@ -62,7 +74,7 @@ export function expandAttackOffer(
   offer: AttackOffer,
   tokensIn: (id: ObjectId) => number,
 ): { readonly offer: AttackOffer; readonly members: Members } {
-  const members = membersOf(offer.eligible, tokensIn)
+  const members = membersOf(offer.eligible, tokensIn, ATTACK_MEMBER_CAP)
   if (members.size === 0) return { offer, members }
   const defendersFor: Record<ObjectId, readonly (PlayerId | ObjectId)[]> = {}
   for (const [id, legal] of Object.entries(offer.defendersFor)) {

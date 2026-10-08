@@ -113,6 +113,15 @@ export interface BlockerDeclaration {
    * this entry — see {@link AttackerDeclaration.count}, which works the same
    * way (rule 509.1a). Absent: every token in it. */
   readonly count?: number;
+  /**
+   * Which token of an attacking token stack this blocks, when `attacker` is
+   * one (the offer's `attackerTokens`): entries naming the same number block
+   * the same token, so two creatures can block one (menace). Absent: each
+   * blocking creature blocks a token of its own (rule 509.1a lets a player
+   * block any attacker with any blocker). The tokens are identical, so the
+   * number only says which blocks share one: 0 up to the stack's count.
+   */
+  readonly attackerMember?: number;
 }
 
 /**
@@ -945,6 +954,11 @@ export type LegalAction =
       }[];
       /** Attackers with menace: block them with 0 or 2+ creatures, never 1. */
       readonly menaceAttackers: readonly ObjectId[];
+      /** Attacking token stacks among the attackers, and how many tokens
+       * each is: it attacks as one object, and each creature blocking it
+       * blocks a token of its own unless a declaration's `attackerMember`
+       * puts several on one. Absent when there are none. */
+      readonly attackerTokens?: Readonly<Record<ObjectId, number>>;
       /** Attackers that must be blocked (Lure — rule 509.1c): as many of this
        * defender's creatures as can be must block one of these. With no menace
        * among them, that's every creature able to block one; one with menace

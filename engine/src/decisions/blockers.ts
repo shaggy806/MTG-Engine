@@ -25,6 +25,7 @@ import {
 } from "../combat/eligibility.js";
 import { objHasKeyword, restrictionsOf } from "../characteristics.js";
 import { whyCountsInvalid } from "../combat/stack-counts.js";
+import { whyMembersInvalid } from "../combat/blocking.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import type { DecisionReadCtx } from "./contract.js";
@@ -63,12 +64,19 @@ function blockersOffer(
   const mustBeBlockedIfAble = attacking.filter((id) =>
     restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked-if-able"),
   );
+  // Token stacks attacking as one counted object (`Game.attackingStackPart`).
+  const attackerTokens: Record<ObjectId, number> = {};
+  for (const id of attacking) {
+    const n = ctx.state.objects[id]?.stackCount ?? 1;
+    if (n > 1) attackerTokens[id] = n;
+  }
   return {
     kind: "declare-blockers",
     eligible,
     menaceAttackers,
     mustBlock,
     ...(mustBeBlockedIfAble.length > 0 ? { mustBeBlockedIfAble } : {}),
+    ...(Object.keys(attackerTokens).length > 0 ? { attackerTokens } : {}),
   };
 }
 
@@ -104,10 +112,14 @@ export const blockers = defineDecision({
       const why = whyCannotBlock(ctx.state, ctx.registry, player, blocker, attacker);
       if (why !== null) return why;
     }
+    // An attacking token stack has only so many tokens to block.
+    const offer = blockersOffer(ctx, player);
+    const badMembers = whyMembersInvalid(action.blocks, offer, (id) => ctx.state.objects[id]?.stackCount ?? 1, name);
+    if (badMembers !== null) return badMembers;
 
     // `[0]` keeps the engine reporting one reason, in the order it always
     // has; the client shows the whole list.
-    const violation = blockingViolations(action.blocks, blockersOffer(ctx, player))[0];
+    const violation = blockingViolations(action.blocks, offer)[0];
     if (violation === undefined) return null;
     return violation.kind === "menace"
       ? `${name(violation.attacker)} has menace and must be blocked by two or more creatures`

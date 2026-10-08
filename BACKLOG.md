@@ -102,7 +102,7 @@ section keeps only what to do next.
 One line each; the detail (rule numbers, code sites, the cards each blocks) is in
 **`docs/engine-gaps.md`**, under the same bold title. Delete both when a gap closes.
 
-- **At most 100 tokens of one stack can attack or block** (508.1a, 509.1a): a bug report (2026-10-07), 336 Scute Swarms and only 103 offered. `Game.MAX_MATERIALIZED` (with the client's `MEMBER_CAP`) overrides the player's declaration for performance.
+- **At most 100 tokens of one stack can block** (509.1a): `Game.MAX_MATERIALIZED` still caps a *blocking* stack; attacking was fixed on 2026-10-07 (a counted attacking stack, `attackingStackPart`).
 - **A mandatory loop throws instead of drawing the game** (104.4b, 732.4): the room stops that game rather than the server going down, but it should be a draw.
 - **Blitz is offered only from the hand and the command zone** (702.152a).
 - **A mana restriction reads the spell before it's cast** (Jasmine Boreal of the Seven waits).
@@ -214,6 +214,7 @@ item lands.
 - **The library and the deck builder load every card definition** (~3.1 MB).
 - **"Same for all" covers only a trigger's yes-or-no "you may".**
 - **Copied triggers without targets aren't condensed on the stack** (the user, 2026-10-07): Scute Swarm's, for example.
+- **Two blockers on one token of an attacking stack** — the block bar gives each blocker a token of its own, so a counted stack with menace can't be blocked from the client (the engine takes `attackerMember`).
 - **Animation follow-ups** (re-measure bot speeds, static buffs, library put-backs, the exile filter, the crown's flight, merged tokens, folding tokens with counters, dies-trigger pulses, history highlights, real sounds): `docs/plans/legibility-of-play.md`, "Follow-ups".
 
 ## Tooling / docs

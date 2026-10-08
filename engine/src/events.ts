@@ -652,6 +652,13 @@ export type GameEvent =
     })
   | (Base & {
       readonly type: "damage-dealt";
+      /** How many identical sources dealt it, each `amount / sources`: an
+       * unblocked token stack attacking as one counted object (`Game.
+       * attackingStackPart`), its tokens' combat damage dealt as one event.
+       * A trigger on the source side ("whenever a creature deals combat
+       * damage to a player") fires once per source, each for its share.
+       * Absent: one source dealt all of `amount`. */
+      readonly sources?: number;
       readonly source: ObjectId;
       readonly target: TargetRef;
       readonly amount: number;

@@ -277,6 +277,36 @@ export default {
     bots: { bob: {} },
   },
 
+  SCUTE: {
+    about:
+      "2p. A bug report (2026-10-07): 336 Scute Swarm tokens, and only 103 could attack. Alice " +
+      "has one stack of 336 and the card itself; attack with them all — past the engine's " +
+      "wake-up cap (100) the stack attacks as one counted attacker, every token of it. Bob's " +
+      "two Grizzly Bears can block, each taking a token of its own.",
+    players: ["alice", "bob"],
+    lands: { alice: 7, bob: 3 },
+    battlefield: { alice: ["Scute Swarm"], bob: ["Grizzly Bears", "Grizzly Bears"] },
+    setup(game) {
+      const stack = game.debugSpawn("Scute Swarm", "alice", "battlefield", { summoningSick: false });
+      game.state.objects[stack].isToken = true;
+      game.state.objects[stack].stackCount = 336;
+    },
+    bots: { bob: {} },
+  },
+
+  SCUT4: {
+    about: "4p. SCUTE's board for alice, in the quadrant layout.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 7, bob: 3, carol: 3, dave: 3 },
+    battlefield: { alice: ["Scute Swarm"], bob: ["Grizzly Bears", "Grizzly Bears"] },
+    setup(game) {
+      const stack = game.debugSpawn("Scute Swarm", "alice", "battlefield", { summoningSick: false });
+      game.state.objects[stack].isToken = true;
+      game.state.objects[stack].stackCount = 336;
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
+
   DEEPS: {
     about:
       "2p. A deep stack to watch resolve: bob has two Terror of the Peaks and casts " +

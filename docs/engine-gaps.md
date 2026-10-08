@@ -5,27 +5,19 @@ Comprehensive Rules (`docs/rules/`), or can't yet express something real cards n
 rule number, the code that does it today and the cards it blocks. `BACKLOG.md` keeps one line
 per gap under the same bold title; when a gap closes, delete it in both.
 
-- **At most 100 tokens of one stack can attack or block.** A bug report (2026-10-07): with 336
-  Scute Swarm tokens, the attack bar offered 103 (100 of the big stack and 3 others). Rules 508.1a
-  and 509.1a let the *player* choose any subset of their able creatures to attack or block; the
-  engine overrides that. `Game.materializeStack` wakes at most `MAX_MATERIALIZED` (100) members
-  of a stack for combat, and the rest stay compacted and out of it whatever was declared; the
-  client's `stackMembers.ts` caps the bar at `MEMBER_CAP` to match. The cap is resource safety: a
-  doubling generator once made one declaration mint millions of objects (a fuzz hang), and 290
-  separate permanents cost about 35 s a turn (`MAX_WOKEN_TOKENS`). Its comment calls "only 100
-  attack" a choice the engine may make; it isn't one, the declaration is the player's.
-  **Fix (outline):** let a stack fight as a counted group instead of waking every token. An
-  attacking stack keeps its `stackCount` and records how many attack (and whom); blockers split
-  off only the members they block (materialized, as now); the unblocked rest deals its combat
-  damage as one simultaneous event of `count × power` to its defender (510.2), with each token
-  still its own source for anything that counts sources: "whenever a creature deals combat
-  damage" triggers once per token, folded as the existing identical-trigger stacking does, and
-  capped by `MAX_EFFECT_INSTANCES`. The same for blocking with a stack. Touches
-  `materializeStack`, combat damage (`combat/damage.ts`), attack and block triggers, and the
-  client's `MEMBER_CAP` (the bar would count tokens up to the stack's size). Risks: every piece
-  of combat code that assumes one attacker is one object (first strike, trample, deathtouch,
-  "blocked by" and "attacking alone" checks), and per-creature triggers on huge counts.
-  Raising the cap instead (to 1,000, say) is a stopgap that trades this report for slower turns.
+- **At most 100 tokens of one stack can block.** Rule 509.1a lets the defending player block
+  with any of their untapped creatures; `Game.materializeStack` wakes at most `MAX_MATERIALIZED`
+  (100) tokens of a blocking stack, and the rest stay out of the combat whatever was declared (the
+  client's `MEMBER_CAP` caps the block bar to match). Attacking had the same cap until 2026-10-07
+  (a bug report: 336 Scute Swarms, 103 offered), fixed by a counted attacking stack
+  (`attackingStackPart`: past the cap a stack attacks as one object with its count, blockers
+  split off the tokens they block, and its damage is one event from that many sources).
+  **Fix (outline):** a blocking stack can be counted the same way when its tokens block one-to-one
+  — k tokens of one stack each blocking a token of one attacking stack is a stack of k blockers
+  against a stack of k attackers, and their combat damage is damage to each stack, which the
+  engine already deals to every token in it. Anything other than one-to-one (two blockers on one
+  attacker) still wakes tokens up. Risk: the damage assignment and "blocked by" checks that
+  assume one blocker is one object.
 - **A mandatory loop throws instead of drawing the game.** Rule 104.4b (and 732.4): a loop of
   mandatory actions with no way to stop is a draw; one with an optional action isn't, and its
   player says how many times to repeat it (732.2, shortcuts). The engine has neither, only crash
