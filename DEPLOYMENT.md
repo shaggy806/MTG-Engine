@@ -183,6 +183,10 @@ cd /opt/mtg-engine
 ./deploy.sh
 ```
 
+From the dev PC, Claude Code's `deploy` skill (`.claude/skills/deploy/`) does this over SSH: it
+checks nobody is mid-game first, runs `deploy.sh`, then checks the site from outside
+(`check-live.mjs`: the page, and the game socket opening through the tunnel with compression).
+
 `deploy.sh` (repo root): `git pull --ff-only` → `npm install` → rebuild engine/server/client with
 `VITE_SERVER_URL=wss://ws.tobyens.com` baked into the client → `sudo systemctl daemon-reload` →
 `sudo systemctl restart mtg-server`. The `daemon-reload` is there so a hand-edited unit file or
