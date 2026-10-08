@@ -22,3 +22,8 @@ is still unscoped.
 
 `decision-registry` records how the decision kinds (19 then, 20 with `cast-now`) became one module each under
 `engine/src/decisions/`, and why `game.ts` stays binary to git.
+
+`lightsail-migration` (**planned**) moves the live site off the home box onto AWS Lightsail and
+from `mtg.tobyens.com` to deckblitz.net: Cloudflare and the tunnel stay, why the instance needs
+2 GB, what burstable CPU does to the bots' time budget, players' saved decks not following the
+domain, the cutover order, and how deploying changes.

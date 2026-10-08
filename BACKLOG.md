@@ -218,6 +218,7 @@ item lands.
 
 ## Tooling / docs
 
+- **Move the live site to AWS Lightsail and deckblitz.net** (the user, 2026-10-08): `docs/plans/lightsail-migration.md` has the instance, the cutover order and every file the switch touches. Still to decide: whether players' saved decks get carried over to the new domain.
 - **An on-screen progress bar for the long checks** (the user, 2026-10-06): use Claude Code's new mods feature (a plugin's live pane or status line — the `plugin-authoring` skill) to show progress for the runs we do regularly: the engine suite, `bot:scenarios`, `bot:diff`, `bot:ab`, the fuzzer and the Playwright suites.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
