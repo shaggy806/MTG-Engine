@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import type { ObjectId } from 'engine/client'
 import { Symbols } from './Symbols.tsx'
@@ -43,6 +44,7 @@ export function AbilityMenu({
   items,
   ariaLabel,
   onClose,
+  children,
 }: {
   readonly source: ObjectId
   /** The permanent's name, as the menu's heading. */
@@ -53,6 +55,9 @@ export function AbilityMenu({
    * picker for a token stack is the second one. */
   readonly ariaLabel?: string
   readonly onClose: () => void
+  /** Anything else the menu holds, under its items — the attack split's
+   * count per defender. */
+  readonly children?: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -140,6 +145,7 @@ export function AbilityMenu({
           <Symbols text={item.label} />
         </button>
       ))}
+      {children}
     </div>,
     document.body,
   )

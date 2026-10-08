@@ -1347,6 +1347,13 @@ function Table({
   } | null>(null)
   /** The token stack whose "how many of these?" menu is open, if any. */
   const [stackMenu, setStackMenu] = useState<ObjectId | null>(null)
+  // A tile of several attackers clicked while declaring attacks: the popup
+  // that sets how many of them attack each defender (`renderAttackSplitMenu`).
+  // `anchor` is the tile's id, `members` every creature it stands for.
+  const [attackSplit, setAttackSplit] = useState<{
+    readonly anchor: ObjectId
+    readonly members: readonly ObjectId[]
+  } | null>(null)
   // Proliferate picks are `TargetRef`s, not ids: rule 701.27 lets you choose
   // players as well as permanents (a player with energy, poison or experience
   // counters).
@@ -2364,6 +2371,13 @@ function Table({
         const members = expandIds(ids, stackMembers)
         if (!members.some((i) => attackAction.eligible.includes(i))) {
           sendPicksAt(id)
+          return
+        }
+        // A tile of several — a token stack, or identical tokens folded
+        // together — asks how many attack each defender, in a popup beside
+        // it (the user's ask, 2026-10-07), rather than taking one a click.
+        if (members.filter((i) => attackAction.eligible.includes(i)).length > 1) {
+          setAttackSplit((cur) => (cur?.anchor === id ? null : { anchor: id, members }))
           return
         }
         const fresh = freeAttacker(members, attackAction.eligible, attackAssignments, attackPicks)
@@ -4731,6 +4745,58 @@ function Table({
     )
   }
 
+  /**
+   * How many of a tile of attackers attack each defender: a row per defender
+   * any of them may attack, each a count (`CountStepper`) and "All", over
+   * the same assignments the bar's count rows set (`setAttackPairCount`).
+   * Opened by clicking the tile in the attack declaration; Done, Escape or a
+   * click elsewhere closes it, keeping what's set.
+   */
+  const renderAttackSplitMenu = () => {
+    if (attackSplit === null || mode !== 'attackers' || !attackAction) return null
+    const members = attackSplit.members.filter((m) => attackAction.eligible.includes(m))
+    if (members.length === 0) return null
+    const defenders = [...new Set(members.flatMap((m) => defendersFor(m)))]
+    const rows = defenders.map((defender) => {
+      const count = members.filter((m) => attackAssignments[m] === defender).length
+      const free = members.filter(
+        (m) => attackAssignments[m] === undefined && !attackPicks.includes(m) && defendersFor(m).includes(defender),
+      ).length
+      return { attackers: members, defender, count, max: count + free }
+    })
+    const attacking = rows.reduce((n, r) => n + r.count, 0)
+    const set = (row: (typeof rows)[number], n: number) =>
+      setAttackAssignments((cur) => setAttackPairCount(row, n, attackPicks, defendersFor, cur))
+    return (
+      <AbilityMenu
+        source={attackSplit.anchor}
+        title={`${game.nameOf(members[0])} ×${members.length} — ${attacking} attacking`}
+        ariaLabel="How many attack each defender"
+        items={[]}
+        onClose={() => setAttackSplit(null)}
+      >
+        <div className="attack-split">
+          {rows.map((row) => (
+            <div key={row.defender} className="attack-split-row">
+              <CountStepper
+                label={`→ ${attackTargetLabel(row.defender)}`}
+                count={row.count}
+                max={row.max}
+                onChange={(n) => set(row, n)}
+              />
+              <button type="button" disabled={row.count === row.max} onClick={() => set(row, row.max)}>
+                All
+              </button>
+            </div>
+          ))}
+        </div>
+        <button type="button" className="attack-split-done" onClick={() => setAttackSplit(null)}>
+          Done
+        </button>
+      </AbilityMenu>
+    )
+  }
+
   const renderMulliganModal = () => {
     if (mode !== 'mulligan' || !mulliganAction) return null
     return (
@@ -5073,6 +5139,7 @@ function Table({
       ) : null}
 
       {renderStackCountMenu()}
+      {renderAttackSplitMenu()}
 
       {renderMulliganModal()}
       {/* moved here (from GameScreen, a sibling of Table) so it can reuse

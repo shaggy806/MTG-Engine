@@ -55,3 +55,42 @@ for (const { room, size } of [
     expect(errors).toEqual([])
   })
 }
+
+test('SCUT4: a stack asks how many attack each opponent', async ({ page, request }) => {
+  const errors: string[] = []
+  page.on('pageerror', (e) => errors.push(e.message))
+  await control(request, { op: 'reset', room: 'SCUT4' })
+  for (const player of ['bob', 'carol']) await control(request, { op: 'life', room: 'SCUT4', player, value: 10_000 })
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await page.goto('/?room=SCUT4')
+  await page.getByRole('button', { name: 'Ready', exact: true }).click()
+  const pass = page.getByRole('button', { name: 'Pass (space)' })
+  await expect(pass).toBeEnabled({ timeout: 20_000 })
+  await pass.click()
+  await expect(page.getByText(/Declare attackers/)).toBeVisible({ timeout: 20_000 })
+
+  // The stack's tile, by its count badge: a popup, a row per opponent.
+  await page.locator('.quadrant-cell.self .mini-tile-wrap', { hasText: '336' }).first().click()
+  const menu = page.getByRole('menu', { name: 'How many attack each defender' })
+  await expect(menu).toBeVisible()
+  for (const name of ['Bob', 'Carol', 'Dave']) await expect(menu.getByText(`→ ${name}`)).toBeVisible()
+  await menu.getByRole('spinbutton', { name: '→ Bob: how many' }).fill('200')
+  await expect(menu.getByText('— 200 attacking')).toBeVisible()
+  // "All" sends the rest: 136 at Carol, none left for Dave.
+  const carolRow = menu.locator('.attack-split-row', { hasText: '→ Carol' })
+  await carolRow.getByRole('button', { name: 'All' }).click()
+  await expect(menu.getByText('— 336 attacking')).toBeVisible()
+  await expect(menu.locator('.attack-split-row', { hasText: '→ Dave' }).getByRole('spinbutton')).toHaveValue('0')
+  await page.screenshot({ path: test.info().outputPath('SCUT4-split.png') })
+  await menu.getByRole('button', { name: 'Done' }).click()
+  await expect(menu).toHaveCount(0)
+  await expect(page.getByText('Declare attackers — 336 attacking')).toBeVisible()
+  await page.locator('.controls').getByRole('button', { name: 'Attack with 336' }).click()
+
+  // Bob's Bears block a token each at most; Carol takes all 136.
+  const life = async () =>
+    (await control<{ players: Record<string, { life: number }> }>(request, { op: 'state', room: 'SCUT4' })).players
+  await expect.poll(async () => (await life()).carol.life, { timeout: 30_000 }).toBe(10_000 - 136)
+  await expect.poll(async () => (await life()).bob.life, { timeout: 30_000 }).toBeLessThanOrEqual(10_000 - 198)
+  expect(errors).toEqual([])
+})

@@ -3190,6 +3190,36 @@
 :root[data-reduce-motion] .ability-menu {
   transition: none;
 }
+/* The attack split (App.tsx's renderAttackSplitMenu): a row per defender,
+   its count stepper's five parts and "All" on one grid, so the numbers line
+   up down the menu. The menu's own button style is for rules text; these
+   are small controls. */
+.ability-menu:has(.attack-split) {
+  /* Wider than an ability list: a name and five small controls a row. */
+  max-width: min(92vw, 30rem);
+}
+.ability-menu .attack-split {
+  display: grid;
+  /* The label at its own width (a long planeswalker name ellipsed), the
+     controls at theirs: a menu sized to its content gives a 1fr column
+     nothing. */
+  grid-template-columns: minmax(3em, max-content) auto auto auto auto auto;
+  align-items: center;
+  gap: 4px 6px;
+  padding: 2px 4px 4px;
+  white-space: nowrap;
+}
+.ability-menu .attack-split-row {
+  display: contents;
+}
+.ability-menu .attack-split button {
+  text-align: center;
+  padding: 2px 8px;
+  line-height: 1.2;
+}
+.ability-menu .attack-split-done {
+  text-align: center;
+}
 
 /* Mulligan is the one forced decision that blocks the whole table (every
    player still deciding), so it gets its own attention-grabbing centered
