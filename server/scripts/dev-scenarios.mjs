@@ -307,6 +307,28 @@ export default {
     bots: { bob: {}, carol: {}, dave: {} },
   },
 
+  SCUTB: {
+    about:
+      "2p. Blocking an attacking token stack: bob has 150 Scute Swarm tokens with menace " +
+      "(Goblin War Drums), alice four Grizzly Bears. It's bob's turn, and he attacks with " +
+      "the stack. Assign the Bears to it, then click the stack: \"Blockers per token\" at 2 " +
+      "puts them two to a token, which menace needs.",
+    // Bob first: the room opens on his turn, and alice is the open seat.
+    players: ["bob", "alice"],
+    lands: { alice: 3, bob: 7 },
+    life: { alice: 10000 },
+    battlefield: {
+      alice: ["Grizzly Bears", "Grizzly Bears", "Grizzly Bears", "Grizzly Bears"],
+      bob: ["Goblin War Drums"],
+    },
+    setup(game) {
+      const stack = game.debugSpawn("Scute Swarm", "bob", "battlefield", { summoningSick: false });
+      game.state.objects[stack].isToken = true;
+      game.state.objects[stack].stackCount = 150;
+    },
+    bots: { bob: { attack: "alice" } },
+  },
+
   DEEPS: {
     about:
       "2p. A deep stack to watch resolve: bob has two Terror of the Peaks and casts " +

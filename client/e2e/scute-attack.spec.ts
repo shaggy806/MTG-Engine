@@ -94,3 +94,49 @@ test('SCUT4: a stack asks how many attack each opponent', async ({ page, request
   await expect.poll(async () => (await life()).bob.life, { timeout: 30_000 }).toBeLessThanOrEqual(10_000 - 198)
   expect(errors).toEqual([])
 })
+
+for (const size of [
+  { width: 1366, height: 768 },
+  { width: 2560, height: 1440 },
+]) {
+  test(`SCUTB ${size.width}x${size.height}: blockers share a token of a menace stack`, async ({ page, request }) => {
+    const errors: string[] = []
+    page.on('pageerror', (e) => errors.push(e.message))
+    await control(request, { op: 'reset', room: 'SCUTB' })
+    await page.setViewportSize(size)
+    await page.goto('/?room=SCUTB')
+    await page.getByRole('button', { name: 'Ready', exact: true }).click()
+
+    // It's bob's turn: he attacks with his stack of 150; alice declares blockers.
+    await expect(page.getByText(/Declare blockers/)).toBeVisible({ timeout: 90_000 })
+    const bears = page.locator('.quadrant-cell.self .mini-tile-wrap', { hasText: 'Grizzly Bears' })
+    const count = await bears.count()
+    for (let i = 0; i < count; i += 1) await bears.nth(i).click()
+    await expect(page.getByText('Declare blockers — 4 assigned')).toBeVisible()
+    // A token each, and every token has menace: not a legal block yet.
+    await expect(page.getByText(/has menace/)).toBeVisible()
+    const block = page.locator('.controls').getByRole('button', { name: 'Block (4)' })
+    await expect(block).toBeDisabled()
+
+    // The stack's popup: two blockers to a token.
+    await page.locator('.mini-tile-wrap', { hasText: '150' }).first().click()
+    const menu = page.getByRole('menu', { name: 'How many blockers share each token' })
+    await expect(menu).toBeVisible()
+    await expect(menu.getByText('4 blocking 4 tokens, 1 on each.')).toBeVisible()
+    await menu.getByRole('spinbutton', { name: 'Blockers per token: how many' }).fill('2')
+    await expect(menu.getByText('4 blocking 2 tokens, 2 on each.')).toBeVisible()
+    await page.screenshot({ path: test.info().outputPath(`SCUTB-${size.width}x${size.height}-split.png`) })
+    await menu.getByRole('button', { name: 'Done' }).click()
+    await expect(page.getByText(/has menace/)).toHaveCount(0)
+    await expect(block).toBeEnabled()
+    await block.click()
+
+    // Two tokens blocked, two Bears on each: the other 148 connect.
+    await expect
+      .poll(async () => (await control<{ players: Record<string, { life: number }> }>(request, { op: 'state', room: 'SCUTB' })).players.alice.life, {
+        timeout: 30_000,
+      })
+      .toBe(10_000 - 148)
+    expect(errors).toEqual([])
+  })
+}

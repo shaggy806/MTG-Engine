@@ -53,6 +53,7 @@ import { blockPairs, freeBlocker, leastBlocked, setPairCount } from './game/bloc
 import { attackPairs, freeAttacker, setAttackPairCount } from './game/attackGroups.ts'
 import {
   collapseAttacks,
+  blockEntries,
   collapseBlocks,
   expandAttackOffer,
   expandBlockOffer,
@@ -1309,6 +1310,11 @@ function Table({
    */
   const [attackPicks, setAttackPicks] = useState<readonly ObjectId[]>([])
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
+  // How many blockers share each token of an attacking token stack, by
+  // attacker (`stackMembers.ts`'s `PerToken`; 1 when absent), and which
+  // stack's popup is open to set it (`renderBlockSplitMenu`).
+  const [blockPerToken, setBlockPerToken] = useState<Record<string, number>>({})
+  const [blockSplit, setBlockSplit] = useState<ObjectId | null>(null)
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
   const [revealPick, setRevealPick] = useState<ObjectId | null>(null)
@@ -2554,7 +2560,12 @@ function Table({
             setBlockAssign((cur) => ({ ...cur, [blockFocus]: at }))
             setBlockFocus(null)
           }
+          return
         }
+        // An attacking token stack with no blocker waiting: how many of the
+        // blockers on it share each token (`renderBlockSplitMenu`).
+        const stack = ids.find((i) => (blockAction.attackerTokens?.[i] ?? 1) > 1)
+        if (stack !== undefined) setBlockSplit((cur) => (cur === stack ? null : stack))
         return
       }
       if (mode === 'priority' && abilitiesBySource.has(id)) {
@@ -2651,9 +2662,9 @@ function Table({
     game.dispatch({
       type: 'declare-blockers',
       player: seat,
-      blocks: collapseBlocks(blockAssign, stackMembers),
+      blocks: collapseBlocks(blockAssign, stackMembers, blockPerToken),
     })
-  }, [blockAssign, game, seat, stackMembers])
+  }, [blockAssign, blockPerToken, game, seat, stackMembers])
 
   const confirmDiscard = useCallback(() => {
     game.dispatch({ type: 'discard', player: seat, cards: [...discardPicks] })
@@ -2831,7 +2842,10 @@ function Table({
       const blocking = members.filter((i) => blockAssign[i] !== undefined)
       const focusedCanHit =
         blockFocus !== null && leastBlocked(members, blockFocus, blockAction, blockAssign) !== null
-      highlight = isBlocker || focusedCanHit
+      // An attacking token stack opens its "blockers per token" popup on a
+      // click (`renderBlockSplitMenu`), so it's always clickable.
+      const splittable = ids.some((i) => (blockAction.attackerTokens?.[i] ?? 1) > 1)
+      highlight = isBlocker || focusedCanHit || splittable
       selected = blocking.length > 0 || (blockFocus !== null && members.includes(blockFocus))
       if (blocking.length > 0) {
         badge =
@@ -4287,13 +4301,7 @@ function Table({
     const n = Object.keys(blockAssign).length
     // The set-level rules (menace, Lure) are the engine's own check against
     // this same offer, so Confirm can't disagree with the validator.
-    const violations = blockingViolations(
-      Object.entries(blockAssign).map(([blocker, attacker]) => ({
-        blocker: blocker as ObjectId,
-        attacker,
-      })),
-      blockAction,
-    )
+    const violations = blockingViolations(blockEntries(blockAssign, blockPerToken), blockAction)
     const loneMenace = violations.flatMap((v) => (v.kind === 'menace' ? [v.attacker] : []))
     const unforcedBlockers = violations.flatMap((v) =>
       v.kind === 'must-be-blocked' ? [v.blocker] : [],
@@ -4797,6 +4805,54 @@ function Table({
     )
   }
 
+  /**
+   * How many of the blockers on an attacking token stack share each of its
+   * tokens (the offer's `attackerTokens`; the engine's `attackerMember`): 1,
+   * the default, a token each; 2 pairs them, which a stack with menace needs;
+   * and so on, the blockers going to tokens in the order they were assigned.
+   * Opened by clicking the stack with no blocker of yours waiting.
+   */
+  const renderBlockSplitMenu = () => {
+    if (blockSplit === null || mode !== 'blockers' || !blockAction) return null
+    const tokens = blockAction.attackerTokens?.[blockSplit] ?? 1
+    if (tokens <= 1) return null
+    const blockers = Object.values(blockAssign).filter((a) => a === blockSplit).length
+    const k = blockPerToken[blockSplit] ?? 1
+    const blocked = blockers === 0 ? 0 : Math.ceil(blockers / k)
+    const last = blockers % k
+    return (
+      <AbilityMenu
+        source={blockSplit}
+        title={`${game.nameOf(blockSplit)} ×${tokens} — ${blockers} blocking`}
+        ariaLabel="How many blockers share each token"
+        items={[]}
+        onClose={() => setBlockSplit(null)}
+      >
+        <div className="attack-split">
+          <div className="attack-split-row">
+            <CountStepper
+              label="Blockers per token"
+              count={k}
+              max={Math.max(1, blockers)}
+              onChange={(n) => setBlockPerToken((cur) => ({ ...cur, [blockSplit]: Math.max(1, n) }))}
+            />
+            <span />
+          </div>
+        </div>
+        <p className="block-split-summary">
+          {blockers === 0
+            ? 'Pick a creature of yours to block with, then click this stack.'
+            : `${blockers} blocking ${blocked} token${blocked === 1 ? '' : 's'}, ${k} on each${
+                last > 0 && blocked > 1 ? ` (${last} on the last)` : ''
+              }.`}
+        </p>
+        <button type="button" className="attack-split-done" onClick={() => setBlockSplit(null)}>
+          Done
+        </button>
+      </AbilityMenu>
+    )
+  }
+
   const renderMulliganModal = () => {
     if (mode !== 'mulligan' || !mulliganAction) return null
     return (
@@ -5140,6 +5196,7 @@ function Table({
 
       {renderStackCountMenu()}
       {renderAttackSplitMenu()}
+      {renderBlockSplitMenu()}
 
       {renderMulliganModal()}
       {/* moved here (from GameScreen, a sibling of Table) so it can reuse

@@ -50,13 +50,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   growing with the pool. They read only printed fields, each ability's text (colour identity)
   and the tokens a card makes. A generated catalog of just those, sharded the same way, would be
   a fraction of the size. The game page loads no definitions up front.
-- **Two blockers on one token of an attacking stack.** An attacking token stack past the
-  engine's wake-up cap is one counted attacker (`Game.attackingStackPart`); the block bar
-  assigns blockers to it and each blocks a token of its own (`BlockerDeclaration` without
-  `attackerMember`), so two can't double up on one token — which a stack with menace needs, so
-  it can't be blocked from the client at all. The engine takes `attackerMember` (entries naming
-  the same one share a token); the bar would expand the attacking stack into members, as it does
-  a blocking one (`stackMembers.ts`), and collapse to member numbers.
 - **Copied triggers without targets aren't condensed on the stack** (the user, 2026-10-07).
   The user wants triggers that are copies of one another and have no targets shown as one stack
   entry, the way identical triggers already fold into one counted entry (`stackCount`). Scute

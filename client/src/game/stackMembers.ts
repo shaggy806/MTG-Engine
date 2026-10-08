@@ -153,10 +153,57 @@ export function collapseAttacks(
   }))
 }
 
-export function collapseBlocks(assign: Readonly<Record<string, ObjectId>>, members: Members): BlockerDeclaration[] {
-  return collapse(assign, members).map(({ id, target, count }) => ({
+/** How many blockers share each token of an attacking token stack (the
+ * offer's `attackerTokens`), by attacker: 1, the default, is a token per
+ * blocker; 2 pairs them up (menace); and so on. */
+export type PerToken = Readonly<Record<string, number>>
+
+/**
+ * `assign` as block entries, one per blocker (member ids as they are), with
+ * the token of an attacking stack each shares: the blockers on a stack with
+ * a `perToken` of k, in the order they were assigned, go k to a token —
+ * `attackerMember` 0 for the first k, 1 for the next, and so on (the last
+ * token may have fewer). A stack left at 1 names no member: each blocker
+ * blocks a token of its own.
+ */
+export function blockEntries(assign: Readonly<Record<string, ObjectId>>, perToken: PerToken = {}): BlockerDeclaration[] {
+  const seen = new Map<ObjectId, number>()
+  return (Object.entries(assign) as [ObjectId, ObjectId][]).map(([blocker, attacker]) => {
+    const k = perToken[attacker] ?? 1
+    if (k <= 1) return { blocker, attacker }
+    const i = seen.get(attacker) ?? 0
+    seen.set(attacker, i + 1)
+    return { blocker, attacker, attackerMember: Math.floor(i / k) }
+  })
+}
+
+export function collapseBlocks(
+  assign: Readonly<Record<string, ObjectId>>,
+  members: Members,
+  perToken: PerToken = {},
+): BlockerDeclaration[] {
+  const entries = blockEntries(assign, perToken)
+  const plain = Object.fromEntries(
+    entries.filter((e) => e.attackerMember === undefined).map((e) => [e.blocker, e.attacker]),
+  )
+  const out: BlockerDeclaration[] = collapse(plain, members).map(({ id, target, count }) => ({
     blocker: id,
     attacker: target,
     ...(count !== undefined ? { count } : {}),
   }))
+  // Shared tokens: one entry per (blocker, token), a stack's members counted.
+  const shared = new Map<string, { blocker: ObjectId; attacker: ObjectId; attackerMember: number; count: number; member: boolean }>()
+  for (const e of entries) {
+    if (e.attackerMember === undefined) continue
+    const real = realId(e.blocker)
+    const key = `${real}>${e.attacker}#${e.attackerMember}`
+    const at = shared.get(key)
+    if (at !== undefined) at.count += 1
+    else shared.set(key, { blocker: real, attacker: e.attacker, attackerMember: e.attackerMember, count: 1, member: real !== e.blocker })
+  }
+  for (const { blocker, attacker, attackerMember, count, member } of shared.values()) {
+    // A stack's members always say how many: the rest of it blocks elsewhere.
+    out.push({ blocker, attacker, attackerMember, ...(member ? { count } : {}) })
+  }
+  return out
 }
