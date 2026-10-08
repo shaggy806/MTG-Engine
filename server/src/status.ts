@@ -4,7 +4,7 @@
  *
  * ## Why this listens on its own port, on loopback only
  *
- * The game server's port is published to the open internet — `ws.tobyens.com`
+ * The game server's port is published to the open internet — `ws.deckblitz.net`
  * forwards straight to it through the Cloudflare tunnel (see `DEPLOYMENT.md`).
  * And **a room code is a join credential**: anyone who knows one can walk into
  * that game. A status page listing room codes on the public port would be an

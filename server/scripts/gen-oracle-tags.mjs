@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const DATA = new URL("../data/oracle-tags/", import.meta.url);
-const UA = "MTGDeckBlitz/1.0 (card replacer oracle-tag index; tobyens.com)";
+const UA = "MTGDeckBlitz/1.0 (card replacer oracle-tag index; deckblitz.net)";
 const HEADERS = { "User-Agent": UA, Accept: "application/json" };
 const PACE_MS = 120; // Scryfall asks for no more than ~10 requests a second
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

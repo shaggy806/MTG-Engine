@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Pulls the latest main, rebuilds everything, and restarts the room server.
-# Run this on the production box (mtgserver) after pushing changes.
+# Run this on the production box (the Lightsail instance, see DEPLOYMENT.md) after pushing changes.
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
-VITE_SERVER_URL="${VITE_SERVER_URL:-wss://ws.tobyens.com}"
+VITE_SERVER_URL="${VITE_SERVER_URL:-wss://ws.deckblitz.net}"
 
 git pull --ff-only
 npm install

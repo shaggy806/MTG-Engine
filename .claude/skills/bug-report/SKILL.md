@@ -5,7 +5,7 @@ description: Take a bug report about anything but a bot's choices — typed in c
 
 # A bug report
 
-The user plays on the live site (tobyens.com) and reports what they saw —
+The user plays on the live site (deckblitz.net) and reports what they saw —
 often one sentence and a screenshot. The goal is the cause, not the symptom,
 then a fix that is proven and shipped.
 

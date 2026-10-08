@@ -1,7 +1,7 @@
 // The live site, from outside: the page answers, and the game socket opens
 // through the Cloudflare tunnel with compression negotiated.
 //   node check-live.mjs [wss-url] [page-url]
-const [wsUrl = 'wss://ws.tobyens.com', pageUrl = 'https://mtg.tobyens.com/'] = process.argv.slice(2);
+const [wsUrl = 'wss://ws.deckblitz.net', pageUrl = 'https://deckblitz.net/'] = process.argv.slice(2);
 
 const page = await fetch(pageUrl).then((r) => r.status, (e) => `unreachable (${e.cause?.code ?? e.message})`);
 console.log(`page    ${pageUrl} -> ${page}`);

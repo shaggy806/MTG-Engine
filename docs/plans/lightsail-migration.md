@@ -1,9 +1,10 @@
 # Moving the live site to AWS Lightsail and deckblitz.net
 
-**Status:** planned (2026-10-08), not started. The site moves off the home box `mtgserver`
-(`DEPLOYMENT.md`) onto an AWS Lightsail instance, and from `mtg.tobyens.com` to
-**deckblitz.net** (bought 2026-10-08). When it lands, `DEPLOYMENT.md` is rewritten to describe
-the new box, and this record keeps the reasons.
+**Status:** in progress. Steps 1–5 of the cutover are done (2026-10-08): the instance serves
+deckblitz.net, `DEPLOYMENT.md` is rewritten for it, and the repo (`deploy.sh`, the deploy skill)
+targets it. Left: step 6's redirects and `ws.tobyens.com` re-route, then step 7's retirement of
+the home box. The site moves off the home box `mtgserver` onto an AWS Lightsail instance, and
+from `mtg.tobyens.com` to **deckblitz.net** (bought 2026-10-08); this record keeps the reasons.
 
 ## What moves, and what doesn't
 
@@ -94,7 +95,8 @@ saved decks (`client/src/deck-builder/decks.ts`) and default pass and motion set
    client work, and the redirect in the cutover would then have to wait for it. Only worth it if
    real players have built many decks.
 
-Undecided; it's the user's call before step 6 below.
+**Decided (2026-10-08): accept it.** Too few players have used the site in earnest for their
+saved decks to be worth carrying over, so the switch doesn't wait on any client work.
 
 ## Cutover (no downtime)
 
@@ -113,8 +115,9 @@ Undecided; it's the user's call before step 6 below.
    import, `check-live.mjs wss://ws.deckblitz.net https://deckblitz.net/`, `/status` over SSH,
    and the CPU burst graph.
 6. **Switch:** add the `mtg.tobyens.com/*` → `https://deckblitz.net/$1` redirect rule (301), and
-   re-route `ws.tobyens.com` to the new tunnel (add it to the new ingress list, then
-   `cloudflared tunnel route dns -f mtg-aws ws.tobyens.com`) so a tab left open on the old site
+   re-route `ws.tobyens.com` to the new tunnel (add it to the new ingress list, then edit its
+   record in the tobyens.com DNS tab to a proxied CNAME to `<tunnel id>.cfargotunnel.com` —
+   `route dns` can't, as the new box's cert is for the deckblitz.net zone) so a tab left open on the old site
    keeps working until it's reloaded. Its deck import will fail CORS, which only allows the new
    origin, and a reload fixes it. Add the `www.deckblitz.net` redirect too.
 7. **After a week or two:** stop and disable the services on the home box, delete the old

@@ -70,7 +70,7 @@ for:
   the same bold titles; `BACKLOG.md` keeps one line each. Add or delete an item in both.
 - **`engine/src/cards/AUTHORING.md`** — the hand-authoring guide for adding a card. Read before
   authoring.
-- **`DEPLOYMENT.md`** — the tobyens.com production hosting/update runbook.
+- **`DEPLOYMENT.md`** — the deckblitz.net (AWS Lightsail) production hosting/update runbook.
 - **`docs/rules/MagicCompRules_20260925.txt`** — the Comprehensive Rules, effective 2026-09-25
   (Wizards' text, unedited). Grep it for a rule's number and wording before citing one in code, a
   comment or a commit; when a newer edition is added, replace the file and this line.
