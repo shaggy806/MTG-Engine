@@ -3418,6 +3418,42 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   },
   {
+    name: "lets Guttersnipe resolve before casting Lightning Bolt",
+    rule: "An instant cast while our own Guttersnipe is still on the stack misses its 2 damage to each opponent: let it resolve first.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // Reported from a live game (2026-10-08, no capture): the bot cast
+      // Guttersnipe, then an instant in response to it — losing the 2 damage
+      // to each opponent the instant would have dealt through Guttersnipe
+      // had it waited. As with the Archmage above: the payoff goes first
+      // (`payoffFirst`) without recording `actedOn`, so the window with
+      // Guttersnipe on the stack is searched afresh. And `castPayoff` reads
+      // only the battlefield, hand and command zone, so with the payoff on
+      // the stack the pass is rolled out passive — the Bolt never cast — and
+      // the Bolt now outscores it.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Mountain", A, 4);
+      game.state.players[A].landsPlayedThisTurn = 1;
+      const guttersnipe = game.debugSpawn("Guttersnipe", A, "hand");
+      const bolt = game.debugSpawn("Lightning Bolt", A, "hand");
+      onBoard(game, "Grizzly Bears", B);
+      const bot = makeBot(A, registry, weights);
+      const first = bot.act(viewOf(game, A));
+      if (!(first.type === "cast-spell" && first.card === guttersnipe)) {
+        return { passed: false, detail: `cast first: ${describeAction(first)}` };
+      }
+      game.dispatch(first);
+      if (game.state.priority.holder !== A || game.state.objects[guttersnipe]?.zone !== "stack") {
+        return { passed: false, detail: "never held priority with Guttersnipe on the stack" };
+      }
+      const second = bot.act(viewOf(game, A));
+      return {
+        passed: !(second.type === "cast-spell" && second.card === bolt),
+        detail: `with Guttersnipe on the stack, chose ${describeAction(second)}`,
+      };
+    },
+  },
+  {
     name: "taps a land, untaps it with Kiora and casts Ganax",
     rule: "An untap ability is one more mana: tap a land, untap it, cast the spell that mana pays for.",
     run(weights, registry, makeBot) {

@@ -4,6 +4,33 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-08 — an instant cast in response to the bot's own Guttersnipe
+
+- **Seen:** the bot cast Guttersnipe, then an instant with Guttersnipe still on the stack. The
+  instant resolved first, and Guttersnipe's 2 damage to each opponent was lost.
+- **Right:** let Guttersnipe resolve, then cast the instant, which triggers it.
+- **Scenario:** "lets Guttersnipe resolve before casting Lightning Bolt" (training) — four
+  Mountains, Guttersnipe and Lightning Bolt in hand, Grizzly Bears across: casts Guttersnipe,
+  then Bolts the Bears in response.
+- **Why:** the same miss as the Archmage Emeritus entry below (2026-10-06), and a second gap
+  behind it. Guttersnipe goes out through `payoffFirst`'s early return in `EvalBotController.act`,
+  which doesn't record `actedOn`, so the next window isn't a held pass (`holdPass`) but a
+  fresh search. In that search `castPayoff` — which turns on the `"acting"` rollout, the one
+  where our own seat casts its spells later in the turn — reads the battlefield, hand and
+  command zone but not the stack, so with Guttersnipe on the stack it's false and the rollout is
+  the default `"combat"`, where our seat casts nothing. Passing is scored as Guttersnipe
+  resolving with the Bolt never cast; Bolting the Bears now scores higher.
+- **Fix (outline):** both parts. Record `actedOn` on the early returns that cast our own spell
+  (`payoffFirst`, landfall-first, reducer-first), so the window after passes while it resolves —
+  the Archmage entry's fix. And let `castPayoff` count our own payoff on the stack, so a window
+  that is searched with it there (an opponent responded, a trigger landed, so `holdPass`
+  doesn't apply) rolls our seat out acting, where the Bolt cast after it resolves scores the
+  2 damage to each opponent. Might break: the first, nothing deliberate (a response to our own
+  spell was never a searched choice). The second turns on `"acting"` in more windows — those
+  rollouts cost more, and the tie in `act` goes to acting, so a window with a payoff on the
+  stack could still cast in response on a tie; the scenario would show it.
+- **Status:** open.
+
 ## 2026-10-07 — a fetch land not counted as this turn's mana
 
 - **Seen:** the bots don't see a fetch land that can get an untapped land as mana for this turn,
