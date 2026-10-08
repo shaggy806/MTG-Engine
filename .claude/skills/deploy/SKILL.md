@@ -22,7 +22,7 @@ skill). Unpushed commits on `main`: ship them first, or tell the user they won't
 ## 2. Reach the box, and see who's playing
 
 ```bash
-ssh -o BatchMode=yes -o ConnectTimeout=8 shaggy5405@192.168.0.137 'sudo -n true 2>/dev/null && echo "sudo: ok" || echo "sudo: NEEDS PASSWORD"; curl -s localhost:4010/status | sed -n 2,12p; cd /opt/mtg-engine && git status --short | head -5; git log --oneline -1'
+ssh -o BatchMode=yes -o ConnectTimeout=8 shaggy5405@192.168.0.137 'sudo -n /usr/bin/systemctl status mtg-server --no-pager >/dev/null 2>&1 && echo "sudo: ok" || echo "sudo: NEEDS PASSWORD"; curl -s localhost:4010/status | sed -n 2,12p; cd /opt/mtg-engine && git status --short | head -5; git log --oneline -1'
 ```
 
 - **Timed out**: `ping -n 3 192.168.0.137` and
@@ -31,8 +31,10 @@ ssh -o BatchMode=yes -o ConnectTimeout=8 shaggy5405@192.168.0.137 'sudo -n true 
 - **Humans online** in a `playing` room (the `seats` line): say who and ask before restarting
   — bot-only rooms can go.
 - **`sudo: NEEDS PASSWORD`**: `deploy.sh` needs sudo for `systemctl`, and you may not type a
-  password. Give the user the command to run themselves (`ssh -t shaggy5405@192.168.0.137
-  'cd /opt/mtg-engine && ./deploy.sh'`), then go to step 4.
+  password. `/etc/sudoers.d/mtg-deploy` lets exactly its three `systemctl` commands run without
+  one (`DEPLOYMENT.md`, "Updating the deployed code"), so this means that rule is gone or no
+  longer matches `deploy.sh`. Give the user the command to run themselves (`ssh -t
+  shaggy5405@192.168.0.137 'cd /opt/mtg-engine && ./deploy.sh'`), then go to step 4.
 - **Uncommitted changes** in `/opt/mtg-engine`: `git pull --ff-only` would refuse or carry
   them along. Show them to the user; don't discard them.
 
