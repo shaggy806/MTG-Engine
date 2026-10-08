@@ -347,6 +347,40 @@ function toSecondMain(game: Game): ScenarioResult | null {
     : { passed: false, detail: "never reached the second main phase" };
 }
 
+/**
+ * Play the rest of the current turn with `bot` answering everything `player`
+ * is asked. `others` may answer another seat's decision (an attack, a block)
+ * and returns whether it did; whatever it leaves is played by the engine's
+ * defaults. Returns every action `bot` took.
+ */
+function playOutTurn(
+  game: Game,
+  bot: PlayerController,
+  player: PlayerId,
+  others: (game: Game) => boolean,
+): Action[] {
+  const turn = game.state.turn.number;
+  const taken: Action[] = [];
+  const ours = (s: Game["state"]): boolean =>
+    s.awaiting !== null ? s.awaiting.player === player : s.priority.holder === player;
+  const theirs = (s: Game["state"]): boolean => s.awaiting !== null && s.awaiting.player !== player;
+  for (let i = 0; i < 300 && !game.state.result.over && game.state.turn.number === turn; i += 1) {
+    if (theirs(game.state)) {
+      // Left to the engine's defaults when `others` doesn't answer it.
+      if (!others(game)) game.advanceUntil((s) => !theirs(s) || s.result.over);
+      continue;
+    }
+    if (!ours(game.state)) {
+      game.advanceUntil((s) => ours(s) || theirs(s) || s.result.over || s.turn.number !== turn);
+      continue;
+    }
+    const action = bot.act(viewOf(game, player));
+    taken.push(action);
+    game.dispatch(action);
+  }
+  return taken;
+}
+
 const evalBotFactory: BotFactory = (player, registry, weights) =>
   new EvalBotController(player, registry, { weights });
 
@@ -3450,6 +3484,98 @@ const SCENARIOS: readonly BotScenario[] = [
       return {
         passed: !(second.type === "cast-spell" && second.card === bolt),
         detail: `with Guttersnipe on the stack, chose ${describeAction(second)}`,
+      };
+    },
+  },
+  {
+    name: "gives Bob's attack on Carol trample with Towering Titan to finish her",
+    rule: "Towering Titan's trample is for every creature: when another opponent's blocked attackers would trample over for lethal, one wall sacrificed kills a player.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // Found while chasing a live report (2026-10-08, `docs/bot-misplays.md`,
+      // "Towering Titan's sacrifice activated several times"): the bot never
+      // weighs the activation as worth a wall. Bob swings two Craw Wurms and a
+      // Colossal Dreadmaw at Carol, on 12; she chumps all three. Through the
+      // blocks only the Dreadmaw's own trample gets in, 4 over her Bear;
+      // with "All creatures gain trample" the Wurms add 5 each over her
+      // Elves — Carol is dead, for one of Alice's four walls. The search
+      // sees the kill and scores it below passing: `scoreOutcome` takes
+      // the strongest opponent and the average of the rest, so the weakest
+      // one gone raises that average, and nothing counts a player removed.
+      const game = table(registry, [A, B, C, D], B);
+      const titan = onBoard(game, "Towering Titan", A);
+      game.state.objects[titan].counters["+1/+1"] = 8;
+      for (const wall of ["Wall of Omens", "Wall of Blossoms", "Wall of Roots", "Overgrown Battlement"]) {
+        onBoard(game, wall, A);
+      }
+      const attackers = ["Craw Wurm", "Colossal Dreadmaw", "Craw Wurm"].map((name) => onBoard(game, name, B));
+      const chumps = ["Llanowar Elves", "Grizzly Bears", "Llanowar Elves"].map((name) => onBoard(game, name, C));
+      game.state.players[C].life = 12;
+      const bot = makeBot(A, registry, weights);
+      const taken = playOutTurn(game, bot, A, (g) => {
+        const awaiting = g.state.awaiting;
+        if (awaiting?.kind === "attackers" && awaiting.player === B) {
+          g.dispatch({ type: "declare-attackers", player: B, attackers: attackers.map((attacker) => ({ attacker, defender: C })) });
+          return true;
+        }
+        if (awaiting?.kind === "blockers" && awaiting.player === C) {
+          g.dispatch({
+            type: "declare-blockers",
+            player: C,
+            blocks: chumps.map((blocker, i) => ({ blocker, attacker: attackers[i] })),
+          });
+          return true;
+        }
+        return false;
+      });
+      const activations = taken.filter((a) => a.type === "activate-ability" && a.source === titan).length;
+      return {
+        passed: activations === 1 && game.state.players[C].hasLost,
+        detail: `activated the Titan ${activations} time(s); Carol on ${game.state.players[C].life}`,
+      };
+    },
+  },
+  {
+    name: "tramples a chump-blocked Towering Titan over for lethal",
+    rule: "A blocked Titan with a chump blocker in front of it: one wall sacrificed for trample sends the rest of its damage through, and here that kills.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // Found beside the one above: Alice's 17/17 Titan attacks, the
+      // defending player (on 15, as every opponent is here) chumps it with
+      // a Grizzly Bears, and the bot lets the Bear soak all 17. Trample sends
+      // 15 through, exactly lethal, for one wall. With the opponents alike,
+      // the one removed leaves the strongest and the average as they were, so
+      // the kill scores nothing and the wall decides it.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.players[A].landsPlayedThisTurn = 1;
+      const titan = onBoard(game, "Towering Titan", A);
+      game.state.objects[titan].counters["+1/+1"] = 17;
+      for (const wall of ["Wall of Omens", "Wall of Blossoms", "Wall of Roots", "Overgrown Battlement"]) {
+        onBoard(game, wall, A);
+      }
+      const bears = new Map([B, C, D].map((p) => [p, onBoard(game, "Grizzly Bears", p)]));
+      for (const p of [B, C, D]) game.state.players[p].life = 15;
+      const bot = makeBot(A, registry, weights);
+      let defender: PlayerId | null = null;
+      const taken = playOutTurn(game, bot, A, (g) => {
+        const awaiting = g.state.awaiting;
+        if (awaiting?.kind !== "blockers" || awaiting.player === A) return false;
+        const bear = bears.get(awaiting.player);
+        const blocks = g.state.objects[titan]?.attacking === awaiting.player && bear !== undefined;
+        if (blocks) defender = awaiting.player;
+        g.dispatch({
+          type: "declare-blockers",
+          player: awaiting.player,
+          blocks: blocks ? [{ blocker: bear, attacker: titan }] : [],
+        });
+        return true;
+      });
+      if (defender === null) return { passed: false, detail: "the Titan never attacked into a block" };
+      const blocked: PlayerId = defender;
+      const activations = taken.filter((a) => a.type === "activate-ability" && a.source === titan).length;
+      return {
+        passed: activations === 1 && game.state.players[blocked].hasLost,
+        detail: `activated the Titan ${activations} time(s); ${blocked} on ${game.state.players[blocked].life}`,
       };
     },
   },

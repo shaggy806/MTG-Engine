@@ -4,6 +4,32 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-08 — a kill through Towering Titan's trample passed up
+
+- **Seen:** found while chasing the Titan report below, not in a live game. Twice the bot could
+  sacrifice one wall to Towering Titan for trample and kill an opponent, and passed both times.
+- **Right:** one wall for a player eliminated, every time.
+- **Scenarios:** "gives Bob's attack on Carol trample with Towering Titan to finish her"
+  (training) — a bystander: Bob's Craw Wurms and Colossal Dreadmaw into Carol's chump blocks,
+  Carol on 12, trample takes her to −2; and "tramples a chump-blocked Towering Titan over for
+  lethal" (training) — Alice's 17/17 Titan chumped by a Bear, every opponent on 15. Both pass
+  when the Titan is activated once (checked by forcing it).
+- **Why:** the search sees both kills and scores them below passing: −19.2 against −7.1, and
+  24.5 against 33.1. `scoreOutcome` (`evaluate.ts`) is our position minus the strongest
+  opponent's and a share of the *average* of the rest, and nothing counts how many opponents are
+  left. Killing the weakest opponent (Carol, low on life and cards) takes her out of that average,
+  which goes *up* — the kill reads as a loss. With opponents alike, the player removed leaves the
+  strongest and the average where they were, so the kill scores about nothing and the wall
+  sacrificed decides it. The same blind spot prices every elimination, not just this card's:
+  a burn spell at a player's face, an attack that finishes someone off.
+- **Fix (outline):** reward each opponent eliminated. Either a fixed bonus per opponent who has
+  lost (a new weight, well above a creature and well below `WIN`), or let an eliminated opponent
+  stay in the average at a floor score, so removing the weakest lowers it rather than raising it.
+  Might break: kill-chasing over the real threat (finishing a harmless player while the leader
+  runs away), and the four-player benches' balance — it needs the scenario gate, `bot:diff` and
+  an A/B run, not just these two scenarios.
+- **Status:** open.
+
 ## 2026-10-08 — Towering Titan's sacrifice activated several times
 
 - **Seen:** while one opponent attacked the user with everything, a third seat's bot (Abzan
@@ -25,10 +51,7 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   value when it leaves (a token, a death trigger), the batch path (`simulateRepeated`, which
   re-offers `previous` with a fixed `sacrifice`), or the repeats spread over separate windows.
   The Capture button on the next sighting would settle it.
-- **Seen on the way (not the report):** the opposite miss is reproducible. On the bystander board
-  with Carol at 12, one activation would have let 9 more damage trample through and killed her,
-  and the bot passed; on its own turn under Felothar, a 17-toughness Titan chump-blocked by a Bear
-  didn't trample over for 15. The search never weighs the activation as worth a wall.
+- **Seen on the way (not the report):** the opposite miss is reproducible — the entry above.
 - **Status:** not reproduced.
 
 ## 2026-10-08 — an instant cast in response to the bot's own Guttersnipe
