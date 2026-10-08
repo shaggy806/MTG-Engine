@@ -33,7 +33,7 @@ import { COMMANDER_RULES, Game, HeuristicBotController, createDefaultRegistry } 
 import { Room } from "../dist/room.js";
 import { RoomManager } from "../dist/room-manager.js";
 import { DEFAULT_CAPTURE_DIR } from "../dist/capture.js";
-import { attachRoomServer } from "../dist/ws-server.js";
+import { COMPRESSION, attachRoomServer } from "../dist/ws-server.js";
 import SCENARIOS, { COMMANDERS } from "./dev-scenarios.mjs";
 
 const PORT = Number(process.env.PORT ?? 4000);
@@ -166,7 +166,7 @@ function buildRoom(code) {
 for (const code of Object.keys(SCENARIOS)) buildRoom(code);
 
 const httpServer = createServer();
-const wss = new WebSocketServer({ server: httpServer });
+const wss = new WebSocketServer({ server: httpServer, perMessageDeflate: COMPRESSION });
 // A developer's server: the scenario builder is on too.
 attachRoomServer(wss, manager, { builder: true });
 

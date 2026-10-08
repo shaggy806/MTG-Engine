@@ -3,12 +3,12 @@
  * WebSocket connection, not just through the in-process `Room` API.
  */
 
-import type { AddressInfo } from "node:net";
+import type { AddressInfo, Socket } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket, WebSocketServer } from "ws";
 import { RoomManager } from "../room-manager.js";
 import { Room } from "../room.js";
-import { attachRoomServer } from "../ws-server.js";
+import { COMPRESSION, attachRoomServer } from "../ws-server.js";
 import type { ServerMessage } from "protocol";
 import { ALICE, BOB, CAROL, DAVE, SEATS } from "../decks.js";
 
@@ -552,5 +552,47 @@ describe("room server (end to end over WebSocket)", () => {
     aliceWs.send(JSON.stringify({ type: "add-bot", roomId, seat: ALICE }));
     const reply = await nextMessage(aliceWs);
     expect(reply.type).toBe("error");
+  });
+});
+
+describe("compression (permessage-deflate)", () => {
+  it("negotiates it, and a game frame crosses the wire at a fraction of its size", async () => {
+    // The live server's Wi-Fi uploads ~25 KB/s, and an uncompressed frame of a
+    // late board is 400-600 KB (2026-10-07): bots wait on each frame's ack, so
+    // the frames' size was the bots' speed.
+    const wss = new WebSocketServer({ port: 0, perMessageDeflate: COMPRESSION });
+    attachRoomServer(wss, new RoomManager());
+    await new Promise<void>((resolve) => wss.once("listening", resolve));
+    const ws = await connect((wss.address() as AddressInfo).port);
+    try {
+      expect(ws.extensions).toMatch(/permessage-deflate/);
+      let received = 0;
+      ws.on("message", (raw: Buffer) => {
+        received += raw.length;
+      });
+      const next = messageQueue(ws);
+      ws.send(JSON.stringify({ type: "create-room" }));
+      const created = await next();
+      if (created.type !== "room-created") throw new Error("unreachable");
+      const roomId = created.roomId;
+      ws.send(JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice", ready: true }));
+      await next();
+      ws.send(JSON.stringify({ type: "add-bot", roomId, seat: BOB }));
+      await next();
+      ws.send(JSON.stringify({ type: "start-game", roomId }));
+      let message = await next();
+      while (message.type !== "state") message = await next();
+      // What reached the socket, against what the messages decompressed to —
+      // once it's closed, so no frame is half read. (An opening board deflates
+      // to about a quarter; a late one, to a tenth.)
+      const socket = (ws as unknown as { _socket: Socket })._socket;
+      ws.close();
+      await new Promise<void>((resolve) => ws.once("close", () => resolve()));
+      expect(received).toBeGreaterThan(10_000);
+      expect(socket.bytesRead).toBeLessThan(received / 2);
+    } finally {
+      ws.close();
+      await new Promise<void>((resolve) => wss.close(() => resolve()));
+    }
   });
 });

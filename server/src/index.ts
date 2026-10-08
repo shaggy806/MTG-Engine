@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { WebSocketServer } from "ws";
 import { createDefaultRegistry } from "engine";
 import { RoomManager } from "./room-manager.js";
-import { attachRoomServer } from "./ws-server.js";
+import { COMPRESSION, attachRoomServer } from "./ws-server.js";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
 import { loadOracleTagIndex } from "./oracle-tags.js";
 import { loadCardData } from "./card-data.js";
@@ -121,7 +121,7 @@ const httpServer = createServer((req, res) => {
   res.end();
 });
 
-const wss = new WebSocketServer({ server: httpServer });
+const wss = new WebSocketServer({ server: httpServer, perMessageDeflate: COMPRESSION });
 attachRoomServer(wss, manager, { builder });
 
 httpServer.listen(port, () => {

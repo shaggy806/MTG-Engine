@@ -51,6 +51,11 @@ survives an IP change silently, needs no forwarded ports, and no firewall holes 
   `192.168.0.137`. (Ethernet was recommended over Wi-Fi for reliability but wasn't available at
   setup time — if the box moves to a wired connection later, add a *second* reservation for the
   `enp2s0` MAC address rather than editing this one, unless Wi-Fi is being retired entirely.)
+  **The Wi-Fi is the site's bottleneck** (measured 2026-10-07): signal -66 dBm, and the box
+  sends only ~25 KB/s — to the internet and to a PC on the same network alike, so it's the
+  link, not the ISP. Each bot move is a board frame the room waits on every player to finish
+  showing, so a slow upload reads as slow bots; frames are compressed since then (a late board
+  is ~500 KB of JSON, ~50 KB on the wire), and Ethernet would remove the limit.
   Router path: Advanced → Network → DHCP Server → Address Reservation.
 - Node.js installed via the NodeSource setup script (`setup_22.x`), not Ubuntu's own repo (which
   lags far behind).

@@ -6,7 +6,7 @@
  */
 
 import type { IncomingMessage } from "node:http";
-import type { WebSocket, WebSocketServer } from "ws";
+import type { PerMessageDeflateOptions, WebSocket, WebSocketServer } from "ws";
 import { COMMANDER_RULES, SPECTATOR } from "engine";
 import type { ArtManifestEntry } from "engine";
 import type { RoomManager } from "./room-manager.js";
@@ -15,6 +15,26 @@ import type { CaptureLog } from "./capture.js";
 import { PendingRoom } from "./pending-room.js";
 import type { BuilderSession } from "./builder.js";
 import type { ClientMessage, ServerMessage } from "protocol";
+
+/**
+ * permessage-deflate (RFC 7692), for every connection that offers it — every
+ * browser does. Pass as `new WebSocketServer({ perMessageDeflate: COMPRESSION })`.
+ *
+ * A `state` frame is the whole board as JSON, and there's one per bot move:
+ * 400-600 KB on a late four-player board, which deflates to about a tenth
+ * (~5 ms at the default level). Measured on the live server (2026-10-07), whose
+ * Wi-Fi uploads ~25 KB/s, an uncompressed frame took 1-20 s to arrive — and a
+ * room's bots wait for each seat's `ack` before moving again, so the delay
+ * read as slow bots. No context takeover in either direction: a frame is far
+ * bigger than deflate's 32 KB window, so keeping one per connection would buy
+ * little and hold zlib memory between messages. Small messages (acks, seat
+ * lists) go as they are.
+ */
+export const COMPRESSION: PerMessageDeflateOptions = {
+  serverNoContextTakeover: true,
+  clientNoContextTakeover: true,
+  threshold: 1024,
+};
 
 const RATE_LIMIT_WINDOW_MS = 5_000;
 const RATE_LIMIT_MAX_MESSAGES = 40;
