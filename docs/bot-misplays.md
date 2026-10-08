@@ -4,6 +4,33 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-08 — Towering Titan's sacrifice activated several times
+
+- **Seen:** while one opponent attacked the user with everything, a third seat's bot (Abzan
+  Armor, Felothar's deck) activated Towering Titan's "Sacrifice a creature with defender: All
+  creatures gain trample until end of turn" several times, throwing away walls. The first
+  activation can be a real play (the attacker's blocked creatures trample over the user's
+  blockers), but every one after it gains nothing: trample doesn't stack.
+- **Right:** at most one activation a turn, and only when the trample changes a combat.
+- **Scenario:** none kept — **not reproduced.** Every board tried had v2 activate the Titan zero
+  times: the bot's own turn with the Titan chump-blocked (Felothar out or not); an opponent
+  attacking the bot, lethal or not; and the reported shape, Bob attacking Carol with Craw Wurms and
+  a Colossal Dreadmaw into chump blocks while Alice holds the Titan and four walls. Likewise v1,
+  and v2 under a live-room clock (`timeBudgetMs` 300 and 40).
+- **What's known:** the default `"turn"` horizon rolls out past cleanup, so trample itself never
+  scores (`evasivePower` in `features.ts` counts it only while it lasts); only the damage it
+  lets through does. A second activation lets no more through, and a sacrificed wall costs
+  `creatures`/`toughness`, so the repeat should score below passing. Something on the live board
+  made a sacrificed wall read as a gain, or a repeat look like a fresh choice. Leads: a wall with
+  value when it leaves (a token, a death trigger), the batch path (`simulateRepeated`, which
+  re-offers `previous` with a fixed `sacrifice`), or the repeats spread over separate windows.
+  The Capture button on the next sighting would settle it.
+- **Seen on the way (not the report):** the opposite miss is reproducible. On the bystander board
+  with Carol at 12, one activation would have let 9 more damage trample through and killed her,
+  and the bot passed; on its own turn under Felothar, a 17-toughness Titan chump-blocked by a Bear
+  didn't trample over for 15. The search never weighs the activation as worth a wall.
+- **Status:** not reproduced.
+
 ## 2026-10-08 — an instant cast in response to the bot's own Guttersnipe
 
 - **Seen:** the bot cast Guttersnipe, then an instant with Guttersnipe still on the stack. The
