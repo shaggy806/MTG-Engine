@@ -1744,11 +1744,15 @@
   color: var(--text);
 }
 
+/* No top padding: the log is its own scroll box, and a sticky child pins
+   inside the box's padding, so the header sat 8px below the top edge with
+   the scrolled lines showing through above it (a bug report, 2026-10-09).
+   The header carries that 8px instead, over its own background. */
 .event-log {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  padding: 8px 10px;
+  padding: 0 10px 8px;
   box-shadow: var(--frame-sunk);
 }
 .event-log h3 {
@@ -1769,7 +1773,7 @@
   justify-content: space-between;
   gap: 12px;
   background: var(--panel);
-  padding-bottom: 2px;
+  padding: 8px 0 2px;
 }
 .event-log-toggle {
   display: flex;
