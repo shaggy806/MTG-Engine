@@ -164,7 +164,9 @@ describe("Curse of Opulence", () => {
     attack(game, A, [{ attacker: bears, defender: B }]);
     const gold = game.state.zones.shared.battlefield.find((id) => game.state.objects[id].cardName === "Gold Token")!;
     game.dispatch({ type: "activate-ability", player: A, source: gold, abilityIndex: 0, targets: [], manaColors: ["R"] });
-    expect(game.state.objects[gold].zone).not.toBe("battlefield");
+    // Sacrificed, and — the state-based actions checked as A gets priority
+    // back (117.3c, 117.5) — a token gone from the game (704.5d).
+    expect(game.state.objects[gold]).toBeUndefined();
     expect(game.state.players[A].manaPool.map((u) => u.type)).toEqual(["R"]);
   });
 });
