@@ -66,11 +66,6 @@ section keeps only what to do next.
   are in `docs/card-blockers.md`, "Open leads").
 - **Cards a built feature may have unblocked** — recheck each against its Oracle text:
   `docs/card-blockers.md`, "Open leads".
-- **"You may search" isn't optional on about 35 cards.** Their `search-library` has `min: 0` and
-  no `may` around it (Primal Druid), so declining still searches and shuffles, which a library
-  ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest. Not
-  to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
-  whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`).
@@ -95,7 +90,6 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **Blitz is offered only from the hand and the command zone** (702.152a).
 - **A mana restriction reads the spell before it's cast** (Jasmine Boreal of the Seven waits).
 - **Suspend's time-counter triggers don't use the stack** (702.62a).
-- **"Search your library for a card" may fail to find** — twelve tutors need `min: 1` (701.23d).
 - **704.5h reads "dealt deathtouch damage this turn", not "since the last state-based check".**
 - **Changing a spell or ability's target** (115.7; Return the Favor).
 - **"Whenever a creature you control deals combat damage to that player this turn"** (Great Train Heist).
@@ -136,6 +130,7 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **A commander put into a library from a graveyard, exile or the stack isn't offered the command zone** (903.9b).
 - **A token stack tapping fires `becomes-tapped` once.**
 - **Creatures leave combat as the end of combat step begins, not as it ends** (511.3).
+- **"Its controller may search" always searches** (Path to Exile, Assassin's Trophy, Ghost Quarter, …): a `may` asks the effect's controller, not that player.
 - **A "trigger-object" that blinks is still found** (400.7): Atarka's double strike lands on a Dragon Cloudshifted in response.
 
 Latent: the engine departs from the rules here, but no pool card reaches it yet. Fix each

@@ -43,12 +43,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
 - **Suspend's time-counter triggers don't use the stack.** Rule 702.62a makes "remove a time
   counter" and "when the last is removed, you may play it" triggered abilities; `upkeepStep` does
   both as the upkeep begins (`castSuspendedCard`), so nobody can respond between them.
-- **"Search your library for a card" may fail to find.** Rule 701.23d: a search for a quantity
-  ("a card", no quality) must find that many while the library has them. Twelve tutors author it
-  `search-library` with `filter: {}` and `min: 0` (Demonic Tutor, Vampiric Tutor, Imperial Seal,
-  Grim Tutor, Razaketh …); it's `min: 1`, as Entomb and Insatiable Avarice have it — the search
-  already clamps `min` to what's there. Don't sweep these together with the card backlog's
-  "You may search" cards, which need a `may` instead.
 - **704.5h reads "dealt deathtouch damage this turn", not "since the last state-based check".**
   `markedByDeathtouch` lasts until cleanup (`recordDamage`'s excess-damage reading uses it too),
   so a creature that survived deathtouch damage while indestructible is destroyed if it loses
@@ -228,6 +222,15 @@ per gap under the same bold title; when a gap closes, delete it in both.
 The engine departs from the rules here, but no pool card reaches it yet: fix each when a card
 that needs it is authored.
 
+- **"Its controller may search" always searches** — "its controller may search their library
+  for a basic land card" (Path to Exile, Assassin's Trophy, Erode, Ghost Quarter, Price of
+  Freedom, Boseiju, Who Endures, Volatile Fault, Demolition Field's first search, and the
+  `partnerWithTrigger` helper's "target player may search"). A `may` asks the effect's
+  controller, and `aboutThatPlayer` only names who the question is about, so these keep
+  `min: 0` and a decline still searches and shuffles that player's library — which loses an
+  ordering they made (a scry). Needs a `may` another player answers. `effects.ts`'s `who` doc
+  claims `min: 0` "already expresses" the option; it doesn't for the shuffle. (Found by the
+  2026-10-09 "you may search" sweep, which wrapped the 41 cards whose own controller searches.)
 - **A "trigger-object" that blinks is still found** (rule 400.7). A `"trigger-object"` reference to
   a permanent still on the battlefield as the ability triggered isn't dropped when it leaves and
   returns before the ability resolves: `triggerObjectLost` covers only an object that had already
