@@ -2187,7 +2187,11 @@ Wake), "an additional one mana of any color" (Fertile Ground), tapped by hand,
 is one more pick in the activation's `manaColors` — each outcome its own
 offer; "…of the chosen color" (Utopia Sprawl) reads the colour the Aura named
 as it entered (`chooseOnEnter`). "Whenever a player taps a land" is `who:
-"any"`, and the mana goes to whoever tapped it (Mana Flare).
+"any"`, and the mana goes to whoever tapped it (Mana Flare). A counted amount
+is read as the mana is made — Elvish Guidance's "an additional {G} for each
+Elf on the battlefield" is `amount: { countOf: { subtype: "Elf" } }` — but
+never one reading `"x"` or a trigger value (a mana ability has neither), and
+the effect is a single `add-mana`: `pool.test` holds every card to both.
 
 **"If you tap a permanent for mana, it produces twice as much of that mana
 instead"** (Mana Reflection; three times — Nyxbloom Ancient) is the static

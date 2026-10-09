@@ -2170,6 +2170,7 @@ import _poolElvishArchdruid from "./pool/elvish-archdruid.js";
 import _poolElvishArchers from "./pool/elvish-archers.js";
 import _poolElvishChampion from "./pool/elvish-champion.js";
 import _poolElvishDoomsayer from "./pool/elvish-doomsayer.js";
+import _poolElvishGuidance from "./pool/elvish-guidance.js";
 import _poolElvishHandservant from "./pool/elvish-handservant.js";
 import _poolElvishHarbinger from "./pool/elvish-harbinger.js";
 import _poolElvishHerder from "./pool/elvish-herder.js";
@@ -10931,6 +10932,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolElvishArchers,
   _poolElvishChampion,
   _poolElvishDoomsayer,
+  _poolElvishGuidance,
   _poolElvishHandservant,
   _poolElvishHarbinger,
   _poolElvishHerder,

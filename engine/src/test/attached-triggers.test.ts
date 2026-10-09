@@ -174,6 +174,40 @@ describe("Wild Growth", () => {
   });
 });
 
+describe("Elvish Guidance", () => {
+  // A counted amount on a triggered mana ability, read as the mana is made.
+  it("adds an additional {G} for each Elf on the battlefield, anyone's", () => {
+    const { game } = setUp();
+    const forest = spawn(game, "Forest");
+    enchant(game, "Elvish Guidance", forest, "Forest", 3);
+    spawn(game, "Llanowar Elves");
+    spawn(game, "Llanowar Elves", B);
+    game.state.objects[forest].tapped = false;
+    game.dispatch({ type: "activate-ability", player: A, source: forest, abilityIndex: 0 });
+    expect(game.state.players[A].manaPool.map((u) => u.type)).toEqual(["G", "G", "G"]);
+  });
+
+  it("adds nothing more with no Elf, and the auto-payer counts the Elves", () => {
+    const { game } = setUp();
+    const forest = spawn(game, "Forest");
+    enchant(game, "Elvish Guidance", forest, "Forest", 3);
+    game.state.objects[forest].tapped = false;
+    game.dispatch({ type: "activate-ability", player: A, source: forest, abilityIndex: 0 });
+    expect(game.state.players[A].manaPool.map((u) => u.type)).toEqual(["G"]);
+
+    const { game: next } = setUp();
+    const enchanted = spawn(next, "Forest");
+    enchant(next, "Elvish Guidance", enchanted, "Forest", 3);
+    // Tapped: the Elf itself pays nothing.
+    next.state.objects[spawn(next, "Llanowar Elves")].tapped = true;
+    for (const id of lands(next)) next.state.objects[id].tapped = id !== enchanted;
+    const bears = next.debugSpawn("Grizzly Bears", A, "hand");
+    next.dispatch({ type: "cast-spell", player: A, card: bears, targets: [] });
+    next.advanceUntil(quiet);
+    expect(zoneOf(next, bears)).toBe("battlefield");
+  });
+});
+
 describe("Sword of the Animist", () => {
   it("attacking fetches a basic land onto the battlefield tapped", () => {
     const { game, a } = setUp();

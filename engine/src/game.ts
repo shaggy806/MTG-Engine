@@ -12683,7 +12683,8 @@ export class Game {
         const trigger = ability.trigger;
         if (trigger.on !== "tapped-for-mana") continue;
         const effect = ability.effect;
-        if (effect === null || effect.kind !== "add-mana" || typeof effect.amount !== "number") continue;
+        // Only an `add-mana` (pool.test holds every card to that).
+        if (effect === null || effect.kind !== "add-mana") continue;
         if (!this.matchesWho(trigger.who, tapped.id, holder)) continue;
         if (
           trigger.filter !== undefined &&
@@ -12693,7 +12694,13 @@ export class Game {
         }
         out.push({
           mana: effect.mana,
-          amount: effect.amount,
+          // A counted amount — "an additional {G} for each Elf on the
+          // battlefield" (Elvish Guidance) — is read as the mana is made,
+          // from the trigger's side, like a mana ability's own (rule 605.3a).
+          amount:
+            typeof effect.amount === "number"
+              ? effect.amount
+              : this.liveManaAmount(holder.id, holder.controller, effect.amount),
           holder: holder.id,
           ...(trigger.producing !== undefined ? { producing: trigger.producing } : {}),
         });

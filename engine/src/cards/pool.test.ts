@@ -145,6 +145,27 @@ describe("modal spells", () => {
   });
 });
 
+describe("triggered mana abilities", () => {
+  // Rule 605.1b: a `tapped-for-mana` trigger is never put on the stack —
+  // `Game.tappedForManaExtras` applies it as the mana is made, and reads
+  // only an `add-mana` there, so any other effect would silently do
+  // nothing. Its amount is read with no X and no trigger value (a mana
+  // ability has neither), so one that reads either would add nothing too.
+  it("are each a single add-mana, with an amount the mana's making can read", () => {
+    const unread = POOL_CARDS.flatMap((def) =>
+      def.triggered
+        .filter((ability) => ability.trigger.on === "tapped-for-mana")
+        .filter(
+          (ability) =>
+            ability.effect?.kind !== "add-mana" ||
+            /"x"|triggerValue/.test(JSON.stringify(ability.effect.amount)),
+        )
+        .map(() => def.name),
+    );
+    expect(unread).toEqual([]);
+  });
+});
+
 describe("statics that work from the graveyard", () => {
   // Rule 113.6b: `fromGraveyard` makes a static work only while its card is
   // in a graveyard. Only the layer fold's grants to permanents
