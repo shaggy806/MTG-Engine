@@ -182,14 +182,37 @@ export function activate(
   if (andSettle) settle(game);
 }
 
-/** Advance to `step` of the current or a later turn, with `player`'s
- * priority (alice's). */
+/**
+ * A planeswalker's loyalty ability by its cost — `loyalty(game, ob, -8)` —
+ * so a test never counts `activated` indices (a printed triggered ability
+ * isn't among them). With `atLeast`, its loyalty is first raised to that.
+ */
+export function loyalty(
+  game: Game,
+  source: ObjectId,
+  cost: number,
+  opts: Parameters<typeof activate>[3] & { atLeast?: number } = {},
+): void {
+  const { atLeast, ...rest } = opts;
+  const object = game.state.objects[source];
+  if (atLeast !== undefined && (object.counters.loyalty ?? 0) < atLeast) object.counters.loyalty = atLeast;
+  const index = registryOf(game)
+    .get(object.cardName)
+    .activated.findIndex((a) => a.loyaltyCost === cost);
+  if (index < 0) throw new Error(`${object.cardName} has no ${cost >= 0 ? "+" : ""}${cost} loyalty ability`);
+  activate(game, source, index, rest);
+}
+
+/** Advance to `step` of `player`'s own turn (alice's) — this one, or their
+ * next if it's already there or past — with their priority. Not "when
+ * `player` next has priority in that step": a player gets priority in
+ * every step of everyone's turn. */
 export function toStep(game: Game, step: GameState["turn"]["step"], player: PlayerId = A): void {
   const from = game.state.turn.number;
-  const atFrom = game.state.turn.step === step && game.state.priority.holder === player;
-  game.advanceUntil(
-    (s) => s.turn.step === step && s.priority.holder === player && (!atFrom || s.turn.number > from),
-  );
+  const at = (s: GameState): boolean =>
+    s.turn.step === step && activePlayerOf(s) === player && s.priority.holder === player;
+  const atFrom = at(game.state);
+  game.advanceUntil((s) => at(s) && (!atFrom || s.turn.number > from));
 }
 
 /** The next turn's `step` (precombat main by default), whoever's turn it is. */
