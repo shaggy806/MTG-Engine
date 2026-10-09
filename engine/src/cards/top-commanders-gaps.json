@@ -1022,7 +1022,7 @@
   "mechanic:face-down": {
    "size": "large",
    "ui": true,
-   "description": "Face-down permanents (rule 708): a characteristic-less 2/2, identity hidden per viewer, turning face up (special action, cost, triggers, 'you may turn a permanent face up'), 'enters face down' triggers, leaving play, and a noted card name on a face-down permanent (Magar). Shared by manifest, morph, disguise and cloak."
+   "description": "Face-down permanents (rule 708): a characteristic-less 2/2, identity hidden per viewer, turning face up (special action, cost, triggers, 'you may turn a permanent face up'), 'enters face down' triggers, leaving play, and a noted card name on a face-down permanent (Magar). Shared by manifest, morph, disguise and cloak. Built 2026-10-09: the face-down 2/2 (manifest and cloak, `GameObject.faceDown`), hidden per viewer, turning a manifested or cloaked creature card face up for its mana cost, and revealing it as it leaves; not yet morph, disguise, manifest dread, turn-face-up triggers or effects, or Magar's noted name."
   },
   "mechanic:goad-extensions": {
    "size": "medium",

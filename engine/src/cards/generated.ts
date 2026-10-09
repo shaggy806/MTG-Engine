@@ -5612,6 +5612,7 @@ import _poolRazorvergeThicket from "./pool/razorverge-thicket.js";
 import _poolReachThroughMists from "./pool/reach-through-mists.js";
 import _poolReadTheBones from "./pool/read-the-bones.js";
 import _poolReadyToRumble from "./pool/ready-to-rumble.js";
+import _poolRealityShift from "./pool/reality-shift.js";
 import _poolRealmOfKoh from "./pool/realm-of-koh.js";
 import _poolRealmwalker from "./pool/realmwalker.js";
 import _poolReanimate from "./pool/reanimate.js";
@@ -14380,6 +14381,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolReachThroughMists,
   _poolReadTheBones,
   _poolReadyToRumble,
+  _poolRealityShift,
   _poolRealmOfKoh,
   _poolRealmwalker,
   _poolReanimate,

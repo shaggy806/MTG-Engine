@@ -246,7 +246,7 @@ export type GameEvent =
       readonly objects: readonly ObjectId[];
       /** Where they were revealed from — the caption reads better for it
        * ("revealed from their library"). */
-      readonly from: "library" | "hand" | "graveyard";
+      readonly from: "library" | "hand" | "graveyard" | "battlefield";
     })
   | (Base & {
       readonly type: "cards-chosen-from-zone";
@@ -609,6 +609,22 @@ export type GameEvent =
       readonly type: "permanent-copied";
       readonly object: ObjectId;
       readonly copyOf: string | null;
+    })
+  | (Base & {
+      /** `player` manifested (rule 701.40) — or cloaked (701.58) — the top
+       * card of their library: `object`, now a face-down 2/2 on the
+       * battlefield. Which card it is isn't in the event. */
+      readonly type: "card-manifested";
+      readonly player: PlayerId;
+      readonly object: ObjectId;
+      readonly kind: "manifest" | "cloak";
+    })
+  | (Base & {
+      /** `player` turned the face-down permanent `object` face up (rule
+       * 701.40b), revealing it — no longer a face-down 2/2. */
+      readonly type: "permanent-turned-face-up";
+      readonly player: PlayerId;
+      readonly object: ObjectId;
     })
   | (Base & {
       /** Two permanents exchanged text boxes (rule 612.5 — Deadpool, Trading

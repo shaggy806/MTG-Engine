@@ -172,6 +172,14 @@ export type Action =
       readonly card: ObjectId;
     }
   | {
+      /** Turn a face-down permanent you control face up (rules 701.40b,
+       * 701.58b): a special action any time you have priority, paying its
+       * card's mana cost. */
+      readonly type: "turn-face-up";
+      readonly player: PlayerId;
+      readonly permanent: ObjectId;
+    }
+  | {
       /** Cycle a card from hand (rule 702.29): pay its cycling cost, discard
        * it, draw a card. Any time you could cast an instant. */
       readonly type: "cycle";
@@ -602,6 +610,14 @@ export type LegalAction =
       readonly kind: "foretell";
       readonly card: ObjectId;
       readonly cardName: string;
+    }
+  | {
+      /** One of your face-down permanents can be turned face up — its card
+       * (which only you may see, rule 708.5) and the mana cost to pay. */
+      readonly kind: "turn-face-up";
+      readonly permanent: ObjectId;
+      readonly cardName: string;
+      readonly cost: string;
     }
   | {
       readonly kind: "cycle";

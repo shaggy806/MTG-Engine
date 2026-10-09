@@ -256,6 +256,7 @@ import {
 import type {
   AwaitingDecision,
   CasualtyAsk,
+  FaceDownKind,
   GiftAsk,
   CombatDamageState,
   CommanderLibraryPlacement,
@@ -483,6 +484,10 @@ interface EnterOptions {
    * Necromantic Selection's "It's a black Zombie in addition to its other
    * colors and types." */
   readonly addColors?: readonly Color[];
+  /** It enters face down (rule 708.3: turned face down *before* it enters,
+   * so its own enters abilities neither trigger nor apply) — manifested or
+   * cloaked. */
+  readonly faceDown?: FaceDownKind;
   /** Not about entering: a move to a library says where in it the card is
    * going (the move itself puts it on the bottom, and the caller places it
    * after), so a commander whose 903.9b choice defers the move still goes
@@ -1204,6 +1209,9 @@ export class Game {
       case "foretell":
         this.foretellCard(action.player, action.card);
         break;
+      case "turn-face-up":
+        this.turnFaceUp(action.player, action.permanent);
+        break;
       case "cycle":
         this.cycleCard(action.player, action.card);
         break;
@@ -1375,6 +1383,8 @@ export class Game {
         return this.whyCannotSuspend(action.player, action.card);
       case "foretell":
         return this.whyCannotForetell(action.player, action.card);
+      case "turn-face-up":
+        return this.whyCannotTurnFaceUp(action.player, action.permanent);
       case "cycle":
         return this.whyCannotCycle(action.player, action.card);
       case "cast-spell":
@@ -1721,6 +1731,16 @@ export class Game {
           }),
         );
       }
+    }
+
+    // Turning a face-down permanent face up (rule 701.40b) — a special
+    // action, offered beside its abilities (a face-down 2/2 has none).
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.faceDown === undefined || object.controller !== player) continue;
+      if (this.whyCannotTurnFaceUp(player, id) !== null) continue;
+      const card = this.registry.get(object.cardName);
+      out.push({ kind: "turn-face-up", permanent: id, cardName: card.name, cost: card.manaCost ?? "" });
     }
 
     this.pushActivations(player, out);
@@ -18463,6 +18483,7 @@ export class Game {
           this.animate({ kind: "object", object: id }, kept, false, timestamp);
         }
       },
+      manifestTop: (player, kind) => this.manifestTop(player, kind),
       createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking, separate, exileAtEndStep, attacksThisCombat) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
@@ -21734,6 +21755,8 @@ export class Game {
   private isTransformingDfc(id: ObjectId): boolean {
     const object = this.state.objects[id];
     if (object.faces === undefined || object.faces.length < 2) return false;
+    // A face-down permanent is a 2/2 with no faces of its own (rule 708.2a).
+    if (object.faceDown !== undefined) return false;
     const front = this.frontFaceDef(id);
     if (front.transform) return true;
     // Since the 2025 rules change a modal DFC turns over too, to a face that
@@ -22815,6 +22838,69 @@ export class Game {
     }
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
     return false;
+  }
+
+  /**
+   * `player` manifests (rule 701.40a) — or cloaks (701.58a) — the top card
+   * of their library: turned face down, it goes onto the battlefield under
+   * them as a face-down 2/2 (`GameObject.faceDown`). It's turned face down
+   * before it enters (708.3), so none of its own "as this enters" choices are
+   * asked and its enters abilities don't trigger; other permanents'
+   * replacements and triggers see a 2/2 with no name. Nobody else learns
+   * what it is (708.5). An empty library manifests nothing.
+   */
+  private manifestTop(player: PlayerId, kind: FaceDownKind): void {
+    if (this.state.players[player]?.hasLost !== false) return;
+    const top = this.state.zones.perPlayer[player].library[0];
+    if (top === undefined) return;
+    this.moveObject(top, "battlefield", { faceDown: kind });
+    const entered = this.state.objects[top];
+    if (entered === undefined || entered.zone !== "battlefield") return;
+    this.emit({ type: "card-manifested", player, object: top, kind });
+    this.emit({ type: "permanent-entered-battlefield", object: top });
+  }
+
+  /** Why `player` can't turn the face-down permanent `id` face up (rules
+   * 701.40b, 701.58b): a special action, any time they have priority, for a
+   * permanent they control whose card is a creature card — paying its mana
+   * cost. A card with no mana cost can't be turned face up this way (its
+   * cost can't be paid, 118.6), and neither can a noncreature card
+   * (701.40g); morph and disguise aren't modeled. */
+  private whyCannotTurnFaceUp(player: PlayerId, id: ObjectId): string | null {
+    const blocked = this.whyCannotAct(player);
+    if (blocked !== null) return blocked;
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield" || object.faceDown === undefined) {
+      return "that isn't a face-down permanent";
+    }
+    if (object.controller !== player) return `${player} doesn't control that permanent`;
+    const card = this.registry.get(object.cardName);
+    if (!card.types.includes("creature")) return "that card isn't a creature card";
+    if (card.manaCost === null) return "that card has no mana cost to pay";
+    if (this.payMana(player, parseManaCost(card.manaCost)) === null) {
+      return `${player} cannot pay ${card.manaCost}`;
+    }
+    return null;
+  }
+
+  /** Turn a face-down permanent face up (rule 701.40b): show everyone the
+   * card, pay its mana cost, and it has its own characteristics again —
+   * the same permanent, so it doesn't enter the battlefield (708.8) and
+   * whatever applied to the 2/2 still applies. A special action: the player
+   * keeps priority (116.3c). */
+  private turnFaceUp(player: PlayerId, id: ObjectId): void {
+    const why = this.whyCannotTurnFaceUp(player, id);
+    if (why !== null) throw new Error(why);
+    const object = this.state.objects[id];
+    const card = this.registry.get(object.cardName);
+    const payment = this.payMana(player, parseManaCost(card.manaCost ?? ""));
+    if (payment === null) throw new Error(`${player} cannot pay ${card.manaCost}`);
+    this.executePayment(player, payment);
+    delete object.faceDown;
+    invalidateComputedCache();
+    this.revealFaceDown(id);
+    this.emit({ type: "permanent-turned-face-up", player, object: id });
+    this.afterPlayerAction(player);
   }
 
   private exileByEffect(target: TargetRef, exiledBy?: ObjectId, split = true): void {
@@ -25677,6 +25763,11 @@ export class Game {
   /** The game ends at once (rule 104.1): nobody gets priority again. */
   private endGame(winner: PlayerId | null, reason: string): void {
     this.state.result = { over: true, winner, reason };
+    // Every face-down permanent is revealed at the end of the game (rule
+    // 708.9).
+    for (const id of this.state.zones.shared.battlefield) {
+      if (this.state.objects[id]?.faceDown !== undefined) this.revealFaceDown(id);
+    }
     this.emit({ type: "game-ended", winner, reason });
     this.state.priority.active = false;
     this.state.priority.holder = null;
@@ -26868,6 +26959,7 @@ export class Game {
    */
   private moveObject(id: ObjectId, to: ZoneType, enter: EnterOptions = {}): boolean {
     const from = this.state.objects[id]?.zone;
+    const wasFaceDown = from === "battlefield" && this.state.objects[id]?.faceDown !== undefined;
     // Where the move starts in the log: the events it emits itself (a lone
     // card's `cards-put-into-exile`) already describe the card where it's
     // going, so a public zone's stint covers them too.
@@ -26877,6 +26969,9 @@ export class Game {
     // the way out). See `suspendComputedCache`.
     const moved = suspendComputedCache(() => this.moveObjectUncached(id, to, enter));
     const now = this.state.objects[id]?.zone;
+    // A face-down permanent is revealed as it leaves the battlefield (rule
+    // 708.9) — into a hand or a library too.
+    if (wasFaceDown && now !== undefined && now !== from) this.revealFaceDown(id, startSeq);
     if (from !== undefined && now !== undefined && now !== from) this.trackPublicity(id, from, now, startSeq);
     return moved;
   }
@@ -26907,12 +27002,28 @@ export class Game {
   private openStint(id: ObjectId, from: number = this.state.eventSeq): void {
     const object = this.state.objects[id];
     if (object === undefined) return;
+    // A face-down permanent is public only as a face-down 2/2 (rule 708.5).
+    const name = object.faceDown !== undefined ? printedCardName(object) : faceName(object);
     const open = this.openStintOf(id);
     if (open !== undefined) {
-      open.name = faceName(object);
+      open.name = name;
       return;
     }
-    ((this.state.publicStints ??= {})[id] ??= []).push({ from, name: faceName(object) });
+    ((this.state.publicStints ??= {})[id] ??= []).push({ from, name });
+  }
+
+  /** A face-down permanent is shown to everyone (rule 708.9 — as it leaves
+   * the battlefield, or as it's turned face up): what was known of it until
+   * now (a face-down 2/2) stays that in the log, and from `since` on it's
+   * known as the card it is. */
+  private revealFaceDown(id: ObjectId, since: number = this.state.eventSeq): void {
+    const object = this.state.objects[id];
+    if (object === undefined) return;
+    const open = this.openStintOf(id);
+    if (open !== undefined) open.until = since;
+    ((this.state.publicStints ??= {})[id] ??= []).push({ from: since, name: faceName(object) });
+    if (!this.state.revealedThisTurn.includes(id)) this.state.revealedThisTurn.push(id);
+    this.emit({ type: "cards-revealed", player: object.owner, objects: [id], from: "battlefield" });
   }
 
   /** Knowledge of what each of `ids` is ends now: a library shuffled, a card
@@ -27430,6 +27541,9 @@ export class Game {
     object.foretold = false;
     object.foretoldOnTurn = null;
     object.exiledFaceDown = undefined;
+    // A new object isn't face down (400.7) — `moveObject` revealed it as it
+    // left the battlefield (708.9); one entering face down is turned so below.
+    delete object.faceDown;
     object.exiledWith = undefined;
     // Modes chosen for a targeted modal spell (Phase 11 EG-2) and a kicker
     // paid as it was cast (P8) both end with the stack.
@@ -27493,6 +27607,10 @@ export class Game {
     }
 
     if (to === "battlefield") {
+      // Turned face down before it enters (rule 708.3), so everything about
+      // the entry — its replacements, other permanents' replacements judging
+      // it, the triggers that see it arrive — sees the face-down 2/2.
+      if (enter.faceDown !== undefined) object.faceDown = { kind: enter.faceDown };
       object.enteredBattlefieldOnTurn = this.state.turn.number;
       object.summoningSick = true;
       this.state.timestampSeq += 1;

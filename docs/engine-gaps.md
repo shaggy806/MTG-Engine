@@ -70,8 +70,9 @@ per gap under the same bold title; when a gap closes, delete it in both.
   Glarb, Calamity's Augur's mana value 4 isn't offered from the top.
 - **Not modeled.** Battles, phasing, dungeons/Initiative/the Ring (Lord of the Nazgûl's
   "protection from Ring-bearers" is authored as inert on the strength of this: revisit it when
-  the Ring lands), banding, Companion, snow *sources* (snow mana is generic), face-down
-  permanents (morph, manifest, cloak; face-down exile is built), and text change that
+  the Ring lands), banding, Companion, snow *sources* (snow mana is generic), the rest of
+  face-down permanents (morph, disguise, manifest dread, "turn a permanent face up" effects and
+  turned-face-up triggers — manifest and cloak are built, 2026-10-09, as is face-down exile), and text change that
   replaces words (612.2: Artificial Evolution, Mind Bend, Magical Hack, New Blood — a rework
   of the card format the user ruled not worth one cycle of cards, 2026-10-09; exchanging text
   boxes, 612.5, is built). ROADMAP's Phase 10 deferred these as large or niche. None of them

@@ -53,13 +53,12 @@ What blocks each unimplemented card, and which cards a built feature may have un
 the per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`). Card lists go there; this
 section keeps only what to do next.
 
-- **Now (priority since 2026-09-30): the TDC precons' last missing card** (`SAMPLE_DECKS`, so every
-  bot plays it): Reality Shift (Temur Roar), behind manifest — face-down permanents, which aren't
-  modeled at all (`docs/card-blockers.md`, "Open leads"). The other four landed 2026-10-07.
-  Delete a card's substitution in `sample-decks.ts` as it lands.
-- **The nine other starter precons' 45 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
-  TDC decks.
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,376 of 5,000
+- **Now: the nine other starter precons' 44 stand-ins** (`engine/data/sweep-3/PC-*.json`; the
+  TDC decks have none since 2026-10-09). Delete a card's substitution in `sample-decks.ts` as it
+  lands.
+- **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
+  "Open leads".
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,377 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
@@ -95,7 +94,7 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **A set rule on a graveyard choice** (Lively Dirge's total mana value 4 or less).
 - **Delve and convoke together on an {X} spell** (Chord of Calling under Teval).
 - **The least X a top-of-library cast allows is searched only up to the mana a player can make.**
-- **Not modeled**: battles, phasing, dungeons/Initiative/the Ring, banding, Companion, snow sources, face-down permanents, word-replacing text change (612.2).
+- **Not modeled**: battles, phasing, dungeons/Initiative/the Ring, banding, Companion, snow sources, morph/disguise/manifest dread (face-down permanents are built: manifest and cloak), word-replacing text change (612.2).
 - **"Whenever you activate an ability"** (Rings of Brighthearth).
 - **An O-Ring's return is a triggered ability, not rule 610.3's one-shot effect.**
 - **End-step token removal resolves without the stack** (603.7, 701.21a).
@@ -163,8 +162,7 @@ item lands.
 
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review): with bot speed moved into Settings every step shows at 1366, but at 1024 the track stops at EC.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
-- **What the scenario builder can't say yet** — stolen, transformed or face-down cards, damage, turn-long effects, the stack, the turn number.
-- **Face-down permanents on their controller's board, turned up from the ability menu** (blocked on the engine).
+- **What the scenario builder can't say yet** — stolen, transformed or face-down cards (manifested ones), damage, turn-long effects, the stack, the turn number.
 - **One art-crop primitive** — the art lookup is repeated in six components.
 - **Large live mana amounts by hand** — a count picker past 22 splits; choosing what floats.
 - **Quality-of-life room options (house rules)**, opt-in per room.

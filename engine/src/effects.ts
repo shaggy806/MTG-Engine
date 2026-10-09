@@ -26,6 +26,7 @@ import { EVERY_CREATURE_TYPE, isCreatureType } from "./subtypes.js";
 import type { ThisWayEntry } from "./this-way.js";
 import type {
   DelayedTriggerTiming,
+  FaceDownKind,
   LeaveDestination,
   PlayerCounterKind,
   PlayerEffect,
@@ -3022,6 +3023,18 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /** "Manifest the top card of your library" (rule 701.40), or cloak it
+       * (701.58): it goes onto the battlefield face down as a 2/2 — with ward
+       * {2} if cloaked — under the manifesting player, from their own library.
+       * Reality Shift's "its controller manifests" is `{ controllerOfTarget: 0 }`,
+       * as the target last existed. Several are manifested one at a time
+       * (701.40e). */
+      readonly kind: "manifest";
+      readonly who: PlayerScope | { readonly controllerOfTarget: number };
+      readonly count?: number;
+      readonly cloak?: true;
+    }
+  | {
       readonly kind: "create-token";
       /** Name of a token definition in the {@link CardRegistry}. */
       readonly token: string;
@@ -4856,6 +4869,9 @@ export interface EffectApi {
       readonly duration: PtDuration;
     },
   ): void;
+  /** `player` manifests (or cloaks) the top card of their library — see the
+   * `"manifest"` {@link EffectSpec}. */
+  manifestTop(player: PlayerId, kind: FaceDownKind): void;
   /** Create `count` copies of the named token, controlled by `ctx.controller`. */
   createToken(
     token: string,
@@ -6420,6 +6436,21 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "return-to-hand": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.returnToHand(target, spec.from);
+      return;
+    }
+    case "manifest": {
+      const who = spec.who;
+      let players: readonly PlayerId[];
+      if (typeof who === "string") {
+        players = ctx.playersInScope(who);
+      } else {
+        const ref = ctx.targets[who.controllerOfTarget];
+        const player = ref === undefined ? undefined : ctx.controllerOf(ref);
+        players = player === undefined ? [] : [player];
+      }
+      for (const player of players) {
+        for (let i = 0; i < (spec.count ?? 1); i += 1) ctx.manifestTop(player, spec.cloak === true ? "cloak" : "manifest");
+      }
       return;
     }
     case "exile": {

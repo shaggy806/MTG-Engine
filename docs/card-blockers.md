@@ -22,14 +22,13 @@ lands, add its summary here, not to `BACKLOG.md`.
 Card-level detail behind `BACKLOG.md`'s card items, moved here from it on 2026-10-04. Delete a
 lead when its cards land or turn out blocked on something else (record that in the batch JSON).
 
-- **The TDC precons' last missing card**: Reality Shift, behind manifest (`mechanic:face-down`) —
-  face-down permanents aren't modeled at all: a 2/2 with no name, cost, types or abilities in the
-  layers, hidden from opponents in every view, turned face up as a special action, revealed as it
-  leaves. The other four landed 2026-10-07 (`engine/data/sweep-3/TDC8.json`), each on a feature
-  built for it: dredge (Life from the Loam — `CardDefinition.dredge`, asked before each draw),
+- **The TDC precons are complete** (2026-10-09): Reality Shift landed with face-down permanents
+  (manifest and cloak — `GameObject.faceDown`), the last of the five decks' stand-ins. The four
+  before it landed 2026-10-07 (`engine/data/sweep-3/TDC8.json`): dredge (Life from the Loam),
   `keep-total-power` (Slaughter the Strong), a modal's `optional` and `eachTargetsDifferentPlayer`
-  (Shadrix Silverquill), and `keepsUnspentMana` with a `may`'s `xColor` (Leyline Tyrant). The
-  pool's other dredge cards landed 2026-10-09 (open-leads-recheck.test.ts).
+  (Shadrix Silverquill), and `keepsUnspentMana` (Leyline Tyrant). Cards manifest and cloak may
+  have unblocked (a manifest or cloak with no morph, disguise or "turned face up" trigger):
+  recheck each in the batch records citing `mechanic:face-down`.
 - **The cheap recurring blockers the top-5000 batches found:** "can't cast more than one spell
   each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a spell's
   additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),

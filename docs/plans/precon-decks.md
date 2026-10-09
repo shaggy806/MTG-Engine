@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
-Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 490 of the 495
-non-commander slots are the printed cards; the other 5 are cards the engine doesn't implement
-yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, then the 2026-10-02 features pass 5 — Myriad Landscape, Chaos Warp, Curse of the Swine and two hideaway lands, then the 2026-10-03 mana-and-exile pass 2 — Thundermane Dragon's cast from the top and Grenzo, Havoc Raiser's any-colour spending, the spells pass 1 — Reflections of Littjara — and the copy-on-enter pass 1 — Deceptive Frostkite, the sacrifice-costs pass 2 — Jarad, Golgari Lich Lord and Eliminate the Competition — and the TDC one-offs pass 14 — monstrosity, Omen, exert, riot, skulk, flanking, an ability's divided damage, and the mana pass 1 — Faeburrow Elder, and the TDC-precons pass 45 — a feature or two for each, from Wall of Roots' -0/-1 counter cost to Opportunistic Dragon's "for as long as"), and the curses pass 1 — Curse of Opulence, an Aura enchanting a player — and demonstrate 1, Transforming Flourish, which leaves Jeskai Striker with no stand-ins. Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+Status: **shipped, complete** (2026-09-30; the last stand-in went on 2026-10-09) — `engine/src/sample-decks.ts` is the five
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). All 495
+non-commander slots are the printed cards. Those the engine didn't implement yet were played by
+stand-ins, listed under [Substitutions](#substitutions) below (147 at the swap;
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, then the 2026-10-02 features pass 5 — Myriad Landscape, Chaos Warp, Curse of the Swine and two hideaway lands, then the 2026-10-03 mana-and-exile pass 2 — Thundermane Dragon's cast from the top and Grenzo, Havoc Raiser's any-colour spending, the spells pass 1 — Reflections of Littjara — and the copy-on-enter pass 1 — Deceptive Frostkite, the sacrifice-costs pass 2 — Jarad, Golgari Lich Lord and Eliminate the Competition — and the TDC one-offs pass 14 — monstrosity, Omen, exert, riot, skulk, flanking, an ability's divided damage, and the mana pass 1 — Faeburrow Elder, and the TDC-precons pass 45 — a feature or two for each, from Wall of Roots' -0/-1 counter cost to Opportunistic Dragon's "for as long as"), and the curses pass 1 — Curse of Opulence, an Aura enchanting a player — and demonstrate 1, Transforming Flourish, which leaves Jeskai Striker with no stand-ins, and face-down permanents 1 — Reality Shift, manifest — which leaves none (2026-10-09). Authoring the rest was the card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -98,7 +98,7 @@ it fails for any substitution whose original is now registered, and checks every
 
 The tables below mirror `sample-decks.ts` at the time of the swap; the code is authoritative.
 
-### Temur Roar — Ureni of the Unwritten (17)
+### Temur Roar — Ureni of the Unwritten (16)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -106,7 +106,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Glorybringer | Terror of the Peaks | Five-mana red flying Dragon that removes creatures. |
 | Hellkite Courser | Rorix Bladewing | Six-mana red flying Dragon with haste. |
 | Opportunistic Dragon | Skyship Stalker | Four-mana red flying Dragon. |
-| Reality Shift | Resculpt | Two-mana instant: removal, creature removal. |
 | Reflections of Littjara | Crucible of Fire | Enchantment that rewards a deck of Dragons. |
 | Sarkhan, Soul Aflame | Goreclaw, Terror of Qal Sisma | Makes the deck's big creatures cheaper. |
 | Scourge of the Throne | Savage Ventmaw | Six-mana red-green flying Dragon that rewards attacking. |

@@ -242,6 +242,10 @@ export function candidateActions(
       return [{ type: "suspend", player, card: legal.card }];
     case "foretell":
       return [{ type: "foretell", player, card: legal.card }];
+    // Turning a manifested creature face up: the search weighs it against
+    // passing like any other play.
+    case "turn-face-up":
+      return [{ type: "turn-face-up", player, permanent: legal.permanent }];
     case "cycle":
       return [{ type: "cycle", player, card: legal.card }];
     default:

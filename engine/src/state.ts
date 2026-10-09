@@ -669,6 +669,15 @@ export interface GameObject {
    * unless named. Cleared on any zone change: it's turned face up as it
    * leaves exile. */
   exiledFaceDown?: { readonly lookers: readonly PlayerId[] };
+  /** A **face-down permanent** (rule 708): manifested (701.40) or cloaked
+   * (701.58). It has no characteristics but a face-down 2/2's — no name, no
+   * text, no subtypes, no mana cost, and ward {2} if cloaked (708.2a) — which
+   * are its copiable values, so {@link printedCardName} reads it as one of
+   * the internal {@link FACE_DOWN_CARDS} definitions and every
+   * characteristic and ability read follows. Only its controller may look at
+   * it (708.5). Cleared on any zone change, where it's revealed (708.9);
+   * turned face up as a special action (701.40b). */
+  faceDown?: { readonly kind: FaceDownKind };
   /**
    * The permanent this card was exiled with, in the battlefield stint it was
    * in then — what a linked ability of that object means by "the exiled
@@ -3538,7 +3547,23 @@ export const faceName = (object: GameObject): string => {
  * P/T goes through this; one for its abilities goes through
  * {@link rulesTextName}. */
 export const printedCardName = (object: GameObject): string =>
-  object.copyOf ?? faceName(object);
+  object.faceDown !== undefined ? FACE_DOWN_CARDS[object.faceDown.kind] : (object.copyOf ?? faceName(object));
+
+/** How a permanent came to be face down: manifested (rule 701.40) or cloaked
+ * (701.58, a manifest with ward {2}). Morph and disguise aren't modeled. */
+export type FaceDownKind = "manifest" | "cloak";
+
+/** The registry names of the face-down 2/2s (rule 708.2a): internal
+ * definitions, not cards — `cards/face-down.ts` defines them, and
+ * `createDefaultRegistry` registers them beside the pool. A face-down
+ * permanent's {@link printedCardName} is one of these, so it has its
+ * characteristics as its copiable values (708.2): a face-down permanent that
+ * becomes a copy stays a face-down 2/2 (708.10, since this is read before
+ * `copyOf`), and a Clone copying one copies the 2/2. */
+export const FACE_DOWN_CARDS: Readonly<Record<FaceDownKind, string>> = {
+  manifest: "Face-Down Creature",
+  cloak: "Face-Down Creature (Ward {2})",
+};
 
 /** The card whose rules text this object has (layer 3): another's, once an
  * exchange of text boxes gave it that (`GameObject.textFrom`, rule 612.5),
@@ -3568,6 +3593,9 @@ export const manaCostOverride = (object: GameObject): string | null | undefined 
 };
 
 export const nameOf = (object: GameObject): string => {
+  // A face-down permanent has no name at all (rule 708.2a), whatever a copy
+  // effect's exception would have named it: its registry key stands in.
+  if (object.faceDown !== undefined) return printedCardName(object);
   for (let i = object.modifiers.length - 1; i >= 0; i -= 1) {
     const m = object.modifiers[i];
     if (m.copiable === true && m.setName !== undefined) return m.setName;

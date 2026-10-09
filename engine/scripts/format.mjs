@@ -87,6 +87,10 @@ export const makeFormatter = (game) => {
         return `${e.player} discards ${e.objects.map(name).join(", ")}`;
       case "cards-revealed":
         return `${e.player} reveals ${e.objects.map(name).join(", ")} from their ${e.from}`;
+      case "card-manifested":
+        return `${e.player} ${e.kind === "cloak" ? "cloaks" : "manifests"} ${name(e.object)}`;
+      case "permanent-turned-face-up":
+        return `${e.player} turns ${name(e.object)} face up`;
       case "cards-chosen-from-zone":
         return e.objects.length > 0
           ? `${e.player} takes ${e.objects.map(name).join(", ")}`

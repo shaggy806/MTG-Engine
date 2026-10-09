@@ -156,6 +156,7 @@ import _poolQueenBrahne from "../pool/queen-brahne.js";
 import _poolRampagingHippo from "../pool/rampaging-hippo.js";
 import _poolRaugrinCrystal from "../pool/raugrin-crystal.js";
 import _poolRayOfDissolution from "../pool/ray-of-dissolution.js";
+import _poolRealityShift from "../pool/reality-shift.js";
 import _poolRegalForce from "../pool/regal-force.js";
 import _poolRejuvenatingSprings from "../pool/rejuvenating-springs.js";
 import _poolRelentlessAssault from "../pool/relentless-assault.js";
@@ -414,6 +415,7 @@ const shard: CardShard = {
     _poolRampagingHippo,
     _poolRaugrinCrystal,
     _poolRayOfDissolution,
+    _poolRealityShift,
     _poolRegalForce,
     _poolRejuvenatingSprings,
     _poolRelentlessAssault,

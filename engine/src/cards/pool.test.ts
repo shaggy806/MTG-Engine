@@ -17,6 +17,7 @@ import { describe, expect, it } from "vitest";
 import { CARD_SHARD_COUNT, cardShardOf, loadCardShard } from "./card-shards.js";
 import { isCardFront, isDeckableCard, isTokenCard } from "./classify.js";
 import type { CardDefinition } from "./define.js";
+import { FACE_DOWN_DEFINITIONS } from "./face-down.js";
 import { POOL_CARDS, TOKEN_CARDS } from "./generated.js";
 import { PINNED_ART, TOKEN_NAMES } from "./generated-index.js";
 import { createDefaultRegistry } from "./registry.js";
@@ -47,11 +48,17 @@ describe("card pool layout", () => {
     }
   });
 
-  it("the registry contains exactly the cards on disk", () => {
+  it("the registry contains exactly the cards on disk, and the face-down 2/2s", () => {
     const onDisk = new Set(files.map(([, mod]) => mod.default.name));
     const registry = createDefaultRegistry();
 
-    expect(registry.size).toBe(onDisk.size);
+    // The internal face-down definitions (rule 708.2a — `cards/face-down.ts`)
+    // are registered by hand, never written to disk as cards.
+    expect(registry.size).toBe(onDisk.size + FACE_DOWN_DEFINITIONS.length);
+    for (const def of FACE_DOWN_DEFINITIONS) {
+      expect(onDisk.has(def.name), `${def.name} is a card file too`).toBe(false);
+      expect(registry.has(def.name)).toBe(true);
+    }
     for (const name of onDisk) {
       expect(
         registry.has(name),

@@ -202,9 +202,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Yavimaya Coast", 1],
       ["Zenith Festival", 1],
     ],
-    substitutions: [
-      sub("Reality Shift", "Resculpt", "Two-mana instant: removal, creature removal."),
-    ],
+    substitutions: [],
   }),
   precon({
     name: "Sultai Arisen",

@@ -316,6 +316,9 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "add-types": (n, v) => v.touch(n.target, "either", MINOR),
   "animate-all": none,
   // "Its controller creates a 3/3 Beast" rides on the removal it follows.
+  // Reality Shift's manifest is the consolation for the creature exiled: it
+  // aims at nothing.
+  manifest: none,
   "create-token": (n, v) => v.touch(n.who === "target-controller" ? 0 : undefined, "help", MINOR),
   // A copy goes to the copied permanent's controller unless the card says
   // it's yours (Hate Mirage).

@@ -210,6 +210,11 @@ export interface VisibleObject {
    * Only ever `true` in the owner's own view (opponents don't see the id's
    * entry in `objects` at all). */
   readonly foretold: boolean;
+  /** A face-down permanent (rule 708 — manifested or cloaked): everything
+   * else here is the face-down 2/2's (`cardName` is its internal name, no
+   * art), and `card` — the card it really is — is in its controller's view
+   * only, who may look at it (708.5). */
+  readonly faceDown?: { readonly kind: "manifest" | "cloak"; readonly card?: string };
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   readonly attachedTo: ObjectId | null;
   /** The player this Aura is attached to — a Curse's "Enchant player" —
@@ -349,8 +354,12 @@ function visible(
   state: GameState,
   registry: CardRegistry,
   id: ObjectId,
+  viewer?: PlayerId,
 ): VisibleObject {
   const object = state.objects[id];
+  // A face-down permanent shows only a face-down 2/2 (rule 708.2a), and
+  // which card it is only to its controller (708.5).
+  const faceDown = object.zone === "battlefield" ? object.faceDown : undefined;
   const printedName = printedCardName(object);
   const def = registry.get(printedName);
   const chosen = chosenOf(object);
@@ -417,14 +426,23 @@ function visible(
     id: object.id,
     // The permanent's true identity ("Clone"); `copyOf` carries the copied
     // card's name (rule 707) and the client renders that face.
-    cardName: object.cardName,
-    copyOf: object.copyOf,
-    faceName: faceName(object),
+    cardName: faceDown !== undefined ? printedName : object.cardName,
+    copyOf: faceDown !== undefined ? null : object.copyOf,
+    faceName: faceDown !== undefined ? printedName : faceName(object),
     ...(nameOf(object) !== printedCardName(object) ? { name: nameOf(object) } : {}),
-    faces: object.faces === undefined ? null : [...object.faces],
-    ...spellFaceOf(registry, object),
-    art: printing ?? def.art,
-    faceIsBack,
+    faces: object.faces === undefined || faceDown !== undefined ? null : [...object.faces],
+    ...(faceDown !== undefined ? {} : spellFaceOf(registry, object)),
+    art: faceDown !== undefined ? null : (printing ?? def.art),
+    faceIsBack: faceDown !== undefined ? false : faceIsBack,
+    ...(faceDown !== undefined
+      ? {
+          faceDown: {
+            kind: faceDown.kind,
+            // Revealed to everyone once the game is over (rule 708.9).
+            ...(viewer === object.controller || state.result.over ? { card: object.cardName } : {}),
+          },
+        }
+      : {}),
     owner: object.owner,
     controller: object.controller,
     zone: object.zone,
@@ -475,7 +493,8 @@ function visible(
     foretold: object.foretold ?? false,
     attachedTo: object.attachedTo,
     attachedToPlayer: object.attachedToPlayer ?? null,
-    isCommander: object.isCommander,
+    // A face-down commander is a commander only to the one who may look.
+    isCommander: object.isCommander && (faceDown === undefined || viewer === object.controller),
     goadedBy: [...goadersOf(state, registry, id)],
     suspected: object.zone === "battlefield" && object.suspectedAt !== undefined,
   };
@@ -716,7 +735,7 @@ function viewForUncached(
   ]);
   for (const id of visibleIds) {
     if (state.objects[id] !== undefined) {
-      const base = visible(state, registry, id);
+      const base = visible(state, registry, id, viewer);
       const caster = casterOf.get(id);
       const cost =
         options.effectiveCost !== undefined && caster !== undefined
