@@ -183,6 +183,7 @@ import _poolRockslideElemental from "../pool/rockslide-elemental.js";
 import _poolRootwaterDiver from "../pool/rootwater-diver.js";
 import _poolRotcrownGhoul from "../pool/rotcrown-ghoul.js";
 import _poolSaheeliSublimeArtificer from "../pool/saheeli-sublime-artificer.js";
+import _poolSarkhanTheDragonspeaker from "../pool/sarkhan-the-dragonspeaker.js";
 import _poolSatyrGrovedancer from "../pool/satyr-grovedancer.js";
 import _poolSavageTwister from "../pool/savage-twister.js";
 import _poolScourgeOfValkas from "../pool/scourge-of-valkas.js";
@@ -452,6 +453,7 @@ const shard: CardShard = {
     _poolRootwaterDiver,
     _poolRotcrownGhoul,
     _poolSaheeliSublimeArtificer,
+    _poolSarkhanTheDragonspeaker,
     _poolSatyrGrovedancer,
     _poolSavageTwister,
     _poolScourgeOfValkas,

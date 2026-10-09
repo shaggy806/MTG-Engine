@@ -18683,8 +18683,16 @@ export class Game {
         this.emit({ type: "combat-damage-prevention-set" });
       },
       preventDamage: (target, amount, combatOnly) => {
-        if (amount <= 0) return;
-        this.state.preventionShields.push({ target, amount, combatOnly });
+        if (amount !== "all" && amount <= 0) return;
+        // A shield on an object is for that object (rule 400.7): this stint.
+        const stint =
+          target.kind === "object" ? { zoneChangeCount: this.state.objects[target.object]?.zoneChangeCount ?? 0 } : {};
+        if (amount === "all") {
+          this.state.preventionShields.push({ target, amount: 0, combatOnly, all: true, ...stint });
+          this.emit({ type: "prevention-shield-created", target, amount: 0, all: true });
+          return;
+        }
+        this.state.preventionShields.push({ target, amount, combatOnly, ...stint });
         this.emit({ type: "prevention-shield-created", target, amount });
       },
       chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn, otherCost, about, xColor) =>
@@ -21714,6 +21722,7 @@ export class Game {
       readonly power: number;
       readonly toughness: number;
       readonly addTypes: readonly CardType[];
+      readonly setTypes?: readonly CardType[];
       readonly addSubtypes: readonly string[];
       readonly setSubtypes?: readonly string[];
       readonly setColors?: readonly Color[];
@@ -21736,6 +21745,7 @@ export class Game {
       toughness: 0,
       keywords: [...opts.keywords],
       addTypes: [...opts.addTypes],
+      ...(opts.setTypes ? { setTypes: [...opts.setTypes] } : {}),
       addSubtypes: [...opts.addSubtypes],
       ...(opts.setSubtypes ? { setSubtypes: [...opts.setSubtypes] } : {}),
       ...(opts.setColors ? { setColors: [...opts.setColors] } : {}),
@@ -24901,9 +24911,15 @@ export class Game {
   ): boolean {
     if (shield.combatOnly && !combat) return false;
     if (shield.target.kind !== target.kind) return false;
-    return shield.target.kind === "player"
-      ? shield.target.player === (target as { player: PlayerId }).player
-      : shield.target.object === (target as { object: ObjectId }).object;
+    if (shield.target.kind === "player") return shield.target.player === (target as { player: PlayerId }).player;
+    const object = (target as { object: ObjectId }).object;
+    if (shield.target.object !== object) return false;
+    // Only the object it was made for (rule 400.7), not that card back from
+    // another zone.
+    return (
+      shield.zoneChangeCount === undefined ||
+      (this.state.objects[object]?.zoneChangeCount ?? 0) === shield.zoneChangeCount
+    );
   }
 
   /** Run `amount` damage aimed at `target` through the one-shot prevention
@@ -24919,13 +24935,14 @@ export class Game {
     for (const shield of this.state.preventionShields) {
       if (through <= 0) break;
       if (!this.shieldCovers(shield, target, combat)) continue;
-      const prevented = Math.min(through, shield.amount);
+      // An "all damage this turn" shield takes the whole hit and stays.
+      const prevented = shield.all === true ? through : Math.min(through, shield.amount);
       if (prevented <= 0) continue;
-      shield.amount -= prevented;
+      if (shield.all !== true) shield.amount -= prevented;
       through -= prevented;
       this.emit({ type: "damage-prevented", source, target, amount: prevented });
     }
-    this.state.preventionShields = this.state.preventionShields.filter((s) => s.amount > 0);
+    this.state.preventionShields = this.state.preventionShields.filter((s) => s.all === true || s.amount > 0);
     return through;
   }
 
@@ -25276,8 +25293,11 @@ export class Game {
     // read before the damage lands.
     this.recordDamage(source, object, amount, sourceLastKnown);
     // Damage to a planeswalker removes that many loyalty counters (rule
-    // 120.3c / 306.7) — it's not "marked" like a creature.
-    if (computeCharacteristics(this.state, this.registry, target.object).types.includes("planeswalker")) {
+    // 120.3c / 306.7) — it's not "marked" like a creature's. One that's a
+    // creature too (Gideon Jura's 0) gets both: the loyalty goes and the
+    // damage is marked as well (120.3c and 120.3d-e each apply).
+    const recipientTypes = computeCharacteristics(this.state, this.registry, target.object).types;
+    if (recipientTypes.includes("planeswalker") && !recipientTypes.includes("creature")) {
       object.counters.loyalty = (object.counters.loyalty ?? 0) - amount;
       this.emit({ type: "damage-dealt", source, target, amount, combat, ...by, ...many });
       this.emit({
@@ -25288,6 +25308,15 @@ export class Game {
       });
       this.applyLifelink(source, amount, sourceLastKnown);
       return amount;
+    }
+    if (recipientTypes.includes("planeswalker")) {
+      object.counters.loyalty = (object.counters.loyalty ?? 0) - amount;
+      this.emit({
+        type: "loyalty-changed",
+        object: target.object,
+        delta: -amount,
+        loyalty: object.counters.loyalty,
+      });
     }
     // From a source with wither or infect, damage to a creature isn't marked:
     // the source's controller puts that many -1/-1 counters on it instead

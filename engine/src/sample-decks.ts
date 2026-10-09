@@ -672,7 +672,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Loaming Shaman", "Scavenging Ooze", "Cheap green creature that interacts with graveyards."),
-      sub("Sarkhan, the Dragonspeaker", "Garruk Wildspeaker", "Green planeswalker that makes creatures and has an overrun finisher."),
     ],
   }),
   precon({

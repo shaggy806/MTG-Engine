@@ -23,6 +23,7 @@ import {
   keywords,
   lands,
   life,
+  loyalty,
   named,
   pickModes,
   pickPermanents,
@@ -30,10 +31,12 @@ import {
   pt,
   ref,
   spawn,
+  subtypes,
   supertypes,
   table,
   toHand,
   toStep,
+  types,
   tokensNamed,
   watchTargets,
   zone,
@@ -360,5 +363,65 @@ describe("Ob Nixilis Reignited", () => {
     expect(hand(game).length).toBe(before + 1);
     expect(life(game, A)).toBe(19);
     expect(counters(game, ob, "loyalty")).toBe(6);
+  });
+});
+
+describe("Sarkhan, the Dragonspeaker", () => {
+  it("+1: a 4/4 Dragon creature and no longer a planeswalker — damage is marked, loyalty untouched", () => {
+    const { game } = table();
+    const sarkhan = spawn(game, "Sarkhan, the Dragonspeaker");
+    loyalty(game, sarkhan, 1);
+    expect(types(game, sarkhan)).toEqual(["creature"]);
+    expect(subtypes(game, sarkhan)).toEqual(["Dragon"]);
+    expect(supertypes(game, sarkhan)).toContain("legendary");
+    expect(pt(game, sarkhan)).toEqual({ power: 4, toughness: 4 });
+    expect([...keywords(game, sarkhan)].sort()).toEqual(["flying", "haste", "indestructible"]);
+    game.debugApplyEffect(B, { kind: "damage", amount: 3, target: 0 }, [ref(sarkhan)]);
+    settle(game);
+    expect(counters(game, sarkhan, "loyalty")).toBe(5);
+    expect(game.state.objects[sarkhan].damageMarked).toBe(3);
+    toStep(game, "upkeep", B);
+    expect(types(game, sarkhan)).toEqual(["planeswalker"]);
+    expect(counters(game, sarkhan, "loyalty")).toBe(5);
+  });
+
+  it("−6: two more cards each draw step, and the hand discarded at each end step", () => {
+    const { game } = table();
+    const sarkhan = spawn(game, "Sarkhan, the Dragonspeaker");
+    loyalty(game, sarkhan, -6, { atLeast: 6 });
+    toStep(game, "end");
+    settle(game);
+    expect(hand(game).length).toBe(0);
+    toStep(game, "precombat-main");
+    // The draw step's own card and the emblem's two.
+    expect(hand(game).length).toBe(3);
+  });
+});
+
+describe("a planeswalker that's also a creature (rule 120.3)", () => {
+  it("loses loyalty and is marked with the damage", () => {
+    const { game } = table();
+    const ob = spawn(game, "Ob Nixilis Reignited");
+    game.debugApplyEffect(
+      A,
+      { kind: "animate", target: 0, power: 6, toughness: 6, addTypes: ["creature"], addSubtypes: [], duration: "end-of-turn" },
+      [ref(ob)],
+    );
+    game.debugApplyEffect(B, { kind: "damage", amount: 2, target: 0 }, [ref(ob)]);
+    settle(game);
+    expect(counters(game, ob, "loyalty")).toBe(3);
+    expect(game.state.objects[ob].damageMarked).toBe(2);
+  });
+});
+
+describe("prevent-damage amount: \"all\"", () => {
+  it("prevents every hit to its target this turn and isn't used up", () => {
+    const { game } = table();
+    const wurm = spawn(game, "Craw Wurm");
+    game.debugApplyEffect(A, { kind: "prevent-damage", target: 0, amount: "all" }, [ref(wurm)]);
+    for (const n of [3, 5]) game.debugApplyEffect(B, { kind: "damage", amount: n, target: 0 }, [ref(wurm)]);
+    settle(game);
+    expect(game.state.objects[wurm].damageMarked).toBe(0);
+    expect(zone(game, wurm)).toBe("battlefield");
   });
 });

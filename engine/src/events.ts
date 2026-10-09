@@ -778,6 +778,9 @@ export type GameEvent =
       readonly type: "prevention-shield-created";
       readonly target: TargetRef;
       readonly amount: number;
+      /** It prevents all damage to `target` this turn (Gideon Jura's 0);
+       * `amount` is 0 then. */
+      readonly all?: true;
     })
   | (Base & {
       /** A player's draw was replaced by another player drawing instead

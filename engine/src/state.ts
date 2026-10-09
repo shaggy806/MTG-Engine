@@ -2780,6 +2780,14 @@ export interface PreventionShield {
   amount: number;
   /** Only prevents combat damage. */
   readonly combatOnly: boolean;
+  /** Prevents *all* damage to `target` this turn and is never used up
+   * (Gideon Jura's "prevent all damage that would be dealt to him this
+   * turn"); `amount` is unused. */
+  readonly all?: true;
+  /** For an object target: the stint it was made for (rule 400.7) — once
+   * that object has changed zones it's a new object the shield doesn't
+   * cover. Absent on a state saved before it was recorded. */
+  readonly zoneChangeCount?: number;
 }
 
 /**

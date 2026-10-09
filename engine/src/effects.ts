@@ -2990,6 +2990,13 @@ export type EffectSpec =
       readonly power: EffectAmount;
       readonly toughness: EffectAmount;
       readonly addTypes: readonly CardType[];
+      /** "Becomes a [type]" with no "in addition" and no "it's still a …":
+       * these card types *replace* its others (rule 205.1a), and a subtype
+       * that went only with a lost type goes too — Sarkhan, the
+       * Dragonspeaker's +1, "becomes a legendary 4/4 red Dragon creature",
+       * stops being a planeswalker (no Sarkhan type, no loyalty lost while
+       * it isn't one). Supertypes stay. */
+      readonly setTypes?: readonly CardType[];
       readonly addSubtypes: readonly string[];
       /** Replace its subtypes of the same kind (Turn to Frog: "a … Frog" —
        * its creature types; rule 205.1a). */
@@ -3330,10 +3337,14 @@ export type EffectSpec =
       /** "Prevent the next `amount` damage that would be dealt to `target`
        * this turn" (Healing Salve — rule 614.9 / ROADMAP Phase 11 EG-6). A
        * one-shot prevention *shield* on `GameState.preventionShields`, consumed
-       * in `dealDamage`. `combatOnly` narrows it to combat damage. */
+       * in `dealDamage`. `combatOnly` narrows it to combat damage. `amount:
+       * "all"` is "prevent all damage that would be dealt to [it] this turn",
+       * never used up — Gideon Jura's 0, `target: "source"`. A shield on an
+       * object covers only that object (rule 400.7): one that changes zones
+       * is a new object without it. */
       readonly kind: "prevent-damage";
-      readonly target: number;
-      readonly amount: EffectAmount;
+      readonly target: EffectTargetRef;
+      readonly amount: EffectAmount | "all";
       readonly combatOnly?: boolean;
     }
   | {
@@ -4893,6 +4904,7 @@ export interface EffectApi {
       readonly power: number;
       readonly toughness: number;
       readonly addTypes: readonly CardType[];
+      readonly setTypes?: readonly CardType[];
       readonly addSubtypes: readonly string[];
       readonly setSubtypes?: readonly string[];
       readonly setColors?: readonly Color[];
@@ -5020,7 +5032,7 @@ export interface EffectApi {
   preventAllCombatDamage(by?: CardFilter): void;
   /** Add a one-shot damage-prevention shield on `target` (a player or object)
    * for `amount` damage this turn — Healing Salve (ROADMAP Phase 11 EG-6). */
-  preventDamage(target: TargetRef, amount: number, combatOnly: boolean): void;
+  preventDamage(target: TargetRef, amount: number | "all", combatOnly: boolean): void;
   /** Raise a `choose-modes` decision — see the `modal` / `may` {@link EffectSpec}.
    * The chosen modes' effects are applied after the controller answers.
    * `onDecline` (a `may` effect's `else` only) applies when zero modes end up
@@ -7282,6 +7294,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           power: amountValue(spec.power, ctx),
           toughness: amountValue(spec.toughness, ctx),
           addTypes: spec.addTypes,
+          setTypes: spec.setTypes,
           addSubtypes: spec.addSubtypes,
           setSubtypes: spec.setSubtypes,
           setColors: spec.setColors,
@@ -7487,9 +7500,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.preventAllCombatDamage(spec.by);
       return;
     case "prevent-damage": {
-      const ref = ctx.targets[spec.target];
+      const ref = resolveEffectTarget(spec.target, ctx);
       if (ref !== undefined) {
-        ctx.preventDamage(ref, amountValue(spec.amount, ctx), spec.combatOnly ?? false);
+        ctx.preventDamage(ref, spec.amount === "all" ? "all" : amountValue(spec.amount, ctx), spec.combatOnly ?? false);
       }
       return;
     }

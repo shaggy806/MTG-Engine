@@ -6036,6 +6036,7 @@ import _poolSarcomiteMyr from "./pool/sarcomite-myr.js";
 import _poolSarinthSteelseeker from "./pool/sarinth-steelseeker.js";
 import _poolSarkhanFireblood from "./pool/sarkhan-fireblood.js";
 import _poolSarkhanSoulAflame from "./pool/sarkhan-soul-aflame.js";
+import _poolSarkhanTheDragonspeaker from "./pool/sarkhan-the-dragonspeaker.js";
 import _poolSarkhanUnbroken from "./pool/sarkhan-unbroken.js";
 import _poolSarkhansCatharsis from "./pool/sarkhans-catharsis.js";
 import _poolSarkhansTriumph from "./pool/sarkhans-triumph.js";
@@ -14827,6 +14828,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSarinthSteelseeker,
   _poolSarkhanFireblood,
   _poolSarkhanSoulAflame,
+  _poolSarkhanTheDragonspeaker,
   _poolSarkhanUnbroken,
   _poolSarkhansCatharsis,
   _poolSarkhansTriumph,
