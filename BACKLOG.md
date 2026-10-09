@@ -59,7 +59,7 @@ section keeps only what to do next.
   Delete a card's substitution in `sample-decks.ts` as it lands.
 - **The nine other starter precons' 45 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
   TDC decks.
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,373 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,376 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
@@ -102,12 +102,6 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **Replacement ordering** — no general `choose-replacement-order` (616.1).
 - **Two opponents' Notion Thieves aren't ordered by the drawing player.**
 - **Toxic's last two shapes** (Skrelv, Defector Mite; Skrelv's Hive).
-- **Revealing a card "of a type" from hand reads printed subtypes** (changeling, 702.73a).
-- **"Return it transformed" brings back a card that can't transform** (712.14a).
-- **A sacrifice trigger misses its own sacrifice** (603.10a): "whenever you sacrifice this or
-  another …", and Korvold sacrificing himself.
-- **A tapped-for-mana trigger adds only a fixed amount**: "an additional {G} for each Elf" adds
-  nothing.
 - **Damage modifiers apply in a fixed order** (616.1).
 - **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape** — Will of the Jeskai, Kwain, Forced Fruition, Ruric Thar, Spellshock, Magebane Lizard, Black Mage's Rod.
 - **Static-effect dependency ordering** (613.8) beyond layer 4's type grants.
@@ -126,6 +120,7 @@ when a card that needs it is authored.
 
 - **Counters put as a cost skip counter replacements and prohibitions.**
 - **Convoke with a target-dependent cost.**
+- **A ceased token's last-known information lasts only the turn** (`ceasedTokens`; delayed triggers carry their own since 2026-10-09).
 - **A `{T}` ability granted to a token stack taps the whole stack** without splitting one off.
 - **Convoke with a choice of additional costs** (`castableAt` passes no `costOption`).
 

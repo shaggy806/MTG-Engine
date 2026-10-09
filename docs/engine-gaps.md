@@ -107,24 +107,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
   Skrelv, Defector Mite, which also needs hexproof from a colour) and a static scoped to
   "creatures with toxic" (Skrelv's Hive: toxic is folded in the layer such a scope would have
   to wait for).
-- **Revealing a card "of a type" from hand reads printed subtypes.** `Game.revealableFromHand`
-  (`tappedUnlessRevealFromHand`) checks each card's printed `subtypes`, so a changeling card in
-  hand isn't offered as a Treefolk or Dragon to reveal (rule 702.73a: it has every creature type
-  in every zone). Temple of the Dragon Queen has it today; Murmuring Bosk waits on it.
-- **"Return it transformed" brings back a card that can't transform.** Rule 712.14a: a card
-  that isn't double-faced, told to enter transformed, stays where it is; `flicker` with
-  `transformed` returns it normally. Clive, Ifrit's Dominant has it today; Dion, Bahamut's
-  Dominant and The Legend of Roku wait on it (found in the no-engine-work pass, not re-run).
-- **A sacrifice trigger misses its own sacrifice.** Rule 603.10a: an ability that triggers on a
-  permanent being sacrificed "looks back in time", so it triggers when its own source is the one
-  sacrificed. `detectTriggers` (`game.ts`) scans a departed object's own abilities only for
-  `permanent-destroyed` and `permanent-left-battlefield`, not `permanent-sacrificed`, so
-  Korvold, Fae-Cursed King sacrificing himself doesn't trigger his own ability today. Esoteric
-  Duplicator ("whenever you sacrifice this artifact or another artifact") waits on it (batch 36).
-- **A tapped-for-mana trigger adds only a fixed amount.** `Game.tappedForManaExtras` skips a
-  `tapped-for-mana` trigger whose `add-mana` amount isn't a number, so a card authored with a
-  count there silently adds nothing and `pool.test` doesn't catch it. Elvish Guidance ("an
-  additional {G} for each Elf you control") waits on it (batch 36).
 - **Damage modifiers apply in a fixed order.** When a doubler (Dictate of the Twin Gods,
   Torbran, Gratuitous Violence) meets prevention or another modifier, the affected player (or
   controller of the affected object) chooses the order (rule 616.1); the engine fixes it. The
@@ -200,6 +182,12 @@ that needs it is authored.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range.
 
+- **A ceased token's last-known information lasts only the turn.** `GameState.ceasedTokens`
+  (a token that has ceased to exist, rule 704.5d, read by last-known information) is emptied as
+  each turn begins. Since 2026-10-09 a delayed trigger whose trigger object was such a token keeps
+  its snapshot (`DelayedTrigger.triggerObjectCeased` — Esoteric Duplicator copying a Clue
+  sacrificed in an end step, at the next turn's end step), but anything else reading a ceased
+  token on a later turn still loses it. Latent: no other pool card is known to.
 - **A `{T}` ability granted to a token stack taps the whole stack.** Activating a granted
   activated `{T}` ability on a compacted stack (`stackCount`) taps every token rather than
   splitting one off first. Ordinary token stacks have no activated abilities; it needs a static

@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3373 already implemented / 1627 missing (marks refreshed 2026-10-09)
+3376 already implemented / 1624 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2692,7 +2692,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2699  Careful Study                            {U}              Sorcery
 [x]  2700  Anzrag, the Quake-Mole                   {2}{R}{G}        Legendary Creature — Mole God
 [ ]  2701  Camellia, the Seedmiser                  {1}{B}{G}        Legendary Creature — Squirrel Warlock
-[ ]  2702  Murmuring Bosk                           {0}              Land — Forest
+[x]  2702  Murmuring Bosk                           {0}              Land — Forest
 [ ]  2703  Heroes' Podium                           {5}              Legendary Artifact
 [ ]  2704  Hyena Umbra                              {W}              Enchantment — Aura
 [ ]  2705  Cloudstone Curio                         {3}              Artifact
@@ -4139,7 +4139,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4146  Extinguisher Battleship                  {8}              Artifact — Spacecraft
 [ ]  4147  Assault Suit                             {4}              Artifact — Equipment
 [x]  4148  Dawn of a New Age                        {1}{W}           Enchantment
-[ ]  4149  Dion, Bahamut's Dominant // Bahamut, Warden of Light {4}              Legendary Creature — Human Noble Knight // Legendary Enchantment Creature — Saga Dragon
+[x]  4149  Dion, Bahamut's Dominant // Bahamut, Warden of Light {4}              Legendary Creature — Human Noble Knight // Legendary Enchantment Creature — Saga Dragon
 [x]  4150  Tymna the Weaver                         {1}{W}{B}        Legendary Creature — Human Cleric
 [ ]  4151  Amalia Benavides Aguirre                 {W}{B}           Legendary Creature — Vampire Scout
 [ ]  4152  Queen Allenal of Ruadach                 {G}{W}{W}        Legendary Creature — Elf Noble
@@ -4149,7 +4149,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4156  Lumbering Worldwagon                     {2}{G}           Artifact — Vehicle
 [ ]  4157  Elesh Norn // The Argent Etchings        {4}              Legendary Creature — Phyrexian Praetor // Enchantment — Saga
 [ ]  4158  Benthic Anomaly                          {6}{U}           Creature — Eldrazi Serpent
-[ ]  4159  The Legend of Roku // Avatar Roku        {4}              Enchantment — Saga // Legendary Creature — Avatar
+[x]  4159  The Legend of Roku // Avatar Roku        {4}              Enchantment — Saga // Legendary Creature — Avatar
 [ ]  4160  Realms Uncharted                         {2}{G}           Instant
 [x]  4161  Retraction Helix                         {U}              Instant
 [x]  4162  Alphinaud Leveilleur                     {3}{U}           Legendary Creature — Elf Wizard
