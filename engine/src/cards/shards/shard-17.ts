@@ -81,6 +81,7 @@ import _poolFaerieVandal from "../pool/faerie-vandal.js";
 import _poolFearOfSurveillance from "../pool/fear-of-surveillance.js";
 import _poolFeatherOfFlight from "../pool/feather-of-flight.js";
 import _poolFervor from "../pool/fervor.js";
+import _poolFetchQuest from "../pool/fetch-quest.js";
 import _poolFlameSpirit from "../pool/flame-spirit.js";
 import _poolForerunnerOfTheLegion from "../pool/forerunner-of-the-legion.js";
 import _poolForlornFlats from "../pool/forlorn-flats.js";
@@ -357,6 +358,7 @@ const shard: CardShard = {
     _poolFearOfSurveillance,
     _poolFeatherOfFlight,
     _poolFervor,
+    _poolFetchQuest,
     _poolFlameSpirit,
     _poolForerunnerOfTheLegion,
     _poolForlornFlats,

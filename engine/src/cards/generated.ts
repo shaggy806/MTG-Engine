@@ -922,6 +922,7 @@ import _poolBrainstone from "./pool/brainstone.js";
 import _poolBrainstorm from "./pool/brainstorm.js";
 import _poolBrainsurge from "./pool/brainsurge.js";
 import _poolBrallinSkysharkRider from "./pool/brallin-skyshark-rider.js";
+import _poolBrambleFamiliar from "./pool/bramble-familiar.js";
 import _poolBrambleSovereign from "./pool/bramble-sovereign.js";
 import _poolBrambleWurm from "./pool/bramble-wurm.js";
 import _poolBramblesnap from "./pool/bramblesnap.js";
@@ -2474,6 +2475,7 @@ import _poolFesteringGoblin from "./pool/festering-goblin.js";
 import _poolFesteringGulch from "./pool/festering-gulch.js";
 import _poolFesteringThicket from "./pool/festering-thicket.js";
 import _poolFestivalCrasher from "./pool/festival-crasher.js";
+import _poolFetchQuest from "./pool/fetch-quest.js";
 import _poolFetidHeath from "./pool/fetid-heath.js";
 import _poolFetidHorror from "./pool/fetid-horror.js";
 import _poolFetidImp from "./pool/fetid-imp.js";
@@ -9677,6 +9679,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBrainstorm,
   _poolBrainsurge,
   _poolBrallinSkysharkRider,
+  _poolBrambleFamiliar,
   _poolBrambleSovereign,
   _poolBrambleWurm,
   _poolBramblesnap,
@@ -11229,6 +11232,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFesteringGulch,
   _poolFesteringThicket,
   _poolFestivalCrasher,
+  _poolFetchQuest,
   _poolFetidHeath,
   _poolFetidHorror,
   _poolFetidImp,

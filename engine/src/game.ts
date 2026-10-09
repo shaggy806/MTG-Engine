@@ -18728,9 +18728,22 @@ export class Game {
               return object?.owner === player && object.isCommander === true;
             })
           : this.state.zones.perPlayer[player][zone];
+    // "From among the milled cards": a milled card is found in whatever
+    // public zone it went to from the library (rule 701.17c), so one a
+    // replacement exiled instead of putting it into the graveyard (Rest in
+    // Peace) is still among them.
+    const milledElsewhere =
+      zone === "graveyard" && filter?.thisWay === "milled"
+        ? thisWayEntries(this.state, "milled").flatMap((entry) => {
+            const card = this.state.objects[entry.object];
+            return entry.player === player && card?.zone === "exile" && card.exiledFaceDown === undefined
+              ? [entry.object]
+              : [];
+          })
+        : [];
     // Only a library is looked at `count` deep; a graveyard is public and a
     // hand is the chooser's own, so both offer everything in them.
-    const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
+    const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards, ...milledElsewhere];
     // Nothing to look at (an empty library, X of 0, an empty graveyard):
     // nothing is chosen, nothing is left over and a `then` has nothing to say
     // it about, so there's nothing to ask — the resolution goes straight on to

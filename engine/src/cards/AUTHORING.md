@@ -1547,9 +1547,13 @@ is what keeps it from triggering off its own lands. A permanent that has left
 is asked as it last was. `thisWay` (a `ThisWayKind` — see "This way" above) matches only what the
 spell or ability now resolving has done that to — choosing among the cards
 just moved: "mill three cards; you may put a creature card milled this way into
-your hand" is a `mill` then a `may` of `{ kind: "return-from-graveyard",
-filter: { type: "creature", thisWay: "milled" }, destination: "hand", count: 1
-}`; a card already in the graveyard doesn't qualify. Between resolutions it
+your hand" is a `mill` then a `look-and-choose` over `zone: "graveyard"` with
+`filter: { type: "creature", thisWay: "milled" }`, `min: 0, max: 1,
+destination: "hand"` (Ripples of Undeath); a card already in the graveyard
+doesn't qualify. That `look-and-choose` also finds the milled cards a
+replacement sent to exile instead (Rest in Peace — rule 701.17c: a milled
+card is found in whatever public zone it went to); `return-from-graveyard`
+doesn't, so use `look-and-choose`. Between resolutions it
 matches nothing. `notThisWay` is its opposite — everything *but* what was done
 that to: Martial Coup's "create X Soldier tokens … destroy all other
 creatures" is `{ type: "creature", notThisWay: "created" }` (with the tokens

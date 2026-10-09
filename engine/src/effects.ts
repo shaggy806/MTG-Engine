@@ -3832,7 +3832,10 @@ export type EffectSpec =
        * command zone — Command Beacon's "put your commander into your hand
        * from the command zone" (one of their choice with two — its ruling),
        * Hellkite Courser's "you may put a commander you own from the command
-       * zone onto the battlefield".
+       * zone onto the battlefield". `"graveyard"` with a `thisWay: "milled"`
+       * filter ("from among the milled cards") also offers the milled cards
+       * a replacement exiled instead (Rest in Peace): a milled card is found
+       * in whatever public zone it went to (rule 701.17c).
        *
        * `"targets"` is the resolving spell's or ability's own target cards
        * still legal (a graveyard's, all public): which of them the effect

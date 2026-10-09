@@ -30,6 +30,7 @@ import _poolBondersEnclave from "../pool/bonders-enclave.js";
 import _poolBonehoardDracosaur from "../pool/bonehoard-dracosaur.js";
 import _poolBorderlandRanger from "../pool/borderland-ranger.js";
 import _poolBorosGarrison from "../pool/boros-garrison.js";
+import _poolBrambleFamiliar from "../pool/bramble-familiar.js";
 import _poolBrilliantPlan from "../pool/brilliant-plan.js";
 import _poolCabarettiInitiate from "../pool/cabaretti-initiate.js";
 import _poolCancel from "../pool/cancel.js";
@@ -304,6 +305,7 @@ const shard: CardShard = {
     _poolBonehoardDracosaur,
     _poolBorderlandRanger,
     _poolBorosGarrison,
+    _poolBrambleFamiliar,
     _poolBrilliantPlan,
     _poolCabarettiInitiate,
     _poolCancel,
