@@ -1851,6 +1851,14 @@ export class HeuristicBotController extends AutomaticController {
    * colour the hand wants, but buys nothing now, and a second Mountain casts
    * the red spell (reported from a live game). Ties keep enumeration order,
    * which keeps the bot deterministic.
+   *
+   * With a landfall permanent of ours out, a fetch this bot would crack
+   * (`crackedOnPlay`) comes next after what each land casts, ahead of the
+   * tapped and colour tie-breaks: it's two lands entering, itself and what
+   * it finds, so two triggers to any other land's one, and where the castable
+   * count ties the mana isn't needed (the user, 2026-10-08). v2's search
+   * can't see it — its rollouts never crack the fetch, so the lands tie and
+   * this pick, scored first, stands.
    */
   private bestLand(view: ControllerView, lands: readonly PlayLandLegal[]): PlayLandLegal {
     if (lands.length === 1) return lands[0];
@@ -1879,12 +1887,19 @@ export class HeuristicBotController extends AutomaticController {
       }
     }
 
+    const landfallOut = state.zones.shared.battlefield.some((id) => {
+      const object = state.objects[id];
+      return object?.controller === me && isLandfallPermanent(this.registry, object.cardName);
+    });
+
     let best = lands[0];
     let bestCastable = -1;
+    let bestFetch = false;
     let bestTapped = false;
     let bestScore = -1;
     for (const land of lands) {
       const castable = this.castableAfter(view, land);
+      const fetch = landfallOut && this.crackedOnPlay(view, land);
       const tapped = this.entersTapped(state, land.card, land.cardName);
       let score = 0;
       for (const color of new Set(this.colorsProducedBy(land.cardName, identity))) {
@@ -1896,16 +1911,37 @@ export class HeuristicBotController extends AutomaticController {
       }
       if (
         castable > bestCastable ||
-        (castable === bestCastable && tapped && !bestTapped) ||
-        (castable === bestCastable && tapped === bestTapped && score > bestScore)
+        (castable === bestCastable && fetch && !bestFetch) ||
+        (castable === bestCastable && fetch === bestFetch && tapped && !bestTapped) ||
+        (castable === bestCastable && fetch === bestFetch && tapped === bestTapped && score > bestScore)
       ) {
         bestCastable = castable;
+        bestFetch = fetch;
         bestTapped = tapped;
         bestScore = score;
         best = land;
       }
     }
     return best;
+  }
+
+  /**
+   * Whether `land`, played now, is a fetch this bot would crack at once
+   * (`isFreeFetch`, asked of a copy with it on the battlefield: not one whose
+   * life payment it won't make) with a land left in our library to find.
+   */
+  protected crackedOnPlay(view: ControllerView, land: PlayLandLegal): boolean {
+    if (view.viewAfter === undefined) return false;
+    const landed = view.viewAfter(this.toPlayLand(land));
+    if (landed === null) return false;
+    const crack = landed
+      .legalActions()
+      .find((a): a is ActivateAbilityLegal => a.kind === "activate-ability" && a.source === land.card);
+    if (crack === undefined || !this.isFreeFetch(landed.state, crack.source, crack.abilityIndex)) return false;
+    return landed.state.zones.perPlayer[this.playerId].library.some((id) => {
+      const name = landed.state.objects[id]?.cardName;
+      return name !== undefined && this.registry.has(name) && this.registry.get(name).types.includes("land");
+    });
   }
 
   /** Whether land `card` would enter tapped if played now: always

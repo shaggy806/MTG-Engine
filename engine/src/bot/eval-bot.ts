@@ -869,7 +869,7 @@ export class EvalBotController extends HeuristicBotController {
       for (const land of order) {
         if (spent(budget)) break;
         budget.left -= 1;
-        const score = this.score(view, land, budget);
+        const score = this.scoreLandDrop(view, land, budget);
         if (score !== null && score > bestLandScore) {
           bestLandScore = score;
           bestLand = land;
@@ -1909,6 +1909,48 @@ export class EvalBotController extends HeuristicBotController {
       kills = defender;
     }
     return kills === null ? "ok" : { kills };
+  }
+
+  /**
+   * A land drop's score, and for a fetch this bot cracks at once
+   * (`crackedOnPlay`) the land drop *and* the crack, as one plan: the
+   * rollouts pass our seat, so scored alone the fetch was never cracked in
+   * them — a land making no mana, its search's land never entering, a
+   * landfall payoff's second trigger never seen (the user, 2026-10-08:
+   * Evolving Wilds lost to a tapped Jungle Hollow's life with Rampaging
+   * Baloths out).
+   */
+  private scoreLandDrop(view: ControllerView, land: Action, budget: SearchBudget): number | null {
+    if (land.type !== "play-land") return this.score(view, land, budget);
+    const offer = view
+      .legalActions()
+      .find((l): l is Extract<LegalAction, { kind: "play-land" }> => l.kind === "play-land" && l.card === land.card);
+    if (offer === undefined || !this.crackedOnPlay(view, offer)) return this.score(view, land, budget);
+    const player = this.playerId;
+    const after = timed(budget, () =>
+      simulatePlan(
+        view.state,
+        this.cards,
+        player,
+        [land],
+        (game) => {
+          const crack = game
+            .legalActions(player)
+            .find((l) => l.kind === "activate-ability" && l.source === land.card);
+          return crack === undefined
+            ? null
+            : (candidateActions(aimOffer(game.state, this.cards, player, crack), player)[0] ?? null);
+        },
+        this.horizon,
+        this.decisionRollout,
+        this.rolloutDecisions ? this.selfInRollouts() : undefined,
+      ),
+    );
+    if (after === null) return this.score(view, land, budget);
+    // Recorded as `score` records a rollout, so `bot:fit-scenarios`'
+    // replay scores the land drop by the board the crack reached.
+    this.trace?.(land, after);
+    return evaluateState(after, this.cards, player, this.weights);
   }
 
   private score(

@@ -1925,7 +1925,6 @@ const SCENARIOS: readonly BotScenario[] = [
     asked({
       name: `plays ${fetchName} over ${otherName === "Forest" ? "a Forest" : `a tapped ${otherName}`} for two landfall triggers`,
       rule: "With a landfall payoff out and the mana not needed — the hand casts the same either way — a fetch land is two lands entering, itself and what it finds, where any other land is one.",
-      kind: "training",
       position(registry) {
         // Reported from a live game (2026-10-08, no capture): the bot should
         // see that any fetch beats a basic when it doesn't need the mana and
@@ -1956,6 +1955,29 @@ const SCENARIOS: readonly BotScenario[] = [
       },
     }),
   ),
+  asked({
+    name: "plays a Forest over Wooded Foothills with no landfall to pay off",
+    rule: "Without a landfall payoff a fetch that finds the same land buys nothing for the life it costs: the Forest.",
+    position(registry) {
+      // The other side of "plays Wooded Foothills over a Forest for two
+      // landfall triggers": the same hand and board without Rampaging
+      // Baloths. Scored with its crack (`scoreLandDrop`), the fetch is a
+      // Forest for 1 life, so the Forest stays the pick.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Forest", A, 5);
+      game.debugSpawn("Wooded Foothills", A, "hand");
+      const forest = game.debugSpawn("Forest", A, "hand");
+      game.debugSpawn("Grizzly Bears", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === forest,
+          detail: `chose ${describeAction(action)}${action.type === "play-land" ? ` (${cardOf(game, action.card)})` : ""}`,
+        }),
+      };
+    },
+  }),
   asked({
     name: "plays a Forest for Birds of Paradise, not Evolving Wilds",
     rule: "A fetch whose land enters tapped buys nothing this turn: a Forest casts the turn-one Birds of Paradise.",

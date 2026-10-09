@@ -29,7 +29,15 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   payment the bot won't make (`FETCH_LIFE_FLOOR`) or with nothing left to find shouldn't win —
   gate it on the crack being one the bot would make; and v2's search still ties, so v1's order has
   to carry it, as it does today.
-- **Status:** open.
+- **Status:** fixed (the user asked, 2026-10-08), in both bots. v1's `bestLand` puts a fetch it would
+  crack at once (`crackedOnPlay`: `isFreeFetch` asked of a copy with it played, and a land left in
+  the library) ahead of the tapped and colour tie-breaks while a landfall permanent of ours is out.
+  v2 alone still lost to Jungle Hollow's life, its rollouts never cracking the fetch, so its land
+  search now scores such a fetch as the drop and the crack together (`scoreLandDrop`, any fetch,
+  landfall or not). All three scenarios gate, with a guard: no landfall payoff, the Forest over a
+  Wooded Foothills that only costs life. bot:diff v1 (40 games): 39 of 82,803 decisions, every one
+  a fetch over another land with a landfall payoff out (Bojuka Bog six times — its graveyard exile
+  held for later).
 
 ## 2026-10-08 — Young Pyromancer cast before Shiko and Narset, so Swords to Plowshares wasn't copied
 
