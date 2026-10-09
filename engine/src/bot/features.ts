@@ -211,7 +211,7 @@ const EARLY_MANA_FULL = 2;
 const EARLY_MANA_END = 6;
 
 /** The round of the game: every player's first turn is round 1. */
-function roundOf(state: GameState): number {
+export function roundOf(state: GameState): number {
   return Math.ceil(state.turn.number / Math.max(1, state.turnOrder.length));
 }
 

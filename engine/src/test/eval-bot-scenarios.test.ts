@@ -99,9 +99,18 @@ describe("the land-drop invariant", () => {
 describe("features", () => {
   it("name every linear term in EvalWeights, and only those", () => {
     // `landCap` is a threshold inside a feature, `opponent`/`otherOpponents`
-    // are how a table is aggregated, and the two crackback knobs belong to the
-    // attack builder — none is a coefficient, so none is fittable.
-    const notFeatures = ["landCap", "opponent", "otherOpponents", "crackbackParanoia", "crackbackMargin", "crackbackGrowth"];
+    // are how a table is aggregated and `eliminations` what an empty seat in
+    // it is worth, and the two crackback knobs belong to the attack builder —
+    // none is a per-player coefficient.
+    const notFeatures = [
+      "landCap",
+      "opponent",
+      "otherOpponents",
+      "eliminations",
+      "crackbackParanoia",
+      "crackbackMargin",
+      "crackbackGrowth",
+    ];
     expect([...FEATURE_KEYS].sort()).toEqual(
       Object.keys(DEFAULT_WEIGHTS)
         .filter((k) => !notFeatures.includes(k))

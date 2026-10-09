@@ -28,7 +28,13 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   Might break: kill-chasing over the real threat (finishing a harmless player while the leader
   runs away), and the four-player benches' balance — it needs the scenario gate, `bot:diff` and
   an A/B run, not just these two scenarios.
-- **Status:** open.
+- **Status:** fixed with the first part, valued as the user suggested — more as the game goes
+  on: a new weight, `eliminations` (20), adds each opponent eliminated scaled by the round
+  (`eliminationShare`: a quarter in round 1, all of it from round 10). Both scenarios gate (the
+  bystander one flips between 8 and 12). The second part was tried and dropped: averaging over
+  the starting seats closed only 3–4 points of each gap, and a decision-diff showed it also
+  halved the second opponent's weight in every three-player endgame (Jaws of Defeat moving off
+  the trailing player). Champions keep `eliminations` 0.
 
 ## 2026-10-08 — Towering Titan's sacrifice activated several times
 

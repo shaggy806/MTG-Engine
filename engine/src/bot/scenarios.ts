@@ -3490,7 +3490,6 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "gives Bob's attack on Carol trample with Towering Titan to finish her",
     rule: "Towering Titan's trample is for every creature: when another opponent's blocked attackers would trample over for lethal, one wall sacrificed kills a player.",
-    kind: "training",
     run(weights, registry, makeBot) {
       // Found while chasing a live report (2026-10-08, `docs/bot-misplays.md`,
       // "Towering Titan's sacrifice activated several times"): the bot never
@@ -3538,7 +3537,6 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "tramples a chump-blocked Towering Titan over for lethal",
     rule: "A blocked Titan with a chump blocker in front of it: one wall sacrificed for trample sends the rest of its damage through, and here that kills.",
-    kind: "training",
     run(weights, registry, makeBot) {
       // Found beside the one above: Alice's 17/17 Titan attacks, the
       // defending player (on 15, as every opponent is here) chumps it with

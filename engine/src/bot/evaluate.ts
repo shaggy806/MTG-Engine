@@ -36,7 +36,7 @@ import type { CardRegistry } from "../cards.js";
 import { deckBias } from "../deck-bias.js";
 import type { PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
-import { FEATURE_KEYS, featureSign, playerFeatures } from "./features.js";
+import { FEATURE_KEYS, featureSign, playerFeatures, roundOf } from "./features.js";
 import type { PlayerFeatures } from "./features.js";
 
 /**
@@ -176,6 +176,12 @@ export interface EvalWeights {
   readonly trackRecord: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
+  /** Added for each opponent eliminated, scaled by the round
+   * (`eliminationShare`): a share of it early, all of it from round
+   * `ELIMINATION_FULL_ROUND`. One fewer opponent is one fewer to beat, but
+   * early on the cards a kill costs still matter more than the seat it
+   * empties (the user, 2026-10-08). */
+  readonly eliminations: number;
   /** How much the *average* of every other living opponent subtracts. Zero
    * at a two-player table, where there's no one else. */
   readonly otherOpponents: number;
@@ -390,6 +396,12 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // breaks nothing in the gate.
   trackRecord: 3,
   opponent: 1,
+  // Per opponent eliminated, at full strength from round 10 and a quarter of
+  // it in round 1 (`eliminationShare`). Before it a kill scored nothing, or
+  // less than nothing when the weakest player went (`scoreOutcome`), and the
+  // bot passed up a wall for Towering Titan's lethal trample — the gate's two
+  // Titan scenarios, the bystander one flipping between 8 and 12.
+  eliminations: 20,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25
   // (an eighth) the bot held its removal while a trailing player's creature
@@ -471,6 +483,9 @@ export interface EvalOutcome {
   readonly ownWeights?: Readonly<Partial<EvalWeights>>;
   /** Every opponent still in the game. */
   readonly theirs: readonly PlayerFeatures[];
+  /** Opponents who have lost, and the round — what `eliminations` scores. */
+  readonly eliminated?: number;
+  readonly round?: number;
 }
 
 export function outcomeOf(
@@ -483,6 +498,8 @@ export function outcomeOf(
     const decided = state.result.winner === null ? DRAW : state.result.winner === me ? WIN : -WIN;
     return { decided, mine: null, theirs: [] };
   }
+  const eliminated = state.turnOrder.filter((player) => player !== me && state.players[player].hasLost).length;
+  const round = roundOf(state);
   const own = state.players[me];
   const mine =
     own === undefined || own.hasLost ? null : playerFeatures(state, registry, me, true, landCap);
@@ -490,10 +507,22 @@ export function outcomeOf(
     .filter((player) => player !== me && !state.players[player].hasLost)
     .map((player) => playerFeatures(state, registry, player, false, landCap));
   const ownWeights = deckBias(state, me)?.ownWeights;
-  return ownWeights === undefined ? { mine, theirs } : { mine, theirs, ownWeights };
+  const base = { mine, theirs, eliminated, round };
+  return ownWeights === undefined ? base : { ...base, ownWeights };
 }
 
 const withOwn = new WeakMap<EvalWeights, WeakMap<object, EvalWeights>>();
+
+/** The share of `eliminations` an opponent eliminated in round 1 earns; it
+ * rises in a line to all of it at `ELIMINATION_FULL_ROUND`. */
+const ELIMINATION_FLOOR = 0.25;
+const ELIMINATION_FULL_ROUND = 10;
+
+/** How much of `eliminations` a kill is worth in `round`. */
+export function eliminationShare(round: number): number {
+  const grown = Math.min(1, Math.max(0, round) / ELIMINATION_FULL_ROUND);
+  return ELIMINATION_FLOOR + (1 - ELIMINATION_FLOOR) * grown;
+}
 
 /** `weights` with a deck's own-feature weights laid over them, made once per
  * pair. */
@@ -515,23 +544,37 @@ function ownWeightsOf(weights: EvalWeights, own: Readonly<Partial<EvalWeights>> 
 /**
  * Score an {@link EvalOutcome} from `me`'s seat: my position, minus my
  * strongest opponent's, minus a smaller share of the average of everyone else
- * still in the game. My position is scored with my deck's own weights, if it
- * has any (`deck-bias.ts`); everyone else's with the shared ones.
+ * still in the game, plus `eliminations` for each opponent already out. My
+ * position is scored with my deck's own weights, if it has any
+ * (`deck-bias.ts`); everyone else's with the shared ones.
  *
  * Only the strongest opponent used to count, which made a four-player bot
  * indifferent to everyone but the leader — happy to feed the second-best
  * player a whole board as long as the leader stayed put.
+ *
+ * Without `eliminations` a kill was worth nothing at best: removing one of
+ * several opponents alike left the strongest and the average where they
+ * were, and removing the weakest *raised* the average, so finishing a
+ * trailing player read as a loss (`docs/bot-misplays.md`, 2026-10-08, "a
+ * kill through Towering Titan's trample passed up"). Averaging over the
+ * seats the game started with fixed that too, but also halved the second
+ * opponent's weight in every three-player endgame (a decision-diff), so the
+ * bonus carries it alone.
  */
 export function scoreOutcome(outcome: EvalOutcome, weights: EvalWeights): number {
   if (outcome.decided !== undefined) return outcome.decided;
   const mine =
     outcome.mine === null ? DEAD : scoreFeatures(outcome.mine, ownWeightsOf(weights, outcome.ownWeights));
   const theirs = outcome.theirs.map((f) => scoreFeatures(f, weights)).sort((a, b) => b - a);
-  if (theirs.length === 0) return mine;
+  const kills =
+    outcome.eliminated !== undefined && outcome.eliminated > 0
+      ? weights.eliminations * eliminationShare(outcome.round ?? ELIMINATION_FULL_ROUND) * outcome.eliminated
+      : 0;
+  if (theirs.length === 0) return mine + kills;
 
   const [strongest, ...rest] = theirs;
   const others = rest.length > 0 ? rest.reduce((a, b) => a + b, 0) / rest.length : 0;
-  return mine - weights.opponent * strongest - weights.otherOpponents * others;
+  return mine - weights.opponent * strongest - weights.otherOpponents * others + kills;
 }
 
 /** Score `state` from `me`'s seat — see {@link scoreOutcome}. */

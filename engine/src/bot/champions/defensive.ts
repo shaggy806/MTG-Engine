@@ -60,6 +60,7 @@ export const DEFENSIVE: Champion = {
     lifeSurplus: 0,
     trackRecord: 0,
     opponent: 1,
+    eliminations: 0,
     otherOpponents: 0.5,
     crackbackParanoia: 1,
     crackbackMargin: 6,

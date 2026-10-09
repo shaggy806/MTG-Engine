@@ -68,6 +68,7 @@ export const SHIPPED_2026_09_27: Champion = {
     lifeSurplus: 0,
     trackRecord: 0,
     opponent: 1,
+    eliminations: 0,
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,
     crackbackMargin: 2,

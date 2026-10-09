@@ -62,6 +62,7 @@ export const RAMP: Champion = {
     lifeSurplus: 0,
     trackRecord: 0,
     opponent: 1,
+    eliminations: 0,
     otherOpponents: 0.25,
     crackbackParanoia: 0.75,
     crackbackMargin: 4,
