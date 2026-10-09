@@ -9,19 +9,14 @@ When something lands, delete its line. When you find something new, add one.
 Each waits on a decision only the user can make. Once one is answered, move the work it
 decides into its section below.
 
-- **What should "spread out attackers" mean?** (postponed by the user, 2026-10-06; capture HB5MR turn 20, open): dave sent everything at alice (38 life, no creatures) where the note asks the bot to spread its attackers; bob was on 13 with Felothar untapped. Never all damage at one player, pressure the lowest life, or something else — the user is considering it.
-- **How should we say which turn it is, and for whom?** A turn number counts every player's
-  turns, so at a four-player table "turn 37" is the first player's 10th turn, which reads as a
-  much longer game than it is. Where should the more specific form apply (the client, bench
-  output, docs, commit messages), and what should it look like?
-- **What should the engine-test audit look for, and what should it produce?** The idea (raised
-  2026-09-27) is to go through the engine suite and check what it actually guards. The suite is
-  now 559 files and about 5,550 tests.
-- **Build text changing properly, or remove it?** `change-text` / `choose-text` have no card
-  since Artificial Evolution was removed (2026-09-28): it swapped one creature type on the
-  type line from a fixed 12-type menu, not "all instances" across the card's text. Either
-  build real layer-3 text changing (every creature-type word in a card's abilities, every
-  creature type offered, spells as targets) or remove the effect and the decision kind.
+- **Which text changing to build first?** The user (2026-10-09): build it, tested on a card
+  like Deadpool. Layer 3 (rule 612) has two kinds that matter here. Replacing words (612.2):
+  every instance of one color word, basic land type or creature type in a card's text becomes
+  another — Artificial Evolution, Mind Bend, Magical Hack, New Blood (12 cards; New Blood is
+  the most played, EDHREC 4447). The pool's `change-text` / `choose-text` were a partial
+  version of this, with no card since Artificial Evolution was pulled (2026-09-28). Exchanging
+  text boxes (612.5, 701.12h): each permanent's rules text becomes the other's — Deadpool,
+  Trading Card (EDHREC 2727) and Exchange of Words. Which kind, or both, and in what order?
 
 ## Commander gap (the current priority)
 
@@ -115,9 +110,7 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **A card's own "if this would be put into a graveyard from anywhere … shuffle it into its library instead"** (Blightsteel Colossus).
 - **A set rule on a graveyard choice** (Lively Dirge's total mana value 4 or less).
 - **No state-based actions after a mana ability activated by hand** (117.3c, 117.5).
-- **Counters put as a cost skip counter replacements and prohibitions** (latent).
 - **Delve and convoke together on an {X} spell** (Chord of Calling under Teval).
-- **Convoke with a target-dependent cost** (latent).
 - **The least X a top-of-library cast allows is searched only up to the mana a player can make.**
 - **Not modeled**: battles, phasing, dungeons/Initiative/the Ring, banding, Companion, snow sources, face-down permanents, full text-change.
 - **"Whenever you activate an ability"** (Rings of Brighthearth).
@@ -151,13 +144,20 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **A token stack tapping fires `becomes-tapped` once.**
 - **Creatures leave combat as the end of combat step begins, not as it ends** (511.3).
 
+Latent: the engine departs from the rules here, but no pool card reaches it yet. Fix each
+when a card that needs it is authored.
+
+- **Counters put as a cost skip counter replacements and prohibitions.**
+- **Convoke with a target-dependent cost.**
+
 ## Bots
 
 Every step of `docs/plans/bot-effect-knowledge.md` (keep v2, give it an effect-aware base,
 retire v3) has landed. What's open is tuning: the items below, and the ones waiting on a live
 game to show a problem, listed in that plan's "Watching live games for" (wraths since
 `threat`, pumping an opponent's attacker, the `"acting"` rollout, big boards and deep stacks
-under count budgets).
+under count budgets, deck biases, 1/1 tokens since `smallTokens`, Shiko or the other spell, and
+haste enablers in the crackback).
 
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): token payoffs
   beyond engines (sacrifice outlets, leaves-the-battlefield);
@@ -178,24 +178,8 @@ under count budgets).
   (16.7% and 8.3% against 20.8% and 14.6%, 48 games each, within noise; Temur Roar's upgrade
   went 35% to 69%). More rounds, autopsies of their losses for cards the bots misuse, and
   revised swaps: `docs/plans/upgraded-decks.md`, "Open".
-- **More deck biases.** `engine/src/deck-bias.ts` (`docs/plans/deck-biases.md`) lets a
-  commander's deck aim effects the other way and value its own board differently; Teval is the
-  one entry. Add one when a live game shows a deck's bot playing against its plan, with a gate
-  scenario that fails without it. Kinds not built: cards to cast first or hold, attack
-  eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
-- **A body's worth on a wide board** (the user's question, 2026-10-04; shelved): every creature counts `creatures` 2.5 whether it's the first or the twentieth. Tried two ways. Discounting creatures past six on the board changed 28 of 28,856 decisions over 12 four-player games, half of them good (Felothar and Jarad sacrificing spares, more token attacks) but it also cut the value of *making* creatures (Raise the Alarm passed at 13 life). Discounting only creatures *lost* past six, counted from the decision's root, changed none of 28,501 at a refund of 2.5 or 4: a 2/2 is worth about 5.6 in all, so a refund flips a choice only near a whole creature (Village Rites on a spare Bears flips between 4.3 and 10). Revisit with a live misplay that needs it.
-- **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
-  Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
-  token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
-- **Shiko or the other spell, when only one fits** (since the chained-spells change, 2026-10-04):
-  with a cast payoff in reach the priority search rolls our turn out as v1 (`"acting"`), and where
-  only one of Shiko and another spell is affordable it now often casts the other (16 times in 12
-  games, `bot:diff`), where the old search cast Shiko. Bench level; worth a scenario from a live
-  game before changing it.
 - **`crackbackGrowth` is unbenched since its last change** (2026-10-05, merged to main on the user's call with the tests, scenario gate and a 20-game fuzzer pass clean): the scaled crackback check now applies only while holding back passes it. Still to do: rerun the paired `bot:crackback` (0.5 against `--weights '{"crackbackGrowth":0}'`, 120+ seeds) to confirm the 25 swings into a plainly lethal board are gone and the 3.5% → 2.0% holds, re-bench against main, and add a training scenario (`docs/plans/smarter-bots.md`, "Combat: the alpha strike and crackback").
 - **Crackback counts later opponents at half** (2026-10-05, `bot:crackback`): over 198 four-player games, 166 full swings into a board lethal with every opponent all-in passed the bot's check because `crackbackParanoia` weighs all but the next opponent at 0.5, and 17% of them died before the bot's next turn (2.7% when nothing showed lethal). `crackbackGrowth` doesn't touch it; a paranoia that rises as life falls, or as fewer opponents remain to split the attacks, is the lever (`docs/plans/smarter-bots.md`, "Combat: the alpha strike and crackback").
-- **Haste enablers in the crackback** (2026-10-05, low): `combat-math.ts`'s `crackback` sees only creatures on the board; haste decided 10 of 70 crackback deaths, and an opponent's visible enabler (Swiftfoot Boots, Anger in a graveyard, Dragon Tempest, Crashing Drawbridge) raised the death rate about a point, inside the noise.
-- **Tactical mercy for a player far behind** (the user, 2026-10-04 — a politeness thing more than a misplay, and the balance is still open): a bot kills a player who is far behind whenever it can, but there is merit in not killing a player unless they are a threat or the kill wins the game. Where the line sits between swinging at an open player and sparing one with no creatures on board isn't settled; the attack builder (`bot/eval-bot.ts`, `alphaStrike`'s kill planner) is where it would go. Related, from a capture (HB5MR turn 20): dave sent all three attackers at alice, the one player without blockers; the user would have spread them — a politics call, maybe their own bias, maybe how tables really play. Both want a model of how attacks make enemies.
 
 ## Client / UI
 
@@ -261,12 +245,3 @@ item lands.
   games for").
 - **Resolve-hatch sweep.** Convert the four remaining imperative `resolve` cards (Atarka, World
   Render; Gaze of Granite; Green Sun's Zenith; Toxic Deluge) to a declarative `effect`.
-- **Tokens that attacked stay split off their stack until cleanup**, even when they come out of
-  combat identical, or all get the same counter from an attack trigger: ten such Warriors are
-  ten objects (and, with counters, ten board tiles) through the second main phase.
-  `refoldSplitTokens` skips them because `turnHistory.attackers` counts each creature once by
-  object, and a stack folded mid-turn would attack in a second combat as itself plus fresh
-  tokens split off it, counted again (Windbrisk Heights, `token-stack-refold.test.ts`). Folding
-  them needs the history to know a split-off token's stack already attacked — say, count only
-  attackers that hadn't attacked yet this turn (`attackedThisTurn` before the declaration).
-  Nothing plays differently.

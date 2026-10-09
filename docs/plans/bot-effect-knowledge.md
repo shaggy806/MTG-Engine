@@ -627,8 +627,9 @@ and spell order; the X=0 activation it still makes is in BACKLOG.
 
 ## Watching live games for
 
-Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the
-problem, at which point the in-game Capture button turns it into a scenario that can decide it.
+Moved from BACKLOG (2026-10-04; the last four on 2026-10-09): each of these is open only until
+a live game shows the problem, at which point the in-game Capture button turns it into a
+scenario that can decide it.
 
 - **Watch the wraths since `threat`.** With the threat term (2026-09-27) v2 casts more
   sweepers: in six four-player games, Cleansing Nova three times (at 33, 19 and 5 life) and
@@ -671,3 +672,18 @@ problem, at which point the in-game Capture button turns it into a scenario that
   Archmage Emeritus, copies of its own spells) — 73 items on the stack and ~110 permanents on
   turn 42, each decision 5-30 s because every simulation resolves the whole stack. All seats
   there were the old build, but nothing since makes the new one cheaper on it.
+- **More deck biases.** `engine/src/deck-bias.ts` (`docs/plans/deck-biases.md`) lets a
+  commander's deck aim effects the other way and value its own board differently; Teval is the
+  one entry. Add one when a live game shows a deck's bot playing against its plan, with a gate
+  scenario that fails without it. Kinds not built: cards to cast first or hold, attack
+  eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
+- **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
+  Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
+  token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
+- **Shiko or the other spell, when only one fits** (since the chained-spells change, 2026-10-04):
+  with a cast payoff in reach the priority search rolls our turn out as v1 (`"acting"`), and where
+  only one of Shiko and another spell is affordable it now often casts the other (16 times in 12
+  games, `bot:diff`), where the old search cast Shiko. Bench level; worth a scenario from a live
+  game before changing it. `payoffFirst` (2026-10-08) tries a spell-count payoff first, which
+  may have settled it.
+- **Haste enablers in the crackback** (2026-10-05, low): `combat-math.ts`'s `crackback` sees only creatures on the board; haste decided 10 of 70 crackback deaths, and an opponent's visible enabler (Swiftfoot Boots, Anger in a graveyard, Dragon Tempest, Crashing Drawbridge) raised the death rate about a point, inside the noise.

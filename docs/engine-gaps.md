@@ -77,17 +77,10 @@ per gap under the same bold title; when a gap closes, delete it in both.
   either. Wall of Roots taken to 0 toughness by its own -0/-1 counter sits on the battlefield
   until the next cast or resolution (`tdc-precons-features.test.ts`); a Treasure's "whenever you
   sacrifice" trigger likewise waits to be put on the stack.
-- **Counters put as a cost skip counter replacements and prohibitions.** `putCostCounters`
-  (Wall of Roots' -0/-1, Devoted Druid's -1/-1) puts them straight on. Right for "if an effect
-  would put counters" (Doubling Season), wrong for one that isn't worded so (Vizier of Remedies)
-  and for "counters can't be put on" (Solemnity, top 5000), which makes the cost unpayable
-  (Devoted Druid's rulings). Nothing in the pool reaches those kinds yet; authoring one needs it.
 - **Delve and convoke together on an {X} spell.** `xCost.maxX` is the better of the two alone
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the
   other. Needs a joint plan: convoke the creatures, delve the rest of the generic.
-- **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
-  the target-count range. This is latent: no pool card has both.
 - **The least X a top-of-library cast allows is searched only up to the mana a player can make**
   (`libraryTopMinX`, ceiling `manaCapacity`): an {X} spell that convoke or delve could pay up to
   Glarb, Calamity's Augur's mana value 4 isn't offered from the top.
@@ -229,3 +222,16 @@ per gap under the same bold title; when a gap closes, delete it in both.
   runs `endCombatStep` as that step's turn-based action, so in its priority window nothing is
   attacking or blocking any more: an "at end of combat" trigger (511.2) that asks whether its
   creature is attacking finds it isn't (`token-stacking.test.ts`).
+
+## Latent
+
+The engine departs from the rules here, but no pool card reaches it yet: fix each when a card
+that needs it is authored.
+
+- **Counters put as a cost skip counter replacements and prohibitions.** `putCostCounters`
+  (Wall of Roots' -0/-1, Devoted Druid's -1/-1) puts them straight on. Right for "if an effect
+  would put counters" (Doubling Season), wrong for one that isn't worded so (Vizier of Remedies)
+  and for "counters can't be put on" (Solemnity, top 5000), which makes the cost unpayable
+  (Devoted Druid's rulings).
+- **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
+  the target-count range.
