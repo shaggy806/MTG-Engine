@@ -243,6 +243,21 @@ describe("Thassa's Oracle", () => {
     expect(after[after.length - 1]).toBe(first);
     expect(after.length).toBe(5);
   });
+
+  it("with an empty library, looks at nothing without asking, and wins", () => {
+    const { game, a } = setUp(["Thassa's Oracle"]);
+    lands(game, A, "Island", 2);
+    game.state.zones.perPlayer[A].library = [];
+    let asked = false;
+    a.chooseFromZoneFn = () => {
+      asked = true;
+      return [];
+    };
+    game.dispatch({ type: "cast-spell", player: A, card: inHand(game, A, "Thassa's Oracle") });
+    game.advanceUntil((s) => quiet(s) || s.result.over);
+    expect(asked).toBe(false);
+    expect(game.state.result).toMatchObject({ over: true, winner: A, reason: "won the game with Thassa's Oracle" });
+  });
 });
 
 describe("Jace, Wielder of Mysteries", () => {

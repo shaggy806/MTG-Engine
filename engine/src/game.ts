@@ -18730,6 +18730,11 @@ export class Game {
     // Only a library is looked at `count` deep; a graveyard is public and a
     // hand is the chooser's own, so both offer everything in them.
     const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
+    // Nothing to look at (an empty library, X of 0, an empty graveyard):
+    // nothing is chosen, nothing is left over and a `then` has nothing to say
+    // it about, so there's nothing to ask — the resolution goes straight on to
+    // whatever follows (Thassa's Oracle's win check).
+    if (ids.length === 0) return;
     if (reveal === true && zone === "library") this.revealCards(player, ids, "library");
     // A filter (e.g. "only a Dragon card") narrows what's *choosable*, never
     // what's *revealed* — the player still looks at everything either way,
