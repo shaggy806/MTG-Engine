@@ -218,7 +218,6 @@ item lands.
 
 ## Tooling / docs
 
-- **Move the live site to AWS Lightsail and deckblitz.net** (the user, 2026-10-08): the new instance serves deckblitz.net and the repo deploys to it (2026-10-08). Left, all in Cloudflare's dashboard and on the home box: `docs/plans/lightsail-migration.md` cutover steps 6 (redirects, `ws.tobyens.com` re-route) and 7 (retire `mtgserver` and the old tunnel).
 - **An on-screen progress bar for the long checks** (the user, 2026-10-06): use Claude Code's new mods feature (a plugin's live pane or status line — the `plugin-authoring` skill) to show progress for the runs we do regularly: the engine suite, `bot:scenarios`, `bot:diff`, `bot:ab`, the fuzzer and the Playwright suites.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so

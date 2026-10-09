@@ -1,10 +1,11 @@
 # Moving the live site to AWS Lightsail and deckblitz.net
 
-**Status:** in progress. Steps 1–5 of the cutover are done (2026-10-08): the instance serves
-deckblitz.net, `DEPLOYMENT.md` is rewritten for it, and the repo (`deploy.sh`, the deploy skill)
-targets it. Left: step 6's redirects and `ws.tobyens.com` re-route, then step 7's retirement of
-the home box. The site moves off the home box `mtgserver` onto an AWS Lightsail instance, and
-from `mtg.tobyens.com` to **deckblitz.net** (bought 2026-10-08); this record keeps the reasons.
+**Status:** shipped (2026-10-08/09). The instance serves deckblitz.net and the repo deploys to it;
+`mtg.tobyens.com/*` and `www.deckblitz.net` redirect to it (301, path and query kept — a proxied
+`AAAA 100::` placeholder carries the old hostname); the home box `mtgserver` is shut down and the
+old tunnel `mtg` deleted. Step 6's re-route of `ws.tobyens.com` was skipped on purpose: it only
+kept old tabs alive until a reload, which with the few players there were was fine. Players' saved
+decks weren't carried over (decided: too few players). This record keeps the reasons.
 
 ## What moves, and what doesn't
 

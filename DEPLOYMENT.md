@@ -4,7 +4,10 @@ MTG Deck Blitz runs in production on an AWS Lightsail instance, reachable at **d
 with no ports open to the web — a Cloudflare Tunnel carries all traffic in over an outbound-only
 connection instead. This file is the from-scratch runbook: what was set up, why, and what to do
 if the instance needs rebuilding. `docs/plans/lightsail-migration.md` records the move here from
-the home box that served `mtg.tobyens.com` until 2026-10.
+the home box that served `mtg.tobyens.com` until 2026-10. That hostname now redirects here: a
+Cloudflare redirect rule in the tobyens.com zone (`mtg.tobyens.com/*` → `https://deckblitz.net/$1`,
+301, query kept) over a proxied `AAAA 100::` placeholder record, and another sends
+`www.deckblitz.net` to the bare domain.
 
 ## Topology
 
