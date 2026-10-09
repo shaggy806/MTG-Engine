@@ -2583,6 +2583,11 @@ export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library
  * or the hand a `choose-from-zone` is putting it into a library from
  * (`heldByZoneChoice`). */
 export type CommanderMoveOrigin = "stack" | "graveyard" | "exile" | "hand";
+/** Where in its owner's library a commander's deferred 903.9b move puts it
+ * if its owner declines the command zone: where the move was putting it
+ * (Noxious Revival's top, Chaos Warp's shuffle). A plain move to a library
+ * puts a card on the bottom. */
+export type CommanderLibraryPlacement = "top" | "bottom" | "shuffle" | { readonly fromTop: number };
 
 /**
  * What caused the decision on {@link GameState.awaiting} — the resolving
@@ -3219,11 +3224,15 @@ export interface GameState {
     readonly leftWith?: readonly ObjectId[];
     /** Where it waits meanwhile — the battlefield when absent. A 903.9a
      * offer waits in the graveyard or exile it's in. A commander put into
-     * its owner's hand *from anywhere* is asked too (rule 903.9b): a spell
-     * countered into its owner's hand (Remand) or returned there from the
-     * stack (Unsubstantiate), or a card from a graveyard or exile, each of
-     * which waits where it is. */
+     * its owner's hand or library *from anywhere* is asked too (rule
+     * 903.9b): a spell countered into its owner's hand (Remand) or returned
+     * there from the stack (Unsubstantiate), an Omen shuffled away as it
+     * resolves, or a card from a graveyard or exile (Noxious Revival), each
+     * of which waits where it is. */
     readonly from?: CommanderMoveOrigin;
+    /** A move to a library: where in it the commander goes if its owner
+     * declines (absent: the bottom). */
+    readonly libraryPlacement?: CommanderLibraryPlacement;
     /** A commander a `choose-from-zone` answer is putting from its owner's
      * hand into their library (Brainstorm, Valakut Awakening, Teferi's
      * Puzzle Box — rule 903.9b): the answer is only *recorded* (the parked
@@ -3247,6 +3256,7 @@ export interface GameState {
     readonly stint?: number;
     readonly leftWith?: readonly ObjectId[];
     readonly from?: CommanderMoveOrigin;
+    readonly libraryPlacement?: CommanderLibraryPlacement;
     readonly heldByZoneChoice?: true;
   }[];
   /**

@@ -258,6 +258,7 @@ import type {
   CasualtyAsk,
   GiftAsk,
   CombatDamageState,
+  CommanderLibraryPlacement,
   CommanderMoveOrigin,
   CommanderReplacementZone,
   ControlEffect,
@@ -482,6 +483,11 @@ interface EnterOptions {
    * Necromantic Selection's "It's a black Zombie in addition to its other
    * colors and types." */
   readonly addColors?: readonly Color[];
+  /** Not about entering: a move to a library says where in it the card is
+   * going (the move itself puts it on the bottom, and the caller places it
+   * after), so a commander whose 903.9b choice defers the move still goes
+   * there if its owner declines the command zone. */
+  readonly libraryPlacement?: CommanderLibraryPlacement;
 }
 
 /** Everything the enters-battlefield replacements decided about one entry
@@ -3690,6 +3696,7 @@ export class Game {
       } finally {
         this.completingCommanderMove = null;
       }
+      if (destination === "library") this.placeInLibrary(commander, deferred.libraryPlacement ?? "bottom");
       this.state.deferredCommanderMove = null;
     }, leftWith);
     this.emit({
@@ -13728,7 +13735,7 @@ export class Game {
       object.onAdventure = true;
       this.emit({ type: "card-on-adventure", object: id, player: object.owner });
     } else if (omen) {
-      this.moveObject(id, "library");
+      this.moveObject(id, "library", { libraryPlacement: "shuffle" });
       this.shuffleLibraryOf(object.owner);
       object.targets = null;
     } else {
@@ -13736,7 +13743,7 @@ export class Game {
       // Ultimatum — needed-cards P19), unconditional and independent of how
       // it was cast (unlike flashback/disturb/adventure above).
       if (def.shuffleIntoLibraryOnResolve) {
-        this.moveObject(id, "library");
+        this.moveObject(id, "library", { libraryPlacement: "shuffle" });
         this.shuffleLibraryOf(object.owner);
       } else {
         this.moveObject(id, def.exileOnResolve ? "exile" : "graveyard");
@@ -17663,7 +17670,7 @@ export class Game {
         // then that library shuffled — even when a token ceased to exist on
         // the way or a replacement sent it elsewhere (Chaos Warp's ruling).
         const owner = object.owner;
-        this.moveObject(target.object, "library");
+        this.moveObject(target.object, "library", { libraryPlacement: "shuffle" });
         if (this.state.players[owner]?.hasLost === false) this.shuffleLibraryOf(owner);
       },
       ownerOf: (ref) =>
@@ -20974,7 +20981,7 @@ export class Game {
         return;
       }
       case "shuffle":
-        if (exiled) for (const id of still) this.moveObject(id, "library");
+        if (exiled) for (const id of still) this.moveObject(id, "library", { libraryPlacement: "shuffle" });
         this.shuffleLibraryOf(owner);
         return;
     }
@@ -23502,14 +23509,31 @@ export class Game {
     // A copy of a spell ceases to exist instead of going anywhere but the
     // stack (rule 707.10a) — `leaveStackAfterResolving` removes it.
     if (object.isCopy === true && object.zone === "stack") return;
-    if (object.zone !== "library") this.moveObject(id, "library");
-    if (this.state.objects[id]?.zone !== "library") return; // a replacement took it
+    // A commander's owner may put it into the command zone instead (rule
+    // 903.9b); the move waits for the answer, and goes to `position` then.
+    if (object.zone !== "library") this.moveObject(id, "library", { libraryPlacement: position });
+    if (this.state.objects[id]?.zone !== "library") return; // a replacement took it, or it waits
+    this.placeInLibrary(id, position);
+  }
+
+  /** Move `id`, already in its owner's library, to `position` in it — or,
+   * for `"shuffle"`, to a random place in it, which a library shuffled
+   * without it before it arrived (a commander's 903.9b move waiting on its
+   * owner while Chaos Warp's shuffle went ahead) makes the same as
+   * shuffling it in. */
+  private placeInLibrary(id: ObjectId, position: CommanderLibraryPlacement): void {
+    const object = this.state.objects[id];
+    if (object?.zone !== "library") return;
     const library = this.state.zones.perPlayer[object.owner].library;
     const index = library.indexOf(id);
     if (index < 0) return;
     library.splice(index, 1);
     if (position === "top") library.unshift(id);
     else if (position === "bottom") library.push(id);
+    else if (position === "shuffle") {
+      library.splice(this.rng.int(library.length + 1), 0, id);
+      this.state.rngState = this.rng.seed;
+    }
     // "Seventh from the top": under the top six, or on the bottom of a
     // library with fewer.
     else library.splice(Math.min(Math.max(0, position.fromTop - 1), library.length), 0, id);
@@ -27013,25 +27037,34 @@ export class Game {
     // `pendingCommanderMoves` and `prepareForPriority` asks in turn. Either
     // way the move didn't happen, and this returns `false` to say so.
     //
-    // It applies to a commander put into its owner's hand from anywhere else
-    // too — a spell countered into its owner's hand (Remand) or returned there
-    // from the stack (Unsubstantiate), a card from a graveyard or exile —
-    // which waits where it is, the same way. A library-to-hand move (a draw,
-    // a tutor) isn't asked: a commander is almost never in a library, and a
-    // draw has no way to wait.
-    const handFromElsewhere =
-      to === "hand" &&
+    // It applies to a commander put into its owner's hand or library from
+    // anywhere else too ("from anywhere") — a spell countered into its
+    // owner's hand (Remand) or returned there from the stack
+    // (Unsubstantiate), an Omen shuffled into the library as it resolves, a
+    // card from a graveyard or exile (Noxious Revival's "on top of its
+    // owner's library") — which waits where it is, the same way. A
+    // library-to-hand move (a draw, a tutor) isn't asked: a commander is
+    // almost never in a library, and a draw has no way to wait. A hand to a
+    // library is a `choose-from-zone`'s, which asks first
+    // (`finishZoneChoice`).
+    const fromElsewhere =
+      (to === "hand" || to === "library") &&
       (object.zone === "stack" || object.zone === "graveyard" || object.zone === "exile");
     if (
       object.isCommander &&
       this.completingCommanderMove !== id &&
-      ((leavingBattlefield && (to === "hand" || to === "library")) || handFromElsewhere)
+      ((leavingBattlefield && (to === "hand" || to === "library")) || fromElsewhere)
     ) {
       const state = this.state;
       const intendedZone = to as CommanderReplacementZone;
-      const origin: { from?: CommanderMoveOrigin } = handFromElsewhere
-        ? { from: object.zone as CommanderMoveOrigin }
-        : {};
+      // Where in the library it goes if its owner declines: where this move
+      // was putting it, which its caller can't do once the move waits.
+      const origin: { from?: CommanderMoveOrigin; libraryPlacement?: CommanderLibraryPlacement } = {
+        ...(fromElsewhere ? { from: object.zone as CommanderMoveOrigin } : {}),
+        ...(to === "library" && enter.libraryPlacement !== undefined
+          ? { libraryPlacement: enter.libraryPlacement }
+          : {}),
+      };
       const alreadyLeaving =
         state.deferredCommanderMove?.commander === id ||
         state.pendingCommanderMoves.some((m) => m.commander === id);
@@ -27054,15 +27087,15 @@ export class Game {
         // Part of whatever simultaneous event is moving it, though its move
         // waits for the answer — see `withLeaveBatch`.
         if (leavingBattlefield) this.leaveBatch?.deferred.push(id);
-        // A commander headed from a graveyard to its owner's hand leaves the
-        // graveyard whichever way its owner answers: rule 903.9b replaces
-        // where it goes (the command zone instead of the hand), not whether
+        // A commander headed from a graveyard to its owner's hand or library
+        // leaves the graveyard whichever way its owner answers: rule 903.9b
+        // replaces where it goes (the command zone instead), not whether
         // it goes, and the replaced move is still part of this event. So it
         // leaves now, together with whatever else this move takes out of a
         // graveyard — "return up to two cards" is one "whenever one or more
         // cards leave your graveyard" trigger, not two — and completing the
         // move once answered doesn't announce it again (below).
-        if (handFromElsewhere && object.zone === "graveyard") {
+        if (fromElsewhere && object.zone === "graveyard") {
           this.noteGraveyardDeparture(id, this.graveyardSnapshot(id));
         }
       }
@@ -27149,7 +27182,7 @@ export class Game {
     // below and before it can become something else where it's going (a
     // Clone reanimated as a copy of an artifact was a creature card).
     // Tokens aren't cards (rule 111.1). A commander completing a deferred
-    // return to hand from a graveyard was already announced as it was
+    // move to a hand or library from a graveyard was already announced as it was
     // deferred (above).
     const alreadyAnnounced =
       this.completingCommanderMove === id &&

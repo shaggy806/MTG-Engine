@@ -372,3 +372,29 @@ describe("a commander put from its owner's hand into their library (rule 903.9b)
     }
   });
 });
+
+describe("a commander put into a library from a graveyard (rule 903.9b: \"from anywhere\")", () => {
+  it("Noxious Revival: asked first, then on top of the library or in the command zone", () => {
+    for (const toCommandZone of [false, true]) {
+      const game = setUp();
+      spawn(game, "Forest");
+      const general = game.debugSpawn("Grizzly Bears", A, "graveyard");
+      game.state.objects[general].isCommander = true;
+      const revival = game.debugSpawn("Noxious Revival", A, "hand");
+      game.dispatch({ type: "cast-spell", player: A, card: revival, targets: [{ kind: "object", object: general }] });
+      game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement" || quiet(s));
+      const awaiting = game.state.awaiting;
+      expect(awaiting?.kind === "commander-replacement" && awaiting.intendedZone).toBe("library");
+      // A replacement, so asked before it moves: it waits in the graveyard.
+      expect(game.state.objects[general].zone).toBe("graveyard");
+      game.dispatch({ type: "commander-replacement", player: A, toCommandZone });
+      game.advanceUntil(quiet);
+      if (toCommandZone) {
+        expect(game.state.objects[general].zone).toBe("command");
+      } else {
+        // Declined, it goes where the spell put it: on top, not the bottom.
+        expect(library(game)[0]).toBe(general);
+      }
+    }
+  });
+});
