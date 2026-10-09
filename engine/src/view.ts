@@ -377,16 +377,7 @@ function visible(
   const onBattlefield = object.zone === "battlefield";
   const lostAbilities =
     onBattlefield && object.modifiers.some((m) => m.loseAbilities === true);
-  // Layer 3 (text-change — Artificial Evolution): rewrite the displayed word
-  // so the card reads the way it now functions.
   let text = lostAbilities ? "" : def.text;
-  if (onBattlefield && text.length > 0) {
-    for (const m of object.modifiers) {
-      if (m.textSubstitution) {
-        text = text.split(m.textSubstitution.from).join(m.textSubstitution.to);
-      }
-    }
-  }
   // Abilities an effect gave it read with its own: a copy exception's "and
   // it has '…'" (rule 707.9b — Brenard's Food Golems), a one-shot's
   // granted trigger. Only those it still has (rule 613.7).

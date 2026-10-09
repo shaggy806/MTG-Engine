@@ -3007,13 +3007,6 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
-      /** `target`'s text changes: one creature-type word is replaced by
-       * another its controller chooses (Artificial Evolution — rule 612 /
-       * layer 3). Resolving this raises a `choose-text` decision. */
-      readonly kind: "change-text";
-      readonly target: number;
-    }
-  | {
       readonly kind: "create-token";
       /** Name of a token definition in the {@link CardRegistry}. */
       readonly token: string;
@@ -4840,8 +4833,6 @@ export interface EffectApi {
       readonly duration: PtDuration;
     },
   ): void;
-  /** Begin a text-changing effect — see the `"change-text"` {@link EffectSpec}. */
-  changeText(target: TargetRef): void;
   /** Create `count` copies of the named token, controlled by `ctx.controller`. */
   createToken(
     token: string,
@@ -7183,11 +7174,6 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         duration: spec.duration,
       });
       return;
-    case "change-text": {
-      const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.changeText(target);
-      return;
-    }
     case "create-token":
       // A per-player count ("its controller creates a token for each
       // creature destroyed this way") is read for each player the scope

@@ -397,14 +397,6 @@ export type Action =
       readonly order: readonly number[];
     }
   | {
-      /** Answers a pending text-change decision (Artificial Evolution — layer
-       * 3): replace the creature-type word `from` with `to`. */
-      readonly type: "choose-text";
-      readonly player: PlayerId;
-      readonly from: string;
-      readonly to: string;
-    }
-  | {
       /** Answers a pending "as this enters, choose a creature type" decision
        * (Urza's Incubator — needed-cards P14). `creatureType` must be one of
        * the offered options. */
@@ -1110,15 +1102,6 @@ export type LegalAction =
        * `triggers` is listed in the engine's own order. */
       readonly kind: "order-triggers";
       readonly triggers: readonly TriggerOrderEntry[];
-    }
-  | {
-      readonly kind: "choose-text";
-      readonly source: ObjectId;
-      readonly target: ObjectId;
-      /** Creature-type words on the target — the one to replace. */
-      readonly fromOptions: readonly string[];
-      /** Creature types the replacement may be. */
-      readonly toOptions: readonly string[];
     }
   | {
       readonly kind: "choose-creature-type";

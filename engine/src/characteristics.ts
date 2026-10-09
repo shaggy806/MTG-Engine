@@ -1238,28 +1238,11 @@ export function suspectedGrantsApply(object: GameObject): boolean {
   return !object.modifiers.some((m) => m.loseAbilities === true && (m.timestamp ?? Infinity) >= since);
 }
 
-/** Apply this object's own text-substitution modifiers (layer 3) to one word. */
-function substituteWord(object: GameObject, word: string): string {
-  let w = word;
-  for (const m of object.modifiers) {
-    if (m.textSubstitution && w === m.textSubstitution.from) w = m.textSubstitution.to;
-  }
-  return w;
-}
-
-/** Printed subtypes after this object's own layer-3 text substitution, then
- * its changeling (see {@link withChangeling}) — the subtypes layer 4 starts
- * from. */
-function textChangedSubtypes(registry: CardRegistry, object: GameObject): readonly string[] {
+/** Printed subtypes, then its changeling (see {@link withChangeling}) — the
+ * subtypes layer 4 starts from. */
+function printedSubtypes(registry: CardRegistry, object: GameObject): readonly string[] {
   const def = registry.get(printedCardName(object));
-  let subtypes: readonly string[] = def.subtypes;
-  for (const m of object.modifiers) {
-    if (m.textSubstitution) {
-      const { from, to } = m.textSubstitution;
-      subtypes = subtypes.map((s) => (s === from ? to : s));
-    }
-  }
-  return withChangeling(def, subtypes);
+  return withChangeling(def, def.subtypes);
 }
 
 /**
@@ -1393,7 +1376,7 @@ export function layerFour(
  * type-granting static is on the battlefield. */
 function ownLayerFour(registry: CardRegistry, object: GameObject): LayerFour {
   let types: readonly CardType[] = registry.get(printedCardName(object)).types;
-  let subtypes = textChangedSubtypes(registry, object);
+  let subtypes = printedSubtypes(registry, object);
   for (const modifier of object.modifiers) {
     ({ types, subtypes } = applyModifierTypes(modifier, types, subtypes));
   }
@@ -1446,7 +1429,7 @@ function foldLayerFourOnce(
   previous: LayerFour | null,
 ): LayerFour {
   let types: readonly CardType[] = registry.get(printedCardName(object)).types;
-  let subtypes = textChangedSubtypes(registry, object);
+  let subtypes = printedSubtypes(registry, object);
   const applied: ContributingStatic[] = [];
   for (const step of steps) {
     if ("modifier" in step) {
@@ -1470,15 +1453,11 @@ function foldLayerFourOnce(
     if (ability.setSubtypes !== undefined) {
       // Rule 205.1a: they replace the existing subtypes of their own kind —
       // Goddric's "is a Dragon" takes every creature type — and the rest stay.
-      const set = ability.setSubtypes.map((w) => substituteWord(source, w));
+      const set = ability.setSubtypes;
       const kinds = new Set(set.map(subtypeKind));
       subtypes = [...subtypes.filter((s) => !kinds.has(subtypeKind(s))), ...set];
     }
-    if (ability.addSubtypes !== undefined) {
-      // The source's own text change rewrites the word it grants, as it
-      // does a lord clause's.
-      subtypes = union(subtypes, ability.addSubtypes.map((w) => substituteWord(source, w)));
-    }
+    if (ability.addSubtypes !== undefined) subtypes = union(subtypes, ability.addSubtypes);
     applied.push(step.grant);
   }
   return { types, subtypes, applied };
@@ -1848,11 +1827,9 @@ export function staticAffects(
     if (held <= 0) return false;
   }
   if (affects.subtype !== undefined) {
-    // The source's own text-change (Artificial Evolution on Goblin Chieftain)
-    // rewrites the word in its lord clause too; the target is matched on its
-    // *current* subtypes (layer 3 + 4) — a changeling is every one of them.
-    const wanted = substituteWord(source, affects.subtype);
-    if (!hasSubtype(subtypesNow(), wanted)) return false;
+    // The target is matched on its *current* subtypes (layer 4) — a
+    // changeling is every one of them.
+    if (!hasSubtype(subtypesNow(), affects.subtype)) return false;
   }
   return true;
 }
@@ -2037,8 +2014,7 @@ function printedLandTypesHold(state: GameState, registry: CardRegistry, object: 
       (m.addTypes?.length ?? 0) > 0 ||
       (m.addSubtypes?.length ?? 0) > 0 ||
       m.loseLandTypes === true ||
-      m.loseAbilities === true ||
-      m.textSubstitution !== undefined,
+      m.loseAbilities === true,
   );
 }
 

@@ -927,10 +927,6 @@ export interface PtModifier {
    * (rule 205.1a — a Frog loses its creature types, not an Equipment's
    * artifact type). Applied before `addSubtypes`. */
   setSubtypes?: string[];
-  /** Layer 3 — a text-changing effect (Artificial Evolution): every instance
-   * of the creature-type word `from` reads as `to`, in this permanent's own
-   * subtypes *and* in its static abilities' `subtype` clause. */
-  textSubstitution?: { from: string; to: string };
   /** Layer 5 — colours this modifier adds ("becomes red in addition to its
    * other colours"). */
   addColors?: Color[];
@@ -2020,19 +2016,6 @@ export type AwaitingDecision =
       readonly then?: EffectSpec;
       readonly targets?: ResolvedTargets;
       readonly x?: number;
-    }
-  | {
-      /** A text-changing spell is resolving (Artificial Evolution); its
-       * controller picks which creature-type word to replace, and with what
-       * (rule 612 / layer 3). */
-      readonly kind: "choose-text";
-      readonly player: PlayerId;
-      readonly source: ObjectId;
-      readonly target: ObjectId;
-      /** The target's current creature subtypes — the word to replace. */
-      readonly fromOptions: readonly string[];
-      /** The creature types the new word may be. */
-      readonly toOptions: readonly string[];
     }
   | {
       /** A scry / surveil (rule 701.18 / 701.43): `player` has looked at the

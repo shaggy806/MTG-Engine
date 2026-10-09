@@ -314,7 +314,6 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   animate: (n, v) => v.touch(n.target, n.loseAbilities === true ? "harm" : "either", MAJOR),
   "add-types": (n, v) => v.touch(n.target, "either", MINOR),
   "animate-all": none,
-  "change-text": (n, v) => v.touch(n.target, "either", MINOR),
   // "Its controller creates a 3/3 Beast" rides on the removal it follows.
   "create-token": (n, v) => v.touch(n.who === "target-controller" ? 0 : undefined, "help", MINOR),
   // A copy goes to the copied permanent's controller unless the card says

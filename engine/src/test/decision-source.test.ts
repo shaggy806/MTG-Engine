@@ -199,28 +199,4 @@ describe("PlayerView.decisionSource", () => {
       });
     });
   });
-
-  it("names what does the renaming, not the creature renamed", () => {
-    const game = mkGame([]);
-    game.advanceUntil(toPrecombat);
-    const bears = spawn(game, "Grizzly Bears", A);
-    // The `change-text` effect, from a stand-in source: no pool card uses it
-    // since Artificial Evolution was removed.
-    const evolution = spawn(game, "Goblin Chieftain", A);
-    game.debugApplyEffect(A, { kind: "change-text", target: 0 }, [{ kind: "object", object: bears }], {
-      source: evolution,
-    });
-    expect(game.state.awaiting?.kind).toBe("choose-text");
-
-    // `choose-text` is the one kind carrying both: `target` is the creature
-    // being renamed, `source` is the spell asking. They used to be the same
-    // id, so the prompt answered "why am I being asked about Grizzly Bears?"
-    // with "Grizzly Bears".
-    expect(game.viewFor(A).decisionSource).toEqual({
-      object: evolution,
-      cardName: "Goblin Chieftain",
-    });
-    const awaiting = game.state.awaiting;
-    expect(awaiting?.kind === "choose-text" && awaiting.target).toBe(bears);
-  });
 });

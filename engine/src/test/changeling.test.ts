@@ -288,22 +288,6 @@ describe("changeling — every creature type (rule 702.73a)", () => {
     other.debugApplyEffect(A, { kind: "amass", amount: 1, creatureType: "Zombie" });
     expect(other.battlefield.length).toBe(count + 1);
   });
-
-  it("gives a text change no creature-type word to replace that the card doesn't print (rule 612)", () => {
-    // A text change rewrites words printed on the card. Being every
-    // creature type puts none of them there, so on Morophon — which prints
-    // only "Shapeshifter" — there's nothing on its menu to replace.
-    const game = makeGame();
-    const morophon = spawn(game, MOROPHON);
-    on(game, morophon, { kind: "change-text", target: 0 });
-    expect(game.state.awaiting).toBeNull();
-    // The same effect on a Goblin does offer "Goblin".
-    const chieftain = spawn(game, "Goblin Chieftain");
-    on(game, chieftain, { kind: "change-text", target: 0 });
-    const awaiting = game.state.awaiting;
-    expect(awaiting?.kind).toBe("choose-text");
-    if (awaiting?.kind === "choose-text") expect(awaiting.fromOptions).toEqual(["Goblin"]);
-  });
 });
 
 describe("Path of Ancestry — sharing a creature type with a changeling", () => {

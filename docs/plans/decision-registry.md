@@ -248,7 +248,8 @@ over to inherit.
   parameter, ignored it, and set both to the creature. Artificial Evolution
   answered "why am I being asked about Grizzly Bears?" with "Grizzly Bears".
   Safe to fix because nothing read that field — `applyTextChoice` uses
-  `awaiting.target`, and so does the client's prompt.
+  `awaiting.target`, and so does the client's prompt. (The kind went on
+  2026-10-09, with the `change-text` effect it served.)
 
 `sacrifice` shares the structural gap but has no reachable bad path: an edict
 always resolves, so the ambient source is right. Giving those three kinds a

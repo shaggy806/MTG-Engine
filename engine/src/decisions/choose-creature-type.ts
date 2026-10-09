@@ -7,9 +7,6 @@
  * list (a card that offers three types) is a row of buttons; a `catalog`
  * choice is all ~300 types, which is a search box — and unusable without a
  * head start, which is what {@link suggestedCreatureTypes} is for.
- *
- * Distinct from `choose-text`, which swaps one creature-type *word* on a
- * permanent and deliberately offers a short menu instead of the catalogue.
  */
 
 import type { Action, LegalAction } from "../actions.js";
@@ -139,7 +136,7 @@ export const chooseCreatureType = defineDecision({
 
   // candidates: deliberately absent — no rollout sees the difference between
   // one named creature type and another, so every candidate scores the same
-  // and searching only costs time. Same measured opt-out as `choose-text`.
+  // and searching only costs time.
 
   randomAnswer: (legal, player, rng): Action => {
     // Mostly a suggested type, so a choice keyed to it (Urza's Incubator's

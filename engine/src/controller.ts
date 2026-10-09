@@ -261,16 +261,6 @@ export interface PlayerController {
    */
   orderTriggers(view: ControllerView, triggers: readonly TriggerOrderEntry[]): number[];
   /**
-   * A text-changing spell is resolving (Artificial Evolution — layer 3):
-   * return `[from, to]` — the creature-type word to replace and its
-   * replacement, drawn from `fromOptions` / `toOptions`.
-   */
-  chooseText(
-    view: ControllerView,
-    fromOptions: readonly string[],
-    toOptions: readonly string[],
-  ): readonly [string, string];
-  /**
    * A permanent with "as this enters, choose a creature type" just entered
    * (Urza's Incubator — needed-cards P14). Return one of `options`.
    */
@@ -603,14 +593,6 @@ export class AutomaticController implements PlayerController {
     return triggers.map((_, i) => i);
   }
 
-  chooseText(
-    _view: ControllerView,
-    fromOptions: readonly string[],
-    toOptions: readonly string[],
-  ): readonly [string, string] {
-    return [fromOptions[0], toOptions[0]];
-  }
-
   chooseCreatureType(
     _view: ControllerView,
     _source: ObjectId,
@@ -778,11 +760,6 @@ type CopyChooser = (
   source: ObjectId,
   options: readonly ObjectId[],
 ) => ObjectId | null;
-type TextChooser = (
-  view: ControllerView,
-  fromOptions: readonly string[],
-  toOptions: readonly string[],
-) => readonly [string, string];
 type CreatureTypeChooser = (
   view: ControllerView,
   source: ObjectId,
@@ -867,10 +844,6 @@ export class ScriptedController implements PlayerController {
   ) => options[0];
   orderTriggersFn: (view: ControllerView, triggers: readonly TriggerOrderEntry[]) => number[] = (_view, triggers) =>
     triggers.map((_, i) => i);
-  chooseTextFn: TextChooser = (_view, fromOptions, toOptions) => [
-    fromOptions[0],
-    toOptions[0],
-  ];
   chooseCreatureTypeFn: CreatureTypeChooser = (_view, _source, options) => options[0];
   chooseModesFn: ModesChooser = (_view, minModes) =>
     Array.from({ length: minModes }, (_unused, i) => i);
@@ -1038,14 +1011,6 @@ export class ScriptedController implements PlayerController {
 
   orderTriggers(view: ControllerView, triggers: readonly TriggerOrderEntry[]): number[] {
     return this.orderTriggersFn(view, triggers);
-  }
-
-  chooseText(
-    view: ControllerView,
-    fromOptions: readonly string[],
-    toOptions: readonly string[],
-  ): readonly [string, string] {
-    return this.chooseTextFn(view, fromOptions, toOptions);
   }
 
   chooseCreatureType(

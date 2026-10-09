@@ -280,7 +280,6 @@ type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type EnchantChoiceAction = Extract<LegalAction, { kind: 'choose-enchant' }>
 type LegendRuleAction = Extract<LegalAction, { kind: 'legend-rule' }>
 type TriggerOrderAction = Extract<LegalAction, { kind: 'order-triggers' }>
-type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-type' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
@@ -509,7 +508,6 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-enchant': 'choose what an Aura enchants',
   'legend-rule': 'choose which legend to keep',
   'order-triggers': 'order their triggers',
-  'choose-text': 'choose a text change',
   'choose-creature-type': 'choose a creature type',
   'choose-modes': 'choose a mode',
   'choose-targets': 'choose targets',
@@ -1331,7 +1329,6 @@ function Table({
   // Per-blocker combat-damage amounts (EG-4a), in the offer's order: null
   // until the player edits one, meaning the engine's standard split.
   const [damagePicks, setDamagePicks] = useState<readonly number[] | null>(null)
-  const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
   const [sacrificePicks, setSacrificePicks] = useState<readonly ObjectId[]>([])
   const [permanentPicks, setPermanentPicks] = useState<readonly ObjectId[]>([])
@@ -1588,9 +1585,6 @@ function Table({
   )
   const legendAction = actions.find((a): a is LegendRuleAction => a.kind === 'legend-rule')
   const triggerOrderAction = actions.find((a): a is TriggerOrderAction => a.kind === 'order-triggers')
-  const textChoiceAction = actions.find(
-    (a): a is TextChoiceAction => a.kind === 'choose-text',
-  )
   const creatureTypeChoiceAction = actions.find(
     (a): a is CreatureTypeChoiceAction => a.kind === 'choose-creature-type',
   )
@@ -1696,7 +1690,6 @@ function Table({
     | 'choose-enchant'
     | 'legend-rule'
     | 'order-triggers'
-    | 'choose-text'
     | 'choose-creature-type'
     | 'choose-modes'
     | 'sacrifice'
@@ -1731,8 +1724,6 @@ function Table({
           ? 'legend-rule'
         : triggerOrderAction
           ? 'order-triggers'
-        : textChoiceAction
-          ? 'choose-text'
         : creatureTypeChoiceAction
           ? 'choose-creature-type'
         : modesChoiceAction
@@ -3467,39 +3458,6 @@ function Table({
         >
           Copy nothing
         </button>
-      </div>
-    )
-  } else if (mode === 'choose-text' && textChoiceAction) {
-    const from = textFrom ?? textChoiceAction.fromOptions[0]
-    controls = (
-      <div className="controls">
-        <span>
-          {game.nameOf(textChoiceAction.target)} — replace{' '}
-          {textChoiceAction.fromOptions.length > 1 ? 'which type' : `“${from}”`}
-        </span>
-        {textChoiceAction.fromOptions.length > 1 &&
-          textChoiceAction.fromOptions.map((w) => (
-            <button
-              key={w}
-              type="button"
-              className={w === from ? 'selected' : undefined}
-              onClick={() => setTextFrom(w)}
-            >
-              {w}
-            </button>
-          ))}
-        <span>with</span>
-        {textChoiceAction.toOptions.map((w) => (
-          <button
-            key={w}
-            type="button"
-            onClick={() =>
-              game.dispatch({ type: 'choose-text', player: seat, from, to: w })
-            }
-          >
-            {w}
-          </button>
-        ))}
       </div>
     )
   } else if (mode === 'choose-creature-type' && creatureTypeChoiceAction?.catalog) {

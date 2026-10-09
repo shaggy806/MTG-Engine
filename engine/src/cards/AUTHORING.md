@@ -3860,9 +3860,11 @@ Delete an entry in the same commit as the feature that retires it.
   "perhaps because the delayed triggered ability is countered" can't happen)
   or copy it (Strionic Resonator). `exileAtEndOfCombat` is a real delayed
   trigger already.
-- **Text-change** (`change-text`) only swaps one creature-type word on the type
-  line, from a fixed menu. No full "the words X become Y" across a card's
-  abilities — which is why Artificial Evolution was removed; no card uses it.
+- **Text-change** (rule 612): no word replacement (612.2 — "change the text of
+  target permanent by replacing all instances of one creature type with
+  another": Artificial Evolution, Mind Bend, Magical Hack, New Blood). The
+  partial `change-text` effect, which only ever changed the type line from a
+  fixed menu, was removed on 2026-10-09.
 - **Protection** is `{ colors, types }` only — not "protection from
   [full filter]" (e.g. "from Dragons", "from everything").
 - **Conditional statics / intervening-ifs** are limited to the
@@ -3939,8 +3941,8 @@ Artificial Evolution was **removed** (2026-09-28): it changed only a
 creature's type line, not the creature-type words in its rules text, and only
 from a fixed menu of 12 types, and doing it properly — layer-3 text changing
 across a card's abilities, for spells too — was more than one card rated. The
-`change-text` effect and `choose-text` decision it used are still in the
-engine, unused. The fixes: Rydia, Summoner of Mist (the Summon
+`change-text` effect and `choose-text` decision it used were removed on
+2026-10-09. The fixes: Rydia, Summoner of Mist (the Summon
 ability — Saga reanimation, `{X}` in a target filter); Saw in Half (half the
 creature's P/T as a copy's `basePt`, and the `"died"` this-way gate — it had
 made two 1/1s even of an indestructible creature); Finale of Devastation

@@ -27,7 +27,6 @@ import { choosePermanents } from "./choose-permanents.js";
 import { enterAttacking } from "./enter-attacking.js";
 import { legendRule } from "./legend-rule.js";
 import { orderTriggers } from "./order-triggers.js";
-import { chooseText } from "./choose-text.js";
 import { proliferate } from "./proliferate.js";
 import { splitMana } from "./split-mana.js";
 import { chooseCreatureType } from "./choose-creature-type.js";
@@ -56,7 +55,6 @@ export const DECISIONS: Record<DecisionKind, AnyDecisionModule> = {
   "enter-attacking": enterAttacking,
   "legend-rule": legendRule,
   "order-triggers": orderTriggers,
-  "choose-text": chooseText,
   proliferate,
   "split-mana": splitMana,
   "choose-creature-type": chooseCreatureType,

@@ -15,7 +15,6 @@ const DOING: Record<NonNullable<PlayerView['awaiting']>['kind'], string> = {
   'choose-enchant': 'choosing what to enchant',
   'legend-rule': 'choosing a legend to keep',
   'order-triggers': 'ordering triggers',
-  'choose-text': 'changing a text',
   'choose-creature-type': 'naming a creature type',
   'choose-modes': 'choosing a mode',
   'choose-targets': 'targeting',

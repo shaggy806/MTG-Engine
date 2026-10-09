@@ -141,7 +141,6 @@ import { chooseModes } from "./decisions/choose-modes.js";
 import { chooseCreatureType } from "./decisions/choose-creature-type.js";
 import { proliferate } from "./decisions/proliferate.js";
 import { splitMana } from "./decisions/split-mana.js";
-import { CHANGEABLE_CREATURE_TYPES, chooseText } from "./decisions/choose-text.js";
 import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
 import { revealForUntapped } from "./decisions/reveal-for-untapped.js";
 import { scry } from "./decisions/scry.js";
@@ -966,7 +965,6 @@ export class Game {
       applyEnterAttacking: (player, assignments) => this.applyEnterAttacking(player, assignments),
       applyLegendRuleChoice: (player, keep) => this.applyLegendRuleChoice(player, keep),
       applyTriggerOrder: (player, order) => this.applyTriggerOrder(player, order),
-      applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
       applyManaSplit: (player, counts) => this.applyManaSplit(player, counts),
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
@@ -18359,7 +18357,6 @@ export class Game {
           this.animate({ kind: "object", object: id }, kept, false, timestamp);
         }
       },
-      changeText: (target) => this.beginTextChoice(controller, source, target),
       createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking, separate, exileAtEndStep, attacksThisCombat) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
@@ -21642,75 +21639,6 @@ export class Game {
       if (value === "night" && (object.face ?? 0) === 0) this.transformPermanent(id);
       else if (value === "day" && (object.face ?? 0) === 1) this.transformPermanent(id);
     }
-  }
-
-  /** Begin a text-changing effect (Artificial Evolution — layer 3): raise a
-   * `choose-text` decision offering the target's current creature subtypes as
-   * the word to replace. Nothing to replace ⇒ the effect does nothing. */
-  private beginTextChoice(
-    player: PlayerId,
-    source: ObjectId,
-    target: TargetRef,
-  ): void {
-    if (target.kind !== "object") return;
-    const id = this.splitOneFromStack(target.object);
-    const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
-    const fromOptions = effectiveSubtypes(this.state, this.registry, object).filter((s) =>
-      CHANGEABLE_CREATURE_TYPES.includes(s),
-    );
-    if (fromOptions.length === 0) return;
-    this.state.awaiting = {
-      kind: "choose-text",
-      player,
-      // The spell asking (Artificial Evolution), not the creature being
-      // renamed — that is `target`. These were both `id`, so the prompt named
-      // the creature as the reason it was being asked about the creature.
-      source,
-      target: id,
-      fromOptions,
-      // The new type can't be Wall (rule text), nor a word already present.
-      toOptions: CHANGEABLE_CREATURE_TYPES.filter(
-        (t) => t !== "Wall" && !fromOptions.includes(t),
-      ),
-    };
-  }
-
-  /** Answer a pending `choose-text` decision (Artificial Evolution). */
-  private applyTextChoice(player: PlayerId, from: string, to: string): void {
-    const why = this.whyCannotTextChoice(player, from, to);
-    if (why !== null) throw new Error(why);
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "choose-text") {
-      throw new Error("unreachable: whyCannotTextChoice should have caught this");
-    }
-    const object = this.state.objects[awaiting.target];
-    if (object !== undefined && object.zone === "battlefield") {
-      object.modifiers.push({
-        power: 0,
-        toughness: 0,
-        keywords: [],
-        textSubstitution: { from, to },
-        untilEndOfTurn: false,
-      });
-      this.emit({ type: "text-changed", object: awaiting.target, from, to });
-    }
-    this.state.awaiting = null;
-    this.prepareForPriority(this.activePlayer);
-  }
-
-  /** Kept because `applyTextChoice` validates before applying and throws;
-   * the rules live in `decisions/choose-text.ts`. */
-  private whyCannotTextChoice(
-    player: PlayerId,
-    from: string,
-    to: string,
-  ): string | null {
-    return chooseText.whyCannot(
-      this.decisionCtx,
-      { type: "choose-text", player, from, to },
-      player,
-    );
   }
 
   /** Riot's "if you don't, it gains haste" (rule 702.136a): an effect, not

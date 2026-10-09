@@ -490,14 +490,6 @@ export type GameEvent =
       readonly duration: EffectDuration;
     })
   | (Base & {
-      /** A text-changing effect replaced a creature-type word (Artificial
-       * Evolution — rule 612 / layer 3). */
-      readonly type: "text-changed";
-      readonly object: ObjectId;
-      readonly from: string;
-      readonly to: string;
-    })
-  | (Base & {
       /** `player`'s effect picked `chosen` at random for `object` — the
        * opponent Territorial Hellkite must attack this combat. */
       readonly type: "random-player-chosen";
