@@ -24743,7 +24743,9 @@ export class Game {
    * `DamageHistory`): the source as it is — or as it last existed, if it
    * has left — and whether this is more than the lethal damage it needs
    * (rule 120.4a): toughness less damage already marked, or 1 from a
-   * deathtouch source, none at all once it has lethal damage; a
+   * deathtouch source, none at all once it has lethal damage (or deathtouch
+   * damage since state-based actions were last checked — damage dealt at the
+   * same time, which 120.4a takes into account); a
    * planeswalker's, its loyalty. The source, if it's a permanent and the
    * recipient another creature, has dealt damage to another creature.
    */
@@ -25382,6 +25384,13 @@ export class Game {
         this.state.awaiting = { kind: "legend-rule", ...legend };
         return;
       }
+      // Deathtouch damage counts only until state-based actions are next
+      // checked (704.5h, 702.2b) — this check has now read it. A creature it
+      // didn't destroy (indestructible then) isn't destroyed by a later check.
+      for (const id of this.state.zones.shared.battlefield) {
+        const object = this.state.objects[id];
+        if (object !== undefined) object.markedByDeathtouch = false;
+      }
       // Rule 704.5q, performed with those moves: only on what stays, so a
       // creature dying in this same check leaves with both kinds of counter
       // still on it (a persist creature with a +1/+1 counter doesn't return).
@@ -25782,8 +25791,9 @@ export class Game {
         } else if (!indestructible && object.damageMarked >= toughness) {
           reason = "lethal damage";
         } else if (!indestructible && object.markedByDeathtouch) {
-          // Dealt damage by a deathtouch source (704.5h) — set only as
-          // damage over 0 is dealt, and cleared with the damage. Read alone
+          // Dealt damage by a deathtouch source since the last check (704.5h)
+          // — set only as damage over 0 is dealt, cleared by each check
+          // (`runStateBasedActionsUncached`) and with the damage. Read alone
           // since damage from one with wither or infect too is -1/-1
           // counters, not marked damage (120.3d), and still kills.
           reason = "deathtouch";

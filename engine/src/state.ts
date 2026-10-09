@@ -148,7 +148,10 @@ export interface GameObject {
     readonly source: ObjectId;
     readonly returnAtNextEndStep?: true;
   };
-  /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
+  /** True once dealt damage by a deathtouch source since state-based actions
+   * were last checked (rule 704.5h): each check clears it, as do regeneration,
+   * cleanup and a zone change. So an indestructible creature that survived
+   * it isn't destroyed by losing indestructible later in the turn. */
   markedByDeathtouch: boolean;
   /**
    * Regeneration shields on this permanent (rule 701.15a): each replaces the
