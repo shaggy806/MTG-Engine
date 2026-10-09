@@ -157,6 +157,23 @@ describe("Outpost Siege", () => {
     game.advanceUntil((s) => s.turn.number === 4);
     expect(game.state.zones.shared.exile.filter((id) => game.state.objects[id].impulse !== undefined)).toHaveLength(0);
   });
+
+  it("Dragons: leaving along with the creatures, it looks back at its chosen side (603.10a)", () => {
+    const { game, a } = setUp();
+    a.chooseCreatureTypeFn = () => "Dragons";
+    a.chooseTargetsFn = () => [{ kind: "player", player: B }];
+    lands(game, "Mountain", 4);
+    lands(game, "Plains", 6);
+    const siege = toHand(game, "Outpost Siege");
+    cast(game, siege);
+    const bears = [spawn(game, "Grizzly Bears"), spawn(game, "Grizzly Bears")];
+    // Akroma's Vengeance destroys the Siege and both Bears at once: each
+    // Bears' leaving triggers it as it last existed, "Dragons" and all.
+    cast(game, toHand(game, "Akroma's Vengeance"));
+    expect(zone(game, siege)).toBe("graveyard");
+    for (const id of bears) expect(zone(game, id)).toBe("graveyard");
+    expect(life(game, B)).toBe(18);
+  });
 });
 
 describe("Count on Luck", () => {

@@ -689,7 +689,14 @@ function evalStaticCondition(
       ) {
         return true;
       }
-      return source.chosenOnEnter === condition.value;
+      // A leaves-the-battlefield trigger of a Siege leaving along with the
+      // creatures looks back at it (603.10a): the side it had chosen then,
+      // since the move cleared it.
+      return (
+        (source.zone !== "battlefield" && opts.sourceLastKnown !== undefined
+          ? opts.sourceLastKnown.chosenOnEnter
+          : source.chosenOnEnter) === condition.value
+      );
     case "self-kicked":
       // On the battlefield it's `enteredKicked` (the stack flag is cleared by
       // the move that put the permanent here); `kicked` still answers for a

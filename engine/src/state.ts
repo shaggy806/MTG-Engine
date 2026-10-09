@@ -1208,6 +1208,10 @@ export interface LastKnownInfo {
    * of it that resolves after it left reads for "of the chosen type" (rule
    * 608.2h: Herald's Horn's upkeep look). */
   readonly chosenCreatureType?: string;
+  /** `GameObject.chosenOnEnter` as it left — which of a Siege's abilities it
+   * had, for a leaves-the-battlefield trigger that looks back at it leaving
+   * along with the creatures (rule 603.10a: Outpost Siege's "Dragons"). */
+  readonly chosenOnEnter?: string;
   /** The triggered abilities it had been *granted* — by another permanent's
    * static or a one-shot modifier — in the order `effectiveTriggered` lists
    * them after its printed ones; with `lostAbilities`, only those granted
