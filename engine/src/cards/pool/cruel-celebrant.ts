@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 const TEXT =
   "Whenever this creature or another creature or planeswalker you control dies, each opponent loses 1 life and you gain 1 life.";
@@ -15,7 +16,7 @@ export default defineCard({
   toughness: 2,
   text: TEXT,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "you-control", filter: { typesAnyOf: ["creature", "planeswalker"] } },
       targets: [],
       effect: {
@@ -27,6 +28,6 @@ export default defineCard({
       },
       resolve: null,
       text: TEXT,
-    },
+    }),
   ],
 });

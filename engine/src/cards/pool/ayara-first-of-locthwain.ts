@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 export default defineCard({
   name: "Ayara, First of Locthwain",
@@ -13,9 +14,9 @@ export default defineCard({
     "Whenever Ayara, First of Locthwain or another black creature you control enters, each " +
     "opponent loses 1 life and you gain 1 life.\n" +
     "{T}, Sacrifice another black creature: Draw a card.",
-  triggered: [
+  // "Ayara **or another**": her own entry counts whatever her colour then.
+  triggered: thisOrAnother(
     {
-      // "Ayara **or another**" — no `otherOnly`, so Ayara's own entry counts.
       trigger: {
         on: "enters-battlefield",
         who: "you-control",
@@ -34,7 +35,7 @@ export default defineCard({
         "Whenever Ayara, First of Locthwain or another black creature you control enters, each " +
         "opponent loses 1 life and you gain 1 life.",
     },
-  ],
+  ),
   activated: [
     {
       // `otherOnly` is what makes the sacrifice "another" — Ayara can't eat

@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 export default defineCard({
   name: "Undead Augur",
@@ -12,7 +13,7 @@ export default defineCard({
     "Whenever Undead Augur or another Zombie you control dies, you draw a card and " +
     "you lose 1 life.",
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "you-control", filter: { subtype: "Zombie" } },
       targets: [],
       effect: {
@@ -26,6 +27,6 @@ export default defineCard({
       text:
         "Whenever Undead Augur or another Zombie you control dies, you draw a card and " +
         "you lose 1 life.",
-    },
+    }),
   ],
 });

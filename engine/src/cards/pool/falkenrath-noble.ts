@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 const TEXT = "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.";
 
@@ -13,7 +14,7 @@ export default defineCard({
   keywords: ["flying"],
   text: `Flying\n${TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "any", filter: { type: "creature" } },
       targets: ["player"],
       effect: {
@@ -25,6 +26,6 @@ export default defineCard({
       },
       resolve: null,
       text: TEXT,
-    },
+    }),
   ],
 });

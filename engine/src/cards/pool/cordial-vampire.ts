@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 const TEXT = "Whenever this creature or another creature dies, put a +1/+1 counter on each Vampire you control.";
 
@@ -12,7 +13,7 @@ export default defineCard({
   toughness: 1,
   text: TEXT,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "any", filter: { type: "creature" } },
       targets: [],
       effect: {
@@ -23,6 +24,6 @@ export default defineCard({
       },
       resolve: null,
       text: TEXT,
-    },
+    }),
   ],
 });

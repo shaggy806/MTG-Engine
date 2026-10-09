@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 const ENTER_TEXT =
   "Whenever Wick or another Rat you control enters, create a 1/1 black Snail creature token if you don't " +
@@ -21,7 +22,7 @@ export default defineCard({
   toughness: 4,
   text: `${ENTER_TEXT}\n${SAC_TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "enters-battlefield", who: "you-control", filter: { subtype: "Rat" } },
       targets: [],
       effect: {
@@ -39,7 +40,7 @@ export default defineCard({
       },
       resolve: null,
       text: ENTER_TEXT,
-    },
+    }),
   ],
   activated: [
     {

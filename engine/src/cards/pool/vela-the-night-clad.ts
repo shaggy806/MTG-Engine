@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 export default defineCard({
   name: "Vela the Night-Clad",
@@ -21,15 +22,13 @@ export default defineCard({
       text: "Other creatures you control have intimidate.",
     },
   ],
-  triggered: [
-    {
-      // "Vela **or another** creature you control" — so no `otherOnly`; a
-      // land or an artifact leaving drains nobody.
-      trigger: { on: "leaves-battlefield", who: "you-control", filter: { type: "creature" } },
-      targets: [],
-      effect: { kind: "lose-life", amount: 1, who: "each-opponent" },
-      resolve: null,
-      text: "Whenever Vela or another creature you control leaves the battlefield, each opponent loses 1 life.",
-    },
-  ],
+  // "Vela **or another creature** you control": Vela whatever she is then,
+  // and any other creature, as it last existed — not a land or an artifact.
+  triggered: thisOrAnother({
+    trigger: { on: "leaves-battlefield", who: "you-control", filter: { type: "creature" } },
+    targets: [],
+    effect: { kind: "lose-life", amount: 1, who: "each-opponent" },
+    resolve: null,
+    text: "Whenever Vela or another creature you control leaves the battlefield, each opponent loses 1 life.",
+  }),
 });

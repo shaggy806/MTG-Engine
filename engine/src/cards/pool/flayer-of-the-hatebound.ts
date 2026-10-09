@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 // EDHREC rank 5167.
 //
@@ -46,7 +47,7 @@ export default defineCard({
       resolve: null,
       text: "Undying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)",
     },
-    {
+    ...thisOrAnother({
       // "From your graveyard": a card you own, whoever it enters under (the
       // last ruling). The entering creature deals the damage, at its power as
       // it last existed if it has left (Warstorm Surge's shape).
@@ -59,6 +60,6 @@ export default defineCard({
       effect: { kind: "damage", amount: { powerOf: "trigger-object" }, target: 0, from: "trigger-object" },
       resolve: null,
       text: "Whenever this creature or another creature enters from your graveyard, that creature deals damage equal to its power to any target.",
-    },
+    }, { enteredFrom: "graveyard", ownedBy: "you" }),
   ],
 });

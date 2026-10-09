@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 const TEXT = "Constellation — Whenever this creature or another enchantment you control enters, draw a card.";
 
@@ -14,12 +15,12 @@ export default defineCard({
   toughness: 2,
   text: TEXT,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "enters-battlefield", who: "you-control", filter: { type: "enchantment" } },
       targets: [],
       effect: { kind: "draw", amount: 1 },
       resolve: null,
       text: TEXT,
-    },
+    }),
   ],
 });

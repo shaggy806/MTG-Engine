@@ -1,9 +1,11 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 // EDHREC rank 3641.
 //
-// "Gonti's Aether Heart or another artifact you control" is every artifact
-// you control, itself included (Bloomvine Regent's shape). The activated
+// "Gonti's Aether Heart or another artifact you control" is every other
+// artifact you control, and itself whatever it is then (`thisOrAnother`,
+// Bloomvine Regent's shape). The activated
 // ability is Aether Hub's `payEnergy` cost with `exileSelf`.
 
 const ENERGY_TEXT =
@@ -18,13 +20,13 @@ export default defineCard({
   types: ["artifact"],
   text: `${ENERGY_TEXT}\n${TURN_TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "enters-battlefield", who: "you-control", filter: { type: "artifact" } },
       targets: [],
       effect: { kind: "get-energy", amount: 2 },
       resolve: null,
       text: ENERGY_TEXT,
-    },
+    }),
   ],
   activated: [
     {

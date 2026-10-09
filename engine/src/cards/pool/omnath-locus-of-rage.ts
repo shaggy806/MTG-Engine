@@ -1,7 +1,9 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 // #315 in top-commanders.txt. "Omnath or another Elemental you control" is
-// every Elemental you control, Omnath among them (the Undead Augur shape).
+// every other Elemental you control, and Omnath whatever its types then
+// (`thisOrAnother`, the Undead Augur shape).
 // When Omnath is the one that died, it deals the damage as it last existed
 // on the battlefield.
 const LANDFALL_TEXT =
@@ -28,12 +30,12 @@ export default defineCard({
       resolve: null,
       text: LANDFALL_TEXT,
     },
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "you-control", filter: { subtype: "Elemental" } },
       targets: ["any-target"],
       effect: { kind: "damage", target: 0, amount: 3 },
       resolve: null,
       text: DIES_TEXT,
-    },
+    }),
   ],
 });

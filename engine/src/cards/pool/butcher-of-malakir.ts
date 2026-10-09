@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 const DIES_TEXT =
   "Whenever this creature or another creature you control dies, each opponent sacrifices a creature of their choice.";
@@ -14,12 +15,12 @@ export default defineCard({
   keywords: ["flying"],
   text: `Flying\n${DIES_TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "you-control", filter: { type: "creature" } },
       targets: [],
       effect: { kind: "sacrifice", who: "each-opponent", filter: { type: "creature" }, count: 1 },
       resolve: null,
       text: DIES_TEXT,
-    },
+    }),
   ],
 });

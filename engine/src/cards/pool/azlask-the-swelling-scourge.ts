@@ -1,5 +1,5 @@
 import { defineCard } from "../define.js";
-import { annihilator } from "../helpers.js";
+import { annihilator, thisOrAnother } from "../helpers.js";
 
 // #162 in top-commanders.txt.
 //
@@ -23,13 +23,13 @@ export default defineCard({
   toughness: 2,
   text: `${XP_TEXT}\n${PUMP_TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "you-control", filter: { type: "creature", colorless: true } },
       targets: [],
       effect: { kind: "add-player-counters", counter: "experience", amount: 1 },
       resolve: null,
       text: XP_TEXT,
-    },
+    }),
   ],
   activated: [
     {

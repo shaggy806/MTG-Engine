@@ -1,5 +1,5 @@
 import { defineCard } from "../define.js";
-import { mobilize } from "../helpers.js";
+import { mobilize, thisOrAnother } from "../helpers.js";
 
 // EDHREC rank 5468.
 // Makes Warrior → use "Red Warrior Token".
@@ -28,7 +28,7 @@ export default defineCard({
   text: `${MOBILIZE_TEXT}\n${DRAIN_TEXT}`,
   triggered: [
     mobilize(1),
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "you-control", filter: { type: "creature" } },
       targets: [],
       effect: {
@@ -40,6 +40,6 @@ export default defineCard({
       },
       resolve: null,
       text: DRAIN_TEXT,
-    },
+    }),
   ],
 });

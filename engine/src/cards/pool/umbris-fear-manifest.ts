@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 // #216 in top-commanders.txt.
 const PT_TEXT = "Umbris gets +1/+1 for each card your opponents own in exile.";
@@ -24,13 +25,14 @@ export default defineCard({
     },
   ],
   triggered: [
-    {
-      // Umbris is a Nightmare Horror, so "Umbris or another" is every one.
+    ...thisOrAnother({
+      // "Umbris or another": every Nightmare or Horror, and Umbris whatever
+      // its types then.
       trigger: { on: "enters-battlefield", who: "you-control", filter: { subtypes: ["Nightmare", "Horror"] } },
       targets: ["opponent"],
       effect: { kind: "reveal-until", whose: 0, filter: { type: "land" }, exile: true, rest: "stay" },
       resolve: null,
       text: EXILE_TEXT,
-    },
+    }),
   ],
 });

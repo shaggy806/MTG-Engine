@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 // #333 in top-commanders.txt.
 //
@@ -9,8 +10,9 @@ import { defineCard } from "../define.js";
 //   creature that no longer qualifies by then isn't returned (rule 608.2b).
 //   A creature is never lesser than itself, so the one that entered can't be
 //   returned by its own trigger.
-// - "Clement or another creature you control" is every creature you control
-//   entering, Clement included — Scourge of Valkas's shape.
+// - "Clement or another creature you control" is every other creature you
+//   control entering, and Clement whatever it is then — Scourge of Valkas's
+//   shape (`thisOrAnother`).
 // - The Frog grant is Cryptolith Rite's `grantsActivated` over Frogs, with
 //   Ancient Ziggurat's creature-spell restriction on the mana. Clement is a
 //   Frog, so it has the ability itself.
@@ -32,7 +34,7 @@ export default defineCard({
   keywords: ["vigilance"],
   text: `Vigilance\n${TRIGGER_TEXT}\n${GRANT_TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "enters-battlefield", who: "you-control", filter: { type: "creature" } },
       targets: [
         {
@@ -50,7 +52,7 @@ export default defineCard({
       effect: { kind: "return-to-hand", target: 0 },
       resolve: null,
       text: TRIGGER_TEXT,
-    },
+    }),
   ],
   static: [
     {

@@ -4,7 +4,7 @@
  * under `pool/` and `tokens/`.
  */
 
-import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
+import type { ActivatedAbility, TriggeredAbility, TriggerSpec } from "../abilities.js";
 import { wardCostText, type EffectAmount, type EffectSpec, type GiftKind, type WardCost } from "../effects.js";
 import type { CardFilter } from "../filter.js";
 import type { Color, ManaType } from "../mana.js";
@@ -37,6 +37,32 @@ export const distinctTargets = (
     const slot: TargetSpec = earlier.length === 0 ? spec : { kind: "other", of: spec, than: { slots: earlier } };
     return opts.optional === true ? { kind: "optional", of: slot } : slot;
   });
+};
+
+/**
+ * "Whenever **this creature or another** X enters / dies / leaves …" as the
+ * two triggers it is: one for the source itself, whatever it is by then, and
+ * one for every *other* X (`otherOnly`). Written as one trigger requiring the
+ * object to be an X, it missed the source's own entry or death whenever the
+ * source wasn't one — a copy, a type or colour change, a token copy of a
+ * "nontoken" one — though the text names it outright. Théoden and Thorn
+ * Mammoth spell the same two triggers out by hand.
+ *
+ * `ability` is the "another X" half, written as one trigger with its `who`
+ * and `filter` (no `otherOnly`); the source's half keeps every other field of
+ * its trigger and has `who: "self"` and `self` as its filter — what the
+ * source's own event still has to be ("this creature or another creature
+ * enters **from your graveyard**"), nothing if absent.
+ */
+export const thisOrAnother = (ability: TriggeredAbility, self?: CardFilter): TriggeredAbility[] => {
+  const { who: _who, filter: _filter, ...rest } = ability.trigger as Extract<
+    TriggerSpec,
+    { readonly on: "enters-battlefield" | "dies" | "leaves-battlefield" | "deals-combat-damage-to-player" }
+  >;
+  return [
+    { ...ability, trigger: { ...rest, who: "self", ...(self !== undefined ? { filter: self } : {}) } as TriggerSpec },
+    { ...ability, trigger: { ...ability.trigger, otherOnly: true } as TriggerSpec },
+  ];
 };
 
 /**

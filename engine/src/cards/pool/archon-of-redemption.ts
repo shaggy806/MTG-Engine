@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 export default defineCard({
   name: "Archon of Redemption",
@@ -14,7 +15,7 @@ export default defineCard({
     "Whenever Archon of Redemption or another creature you control with flying " +
     "enters, you may gain life equal to that creature's power.",
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: {
         on: "enters-battlefield",
         who: "you",
@@ -32,6 +33,6 @@ export default defineCard({
       text:
         "Whenever Archon of Redemption or another creature you control with flying " +
         "enters, you may gain life equal to that creature's power.",
-    },
+    }),
   ],
 });

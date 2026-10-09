@@ -1,9 +1,10 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 /** Commander Legends: Battle for Baldur's Gate. "Choose a Background" is `pairing`: the deck validator lets a
  * legendary Background enchantment be its second commander. The creature's
- * own ability needs no new vocab — a plain Dragon-ETB trigger,
- * "another" not required since Ganax's own entry also counts. */
+ * own ability needs no new vocab — a Dragon-ETB trigger, and one for Ganax's
+ * own entry whatever it is then (`thisOrAnother`). */
 export default defineCard({
   name: "Ganax, Astral Hunter",
   manaCost: "{4}{R}",
@@ -20,7 +21,7 @@ export default defineCard({
     "Whenever Ganax or another Dragon you control enters, create a Treasure token.\n" +
     "Choose a Background (You can have a Background as a second commander.)",
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: {
         on: "enters-battlefield",
         who: "you-control",
@@ -30,6 +31,6 @@ export default defineCard({
       effect: { kind: "create-token", token: "Treasure Token", count: 1 },
       resolve: null,
       text: "Whenever Ganax or another Dragon you control enters, create a Treasure token.",
-    },
+    }),
   ],
 });

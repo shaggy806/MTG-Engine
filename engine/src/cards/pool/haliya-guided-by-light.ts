@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 //
 // Rulings:
@@ -19,7 +20,7 @@ export default defineCard({
   toughness: 3,
   text: "Whenever Haliya or another creature or artifact you control enters, you gain 1 life.\nAt the beginning of your end step, draw a card if you've gained 3 or more life this turn.\nWarp {W} (You may cast this card from your hand for its warp cost. Exile this creature at the beginning of the next end step, then you may cast it from exile on a later turn.)",
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: {
         on: "enters-battlefield",
         who: "you-control",
@@ -29,7 +30,7 @@ export default defineCard({
       effect: { kind: "gain-life", amount: 1 },
       resolve: null,
       text: "Whenever Haliya or another creature or artifact you control enters, you gain 1 life.",
-    },
+    }),
     {
       trigger: { on: "step-begins", step: "end", who: "you" },
       targets: [],

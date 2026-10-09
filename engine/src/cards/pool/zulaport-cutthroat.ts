@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 export default defineCard({
   name: "Zulaport Cutthroat",
@@ -11,7 +12,7 @@ export default defineCard({
   text:
     "Whenever Zulaport Cutthroat or another creature you control dies, each opponent loses 1 life and you gain 1 life.",
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "dies", who: "you-control", filter: { type: "creature" } },
       targets: [],
       effect: {
@@ -24,6 +25,6 @@ export default defineCard({
       resolve: null,
       text:
         "Whenever Zulaport Cutthroat or another creature you control dies, each opponent loses 1 life and you gain 1 life.",
-    },
+    }),
   ],
 });

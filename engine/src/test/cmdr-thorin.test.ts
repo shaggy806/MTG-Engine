@@ -98,7 +98,7 @@ const treasures = (game: Game, player: PlayerId): number =>
   tokensOf(game, player, "Treasure Token");
 
 describe("Thorin, King of Durin's Folk", () => {
-  it("is a 4/4 red-white legendary Dwarf Noble with one ETB trigger and one lord clause", () => {
+  it("is a 4/4 red-white legendary Dwarf Noble with a this-or-another ETB trigger and one lord clause", () => {
     const def = registry.get(THORIN);
     expect(def.manaCost).toBe("{3}{R}{W}");
     expect(def.colors).toEqual(["R", "W"]);
@@ -114,17 +114,23 @@ describe("Thorin, King of Durin's Folk", () => {
       "Other Dwarves you control get +1/+0 for each artifact token you control.",
     ]);
 
-    expect(def.triggered).toHaveLength(1);
-    expect(def.triggered[0].trigger).toEqual({
+    // "Thorin or another Dwarf": Thorin's own entry, whatever his types then,
+    // and every other Dwarf's (`thisOrAnother`).
+    expect(def.triggered).toHaveLength(2);
+    expect(def.triggered[0].trigger).toEqual({ on: "enters-battlefield", who: "self" });
+    expect(def.triggered[1].trigger).toEqual({
       on: "enters-battlefield",
       who: "you-control",
       filter: { subtype: "Dwarf" },
+      otherOnly: true,
     });
-    expect(def.triggered[0].effect).toEqual({
-      kind: "create-token",
-      token: "Treasure Token",
-      count: 1,
-    });
+    for (const ability of def.triggered) {
+      expect(ability.effect).toEqual({
+        kind: "create-token",
+        token: "Treasure Token",
+        count: 1,
+      });
+    }
 
     expect(def.static).toHaveLength(1);
     expect(def.static[0].affects).toEqual({

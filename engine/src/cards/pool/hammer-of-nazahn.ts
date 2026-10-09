@@ -1,5 +1,5 @@
 import { defineCard } from "../define.js";
-import { equip } from "../helpers.js";
+import { equip, thisOrAnother } from "../helpers.js";
 
 const ATTACH_TEXT =
   "Whenever Hammer of Nazahn or another Equipment you control enters, you may attach that Equipment to target creature you control.";
@@ -24,7 +24,7 @@ export default defineCard({
     },
   ],
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "enters-battlefield", who: "you-control", filter: { subtype: "Equipment" } },
       targets: ["creature-you-control"],
       effect: {
@@ -34,7 +34,7 @@ export default defineCard({
       },
       resolve: null,
       text: ATTACH_TEXT,
-    },
+    }),
   ],
   activated: [equip("{4}")],
 });

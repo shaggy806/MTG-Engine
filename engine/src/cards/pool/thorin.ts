@@ -1,10 +1,11 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 /**
  * The Lord of the Rings: Holiday release. Both clauses are plain existing
  * vocabulary — the ETB trigger is the Ganax, Astral Hunter shape (a tribal
- * "this or another X you control enters", which needs no `otherOnly` because
- * the source is itself one of them), and the anthem is a `grantPtPerCount`
+ * "this or another X you control enters", two triggers so the source's own
+ * entry counts whatever it is then), and the anthem is a `grantPtPerCount`
  * lord clause whose count is a live battlefield filter.
  */
 export default defineCard({
@@ -20,10 +21,10 @@ export default defineCard({
     "Whenever Thorin or another Dwarf you control enters, create a Treasure token.\n" +
     "Other Dwarves you control get +1/+0 for each artifact token you control.",
   triggered: [
-    {
-      // "Thorin **or another** Dwarf" — no `otherOnly`, so Thorin's own entry
-      // counts too (it is a Dwarf). `who: "you-control"` is the "you control"
-      // half: a Dwarf entering under an opponent's control does nothing.
+    ...thisOrAnother({
+      // "Thorin **or another** Dwarf" — Thorin's own entry counts whatever
+      // his types then. `who: "you-control"` is the "you control" half: a
+      // Dwarf entering under an opponent's control does nothing.
       trigger: {
         on: "enters-battlefield",
         who: "you-control",
@@ -33,7 +34,7 @@ export default defineCard({
       effect: { kind: "create-token", token: "Treasure Token", count: 1 },
       resolve: null,
       text: "Whenever Thorin or another Dwarf you control enters, create a Treasure token.",
-    },
+    }),
   ],
   static: [
     {

@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 const LIFE_TEXT = "Whenever this creature or another Dragon you control enters, you gain 3 life.";
 
@@ -16,13 +17,13 @@ export default defineCard({
   keywords: ["flying"],
   text: `Flying\n${LIFE_TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "enters-battlefield", who: "you-control", filter: { subtype: "Dragon" } },
       targets: [],
       effect: { kind: "gain-life", amount: 3 },
       resolve: null,
       text: LIFE_TEXT,
-    },
+    }),
   ],
   faces: ["Bloomvine Regent", "Claim Territory"],
   omen: true,

@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { thisOrAnother } from "../helpers.js";
 
 // #55 in top-commanders.txt.
 //
@@ -26,7 +27,7 @@ export default defineCard({
   keywords: ["flying"],
   text: `Flying\n${ENTERS_TEXT}\n${CAST_TEXT}`,
   triggered: [
-    {
+    ...thisOrAnother({
       trigger: { on: "enters-battlefield", who: "you-control", filter: { subtypes: ["Elf", "Faerie"] } },
       targets: ["opponent"],
       effect: {
@@ -47,6 +48,6 @@ export default defineCard({
       },
       resolve: null,
       text: ENTERS_TEXT,
-    },
+    }),
   ],
 });
