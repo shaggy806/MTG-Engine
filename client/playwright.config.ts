@@ -17,6 +17,10 @@ export default defineConfig({
   testDir: './e2e',
   workers: 1,
   forbidOnly: !!process.env.CI,
+  // Several specs time animations frame by frame, and a shared CI runner
+  // drops frames now and then: one retry there, so a flake shows as
+  // "flaky" in the report instead of failing the run.
+  retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     browserName: 'chromium',

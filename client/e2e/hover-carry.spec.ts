@@ -114,7 +114,7 @@ for (const { room, caster, size } of CASES) {
     // The carry lets go when the pointer leaves: the card shrinks back.
     await page.mouse.move(5, 5)
     await expect.poll(scale).toBe('1')
-    expect(await page.locator('.hover-carry').count()).toBe(0)
+    await expect(page.locator('.hover-carry')).toHaveCount(0)
   })
 
   test(`${name}: a tile's popover stays open while another player casts`, async ({ page, request }) => {
@@ -144,6 +144,6 @@ for (const { room, caster, size } of CASES) {
 
     await page.mouse.move(5, 5)
     await expect(page.locator('.mini-tile-popover')).toHaveCount(0)
-    expect(await page.locator('.hover-carry').count()).toBe(0)
+    await expect(page.locator('.hover-carry')).toHaveCount(0)
   })
 }

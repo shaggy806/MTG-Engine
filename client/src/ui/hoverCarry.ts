@@ -79,7 +79,8 @@ const HOVER_WAIT_FRAMES = 10
  * card covers the pointer only once it is grown, and the browser hovers it
  * only if it does. Dropped at once if the card isn't under the pointer after
  * all (it moved); otherwise when the pointer leaves it, so leaving shrinks it
- * as usual — or after a few frames if the browser never hovers it.
+ * as usual — or, if the browser never hovers it, once the pointer is off it
+ * or after a few frames.
  *
  * Returns what takes the class off: for a layout that moves under the pointer
  * before it paints (the hand's measured spacing), which carries again.
@@ -102,7 +103,9 @@ export function carryHover(root: HTMLElement): () => void {
   const wait = () => {
     if (!carried.isConnected || carried.matches(':hover')) return
     frames += 1
-    if (frames >= HOVER_WAIT_FRAMES) release()
+    // A pointer that leaves before the browser hovers the card sends no
+    // `mouseleave`, so it's looked for here too.
+    if (frames >= HOVER_WAIT_FRAMES || !pointerIsOver(carried)) release()
     else requestAnimationFrame(wait)
   }
   requestAnimationFrame(wait)
