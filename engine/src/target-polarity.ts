@@ -211,7 +211,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   mill: (n, v) => v.touch(n.target, "harm", MINOR),
   "exile-from-library": (n, v) => v.touch(n.whose, "harm", MINOR),
   "return-from-graveyard": none,
-  // A delayed ability acts on the targets its creator chose (rule 603.7d).
+  // A delayed ability acts on the targets its creator chose (rule 603.7c): it
+  // has none of its own, its text not saying "target" (115.10a).
   "delayed-trigger": (n, v) => v.child(n.effect),
   "enters-with-counters": (n, v) => v.touch(n.target, "help", MINOR),
   "allow-cast-from-exile": (n, v) => v.touch(n.target, "take", MAJOR),

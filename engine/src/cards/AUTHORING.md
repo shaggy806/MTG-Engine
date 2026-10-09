@@ -795,8 +795,9 @@ up with a `delayed-trigger` effect:
 in progress: an ability created *during* an end step waits for the following
 turn's.
 
-The delayed ability chooses no new targets (rule 603.7d) — it carries forward
-the targets the creating effect had, so `target: 0` inside it means the same
+The delayed ability chooses no new targets — its text doesn't say "target", so
+it has none of its own (rules 115.1d, 115.10a) — and it carries forward the
+objects the creating effect had (rule 603.7c), so `target: 0` inside it means the same
 object the spell or ability was already pointed at, and `"source"` still means
 the card that set it up. Neither has to still be around when it fires.
 
@@ -1701,7 +1702,8 @@ the card has left its graveyard and come back. An *amount* reading any of them
 still reads it, as it last existed — Juri's power above, Mana Drain's "that
 spell's mana value" — since information comes from last-known information
 whatever became of the object. And an O-Ring whose source has already left
-as its exile resolves exiles nothing at all (rule 610.3c).
+as its exile resolves exiles nothing at all (rule 610.3b; 610.3a for a spell
+or an activated ability).
 
 ---
 

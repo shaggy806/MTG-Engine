@@ -1,6 +1,8 @@
 /**
- * Eminence (rule 702.106) — an ability that functions while its card is in
- * the **command zone**, not only on the battlefield.
+ * Eminence — an ability that functions while its card is in the **command
+ * zone**, not only on the battlefield. Eminence is an ability word (rule
+ * 207.2c) with no rules of its own: the ability works from there because its
+ * text says so (rule 113.6b).
  *
  * Both of the engine's ability scans walk the battlefield, so the feature is
  * a per-ability `fromCommandZone` flag that adds its card to those scans from

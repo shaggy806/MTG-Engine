@@ -2540,7 +2540,8 @@ export interface DelayedTrigger {
   readonly sourceName: string;
   /**
    * Targets captured when it was created. A delayed ability doesn't choose
-   * new targets (rule 603.7d), so these are fixed here and `effect` refers to
+   * new targets — its text doesn't say "target" (rules 115.1d, 115.10a) —
+   * so these are fixed here and `effect` refers to
    * them by slot index exactly like any other effect.
    */
   readonly targets: ResolvedTargets;

@@ -14,7 +14,7 @@ import { defineCard } from "../define.js";
 //   [2025-06-06] If a token is exiled this way, it will cease to exist and won't return to the
 //     battlefield.
 //
-// Banishing Light's O-Ring shape (rule 610.3c), plus a mana ability.
+// Banishing Light's O-Ring shape (rule 610.3b), plus a mana ability.
 
 const ETB = "When this artifact enters, exile target nonland permanent an opponent controls until this artifact leaves the battlefield.";
 

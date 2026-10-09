@@ -1453,7 +1453,7 @@ export type EffectSpec =
        *
        * Marks `GameObject.exiledBy` with the source's id, which is what links
        * the two halves. If the source has left before the exile happens (or
-       * is back as a new object), nothing is exiled at all (rule 610.3c); if
+       * is back as a new object), nothing is exiled at all (rule 610.3a/b); if
        * the exiled card moves on to somewhere else, nothing comes back.
        */
       readonly untilSourceLeaves?: boolean;
@@ -1838,7 +1838,8 @@ export type EffectSpec =
        * beginning of the next end step", Arcane Denial's upkeep draws.
        *
        * `effect` is applied when it fires, against the targets the *creating*
-       * effect had (rule 603.7d — a delayed ability chooses no new targets),
+       * effect had (a delayed ability's text doesn't say "target", so it
+       * chooses none of its own — rules 115.1d, 115.10a, 603.7c),
        * so it refers to them by slot index like any other effect and
        * `"source"` still means the card that set it up.
        */

@@ -14021,10 +14021,11 @@ export class Game {
   private resolveAbility(object: GameObject): void {
     const id = object.id;
     const ability = this.stackAbilityOf(object);
-    // A delayed trigger chose no targets (rule 603.7d), so what it carries
-    // isn't re-checked as targets. It acts only on those still the objects
-    // they were as it was created (rule 400.7), but reads every one of them,
-    // through last-known information (Mana Drain's "that spell").
+    // A delayed trigger chose no targets — its text doesn't say "target"
+    // (rules 115.1d, 115.10a) — so what it carries isn't re-checked as
+    // targets. It acts only on those still the objects they were as it was
+    // created (rule 400.7), but reads every one of them, through last-known
+    // information (Mana Drain's "that spell").
     const targets = this.targetsStillMeant(object);
     const readTargets = object.delayedTrigger !== undefined ? (object.targets ?? []) : undefined;
     const source = object.sourceObjectId ?? id;
@@ -14078,7 +14079,7 @@ export class Game {
             ...(object.targetZones !== undefined ? { targetZones: object.targetZones } : {}),
             ...(object.lastKnownRefs !== undefined ? { lastKnownRefs: object.lastKnownRefs } : {}),
           });
-    // A delayed trigger chose no targets (603.7d); what it carries is read.
+    // A delayed trigger chose no targets (115.10a); what it carries is read.
     const legality = this.targetLegality(
       object.delayedTrigger !== undefined ? [] : specs,
       object.targets ?? [],
@@ -14312,10 +14313,10 @@ export class Game {
     // would otherwise rescan the battlefield for every permanent on it.
     const triggerGrantors = this.triggeredGrantSources();
     const candidates = new Set<ObjectId>(this.state.zones.shared.battlefield);
-    // Eminence (rule 702.106): a card in the command zone whose triggered
-    // ability says it functions there. Added to the same scan rather than
-    // given one of its own, so ordering, APNAP and the intervening-if check
-    // are the battlefield's and cannot drift from it.
+    // Eminence (an ability word, rule 207.2c): a card in the command zone
+    // whose triggered ability says it functions there (rule 113.6b). Added to
+    // the same scan rather than given one of its own, so ordering, APNAP and
+    // the intervening-if check are the battlefield's and cannot drift from it.
     //
     // Tracked separately from `candidates` because "is in the command zone"
     // is not the same question as "may only contribute Eminence". A commander
@@ -17389,7 +17390,7 @@ export class Game {
       },
       exileObject: (target, untilSourceLeaves, withCounters, mayCast, linked) => {
         if (untilSourceLeaves === true) {
-          // Rule 610.3c: exiled "until" something that has already happened
+          // Rule 610.3a/b: exiled "until" something that has already happened
           // — its source gone, or back as a new object (400.7) — it isn't
           // exiled at all.
           const src = this.state.objects[source];
@@ -23068,7 +23069,8 @@ export class Game {
       source,
       sourceName: object === undefined ? "a spell" : printedCardName(object),
       // Captured by value: the ability chooses no new targets when it fires
-      // (rule 603.7d), and the effect that set it up is long gone by then.
+      // (its text doesn't say "target", rule 115.10a; it acts on these,
+      // 603.7c), and the effect that set it up is long gone by then.
       targets: [...targets],
       // Where they were when the *creating* spell or ability targeted them:
       // "that spell" still means the spell after it has been countered.

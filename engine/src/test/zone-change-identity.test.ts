@@ -152,7 +152,7 @@ describe("a delayed trigger's source", () => {
   });
 });
 
-describe("exiled until an event that has already happened (rule 610.3c)", () => {
+describe("exiled until an event that has already happened (rule 610.3a/b)", () => {
   it("an O-Ring whose source left before it resolved exiles nothing", () => {
     const game = setUp();
     const victim = game.debugSpawn("Grizzly Bears", B, "battlefield");

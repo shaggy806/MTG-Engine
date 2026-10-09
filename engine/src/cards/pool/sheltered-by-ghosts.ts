@@ -5,7 +5,7 @@ const EXILE_TEXT =
   "When this Aura enters, exile target nonland permanent an opponent controls until this Aura leaves the battlefield.";
 const STATIC_TEXT = "Enchanted creature gets +1/+0 and has lifelink and ward {2}.";
 
-// Rule 610.3c: if the Aura has left before its trigger resolves, nothing is
+// Rule 610.3b: if the Aura has left before its trigger resolves, nothing is
 // exiled at all (the ruling). A token exiled this way ceases to exist.
 export default defineCard({
   name: "Sheltered by Ghosts",

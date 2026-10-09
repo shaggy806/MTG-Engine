@@ -877,8 +877,10 @@ export type StaticCondition =
 export interface StaticAbility {
   readonly affects: AffectSpec;
   /**
-   * Eminence (rule 702.106) — this static functions while its card is in the
-   * **command zone** as well as on the battlefield (The Ur-Dragon: "as long
+   * Eminence (an ability word, rule 207.2c: no rules of its own; the text
+   * says where it functions, rule 113.6b) — this static functions while its
+   * card is in the **command zone** as well as on the battlefield (The
+   * Ur-Dragon: "as long
    * as The Ur-Dragon is in the command zone or on the battlefield, other
    * Dragon spells you cast cost {1} less").
    *

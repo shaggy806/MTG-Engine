@@ -1282,10 +1282,11 @@ export type TriggerSpec =
 
 export interface TriggeredAbility {
   /**
-   * Eminence (rule 702.106) — this ability functions while its card is in the
-   * **command zone**, not only on the battlefield (Edgar Markov: "whenever
-   * you cast another Vampire spell, if Edgar Markov is in the command zone or
-   * on the battlefield, …").
+   * Eminence — this ability functions while its card is in the **command
+   * zone**, not only on the battlefield, because its text says so (rule
+   * 113.6b; Eminence is an ability word, rule 207.2c, with no rules meaning
+   * of its own). Edgar Markov: "whenever you cast another Vampire spell, if
+   * Edgar Markov is in the command zone or on the battlefield, …".
    *
    * Per *ability*, not per card, and that is the whole point: Edgar's first
    * strike, haste and attack trigger do nothing from the command zone. Only

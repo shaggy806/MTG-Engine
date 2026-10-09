@@ -16,7 +16,7 @@ import { distinctTargets } from "../helpers.js";
 //
 // Summon: Titan's Saga-creature shape; chapter I is Banishing Light's O-Ring
 // (`untilSourceLeaves` plus the linked leaves-the-battlefield return, rule
-// 610.3c: nothing is exiled if the Saga has already left). Chapters II and
+// 610.3b: nothing is exiled if the Saga has already left). Chapters II and
 // III are Rishkar's "each of up to two target creatures": two optional slots,
 // so choosing none still gains the life, and choosing some that are all
 // illegal on resolution does nothing (rule 608.2b, the ruling).
