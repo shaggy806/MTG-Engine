@@ -69,4 +69,24 @@ describe("becomes-tapped triggers", () => {
     expect(game.state.objects[emmara].tapped).toBe(false);
     expect(tokensOf(game, A)).toHaveLength(0);
   });
+
+  it("fires once per token when a token stack is tapped as a whole", () => {
+    const game = newGame();
+    game.advanceUntil((s) => s.turn.step === "precombat-main");
+    game.debugSpawn("Magda, Brazen Outlaw", A);
+    game.debugApplyEffect(A, { kind: "create-token", token: "Dwarf Token", count: 10 });
+    const dwarves = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Dwarf Token",
+    );
+    expect(dwarves).toHaveLength(1);
+    expect(game.state.objects[dwarves[0]].stackCount).toBe(10);
+
+    // Ten Dwarves become tapped, each its own permanent (rule 701.26a):
+    // ten Treasures, not one for the stack, and one for Magda, a Dwarf too.
+    game.debugApplyEffect(A, { kind: "tap-all", filter: { subtype: "Dwarf" } });
+    game.advanceUntil(
+      (s) => s.zones.shared.stack.length === 0 && s.pendingTriggers.length === 0 && s.awaiting === null,
+    );
+    expect(tokensOf(game, A).filter((name) => name === "Treasure Token")).toHaveLength(11);
+  });
 });

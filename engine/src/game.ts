@@ -14745,9 +14745,11 @@ export class Game {
               ? (event.sources ?? 1)
               : 1;
           // A compacted stack untapping is every token in it untapping, each
-          // its own permanent: Mesmeric Orb mills once per token.
-          const untapped =
-            event.type === "permanent-untapped" && event.object !== id
+          // its own permanent: Mesmeric Orb mills once per token. Tapping
+          // likewise (a tap-all over a stack, or attacking with a declared
+          // count of it): Magda makes a Treasure per Dwarf (rule 701.26a).
+          const turned =
+            (event.type === "permanent-untapped" || event.type === "permanent-tapped") && event.object !== id
               ? (this.state.objects[event.object]?.stackCount ?? 1)
               : 1;
           // Counters put on a token stack were put on every token in it
@@ -14789,7 +14791,7 @@ export class Game {
                 recipients *
                 attacked *
                 dealtBy *
-                untapped *
+                turned *
                 countered *
                 (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1)) *
             (1 + entryDoublers);
