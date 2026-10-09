@@ -29,8 +29,10 @@ ssh -o BatchMode=yes -o ConnectTimeout=8 deckblitz 'sudo -n true 2>/dev/null && 
   Cloudflare can't reach the tunnel). If the SSH firewall rule is limited to the home IP, the
   home IP may have changed. Otherwise the instance is stopped or hung: tell the user to check
   it in the Lightsail console (or reboot it there), and stop.
-- **Humans online** in a `playing` room (the `seats` line): say who and ask before restarting
-  — bot-only rooms can go.
+- **A human seat** in a `playing` room: say who and ask before restarting — bot-only rooms can
+  go. Read the room table's SEATS column, not the `seats` line: that counts only humans online,
+  and a name with a `*` is a player disconnected mid-game (a dropped connection, a reload) whose
+  game a restart would end all the same. Any name but `bot` or `open` is a human.
 - **`sudo: NEEDS PASSWORD`**: Lightsail's `ubuntu` user has passwordless sudo out of the box,
   so something on the box changed it. `deploy.sh` needs sudo for `systemctl`, and you may not
   type a password. Give the user the command to run themselves (`ssh -t deckblitz 'cd
