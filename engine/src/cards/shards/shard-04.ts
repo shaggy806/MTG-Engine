@@ -275,6 +275,7 @@ import _poolWitherAndBloom from "../pool/wither-and-bloom.js";
 import _poolWorkshopAssistant from "../pool/workshop-assistant.js";
 import _poolZephyrFalcon from "../pool/zephyr-falcon.js";
 import _poolZofBloodbog from "../pool/zof-bloodbog.js";
+import _tokensDragonTokenAvatarRoku from "../tokens/dragon-token-avatar-roku.js";
 import _tokensSandWarriorToken from "../tokens/sand-warrior-token.js";
 import _tokensSoldierToken from "../tokens/soldier-token.js";
 import _tokensSpawnTokenSpawningPit from "../tokens/spawn-token-spawning-pit.js";
@@ -557,6 +558,7 @@ const shard: CardShard = {
     _poolZofBloodbog,
   ],
   tokens: [
+    _tokensDragonTokenAvatarRoku,
     _tokensSandWarriorToken,
     _tokensSoldierToken,
     _tokensSpawnTokenSpawningPit,

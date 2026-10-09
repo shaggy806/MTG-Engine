@@ -16,6 +16,8 @@ import _poolAnvilwroughtRaptor from "../pool/anvilwrought-raptor.js";
 import _poolArcaneFlight from "../pool/arcane-flight.js";
 import _poolAssaultGriffin from "../pool/assault-griffin.js";
 import _poolAstrologiansPlanisphere from "../pool/astrologians-planisphere.js";
+import _poolAvatarRoku from "../pool/avatar-roku.js";
+import _poolBahamutWardenOfLight from "../pool/bahamut-warden-of-light.js";
 import _poolBarbtoothWurm from "../pool/barbtooth-wurm.js";
 import _poolBattleHurda from "../pool/battle-hurda.js";
 import _poolBeskirShieldmate from "../pool/beskir-shieldmate.js";
@@ -291,6 +293,8 @@ const shard: CardShard = {
     _poolArcaneFlight,
     _poolAssaultGriffin,
     _poolAstrologiansPlanisphere,
+    _poolAvatarRoku,
+    _poolBahamutWardenOfLight,
     _poolBarbtoothWurm,
     _poolBattleHurda,
     _poolBeskirShieldmate,

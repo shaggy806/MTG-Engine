@@ -233,6 +233,7 @@ import _poolTaintedPeak from "../pool/tainted-peak.js";
 import _poolTarSnare from "../pool/tar-snare.js";
 import _poolTerramorphicExpanse from "../pool/terramorphic-expanse.js";
 import _poolThatsMine from "../pool/thats-mine.js";
+import _poolTheLegendOfRoku from "../pool/the-legend-of-roku.js";
 import _poolThopterSpyNetwork from "../pool/thopter-spy-network.js";
 import _poolThreeStepsAhead from "../pool/three-steps-ahead.js";
 import _poolTitanHunter from "../pool/titan-hunter.js";
@@ -511,6 +512,7 @@ const shard: CardShard = {
     _poolTarSnare,
     _poolTerramorphicExpanse,
     _poolThatsMine,
+    _poolTheLegendOfRoku,
     _poolThopterSpyNetwork,
     _poolThreeStepsAhead,
     _poolTitanHunter,

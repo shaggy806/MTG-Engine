@@ -21719,6 +21719,16 @@ export class Game {
     );
   }
 
+  /** Is `id` a double-faced card (rule 712.1) — a transforming or a modal
+   * one, by its own card, never what a copy effect made it? An adventurer,
+   * an Omen or a split card has several `faces` but one face of card. */
+  private isDoubleFacedCard(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    if (object.faces === undefined || object.faces.length < 2) return false;
+    const front = this.frontFaceDef(id);
+    return !front.adventure && !front.omen && !front.split;
+  }
+
   /** Is `id` a transforming double-faced permanent (rule 712.4)? — only these
    * can be turned over by a `transform` effect / a day-night change. */
   private isTransformingDfc(id: ObjectId): boolean {
@@ -22775,6 +22785,8 @@ export class Game {
     // on the battlefield isn't put onto it again.
     if (object === undefined || object.zone === "battlefield") return false;
     if (under !== undefined && this.state.players[under]?.hasLost !== false) return false;
+    // One that can't enter transformed stays put (rule 712.14a), unasked.
+    if (transformed && !this.isDoubleFacedCard(target.object)) return false;
     // Its "as this enters" choices first (rule 614.12 — a reanimated Clone
     // copies something): nothing moves until they're made.
     if (this.askEnterChoice(target.object, under ?? object.owner)) return true;
@@ -22914,8 +22926,15 @@ export class Game {
       // One coming back has an "as this enters" choice to make first (rule
       // 614.12 — a blinked Clone copies afresh): it's asked now, and the
       // return waits for the answer, linked to this exile the way a delayed
-      // one is.
-      if (exiled.some((id) => this.askEnterChoice(id, returnUnder ?? this.state.objects[id].owner))) {
+      // one is. One that can't come back transformed is asked nothing: it
+      // stays in exile (rule 712.14a).
+      if (
+        exiled.some(
+          (id) =>
+            (options.transformed !== true || this.isDoubleFacedCard(id)) &&
+            this.askEnterChoice(id, returnUnder ?? this.state.objects[id].owner),
+        )
+      ) {
         const returnLink = `flicker-${this.state.nextObjectSeq++}`;
         for (const id of exiled) this.state.objects[id].flickerLink = returnLink;
         return {
@@ -22972,7 +22991,13 @@ export class Game {
     // "As this enters" choices first (rule 614.12), with the link still
     // standing: this runs again with the answer.
     const returning = linked.filter((id) => !this.state.objects[id].isToken);
-    if (returning.some((id) => this.askEnterChoice(id, returnUnder ?? this.state.objects[id].owner))) {
+    if (
+      returning.some(
+        (id) =>
+          (!transformed || this.isDoubleFacedCard(id)) &&
+          this.askEnterChoice(id, returnUnder ?? this.state.objects[id].owner),
+      )
+    ) {
       return true;
     }
     for (const id of linked) this.state.objects[id].flickerLink = undefined;
@@ -26942,6 +26967,10 @@ export class Game {
       const types = computeCharacteristics(this.state, this.registry, id).types;
       if (types.includes("instant") || types.includes("sorcery")) return false;
     }
+    // So does a card told to enter "transformed" that isn't a double-faced
+    // card (rule 712.14a): a Clone of Clive, Ifrit's Dominant, exiled by the
+    // ability it copied, stays in exile.
+    if (to === "battlefield" && enter.transformed === true && !this.isDoubleFacedCard(id)) return false;
     // So does an Aura with nothing it could enchant (rule 303.4g — see
     // `askEnterChoice`), unless it was on the stack: that one is put into
     // its owner's graveyard instead.

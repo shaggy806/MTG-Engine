@@ -56,6 +56,7 @@ import _poolDauntlessCathar from "../pool/dauntless-cathar.js";
 import _poolDeadlyRecluse from "../pool/deadly-recluse.js";
 import _poolDefiantKhenra from "../pool/defiant-khenra.js";
 import _poolDiamondPickAxe from "../pool/diamond-pick-axe.js";
+import _poolDionBahamutsDominant from "../pool/dion-bahamuts-dominant.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
 import _poolDoomskar from "../pool/doomskar.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
@@ -329,6 +330,7 @@ const shard: CardShard = {
     _poolDeadlyRecluse,
     _poolDefiantKhenra,
     _poolDiamondPickAxe,
+    _poolDionBahamutsDominant,
     _poolDoomWhisperer,
     _poolDoomskar,
     _poolDragonRoost,

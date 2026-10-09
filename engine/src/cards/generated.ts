@@ -467,6 +467,7 @@ import _poolAvacynsPilgrim from "./pool/avacyns-pilgrim.js";
 import _poolAvatarEnthusiasts from "./pool/avatar-enthusiasts.js";
 import _poolAvatarKyoshiEarthbender from "./pool/avatar-kyoshi-earthbender.js";
 import _poolAvatarRokuFirebender from "./pool/avatar-roku-firebender.js";
+import _poolAvatarRoku from "./pool/avatar-roku.js";
 import _poolAvenArcher from "./pool/aven-archer.js";
 import _poolAvenBattlePriest from "./pool/aven-battle-priest.js";
 import _poolAvenCloudchaser from "./pool/aven-cloudchaser.js";
@@ -521,6 +522,7 @@ import _poolBadgermole from "./pool/badgermole.js";
 import _poolBadlands from "./pool/badlands.js";
 import _poolBaelothBarritylEntertainer from "./pool/baeloth-barrityl-entertainer.js";
 import _poolBagOfHolding from "./pool/bag-of-holding.js";
+import _poolBahamutWardenOfLight from "./pool/bahamut-warden-of-light.js";
 import _poolBaithookAngler from "./pool/baithook-angler.js";
 import _poolBakeIntoAPie from "./pool/bake-into-a-pie.js";
 import _poolBakeryRaid from "./pool/bakery-raid.js";
@@ -1866,6 +1868,7 @@ import _poolDinaEssenceBrewer from "./pool/dina-essence-brewer.js";
 import _poolDinaSoulSteeper from "./pool/dina-soul-steeper.js";
 import _poolDiningRoom from "./pool/dining-room.js";
 import _poolDinotomaton from "./pool/dinotomaton.js";
+import _poolDionBahamutsDominant from "./pool/dion-bahamuts-dominant.js";
 import _poolDiplomaticImmunity from "./pool/diplomatic-immunity.js";
 import _poolDireFleetHoarder from "./pool/dire-fleet-hoarder.js";
 import _poolDiregrafCaptain from "./pool/diregraf-captain.js";
@@ -7299,6 +7302,7 @@ import _poolTheHunterMaze from "./pool/the-hunter-maze.js";
 import _poolTheIncredibleHulk from "./pool/the-incredible-hulk.js";
 import _poolTheJollyBalloonMan from "./pool/the-jolly-balloon-man.js";
 import _poolTheLadyOfTheMountain from "./pool/the-lady-of-the-mountain.js";
+import _poolTheLegendOfRoku from "./pool/the-legend-of-roku.js";
 import _poolTheLocustGod from "./pool/the-locust-god.js";
 import _poolTheLordMasterOfHell from "./pool/the-lord-master-of-hell.js";
 import _poolTheLordOfPain from "./pool/the-lord-of-pain.js";
@@ -8570,6 +8574,7 @@ import _tokensDragonIllusionToken from "./tokens/dragon-illusion-token.js";
 import _tokensDragonSpiritToken from "./tokens/dragon-spirit-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
+import _tokensDragonTokenAvatarRoku from "./tokens/dragon-token-avatar-roku.js";
 import _tokensDragonTokenDragonbackAssault from "./tokens/dragon-token-dragonback-assault.js";
 import _tokensDragonTokenFirebreathing from "./tokens/dragon-token-firebreathing.js";
 import _tokensDrakeToken from "./tokens/drake-token.js";
@@ -9230,6 +9235,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAvatarEnthusiasts,
   _poolAvatarKyoshiEarthbender,
   _poolAvatarRokuFirebender,
+  _poolAvatarRoku,
   _poolAvenArcher,
   _poolAvenBattlePriest,
   _poolAvenCloudchaser,
@@ -9284,6 +9290,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBadlands,
   _poolBaelothBarritylEntertainer,
   _poolBagOfHolding,
+  _poolBahamutWardenOfLight,
   _poolBaithookAngler,
   _poolBakeIntoAPie,
   _poolBakeryRaid,
@@ -10629,6 +10636,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDinaSoulSteeper,
   _poolDiningRoom,
   _poolDinotomaton,
+  _poolDionBahamutsDominant,
   _poolDiplomaticImmunity,
   _poolDireFleetHoarder,
   _poolDiregrafCaptain,
@@ -16062,6 +16070,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTheIncredibleHulk,
   _poolTheJollyBalloonMan,
   _poolTheLadyOfTheMountain,
+  _poolTheLegendOfRoku,
   _poolTheLocustGod,
   _poolTheLordMasterOfHell,
   _poolTheLordOfPain,
@@ -17339,6 +17348,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensDragonSpiritToken,
   _tokensDragonToken55,
   _tokensDragonToken66,
+  _tokensDragonTokenAvatarRoku,
   _tokensDragonTokenDragonbackAssault,
   _tokensDragonTokenFirebreathing,
   _tokensDrakeToken,

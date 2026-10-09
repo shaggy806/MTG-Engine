@@ -17,7 +17,7 @@ import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
 import type { TargetRef } from "../target.js";
-import { faceName } from "../state.js";
+import { faceName, nameOf } from "../state.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -66,12 +66,45 @@ describe("transformed", () => {
     expect(game.state.objects[card].tapped).toBe(true);
   });
 
-  it("a card that isn't double-faced just enters", () => {
+  // Rule 712.14a: a card that isn't double-faced, told to enter transformed,
+  // stays in its current zone.
+  it("a card that isn't double-faced stays where it is", () => {
     const game = setUp();
     const card = game.debugSpawn("Grizzly Bears", A, "graveyard");
     run(game, { kind: "put-onto-battlefield", target: 0, transformed: true }, card);
-    expect(game.state.objects[card].zone).toBe("battlefield");
-    expect(face(game, card)).toBe("Grizzly Bears");
+    expect(game.state.objects[card].zone).toBe("graveyard");
+  });
+
+  it("flickered, a card that isn't double-faced stays in exile, now or delayed", () => {
+    for (const returnAt of [undefined, "next-end-step"] as const) {
+      const game = setUp();
+      const card = game.debugSpawn("Grizzly Bears", A, "battlefield");
+      run(game, { kind: "flicker", target: 0, transformed: true, ...(returnAt ? { returnAt } : {}) }, card);
+      game.advanceUntil((s) => s.turn.step === "end" && quiet(s));
+      expect(game.state.objects[card].zone).toBe("exile");
+    }
+  });
+
+  // The Clive ruling: a Clone of Clive, exiled by the ability it copied,
+  // stays in exile — and isn't asked what to copy on the way.
+  it("a Clone of Clive, Ifrit's Dominant stays in exile, asked nothing", () => {
+    const game = setUp();
+    // An opponent's, so the legend rule leaves both.
+    const clive = game.debugSpawn("Clive, Ifrit's Dominant", B, "battlefield");
+    const clone = game.debugSpawn("Clone", A, "hand");
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Island", A, "battlefield");
+    for (let i = 0; i < 6; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    game.dispatch({ type: "cast-spell", player: A, card: clone });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[clone].zone).toBe("battlefield");
+    expect(nameOf(game.state.objects[clone])).toBe("Clive, Ifrit's Dominant");
+    game.state.objects[clone].summoningSick = false;
+
+    game.dispatch({ type: "activate-ability", player: A, source: clone, abilityIndex: 0, targets: [] });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0 || s.awaiting !== null);
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.objects[clone].zone).toBe("exile");
+    expect(game.state.objects[clive].zone).toBe("battlefield");
   });
 
   it("flickered, it returns transformed", () => {
