@@ -303,13 +303,13 @@ export interface PlayerView {
 
 export interface ViewOptions {
   /**
-   * What `cardId` costs the viewer right now, or `null` when it is the
+   * What `cardId` costs `caster` right now, or `null` when it is the
    * printed cost. Supplied by `Game.viewFor`, because working it out needs
    * commander tax and the battlefield's cost-modification statics — a
    * capability handed in rather than logic duplicated here, the same shape
    * `DecisionReadCtx` and `ManaPlanningView` use.
    */
-  readonly effectiveCost?: (cardId: ObjectId) => string | null;
+  readonly effectiveCost?: (cardId: ObjectId, caster: PlayerId) => string | null;
   /** How many lands `player` may play this turn. Supplied by `Game.viewFor`
    * for the same reason: an extra land drop is a static whose condition only
    * `Game` can evaluate. Without it, the rules' base limit plus any one-shot
@@ -708,18 +708,26 @@ function viewForUncached(
 
   const holdings = exileHoldings(state);
   const objects: Record<ObjectId, VisibleObject> = {};
-  // The viewer's own castable-from zones. A modified cost is only meaningful
-  // (and only theirs to know) for cards they could actually cast.
-  const ownCastable = new Set<ObjectId>([
-    ...(state.zones.perPlayer[viewer]?.hand ?? []),
-    ...state.zones.shared.command.filter((id) => state.objects[id]?.owner === viewer),
+  // Who could cast each card whose cost is shown, priced for them: the
+  // viewer's own hand, and every commander in the command zone, by its owner.
+  // The command zone is public, and so is what a commander costs its owner —
+  // the tax and the permanents that change it are in plain view (a bug
+  // report, 2026-10-08: reductions on opponents' commanders didn't show). An
+  // opponent's hand stays the viewer's to not know.
+  const casterOf = new Map<ObjectId, PlayerId>([
+    ...(state.zones.perPlayer[viewer]?.hand ?? []).map((id): [ObjectId, PlayerId] => [id, viewer]),
+    ...state.zones.shared.command.flatMap((id): [ObjectId, PlayerId][] => {
+      const owner = state.objects[id]?.owner;
+      return owner === undefined ? [] : [[id, owner]];
+    }),
   ]);
   for (const id of visibleIds) {
     if (state.objects[id] !== undefined) {
       const base = visible(state, registry, id);
+      const caster = casterOf.get(id);
       const cost =
-        options.effectiveCost !== undefined && ownCastable.has(id)
-          ? options.effectiveCost(id)
+        options.effectiveCost !== undefined && caster !== undefined
+          ? options.effectiveCost(id, caster)
           : null;
       const held = holdings.get(id);
       const withHeld = held === undefined ? base : { ...base, holding: held };

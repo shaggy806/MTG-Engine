@@ -81,3 +81,49 @@ describe("the cost shown for a reduced spell", () => {
     expect(shown(game, card)).toBe("{1/W}{2/U}{2/B}{2/R}{2/G}");
   });
 });
+
+// An opponent's commander is public, and so is what it costs them: the
+// command zone, the tax and the permanents that change it are all in plain
+// view (a bug report, 2026-10-08: reductions on opponents' commanders
+// didn't show).
+describe("the cost shown for an opponent's commander", () => {
+  const withCommander = () => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
+      decks: [
+        { player: A, cards: Array<string>(40).fill("Island") },
+        { player: B, cards: Array<string>(40).fill("Swamp"), commanders: ["Sheoldred, the Apocalypse"] },
+      ],
+    });
+    game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
+    const commander = game.state.zones.shared.command.find(
+      (id) => game.state.objects[id]?.cardName === "Sheoldred, the Apocalypse",
+    );
+    if (commander === undefined) throw new Error("no commander in the command zone");
+    return { game, commander };
+  };
+
+  it("shows its owner's reduction to everyone at the table", () => {
+    const { game, commander } = withCommander();
+    spawn(game, "Bontu's Monument", B);
+    expect(shown(game, commander)).toBe("{1}{B}{B}");
+    expect(game.viewFor(B).objects[commander]?.effectiveManaCost).toBe("{1}{B}{B}");
+  });
+
+  it("is priced for its owner, not the viewer: our reducer doesn't touch it", () => {
+    const { game, commander } = withCommander();
+    spawn(game, "Bontu's Monument", A);
+    expect(shown(game, commander)).toBeUndefined();
+  });
+
+  it("an opponent's hand stays hidden, reduced or not", () => {
+    const { game } = withCommander();
+    spawn(game, "Bontu's Monument", B);
+    const card = game.debugSpawn("Bloodthirsty Aerialist", B, "hand");
+    expect(game.viewFor(A).objects[card]?.effectiveManaCost).toBeUndefined();
+  });
+});

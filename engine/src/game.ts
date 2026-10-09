@@ -1155,7 +1155,7 @@ export class Game {
       // {R}. A capability rather than logic `viewFor` duplicates: working it
       // out needs commander tax and the battlefield's cost-modification
       // statics, neither of which it can see.
-      effectiveCost: (cardId) => this.displayCostOf(player, cardId),
+      effectiveCost: (cardId, caster) => this.displayCostOf(caster, cardId),
       maxLands: (who) => this.maxLandsFor(who),
       ...options,
     });

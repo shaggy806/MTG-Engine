@@ -876,5 +876,21 @@ export default {
     },
     bots: { bob: {} },
   },
+  CMDCO: {
+    about:
+      "2p. Carol's Bontu's Monument makes her commander, Edgar Markov, cost {1} less: alice should " +
+      "see {2}{R}{W}{B} on Carol's command-zone tile, the printed cost in its tooltip.",
+    players: ["alice", "carol"],
+    lands: { alice: 3, carol: 3 },
+    battlefield: { carol: ["Bontu's Monument"] },
+    bots: { carol: {} },
+  },
+  CMDC4: {
+    about: "4p. CMDCO at a full table: only Carol's commander reads reduced.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 3, bob: 3, carol: 3, dave: 3 },
+    battlefield: { carol: ["Bontu's Monument"] },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
 
 };
