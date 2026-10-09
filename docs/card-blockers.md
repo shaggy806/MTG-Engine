@@ -28,9 +28,8 @@ lead when its cards land or turn out blocked on something else (record that in t
   leaves. The other four landed 2026-10-07 (`engine/data/sweep-3/TDC8.json`), each on a feature
   built for it: dredge (Life from the Loam — `CardDefinition.dredge`, asked before each draw),
   `keep-total-power` (Slaughter the Strong), a modal's `optional` and `eachTargetsDifferentPlayer`
-  (Shadrix Silverquill), and `keepsUnspentMana` with a `may`'s `xColor` (Leyline Tyrant). Dredge
-  may have unblocked the pool's other dredge cards (Golgari Grave-Troll, Stinkweed Imp, Darkblast,
-  Shambling Shell, Golgari Thug, …): recheck each.
+  (Shadrix Silverquill), and `keepsUnspentMana` with a `may`'s `xColor` (Leyline Tyrant). The
+  pool's other dredge cards landed 2026-10-09 (open-leads-recheck.test.ts).
 - **The cheap recurring blockers the top-5000 batches found:** "can't cast more than one spell
   each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a spell's
   additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
@@ -45,21 +44,19 @@ lead when its cards land or turn out blocked on something else (record that in t
   trigger (603.8); The Golden Throne replaces losing the game; Out of the Tombs replaces an
   empty-library draw with a choice from the graveyard; Maze's End returns itself to hand as a
   cost.
-- **Cards "Nth from the top" and the hand-size ordering may have unblocked** (built for Approach
-  of the Second Sun and Twenty-Toed Toad): God-Eternal Oketra, Rhonas and Bontu, Ilharg,
-  Riptide Gearhulk, Teferi, Hero of Dominaria's −3, Long-Term Plans, The Ten Rings,
-  Necrodominance. Recheck each against its Oracle text; most need something else too.
-- **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
-  gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
-  still skip these, each recorded as blocked on it: Kellan, the Kid, Descendants' Path and
-  Buster Sword. Recheck each against its Oracle text before authoring it.
-- **A copy's new targets:** the "ready now" pass authored 18 of the cards citing it and found
-  what else Rings of Brighthearth, Twinning Staff and Echoes of Eternity need ("Ready now",
-  below). Still to recheck: the other records citing `decision:copy-new-targets` (Loki
-  Laufeyson, …) and Venser, Shaper Savant.
-- **A linked exile** (`exile`'s `linked`, built for Colfenor's Urn): Pit of Offerings' "exile up
-  to three target cards from graveyards … any of the exiled cards' colors" was waiting on it (an
-  `add-mana` `colorAmong` with `zone: "exiled-with-source"`).
+- **Rechecked 2026-10-09 and still blocked** (the open-leads recheck, which authored the dredge
+  cards, God-Eternal Rhonas, Ilharg, Buster Sword, Venser and Flusterstorm): God-Eternal Bontu
+  ("sacrifice any number of other permanents, then draw that many"), Riptide Gearhulk (the owner
+  orders two cards put into one library position at once, 401.4), Teferi, Hero of Dominaria (an
+  emblem with a triggered ability — `create-emblem` carries only a `static`), Long-Term Plans
+  (`search-library` can't put the card Nth from the top), Necrodominance ("skip your draw step",
+  "pay any amount of life"), Descendants' Path (`sharesCreatureTypeWith` a creature you control —
+  only `"trigger-object"` today), Loki Laufeyson (a delayed `nextSpell` filter's "mana value ≤
+  Loki's power" read as the spell is cast, 603.2, not at activation), Magus Lucea Kane (a delayed
+  trigger on the next spell *or activated ability* with {X}), Flare of Duplication (a sacrifice
+  alternative cost), Wyll's Reversal (dice and changing a target), Plumb the Forbidden
+  (sacrifice-multiple). Rings of Brighthearth, Twinning Staff and Echoes of Eternity are under
+  "Ready now", below.
 - **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
   mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
   by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
@@ -522,7 +519,7 @@ Built, and 21 of its 37 cards are authored. Blocked: Hulk, Gamma Goliath and Won
 Thanos, the Mad Titan (an odd-or-even choice), Iron Fist (divided damage from an ability), Nick
 Fury (transforming a card it finds), Quicksilver (starting in play), Immortus, Donald Blake (a
 creature-type change that sets no P/T) and White Tiger (the Tiger God's blocking restriction).
-Loki Laufeyson waited on a copy's new targets, since built. Not yet checked: Black Panther, Most
+Loki Laufeyson waits on a live amount in a delayed `nextSpell` filter ("Open leads"). Not yet checked: Black Panther, Most
 Dangerous, Human Torch, Jack of Hearts, Shang-Chi and Stature.
 
 ### Mana spent as any colour, playing from exile, casting from the top (2026-10-03)
@@ -588,8 +585,7 @@ non-copiable on the way, as Inalla's is. Still blocked, each by more than its re
   recorded (the O-Ring's return by trigger; another player's library in a look-and-choose; "its
   owner" as a player).
 
-Leads the new pieces open outside this list: Venser, Shaper Savant (`spell-or-permanent`);
-Strionic Resonator ("copy target **triggered** ability you control" — needs only an
+Leads the new pieces open outside this list: Strionic Resonator ("copy target **triggered** ability you control" — needs only an
 `abilityKind` clause on the `ability` target); Battlemage's Bracers (`activates-ability`, with
 haste); Ulalek, Fused Atrocity still waits on colourless hybrid mana.
 

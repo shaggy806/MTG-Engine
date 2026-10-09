@@ -1390,7 +1390,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Augur of Autumn", "Courser of Kruphix", "Three-mana green creature: play lands from the top of the library."),
-      sub("Dakmor Salvage", "Twisted Landscape", "Land that fetches a basic in the deck's colours."),
       sub("Eumidian Wastewaker", "Icetill Explorer", "Four-mana green creature that plays lands from the graveyard."),
       sub("Formless Genesis", "Awaken the Woods", "Green spell that turns mana into land creatures."),
       sub("God-Eternal Bontu", "Ob Nixilis, the Fallen", "Five-mana black creature that pays off land drops."),

@@ -59,13 +59,11 @@ section keeps only what to do next.
   Delete a card's substitution in `sample-decks.ts` as it lands.
 - **The nine other starter precons' 45 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
   TDC decks.
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,359 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,368 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
-- **Cards a built feature may have unblocked** — recheck each against its Oracle text:
-  `docs/card-blockers.md`, "Open leads".
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`).
@@ -90,13 +88,11 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **Blitz is offered only from the hand and the command zone** (702.152a).
 - **A mana restriction reads the spell before it's cast** (Jasmine Boreal of the Seven waits).
 - **Suspend's time-counter triggers don't use the stack** (702.62a).
-- **704.5h reads "dealt deathtouch damage this turn", not "since the last state-based check".**
 - **Changing a spell or ability's target** (115.7; Return the Favor).
 - **"Whenever a creature you control deals combat damage to that player this turn"** (Great Train Heist).
 - **"Whenever this Equipment becomes unattached from a permanent"** (Grafted Exoskeleton).
 - **A card's own "if this would be put into a graveyard from anywhere … shuffle it into its library instead"** (Blightsteel Colossus).
 - **A set rule on a graveyard choice** (Lively Dirge's total mana value 4 or less).
-- **No state-based actions after a mana ability activated by hand** (117.3c, 117.5).
 - **Delve and convoke together on an {X} spell** (Chord of Calling under Teval).
 - **The least X a top-of-library cast allows is searched only up to the mana a player can make.**
 - **Not modeled**: battles, phasing, dungeons/Initiative/the Ring, banding, Companion, snow sources, face-down permanents, word-replacing text change (612.2).
@@ -106,8 +102,6 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **Replacement ordering** — no general `choose-replacement-order` (616.1).
 - **Two opponents' Notion Thieves aren't ordered by the drawing player.**
 - **Toxic's last two shapes** (Skrelv, Defector Mite; Skrelv's Hive).
-- **A Siege's chosen side as it leaves** (Outpost Siege).
-- **A look at nothing still asks** (`look-and-choose` over an empty library).
 - **Revealing a card "of a type" from hand reads printed subtypes** (changeling, 702.73a).
 - **Disturb's "exile it instead" is the cast path's, not the card's** (707.2).
 - **An additional-cost option is offered without checking its mana** (Eaten Alive, pulled).
@@ -131,6 +125,7 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **A token stack tapping fires `becomes-tapped` once.**
 - **Creatures leave combat as the end of combat step begins, not as it ends** (511.3).
 - **"Its controller may search" always searches** (Path to Exile, Assassin's Trophy, Ghost Quarter, …): a `may` asks the effect's controller, not that player.
+- **A source's chosen colour or number isn't read from last-known information** (latent).
 - **A "trigger-object" that blinks is still found** (400.7): Atarka's double strike lands on a Dragon Cloudshifted in response.
 
 Latent: the engine departs from the rules here, but no pool card reaches it yet. Fix each

@@ -43,10 +43,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
 - **Suspend's time-counter triggers don't use the stack.** Rule 702.62a makes "remove a time
   counter" and "when the last is removed, you may play it" triggered abilities; `upkeepStep` does
   both as the upkeep begins (`castSuspendedCard`), so nobody can respond between them.
-- **704.5h reads "dealt deathtouch damage this turn", not "since the last state-based check".**
-  `markedByDeathtouch` lasts until cleanup (`recordDamage`'s excess-damage reading uses it too),
-  so a creature that survived deathtouch damage while indestructible is destroyed if it loses
-  indestructible later that turn. Needs a flag the SBA check clears after each pass.
 - **Changing a spell or ability's target** (rule 115.7 — Return the Favor's "change the target
   of target spell or ability with a single target"), and a target slot that takes an instant or
   sorcery spell *or* an activated or triggered ability (its first mode). Return the Favor waits
@@ -65,12 +61,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
 - **A set rule on a graveyard choice**: "up to two creature cards with total mana value 4 or
   less" (Lively Dirge's second mode). `together` exists only on a library search
   (`zone-choice-together.ts` takes a new rule cheaply, and the clients already read it).
-- **No state-based actions after a mana ability activated by hand.** Rule 117.3c gives its
-  player priority again, so 117.5 checks SBAs; `activateAbility` returns without
-  `afterPlayerAction` for a mana ability, and a pass to the next player doesn't check them
-  either. Wall of Roots taken to 0 toughness by its own -0/-1 counter sits on the battlefield
-  until the next cast or resolution (`tdc-precons-features.test.ts`); a Treasure's "whenever you
-  sacrifice" trigger likewise waits to be put on the stack.
 - **Delve and convoke together on an {X} spell.** `xCost.maxX` is the better of the two alone
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the
@@ -117,12 +107,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
   Skrelv, Defector Mite, which also needs hexproof from a colour) and a static scoped to
   "creatures with toxic" (Skrelv's Hive: toxic is folded in the layer such a scope would have
   to wait for).
-- **A Siege's chosen side as it leaves.** `chosenOnEnter` isn't in `LastKnownInfo`, so a
-  `chosen-on-enter`-gated leaves-the-battlefield trigger (Outpost Siege's "Dragons") doesn't
-  look back at a Siege dying with the creatures.
-- **A look at nothing still asks.** `look-and-choose` over an empty library (Thassa's Oracle
-  at devotion 2 with no cards left) raises a `choose-from-zone` with no cards in it; it should
-  skip straight to what follows.
 - **Revealing a card "of a type" from hand reads printed subtypes.** `Game.revealableFromHand`
   (`tappedUnlessRevealFromHand`) checks each card's printed `subtypes`, so a changeling card in
   hand isn't offered as a Treefolk or Dragon to reveal (rule 702.73a: it has every creature type
@@ -231,6 +215,11 @@ that needs it is authored.
   ordering they made (a scry). Needs a `may` another player answers. `effects.ts`'s `who` doc
   claims `min: 0` "already expresses" the option; it doesn't for the shuffle. (Found by the
   2026-10-09 "you may search" sweep, which wrapped the 41 cards whose own controller searches.)
+- **A source's chosen colour or number isn't read from last-known information** (latent). Since
+  2026-10-09 `chosenOnEnter` is in `LastKnownInfo` (Outpost Siege's chosen side), but
+  `chosenColorOfSource` / `chosenNumberOfSource` (`game.ts`) read only the live object, so an
+  effect resolving after its source left doesn't see the chosen value. No pool card is known to
+  hit it.
 - **A "trigger-object" that blinks is still found** (rule 400.7). A `"trigger-object"` reference to
   a permanent still on the battlefield as the ability triggered isn't dropped when it leaves and
   returns before the ability resolves: `triggerObjectLost` covers only an object that had already
