@@ -406,7 +406,13 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   per sacrifice choice (capped, cheapest and highest-reading first) and let the search score
   them; the same for a spell's additional sacrifice cost (`castExtras`). Might cost a few more
   simulations on boards with many creatures.
-- **Status:** open (the user: record, don't resolve now).
+- **Status:** fixed as outlined (the user asked, 2026-10-08): v2's `withSacrificeChoices` offers
+  each candidate once per sacrifice (up to five, identical tokens as one, largest power plus
+  toughness first) when the offer's effect reads `"sacrificed"` — 44 pool cards' effects do — for
+  spells as for abilities. The scenario moved to the end of the turn before alice's, where the
+  ability belongs: in her precombat main the search rightly passes (tapping Felothar costs his
+  attack, and her cleanup discards thirteen to seven). It gates, and reads wrong with the
+  expansion switched off.
 
 ## 2026-10-06 — Abrade cast over its own Archmage Emeritus
 

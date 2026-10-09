@@ -272,6 +272,10 @@ const SPREAD_BONUS = 0.5;
  * different order of floating-point sums. */
 export const TIE = 1e-9;
 
+/** The most sacrifices tried for one offer whose effect reads the sacrifice
+ * (`withSacrificeChoices`): each is a simulation. */
+const MAX_SACRIFICE_CHOICES = 5;
+
 /** What a creature is worth to the evaluation, roughly: its creature, power
  * and toughness terms. Only used to rank moves, never to choose one. The
  * `power` term counts combat damage (`features.ts`), so this does too: under
@@ -743,7 +747,8 @@ export class EvalBotController extends HeuristicBotController {
         // for the end of the turn before ours (`holdsManaLandFetch`).
         if (this.holdsManaLandFetch(view.state, legal)) continue;
         const due = this.isCantripDue(view.state, legal) || this.isSuspendDue(legal);
-        for (const action of candidateActions(aimOffer(view.state, this.cards, player, legal), player)) {
+        const aimed = candidateActions(aimOffer(view.state, this.cards, player, legal), player);
+        for (const action of this.withSacrificeChoices(view.state, legal, aimed)) {
           // A draw aimed at a player is a cantrip aimed at us (Compulsive
           // Research's "target player draws three").
           if (due && cantrip === null && aimedOnlyAt(action, player)) cantrip = action;
@@ -1122,6 +1127,45 @@ export class EvalBotController extends HeuristicBotController {
       this.actedOn = { turn: view.state.turn.number, stack: [...view.state.zones.shared.stack] };
     }
     return action;
+  }
+
+  /**
+   * `actions` again, once per sacrifice the search should weigh, when the
+   * offer's effect reads what was sacrificed (`{ toughnessOf: "sacrificed" }`
+   * and kin: Felothar's draw and discard, Fling's damage). A candidate names
+   * one sacrifice, the last eligible (`candidates.ts`), so the search never
+   * saw another: Felothar fed Seedborn Muse (draw 4, discard 2) with Tree of
+   * Redemption (draw 13) beside it (a live misplay, 2026-10-06). Up to
+   * `MAX_SACRIFICE_CHOICES` choices told apart by name and P/T — identical
+   * tokens are one — largest power plus toughness first, the default kept;
+   * an effect that doesn't read the sacrifice keeps the one candidate.
+   */
+  private withSacrificeChoices(state: GameState, legal: LegalAction, actions: readonly Action[]): Action[] {
+    if (legal.kind !== "cast-spell" && legal.kind !== "activate-ability") return [...actions];
+    const choices = legal.sacrifice?.choices ?? [];
+    if (choices.length < 2) return [...actions];
+    if (!JSON.stringify(this.offerEffect(legal) ?? null).includes('"sacrificed"')) return [...actions];
+    const seen = new Set<string>();
+    const distinct = withComputedCache(() =>
+      choices.map((id) => {
+        const c = computeCharacteristics(state, this.cards, id);
+        return { id, key: `${state.objects[id]?.cardName}:${c.power}/${c.toughness}`, size: c.power + c.toughness };
+      }),
+    )
+      .filter((choice) => (seen.has(choice.key) ? false : (seen.add(choice.key), true)))
+      .sort((a, b) => b.size - a.size)
+      .map((choice) => choice.id);
+    const out: Action[] = [];
+    for (const action of actions) {
+      if (action.type !== "cast-spell" && action.type !== "activate-ability") {
+        out.push(action);
+        continue;
+      }
+      const picks =
+        action.sacrifice === undefined ? distinct : [action.sacrifice, ...distinct.filter((id) => id !== action.sacrifice)];
+      for (const sacrifice of picks.slice(0, MAX_SACRIFICE_CHOICES)) out.push({ ...action, sacrifice });
+    }
+    return out;
   }
 
   /** After passing with something on the stack, what that stack was — see

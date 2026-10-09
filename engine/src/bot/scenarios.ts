@@ -3455,7 +3455,6 @@ const SCENARIOS: readonly BotScenario[] = [
   asked({
     name: "sacrifices Tree of Redemption to Felothar, not Seedborn Muse",
     rule: "Felothar draws the sacrificed creature's toughness and discards its power: a 0/13 is thirteen cards, a 2/4 two.",
-    kind: "training",
     position(registry) {
       // Reported from a live game (2026-10-06, no capture): a bot activated
       // Felothar, the Steadfast sacrificing Seedborn Muse (draw 4, discard
@@ -3463,13 +3462,21 @@ const SCENARIOS: readonly BotScenario[] = [
       // candidate for an ability with a sacrifice cost takes the last
       // eligible permanent (`candidates.ts`'s `abilityCandidates`) — the
       // choice is never searched, so the effect's reading of the sacrificed
-      // creature never decides it.
-      const game = table(registry, [A, B, C, D], A);
+      // creature never decides it. Asked at the end of dave's turn, the one
+      // before alice's: where the ability belongs — every card drawn is kept
+      // (only the active player discards to hand size, rule 514.1) and
+      // Felothar is untapped for alice's attack. In her own precombat main
+      // the search rightly passed instead: tapping Felothar costs his 5
+      // damage, and her cleanup would discard the Tree's thirteen to seven.
+      const game = table(registry, [A, B, C, D], D);
       lands(game, "Forest", A, 4);
-      game.state.players[A].landsPlayedThisTurn = 1;
       const felothar = onBoard(game, "Felothar the Steadfast", A);
       const tree = onBoard(game, "Tree of Redemption", A);
       onBoard(game, "Seedborn Muse", A);
+      game.advanceUntil((s) => (s.turn.step === "end" && s.priority.holder === A) || s.result.over);
+      if (game.state.turn.step !== "end" || game.state.priority.holder !== A) {
+        return { passed: false, detail: "never reached alice's priority in dave's end step" };
+      }
       return {
         game,
         player: A,
