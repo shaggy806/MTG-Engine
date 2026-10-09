@@ -26,6 +26,9 @@
 //                      the rest
 //   --feature <key>    the unimplemented cards waiting on one need (a raw key,
 //                      an alias or a family all work)
+//   --next [N]         the next N (default 60) Commander-legal cards by EDHREC
+//                      rank that are neither in the pool nor triaged — the
+//                      next batch to look at
 //
 // The library half (`loadVocabulary`, `loadRecords`, `poolNames`) is what
 // `card-brief.mjs` reads records through.
@@ -34,6 +37,8 @@ import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+
+import { loadSnapshot } from "./oracle-snapshot.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.join(here, "..");
@@ -173,7 +178,9 @@ export function poolNames() {
   const names = new Map();
   for (const file of readdirSync(POOL_DIR).filter((n) => n.endsWith(".ts"))) {
     const src = readFileSync(path.join(POOL_DIR, file), "utf8");
-    for (const m of src.matchAll(/^\s*name:\s*"((?:[^"\\]|\\.)*)"/gm)) {
+    // A helper's first argument is the name too (`fetchLand("Polluted Delta", …)`).
+    const helper = /^(?:export default|const \w+ =) [A-Za-z_]\w*\(\s*"((?:[^"\\]|\\.)*)"/gm;
+    for (const m of [...src.matchAll(helper), ...src.matchAll(/^\s*name:\s*"((?:[^"\\]|\\.)*)"/gm)]) {
       const name = JSON.parse(`"${m[1]}"`);
       if (!names.has(name)) names.set(name, `src/cards/pool/${file}`);
     }
@@ -234,6 +241,20 @@ function main() {
       console.log(`- ${r.name} [${r.batch}]${others.length ? `  also: ${others.join(", ")}` : "  (only this)"}`);
     }
     console.log(`${seen.size} card(s).`);
+    return;
+  }
+
+  if (args.includes("--next")) {
+    // Front faces too: a double-faced card's snapshot name is "A // B".
+    const triaged = new Set(records.map((r) => frontName(r.name)));
+    const n = Number(opt("--next", 60));
+    const next = loadSnapshot()
+      .entries.filter((e) => e.commander === "legal" && typeof e.edhrec_rank === "number")
+      .filter((e) => !pool.has(frontName(e.name)) && !triaged.has(frontName(e.name)))
+      .sort((a, b) => a.edhrec_rank - b.edhrec_rank)
+      .slice(0, n);
+    for (const e of next) console.log(`${String(e.edhrec_rank).padStart(6)}  ${e.name}  — ${e.type_line}`);
+    console.log(`${next.length} untriaged card(s), from rank ${next[0]?.edhrec_rank ?? "—"}.`);
     return;
   }
 

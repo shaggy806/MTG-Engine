@@ -95,7 +95,8 @@ authoring, run just the files you touched** (`npx vitest run cmdr-sokka pool.tes
   closest authored abilities with their files. Reads `dist/`, so build first.
 - `card:vocab -- <term>`: what the definition vocabulary can say about a term — the pool's usage
   with small example cards, the engine declarations with their docs, the guide's lines.
-- `cards:needs -- --rank | --stale | --feature <key>`: the triage records through one need
+- `cards:needs -- --next 60 | --rank | --stale | --feature <key>`: the next untriaged cards by
+  EDHREC rank, and the triage records through one need
   vocabulary (`data/needs-vocabulary.json`): what blocks the most cards, what's been built since.
 - `decks:stand-ins`: the sample decks' stand-ins left, deck by deck, with each one's blockers;
   `-- --implemented` deletes those whose original is now in the pool (and fixes BACKLOG's count).

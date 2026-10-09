@@ -53,9 +53,10 @@ What blocks each unimplemented card, and which cards a built feature may have un
 the per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`). Card lists go there; this
 section keeps only what to do next.
 
-- **Now: the nine other starter precons' 32 stand-ins** (`engine/data/sweep-3/PC-*.json`; the
-  TDC decks have none since 2026-10-09). Delete a card's substitution in `sample-decks.ts` as it
-  lands.
+- **Now: more cards, in EDHREC rank order** (the `author-top-cards` skill). `npm run cards:needs
+  -w engine -- --next 60` lists the next untriaged cards by rank: 14 top-5000 cards (ranks
+  1187–2312, never triaged) and then rank 6672 on. The nine other starter precons' 32 stand-ins
+  (`engine/data/sweep-3/PC-*.json`) go as their originals land.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
 - **29 cards whose recorded blockers have all been built since** — recheck each with
