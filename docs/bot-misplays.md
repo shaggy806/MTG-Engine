@@ -4,6 +4,39 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-08 — Klauth's mana: all white, asked one unit at a time
+
+- **Seen:** the bot "has no clue how to add mana in any combination of colors", and the choice is
+  asked as modes — 50+ decisions when a lot of creatures attack (Klauth, Unrivaled Ancient: "add X
+  mana in any combination of colors, where X is the total power of attacking creatures").
+- **Right:** the colours the hand's spells need — Klauth's deck is red and green, the mana only casts
+  spells — asked as one decision, not one per unit.
+- **Scenario:** "splits Klauth's mana into the colours its hand casts" (training) — Klauth and two
+  Craw Wurms attack (16 power), Lightning Bolt and a Craw Wurm in hand: the pool comes out
+  sixteen {W}, after sixteen `choose-modes` decisions.
+- **Why, the decision:** `addManaChoice` (`effects.ts`) offers "N mana in any combination of …" as
+  one choice of split only while there are at most `MAX_MANA_SPLIT_MODES` (35) splits; over five
+  colours that's three units. Past it, each unit's colour is its own `modal` choice of five, up to
+  1,000 — for a human seat too, one prompt per point of power.
+- **Why, the colour:** v1's `chooseModes` scores each mode by `effectWorth`, which prices {W} and
+  {R} alike, so the tie goes to mode 0, white, every unit. v2 searches each of the sixteen (a
+  rollout per colour per unit) and the evaluation doesn't read the pool's colours either, so v1's
+  pick stands.
+- **Fix (outline):** two parts.
+  1. *The bot's colours* (contained): in v1's `chooseModes`, when every mode is a single-colour
+     `add-mana`, pick the colour the hand needs most that the pool (already holding the earlier
+     units) and the untapped lands don't cover — the coloured pips of the spells in hand, honouring
+     a spend restriction (Klauth's is spells only), then the commander's colours. v2 takes v1's
+     answer for these without a search: the evaluation can't see the difference, and sixteen
+     searched units are most of a big attack's time.
+  2. *The decision's shape* (a design call): one decision for the whole split — a new decision kind
+     ("share N mana among these colours", counts per colour summing to N) through the decision
+     registry, with a client prompt of per-colour steppers and a bot answer from part 1. Cheaper
+     middle ground: give each per-unit choice "the rest as {X}" modes, ending the run in one pick.
+  Might break: a deck whose hand needs nothing still gets some colour, which is harmless; the new
+  decision kind touches engine, protocol, server and client together.
+- **Status:** open.
+
 ## 2026-10-08 — a basic played over a fetch land with a landfall payoff out
 
 - **Seen (the user's rule):** with landfall triggers on the board and the mana not needed, the bot

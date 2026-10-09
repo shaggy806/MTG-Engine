@@ -4095,6 +4095,65 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  {
+    name: "splits Klauth's mana into the colours its hand casts",
+    rule: "Mana in any combination of colours is for the spells in hand: Klauth's red and green, not five piles of white.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // Reported from a live game (2026-10-08, no capture): the bot "has no
+      // clue how to add mana in any combination of colors", and is asked it
+      // as a modes choice, 50+ of them when a lot of creatures attack.
+      // Klauth, Unrivaled Ancient adds X mana in any combination of colours,
+      // X the attackers' total power: past 35 splits (five colours, four
+      // units already) \`addManaChoice\` (\`effects.ts\`) asks each unit's
+      // colour as its own \`choose-modes\`, one per point of power. v1 scores
+      // each mode by \`effectWorth\`, which prices {W} and {R} alike, so the
+      // tie goes to the first mode — white, every unit; v2's rollouts can't
+      // tell the colours apart either. Here Klauth and two Craw Wurms attack
+      // (16 power, 16 decisions) with Lightning Bolt and a Craw Wurm in hand:
+      // the pool wants at least {R} and {G}{G}.
+      const game = table(registry, [A, B, C, D], A);
+      const attackers = [
+        onBoard(game, "Klauth, Unrivaled Ancient", A),
+        onBoard(game, "Craw Wurm", A),
+        onBoard(game, "Craw Wurm", A),
+      ];
+      game.debugSpawn("Lightning Bolt", A, "hand");
+      game.debugSpawn("Craw Wurm", A, "hand");
+      game.advanceUntil((s) => (s.awaiting?.kind === "attackers" && s.awaiting.player === A) || s.result.over);
+      if (game.state.awaiting?.kind !== "attackers") return { passed: false, detail: "alice was never asked to attack" };
+      game.dispatch({
+        type: "declare-attackers",
+        player: A,
+        attackers: attackers.map((attacker) => ({ attacker, defender: B })),
+      });
+      const bot = makeBot(A, registry, weights);
+      const pool = (): readonly string[] => game.state.players[A].manaPool.map((unit) => unit.type);
+      let asked = 0;
+      // Read fresh each time: narrowed by the attack check above, the
+      // state's `awaiting` would read as that attackers decision for good.
+      const pending = (): Game["state"]["awaiting"] => game.state.awaiting;
+      for (let i = 0; i < 500 && !game.state.result.over; i += 1) {
+        const awaiting = pending();
+        if (awaiting !== null && awaiting.player === A) {
+          if (awaiting.kind === "choose-modes") asked += 1;
+          game.dispatch(bot.act(viewOf(game, A)));
+          continue;
+        }
+        if (pool().length > 0 && game.state.zones.shared.stack.length === 0) break;
+        if (awaiting === null && game.state.priority.holder === A) {
+          game.dispatch({ type: "pass-priority", player: A });
+          continue;
+        }
+        game.advanceUntil((s) => (s.awaiting !== null && s.awaiting.player === A) || s.priority.holder === A || s.result.over);
+      }
+      const counts = (type: string): number => pool().filter((t) => t === type).length;
+      return {
+        passed: counts("R") >= 1 && counts("G") >= 2,
+        detail: `pool ${pool().join("") || "empty"} after ${asked} choose-modes decisions`,
+      };
+    },
+  },
   asked({
     name: "casts Shiko first so the Lightning Bolt after her is copied",
     rule: "A commander with a second-spell payoff is the turn's first spell herself.",
