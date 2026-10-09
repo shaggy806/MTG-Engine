@@ -87,6 +87,13 @@ authoring, run just the files you touched** (`npx vitest run cmdr-sokka pool.tes
 
 - `card:lookup -- "Name"`: the Oracle text, rulings and tokens, read from the offline snapshot.
   Run before authoring.
+- `card:brief -- "Name"`: **read this before searching the engine by hand** — Oracle text,
+  rulings, the card's triage records (needs built since flagged) and, per Oracle line, the pool's
+  closest authored abilities with their files. Reads `dist/`, so build first.
+- `card:vocab -- <term>`: what the definition vocabulary can say about a term — the pool's usage
+  with small example cards, the engine declarations with their docs, the guide's lines.
+- `cards:needs -- --rank | --stale | --feature <key>`: the triage records through one need
+  vocabulary (`data/needs-vocabulary.json`): what blocks the most cards, what's been built since.
 - `card:scaffold -- "Name"`: writes a draft card file into `cards/scaffold/`.
 - `gen:cards`: regenerates the card barrel after adding a card.
 - `card:verify` / `card:text`: checks the pool against Scryfall (structure / rules text). `-- --offline`

@@ -4,8 +4,14 @@ What blocks the cards that aren't in the pool yet, batch by batch and family by 
 for reference when picking the next engine feature. `BACKLOG.md` carries only the open work and
 the current **Next**; this file carries the detail behind it. The per-card records themselves
 are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, tested}]`,
-`blocked: [{name, needs, why}]`), with `needs` keyed by `top-commanders-gaps.json`'s vocabulary
-or a `new:*` key described in the file:
+`blocked: [{name, needs, why}]`). Each need is a key of one vocabulary: a feature of
+`top-commanders-gaps.json`, or a narrower one in `engine/data/needs-vocabulary.json` (filed under
+a gaps-file `family`), which also aliases the batch-by-batch `new:*` keys older records used. A
+new record uses those keys (add a feature there when none fits; `test/needs-vocabulary.test.ts`
+checks), and a feature that lands goes into the gaps file's `built` array. `npm run cards:needs -w
+engine` reads it all: `-- --stale` lists the cards with a need built since their record, `--rank`
+the needs blocking the most cards, `--feature <key>` one need's cards; `npm run card:brief -w
+engine -- "Name"` shows one card's records with each need's status.
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
 - `engine/data/sweep-3/` — the top-5000 batches since (B4–B36) and the TDC precons (TDC1–TDC5).
@@ -22,6 +28,11 @@ lands, add its summary here, not to `BACKLOG.md`.
 Card-level detail behind `BACKLOG.md`'s card items, moved here from it on 2026-10-04. Delete a
 lead when its cards land or turn out blocked on something else (record that in the batch JSON).
 
+- **29 cards whose every recorded blocker has been built since** (2026-10-09, the first
+  `cards:needs -- --stale` run): the transmute and tiered cards, Scapeshift, Torpor Orb, Blightsteel
+  Colossus, Flopsie and Vorrac Battlehorns (`blockedByAtMostOne`), the 712.14a transform returns
+  and more — and 12 more with some blockers built. Recheck each with `card:brief`; the keys added
+  to `built` that day are dated that day, so a few may have been buildable earlier still.
 - **The TDC precons are complete** (2026-10-09): Reality Shift landed with face-down permanents
   (manifest and cloak — `GameObject.faceDown`), the last of the five decks' stand-ins. The four
   before it landed 2026-10-07 (`engine/data/sweep-3/TDC8.json`): dredge (Life from the Loam),

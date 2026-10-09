@@ -106,6 +106,37 @@ always does). `npm run gen:oracle -w engine` rebuilds the snapshot from
 Scryfall's [bulk data](https://scryfall.com/docs/api/bulk-data), cached in
 the git-ignored `engine/.cache/scryfall/`; rerun it when a set comes out.
 
+**Then read its brief — before searching the engine by hand.** `npm run
+card:brief -w engine -- "Card Name"` (several names at once) prints, in one
+go: the Oracle text and rulings; whether it's in the pool, a sample deck's
+stand-in, and its place in the backlog lists; every triage record that looked
+at it, each need flagged when it has been **built since** that record was
+written (a stale "blocked"); and, for each Oracle line, the three abilities
+already in the pool that read most like it, with the file and how each is
+authored. Most of a card is something another card already does in other
+words: "When ~ dies or is put into exile from the battlefield, you may put
+her into her owner's library third from the top" finds God-Eternal Oketra's
+trigger, word for word. A high score is a lead — open the analog's file
+before copying its shape. The analogs come from `dist/`, so build first (it
+warns when the pool's sources are newer).
+
+**To ask whether the vocabulary can say something,** `npm run card:vocab -w
+engine -- emblem` searches every term the pool uses (`kind=create-emblem`,
+`on=step-begins.step=begin-combat`, `card.static[].cantBeBlockedBy`) with
+how many cards use it and the smallest three, every declaration in the
+engine sources with its doc comment (and whether any card uses it yet), and
+this guide's matching lines. `--unused` lists the declared kinds no card
+uses. One search usually answers what a dozen greps would.
+
+**When a card is blocked**, `npm run cards:needs -w engine -- --feature
+<key>` lists everything waiting on the same need, `-- --rank` the needs by
+cards waiting, and `-- --stale` the cards whose recorded blockers have all
+been built since (`scripts/needs-vocabulary.mjs`). A new triage record's
+`needs` use the feature keys in `top-commanders-gaps.json` or
+`data/needs-vocabulary.json`; `test/needs-vocabulary.test.ts` fails on one
+it doesn't know. When a feature lands, add its key to the gaps file's
+`built` array.
+
 **Or start from a scaffold.** `npm run card:scaffold -w engine -- "Card
 Name"` (or `--next 10` for the next unimplemented top-500 commanders,
 `--next 10 --cards` for the top-5000 backlog) writes the card's file from

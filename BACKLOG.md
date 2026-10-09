@@ -58,6 +58,8 @@ section keeps only what to do next.
   lands.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
+- **29 cards whose recorded blockers have all been built since** — recheck each with
+  `card:brief` (`npm run cards:needs -w engine -- --stale`; `docs/card-blockers.md`, "Open leads").
 - **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,377 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
