@@ -313,7 +313,7 @@ function checkStackLanding(samples: readonly Sample[], object: string, diagonal:
   const after = samples.slice(lastAt + 1)
   const gone = after.findIndex((s) => !ghostOf(s, object, 'stack'))
   expect(gone).toBe(0)
-  expect(after[0].t - samples[lastAt].t).toBeLessThan(80)
+  expect(after[0].t - samples[lastAt].t).toBeLessThan(handoverBudget(samples))
   const until = after.findIndex((s) => s.ghosts.some((g) => g.object === object && g.to !== 'stack'))
   for (const s of until === -1 ? after : after.slice(0, until)) {
     expect(ghostOf(s, object, 'stack')).toBeUndefined()
@@ -326,6 +326,22 @@ function checkStackLanding(samples: readonly Sample[], object: string, diagonal:
   const flight = flightOf(samples, object, 'stack', entry.box)
   checkPace(flight, diagonal)
   return flight
+}
+
+/**
+ * How long the frame after a landing may take: no stall at the hand-over
+ * from the flying copy to the real tile. 80ms, or four of this run's median
+ * frames where those are slow — a shared CI runner's frames run long all
+ * over, and an absolute 80 failed one there at 104 (2026-10-09) on a run
+ * whose every frame was slow, not this one.
+ */
+function handoverBudget(samples: readonly Sample[]): number {
+  const gaps = samples
+    .slice(1)
+    .map((s, i) => s.t - samples[i].t)
+    .sort((a, b) => a - b)
+  const median = gaps[Math.floor(gaps.length / 2)] ?? 16
+  return Math.max(80, 4 * median)
 }
 
 /**
@@ -367,7 +383,7 @@ function checkTileLanding(samples: readonly Sample[], object: string, diagonal: 
   const after = samples.slice(lastAt + 1)
   expect(after.length).toBeGreaterThan(0)
   expect(after[0].ghosts.some((g) => g.object === object)).toBe(false)
-  expect(after[0].t - samples[lastAt].t).toBeLessThan(80)
+  expect(after[0].t - samples[lastAt].t).toBeLessThan(handoverBudget(samples))
   for (const s of after) {
     expect(s.ghosts.some((g) => g.object === object)).toBe(false)
     expect(s.tiles[object]?.opacity).toBe(1)
