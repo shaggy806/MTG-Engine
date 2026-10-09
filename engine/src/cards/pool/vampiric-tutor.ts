@@ -9,9 +9,10 @@ export default defineCard({
   effect: {
     kind: "sequence",
     effects: [
-      // No filter — "a card", any card. `library-top` puts the find back on
-      // top *after* the shuffle the search causes.
-      { kind: "search-library", filter: {}, destination: "library-top", min: 0, max: 1 },
+      // No filter — "a card", any card, so one must be found while there is
+      // one (701.23d). `library-top` puts the find back on top *after* the
+      // shuffle the search causes.
+      { kind: "search-library", filter: {}, destination: "library-top", min: 1, max: 1 },
       { kind: "lose-life", amount: 2 },
     ],
   },

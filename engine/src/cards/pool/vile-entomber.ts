@@ -16,7 +16,8 @@ export default defineCard({
     {
       trigger: { on: "enters-battlefield", who: "self" },
       targets: [],
-      effect: { kind: "search-library", filter: {}, destination: "graveyard", min: 0, max: 1 },
+      // "A card", no quality: one must be found while there is one (701.23d).
+      effect: { kind: "search-library", filter: {}, destination: "graveyard", min: 1, max: 1 },
       resolve: null,
       text: TEXT,
     },

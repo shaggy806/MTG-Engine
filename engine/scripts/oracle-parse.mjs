@@ -596,7 +596,8 @@ export function parseSentence(sentence, ctx) {
     return { kind: "search-library", filter, destination: "hand", min: 0, max: 1, reveal: true };
   }
   if ((m = /^search your library for a card, put (?:it|that card) into your hand, then shuffle\.$/i.exec(s))) {
-    return { kind: "search-library", filter: {}, destination: "hand", min: 0, max: 1 };
+    // "A card", no quality: one must be found while there is one (701.23d).
+    return { kind: "search-library", filter: {}, destination: "hand", min: 1, max: 1 };
   }
 
   // Power, toughness and keywords until end of turn.

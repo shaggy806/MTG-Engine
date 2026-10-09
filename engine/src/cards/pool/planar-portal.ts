@@ -10,7 +10,8 @@ export default defineCard({
     {
       cost: { mana: "{6}", tap: true },
       targets: [],
-      effect: { kind: "search-library", filter: {}, destination: "hand", min: 0, max: 1 },
+      // "A card", no quality: one must be found while there is one (701.23d).
+      effect: { kind: "search-library", filter: {}, destination: "hand", min: 1, max: 1 },
       resolve: null,
       text: "{6}, {T}: Search your library for a card, put that card into your hand, then shuffle.",
     },

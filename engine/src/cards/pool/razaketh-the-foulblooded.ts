@@ -15,7 +15,8 @@ export default defineCard({
     {
       cost: { mana: null, tap: false, payLife: 2, sacrifice: "creature-you-control" },
       targets: [],
-      effect: { kind: "search-library", filter: {}, destination: "hand", min: 0, max: 1 },
+      // "A card", no quality: one must be found while there is one (701.23d).
+      effect: { kind: "search-library", filter: {}, destination: "hand", min: 1, max: 1 },
       resolve: null,
       text: "Pay 2 life, Sacrifice another creature: Search your library for a card, put that card into your hand, then shuffle.",
       otherOnly: true,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { POOL_CARDS } from "../cards/generated.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
@@ -82,7 +83,7 @@ describe("search-library — Demonic Tutor", () => {
     });
     game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
     // the picker lists every card left in the library (search sees it all)
-    expect(game.state.awaiting).toMatchObject({ kind: "choose-from-zone", min: 0, max: 1 });
+    expect(game.state.awaiting).toMatchObject({ kind: "choose-from-zone", min: 1, max: 1 });
 
     game.advanceUntil(settled);
     expect(game.handOf(A).some((id) => game.state.objects[id].cardName === "Craw Wurm")).toBe(
@@ -96,12 +97,39 @@ describe("search-library — Demonic Tutor", () => {
     expect(game.eventsOfType("library-shuffled").some((e) => e.player === A)).toBe(true);
   });
 
-  it("may whiff (choose nothing) and still shuffles", () => {
+  // Rule 701.23d: a search simply for a quantity ("a card") must find that
+  // many while the library has them. Only a stated quality (701.23b) lets a
+  // search fail to find.
+  it("can't fail to find while the library has a card (701.23d)", () => {
     const { game } = mkGame(["Demonic Tutor", ...Array(39).fill("Forest")]);
     game.advanceUntil(toPrecombat);
     spawn(game, "Swamp", A);
     spawn(game, "Swamp", A);
-    // ScriptedController default chooseFromZoneFn returns eligible.slice(0, min) = []
+    const handBefore = game.handOf(A).length;
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Demonic Tutor"),
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    expect(game.state.awaiting).toMatchObject({ kind: "choose-from-zone", min: 1 });
+    expect(() => game.dispatch({ type: "choose-from-zone", player: A, chosen: [] })).toThrow();
+
+    // ScriptedController's default takes `min` cards: one Forest.
+    game.advanceUntil(settled);
+    // the Tutor left the hand (-1), a Forest came (+1)
+    expect(game.handOf(A).length).toBe(handBefore);
+    expect(game.eventsOfType("library-shuffled").some((e) => e.player === A)).toBe(true);
+  });
+
+  it("finds nothing in an empty library, and still shuffles", () => {
+    // Seven cards in the opening hand and the turn-1 draw take all eight.
+    const { game } = mkGame(["Demonic Tutor", ...Array(7).fill("Swamp")]);
+    game.advanceUntil(toPrecombat);
+    expect(game.state.zones.perPlayer[A].library).toHaveLength(0);
+    spawn(game, "Swamp", A);
+    spawn(game, "Swamp", A);
 
     game.dispatch({
       type: "cast-spell",
@@ -110,7 +138,31 @@ describe("search-library — Demonic Tutor", () => {
     });
     game.advanceUntil(settled);
 
+    expect(game.state.zones.perPlayer[A].graveyard.some((id) => game.state.objects[id].cardName === "Demonic Tutor")).toBe(true);
     expect(game.eventsOfType("library-shuffled").some((e) => e.player === A)).toBe(true);
+  });
+
+  // Every pool card that searches "for a card" / "for any card" — no quality
+  // — with no "may": its unfiltered searches must find one (701.23d).
+  it("no pool tutor for 'a card' may fail to find", () => {
+    const searches = (node: unknown, out: { filter: object; min: number }[]): void => {
+      if (Array.isArray(node)) for (const each of node) searches(each, out);
+      else if (node !== null && typeof node === "object") {
+        const spec = node as { kind?: unknown; filter?: object; min?: number };
+        if (spec.kind === "search-library") out.push({ filter: spec.filter ?? {}, min: spec.min ?? 0 });
+        for (const value of Object.values(node)) searches(value, out);
+      }
+    };
+    const tutors = POOL_CARDS.filter(
+      (card) => /search[^.]*library[^.]* for (a|any) card[,.]/i.test(card.text ?? "") && !/may search/i.test(card.text ?? ""),
+    );
+    expect(tutors.length).toBeGreaterThanOrEqual(15);
+    const wrong = tutors.filter((card) => {
+      const found: { filter: object; min: number }[] = [];
+      searches(card, found);
+      return found.some((each) => Object.keys(each.filter).length === 0 && each.min < 1);
+    });
+    expect(wrong.map((card) => card.name)).toEqual([]);
   });
 });
 

@@ -10,7 +10,8 @@ export default defineCard({
   effect: {
     kind: "sequence",
     effects: [
-      { kind: "search-library", filter: {}, destination: "hand", min: 0, max: 1 },
+      // "A card", no quality: one must be found while there is one (701.23d).
+      { kind: "search-library", filter: {}, destination: "hand", min: 1, max: 1 },
       { kind: "lose-life", amount: 3 },
     ],
   },

@@ -3736,10 +3736,15 @@ export type EffectSpec =
       readonly then?: EffectSpec;
     }
   | {
-      /** Search the controller's library for up to `max` (at least `min`,
-       * usually 0 — you may fail to find) cards matching `filter`, move them
-       * to `destination`, then shuffle. Raised as a `choose-from-zone`
-       * decision listing only the matching cards. */
+      /** Search the controller's library for up to `max` (at least `min`)
+       * cards matching `filter`, move them to `destination`, then shuffle.
+       * Raised as a `choose-from-zone` decision listing only the matching
+       * cards. `min` is 0 for a search with a stated quality ("a creature
+       * card"), which may fail to find (rule 701.23b), and the count for one
+       * that is simply for a quantity ("a card": Demonic Tutor's `min: 1`),
+       * which must find that many while the library has them (701.23d) — the
+       * search clamps `min` to what's there. A "you may search" is a `may`
+       * around the search, so declining doesn't search or shuffle at all. */
       readonly kind: "search-library";
       readonly filter: CardFilter;
       /** `"library-top"` is the tutor-to-top family (Vampiric Tutor, Mystical

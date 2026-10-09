@@ -13,7 +13,8 @@ export default defineCard({
     kind: "search-library",
     filter: {},
     destination: "hand",
-    min: 0,
+    // "A card", no quality: one must be found while there is one (701.23d).
+    min: 1,
     max: 1,
   },
 });
