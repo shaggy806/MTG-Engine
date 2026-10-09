@@ -1915,6 +1915,47 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  ...(
+    [
+      ["Evolving Wilds", "Forest"],
+      ["Wooded Foothills", "Forest"],
+      ["Evolving Wilds", "Jungle Hollow"],
+    ] as const
+  ).map(([fetchName, otherName]) =>
+    asked({
+      name: `plays ${fetchName} over ${otherName === "Forest" ? "a Forest" : `a tapped ${otherName}`} for two landfall triggers`,
+      rule: "With a landfall payoff out and the mana not needed — the hand casts the same either way — a fetch land is two lands entering, itself and what it finds, where any other land is one.",
+      kind: "training",
+      position(registry) {
+        // Reported from a live game (2026-10-08, no capture): the bot should
+        // see that any fetch beats a basic when it doesn't need the mana and
+        // has landfall triggers. Rampaging Baloths makes a 4/4 per land
+        // entering, and the Grizzly Bears in hand casts off the five Forests
+        // out whichever land is played. Every land casts the same
+        // (`castableAfterPlay`), so v2 searches them all, v1's pick first —
+        // and its rollouts never crack the fetch, so the second trigger
+        // never shows and the lands tie: v1's `bestLand` decides. It prefers
+        // a tapped land on a tie (Jungle Hollow), then the land making the
+        // colours the hand wants (the Forest's green for the Bears; a fetch
+        // makes none itself) — with an empty hand the fetch won only by
+        // being listed first.
+        const game = table(registry, [A, B, C, D], A);
+        lands(game, "Forest", A, 5);
+        onBoard(game, "Rampaging Baloths", A);
+        const fetch = game.debugSpawn(fetchName, A, "hand");
+        game.debugSpawn(otherName, A, "hand");
+        game.debugSpawn("Grizzly Bears", A, "hand");
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: action.type === "play-land" && action.card === fetch,
+            detail: `chose ${describeAction(action)}${action.type === "play-land" ? ` (${cardOf(game, action.card)})` : ""}`,
+          }),
+        };
+      },
+    }),
+  ),
   asked({
     name: "plays a Forest for Birds of Paradise, not Evolving Wilds",
     rule: "A fetch whose land enters tapped buys nothing this turn: a Forest casts the turn-one Birds of Paradise.",

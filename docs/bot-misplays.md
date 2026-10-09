@@ -4,6 +4,33 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-08 — a basic played over a fetch land with a landfall payoff out
+
+- **Seen (the user's rule):** with landfall triggers on the board and the mana not needed, the bot
+  plays a regular land where any fetch land would do more: a fetch is two lands entering, itself and
+  the land it finds, so two landfall triggers to a basic's one.
+- **Right:** the fetch, whenever every land in hand casts the same this turn.
+- **Scenarios:** "plays Evolving Wilds over a Forest for two landfall triggers", "plays Wooded
+  Foothills over a Forest …" and "plays Evolving Wilds over a tapped Jungle Hollow …" (training) —
+  five Forests out, Rampaging Baloths, and a Grizzly Bears in hand that casts either way: all three
+  play the other land.
+- **Why:** every land casts the same (`castableAfterPlay` looks past a fetch's crack already), so
+  v2 searches them all with v1's pick first, and the search can't tell them apart: its rollouts
+  never crack the fetch, so the second landfall trigger never appears, and the lands tie. On a tie
+  v1's `bestLand` decides: first the tapped land (Jungle Hollow), then the land making the colours
+  the hand wants — the Forest's green for the Bears, where a fetch makes no mana itself. With an
+  empty hand the fetch scored 0 like the Forest and won only by being listed first, so a board with
+  nothing to cast hid the miss.
+- **Fix (outline):** in `bestLand`, ahead of the tapped and colour tie-breaks, prefer a land with a
+  free fetch (`isFreeFetch`, or any fetch the bot would crack) when a landfall permanent of ours is
+  on the battlefield (`isLandfallPermanent`) — the castable count already tied, which is the user's
+  "doesn't need the mana". Separately, a fetch could count the colours of what it can find in the
+  colour score, which would help without a landfall payoff too. Might break: a fetch whose life
+  payment the bot won't make (`FETCH_LIFE_FLOOR`) or with nothing left to find shouldn't win —
+  gate it on the crack being one the bot would make; and v2's search still ties, so v1's order has
+  to carry it, as it does today.
+- **Status:** open.
+
 ## 2026-10-08 — Young Pyromancer cast before Shiko and Narset, so Swords to Plowshares wasn't copied
 
 - **Seen:** Kykar cast Young Pyromancer, then Shiko and Narset, Unified from the command zone,
