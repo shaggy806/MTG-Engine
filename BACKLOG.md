@@ -125,7 +125,7 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
   nothing.
 - **Damage modifiers apply in a fixed order** (616.1).
 - **"You sacrifice it" at end step is done by its controller** (701.21a).
-- **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape** — Ayara, Bloomvine Regent, Will of the Jeskai, Kwain, Forced Fruition, Ruric Thar, Spellshock, Magebane Lizard, Black Mage's Rod, and some 610.3c citations.
+- **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape** — Ayara, Bloomvine Regent, Will of the Jeskai, Kwain, Forced Fruition, Ruric Thar, Spellshock, Magebane Lizard, Black Mage's Rod.
 - **Static-effect dependency ordering** (613.8) beyond layer 4's type grants.
 - **The rest of leaving the game** (800.4c, 800.4g–h).
 - **Dividing among targets: what's left** — an X total, distributing counters.
@@ -136,6 +136,7 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **A commander put into a library from a graveyard, exile or the stack isn't offered the command zone** (903.9b).
 - **A token stack tapping fires `becomes-tapped` once.**
 - **Creatures leave combat as the end of combat step begins, not as it ends** (511.3).
+- **A "trigger-object" that blinks is still found** (400.7): Atarka's double strike lands on a Dragon Cloudshifted in response.
 
 Latent: the engine departs from the rules here, but no pool card reaches it yet. Fix each
 when a card that needs it is authored.
@@ -199,33 +200,22 @@ item lands.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
-- **CI's fuzzer reaches three quarters of the pool.** CI's 38 fixed seeds put 3,904 of the
-  5,369 deckable cards in some deck. The other quarter is never fuzzed in CI, only locally,
-  where 150 two-player seeds reach all but 46. Either raise CI's game counts (about 60
-  two-player seeds for 87%, roughly double the fuzz time), or start each run at a different
-  seed so that successive runs sweep the whole pool.
-- **Eminence is cited as rule 702.106**, which is Hidden Agenda: `abilities.ts`
-  (`fromCommandZone`), `cards/define.ts`, `game.ts` and `eminence.test.ts`. Eminence is an
-  ability word (rule 207.2c), with no rule of its own; the cards' text is what works. Likewise
-  "a delayed ability chooses no new targets" is cited as 603.7d, which is about its source and
-  controller: its captured objects aren't targets because its text doesn't say "target". That
-  citation is in AUTHORING §6, `effects.ts`'s `delayed-trigger`, `game.ts` (three places),
-  `state.ts` and `target-polarity.ts`.
+
+- **Stale 701.19b citations.** 701.19b is regenerate, but about 11 files cite it for "a search
+  may fail to find" (701.23b): `effects.ts`, `game.ts`, `zone-choice-together.ts`, AUTHORING,
+  Chord of Calling, Expedition Map, Krosan Verge, Wargate, Axgard Armory, Aang's Journey and
+  `zone-choice-together.test.ts`.
 
 ## Code health
 
-- **Saved-deck migrations.** `client/src/deck-builder/decks.ts` rewrites two old shapes every
-  time it reads saved decks: a lone `commander` (from before Partner pairs) and a card held under
-  its flavor name (Princess Sarah, renamed 2026-09-16; `nameForFlavorName`). Neither rewrite is
-  saved, so an old deck needs them until it's next edited. Write each migrated deck back once,
-  then drop both.
+- **Drop the saved-deck migrations** (from about 2027). Since 2026-10-09 `client/src/deck-builder/decks.ts`
+  writes a deck it migrated back on its first read (a lone `commander`, a flavor name); once old
+  decks have had time to be read, `fromStorage`'s rewrites can go.
 - **Vocabulary built ahead of any card.** Effect, trigger, condition, filter and replacement
   pieces, plus optional fields, built before any card used them. Keep them for the cards they
   were built for, but review the first card that uses each. The list is in
-  `neededCards-features.md`, "Built ahead", measured 2026-09-25 and now stale: about ten of its
-  pieces have cards since (`day-night`, `gain-control-all`, `notColors`, `sharesCardTypeWith`,
-  `xInManaCost`, `cardTypeCount`, `goadedForGame`, the `player-counters` condition, `{ sum }`,
-  …), so recount it. `painIfUntapped` is the one no real card can use.
+  `neededCards-features.md`, "Built ahead", recounted 2026-10-09: about 11 pieces and 14
+  optional fields remain. `painIfUntapped` is the one no real card can use.
 - **Prohibition scans are quadratic.** `abilitiesProhibited`/`prohibitionsOn` rescan the whole
   battlefield on every call, per permanent, and `recomputeControl` rescans for control Auras per
   permanent once anything has a control effect. On a land-heavy board they were 31% of a
@@ -236,5 +226,3 @@ item lands.
   another 10%. Four-player seed 10 (2026-09-30) is another: 176 turns, ~31 s. The bots' big
   boards are the same cost seen from the search (`bot-effect-knowledge.md`, "Watching live
   games for").
-- **Resolve-hatch sweep.** Convert the four remaining imperative `resolve` cards (Atarka, World
-  Render; Gaze of Granite; Green Sun's Zenith; Toxic Deluge) to a declarative `effect`.

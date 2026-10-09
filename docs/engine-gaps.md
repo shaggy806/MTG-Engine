@@ -181,8 +181,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
     the trigger resolves, so a stolen-library spell countered first points at its owner: Forced
     Fruition, Ruric Thar, Spellshock, Magebane Lizard.
   - `attach` to a "created" token picks one when a doubler makes two (Black Mage's Rod).
-  - Comments cite rule 610.3c for "exile nothing if the source already left"; it's 610.3a/b
-    (`game.ts`'s `exileObject`, `effects.ts`'s `untilSourceLeaves`). The behaviour is right.
 - **Static-effect dependency ordering** (rule 613.8) is implemented only for layer 4's additive
   type grants (Kudo beside Mishra's Factory, `characteristics.ts`). Every other layer applies
   its statics in timestamp order only.
@@ -230,6 +228,12 @@ per gap under the same bold title; when a gap closes, delete it in both.
 The engine departs from the rules here, but no pool card reaches it yet: fix each when a card
 that needs it is authored.
 
+- **A "trigger-object" that blinks is still found** (rule 400.7). A `"trigger-object"` reference to
+  a permanent still on the battlefield as the ability triggered isn't dropped when it leaves and
+  returns before the ability resolves: `triggerObjectLost` covers only an object that had already
+  left when it triggered. Cloudshift the attacking Dragon in response to Atarka, World Render's
+  trigger and the returned Dragon still gets double strike; Dragon Tempest has the same shape
+  (found in the 2026-10-09 resolve-hatch sweep).
 - **Counters put as a cost skip counter replacements and prohibitions.** `putCostCounters`
   (Wall of Roots' -0/-1, Devoted Druid's -1/-1) puts them straight on. Right for "if an effect
   would put counters" (Doubling Season), wrong for one that isn't worded so (Vizier of Remedies)
