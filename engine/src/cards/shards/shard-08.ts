@@ -99,6 +99,7 @@ import _poolGlaringAegis from "../pool/glaring-aegis.js";
 import _poolGlasspoolShore from "../pool/glasspool-shore.js";
 import _poolGoldenTailDisciple from "../pool/golden-tail-disciple.js";
 import _poolGolgariRotwurm from "../pool/golgari-rotwurm.js";
+import _poolGolgariThug from "../pool/golgari-thug.js";
 import _poolGrandColiseum from "../pool/grand-coliseum.js";
 import _poolGraniticTitan from "../pool/granitic-titan.js";
 import _poolGreenweaverDruid from "../pool/greenweaver-druid.js";
@@ -115,6 +116,7 @@ import _poolHitMonkey from "../pool/hit-monkey.js";
 import _poolHolyStrength from "../pool/holy-strength.js";
 import _poolHondenOfSeeingWinds from "../pool/honden-of-seeing-winds.js";
 import _poolIceridgeSerpent from "../pool/iceridge-serpent.js";
+import _poolIlhargTheRazeBoar from "../pool/ilharg-the-raze-boar.js";
 import _poolImmaculateMagistrate from "../pool/immaculate-magistrate.js";
 import _poolIndomitableAncients from "../pool/indomitable-ancients.js";
 import _poolIorethOfTheHealingHouse from "../pool/ioreth-of-the-healing-house.js";
@@ -203,6 +205,7 @@ import _poolSeersLantern from "../pool/seers-lantern.js";
 import _poolSegovianAngel from "../pool/segovian-angel.js";
 import _poolSellerOfSongbirds from "../pool/seller-of-songbirds.js";
 import _poolSerpentsGift from "../pool/serpents-gift.js";
+import _poolShamblingShell from "../pool/shambling-shell.js";
 import _poolShoreKeeper from "../pool/shore-keeper.js";
 import _poolShriekOfDread from "../pool/shriek-of-dread.js";
 import _poolSilentDeparture from "../pool/silent-departure.js";
@@ -369,6 +372,7 @@ const shard: CardShard = {
     _poolGlasspoolShore,
     _poolGoldenTailDisciple,
     _poolGolgariRotwurm,
+    _poolGolgariThug,
     _poolGrandColiseum,
     _poolGraniticTitan,
     _poolGreenweaverDruid,
@@ -385,6 +389,7 @@ const shard: CardShard = {
     _poolHolyStrength,
     _poolHondenOfSeeingWinds,
     _poolIceridgeSerpent,
+    _poolIlhargTheRazeBoar,
     _poolImmaculateMagistrate,
     _poolIndomitableAncients,
     _poolIorethOfTheHealingHouse,
@@ -473,6 +478,7 @@ const shard: CardShard = {
     _poolSegovianAngel,
     _poolSellerOfSongbirds,
     _poolSerpentsGift,
+    _poolShamblingShell,
     _poolShoreKeeper,
     _poolShriekOfDread,
     _poolSilentDeparture,

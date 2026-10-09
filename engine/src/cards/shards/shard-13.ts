@@ -36,6 +36,7 @@ import _poolBoneSabres from "../pool/bone-sabres.js";
 import _poolBrawn from "../pool/brawn.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolBredForTheHunt from "../pool/bred-for-the-hunt.js";
+import _poolBusterSword from "../pool/buster-sword.js";
 import _poolCactusfolkSureshot from "../pool/cactusfolk-sureshot.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
 import _poolCanopyTactician from "../pool/canopy-tactician.js";
@@ -309,6 +310,7 @@ const shard: CardShard = {
     _poolBrawn,
     _poolBreathstealer,
     _poolBredForTheHunt,
+    _poolBusterSword,
     _poolCactusfolkSureshot,
     _poolCanopyGorger,
     _poolCanopyTactician,

@@ -17800,7 +17800,8 @@ export class Game {
           lastingHere(duration),
           exceptSource === true ? source : undefined,
         ),
-      doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, lastingHere(duration)),
+      doublePtAll: (filter, duration, powerOnly, exceptSource) =>
+        this.doublePtAll(controller, filter, lastingHere(duration), powerOnly, exceptSource ? source : undefined),
       doubleCountersAll: (filter, counterKind) =>
         this.doubleCountersAll(controller, filter, counterKind),
       addCounter: (target, counter, amount, by) =>
@@ -21501,13 +21502,20 @@ export class Game {
     }
   }
 
-  private doublePtAll(you: PlayerId, filter: CardFilter, duration: EffectDuration): void {
+  private doublePtAll(
+    you: PlayerId,
+    filter: CardFilter,
+    duration: EffectDuration,
+    powerOnly = false,
+    except?: ObjectId,
+  ): void {
     // Each matching permanent's *own* current P/T, read individually — a 2/2
     // and a 5/5 both matching become a 4/4 and a 10/10, not identical stats
     // (unlike `modifyPtAll`'s single shared amount).
     for (const id of this.battlefieldMatching(you, filter)) {
+      if (id === except) continue;
       const c = computeCharacteristics(this.state, this.registry, id);
-      this.modifyPt({ kind: "object", object: id }, c.power, c.toughness, duration, false);
+      this.modifyPt({ kind: "object", object: id }, c.power, powerOnly ? 0 : c.toughness, duration, false);
     }
   }
 

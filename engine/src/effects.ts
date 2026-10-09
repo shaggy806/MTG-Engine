@@ -1267,8 +1267,12 @@ export type EffectSpec =
       readonly kind: "destroy";
       /** A target slot, or a reference to the object the ability is about —
        * "destroy it" of a trigger (Mikaeus, the Unhallowed: the Human that
-       * dealt you damage, `"trigger-object"`). */
-      readonly target: EffectTargetRef;
+       * dealt you damage, `"trigger-object"`). `"trigger-recipient"` is
+       * what a `deals-damage` trigger's damage was dealt to — Stinkweed
+       * Imp's "whenever this creature deals combat damage to a creature,
+       * destroy **that creature**" — untargeted, and only while it's still
+       * the same permanent (rule 400.7; `damage`'s `toTriggerRecipient`). */
+      readonly target: EffectTargetRef | "trigger-recipient";
       /** "It can't be regenerated" (rule 701.15c — Terminate): a
        * regeneration shield doesn't replace this destruction. */
       readonly cantBeRegenerated?: boolean;
@@ -2144,6 +2148,12 @@ export type EffectSpec =
       readonly kind: "double-pt-all";
       readonly filter: CardFilter;
       readonly duration: PtDuration;
+      /** "Double the **power** of each …" (God-Eternal Rhonas): +X/+0 only,
+       * X each one's own power as it begins to apply (its ruling). */
+      readonly powerOnly?: boolean;
+      /** "… each **other** creature you control" — spare the effect's own
+       * source, as `modify-pt-all`'s clause does. */
+      readonly exceptSource?: boolean;
     }
   | {
       /** Double the number of a specific counter kind on each matching
@@ -4555,7 +4565,7 @@ export interface EffectApi {
     exceptSource?: boolean,
   ): void;
   /** See the `"double-pt-all"` {@link EffectSpec}. */
-  doublePtAll(filter: CardFilter, duration: PtDuration): void;
+  doublePtAll(filter: CardFilter, duration: PtDuration, powerOnly: boolean, exceptSource: boolean): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
   grantPlayerHexproof(who: PlayerScope): void;
   /** See the `"grant-spells-this-turn"` {@link EffectSpec}. */
@@ -6303,7 +6313,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "destroy": {
-      const target = resolveEffectTarget(spec.target, ctx);
+      const target =
+        spec.target === "trigger-recipient" ? ctx.triggerRecipient() : resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.destroyPermanent(target, spec.cantBeRegenerated === true);
       return;
     }
@@ -6746,7 +6757,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       );
       return;
     case "double-pt-all":
-      ctx.doublePtAll(spec.filter, spec.duration);
+      ctx.doublePtAll(spec.filter, spec.duration, spec.powerOnly === true, spec.exceptSource === true);
       return;
     case "grant-player-hexproof":
       ctx.grantPlayerHexproof(spec.who ?? "you");

@@ -51,6 +51,7 @@ import _poolCruelEdict from "../pool/cruel-edict.js";
 import _poolCruelWitness from "../pool/cruel-witness.js";
 import _poolCryogenRelic from "../pool/cryogen-relic.js";
 import _poolDanithaCapashenParagon from "../pool/danitha-capashen-paragon.js";
+import _poolDarkblast from "../pool/darkblast.js";
 import _poolDarkborePathway from "../pool/darkbore-pathway.js";
 import _poolDauntlessVeteran from "../pool/dauntless-veteran.js";
 import _poolDeadWeight from "../pool/dead-weight.js";
@@ -327,6 +328,7 @@ const shard: CardShard = {
     _poolCruelWitness,
     _poolCryogenRelic,
     _poolDanithaCapashenParagon,
+    _poolDarkblast,
     _poolDarkborePathway,
     _poolDauntlessVeteran,
     _poolDeadWeight,

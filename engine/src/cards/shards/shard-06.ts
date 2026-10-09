@@ -64,6 +64,7 @@ import _poolCrypticCommand from "../pool/cryptic-command.js";
 import _poolCuriosity from "../pool/curiosity.js";
 import _poolDaggerclawImp from "../pool/daggerclaw-imp.js";
 import _poolDaiLiCensor from "../pool/dai-li-censor.js";
+import _poolDakmorSalvage from "../pool/dakmor-salvage.js";
 import _poolDamnation from "../pool/damnation.js";
 import _poolDarkHeartOfTheWood from "../pool/dark-heart-of-the-wood.js";
 import _poolDawnOfHope from "../pool/dawn-of-hope.js";
@@ -345,6 +346,7 @@ const shard: CardShard = {
     _poolCuriosity,
     _poolDaggerclawImp,
     _poolDaiLiCensor,
+    _poolDakmorSalvage,
     _poolDamnation,
     _poolDarkHeartOfTheWood,
     _poolDawnOfHope,

@@ -248,6 +248,7 @@ import _poolValgavothsFaithful from "../pool/valgavoths-faithful.js";
 import _poolValleyRotcaller from "../pool/valley-rotcaller.js";
 import _poolVaultOfChampions from "../pool/vault-of-champions.js";
 import _poolVengefulBloodwitch from "../pool/vengeful-bloodwitch.js";
+import _poolVenserShaperSavant from "../pool/venser-shaper-savant.js";
 import _poolVerdantCatacombs from "../pool/verdant-catacombs.js";
 import _poolVernadiShieldmate from "../pool/vernadi-shieldmate.js";
 import _poolVineTrellis from "../pool/vine-trellis.js";
@@ -518,6 +519,7 @@ const shard: CardShard = {
     _poolValleyRotcaller,
     _poolVaultOfChampions,
     _poolVengefulBloodwitch,
+    _poolVenserShaperSavant,
     _poolVerdantCatacombs,
     _poolVernadiShieldmate,
     _poolVineTrellis,

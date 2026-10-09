@@ -92,6 +92,7 @@ import _poolGlasspoolMimic from "../pool/glasspool-mimic.js";
 import _poolGlasswingGrace from "../pool/glasswing-grace.js";
 import _poolGlidediveDuo from "../pool/glidedive-duo.js";
 import _poolGoblinWarPaint from "../pool/goblin-war-paint.js";
+import _poolGodEternalRhonas from "../pool/god-eternal-rhonas.js";
 import _poolGreenSunsZenith from "../pool/green-suns-zenith.js";
 import _poolGreenbeltGuardian from "../pool/greenbelt-guardian.js";
 import _poolGrendelSpawnOfKnull from "../pool/grendel-spawn-of-knull.js";
@@ -361,6 +362,7 @@ const shard: CardShard = {
     _poolGlasswingGrace,
     _poolGlidediveDuo,
     _poolGoblinWarPaint,
+    _poolGodEternalRhonas,
     _poolGreenSunsZenith,
     _poolGreenbeltGuardian,
     _poolGrendelSpawnOfKnull,

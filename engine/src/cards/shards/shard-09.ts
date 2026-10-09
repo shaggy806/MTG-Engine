@@ -211,6 +211,7 @@ import _poolSpymastersVault from "../pool/spymasters-vault.js";
 import _poolStaffOfEdenVaultsKey from "../pool/staff-of-eden-vaults-key.js";
 import _poolStaffOfZegon from "../pool/staff-of-zegon.js";
 import _poolStealEnchantment from "../pool/steal-enchantment.js";
+import _poolStinkweedImp from "../pool/stinkweed-imp.js";
 import _poolStonewoodInvoker from "../pool/stonewood-invoker.js";
 import _poolStormcarvedCoast from "../pool/stormcarved-coast.js";
 import _poolStormsplitter from "../pool/stormsplitter.js";
@@ -483,6 +484,7 @@ const shard: CardShard = {
     _poolStaffOfEdenVaultsKey,
     _poolStaffOfZegon,
     _poolStealEnchantment,
+    _poolStinkweedImp,
     _poolStonewoodInvoker,
     _poolStormcarvedCoast,
     _poolStormsplitter,

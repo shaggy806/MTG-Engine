@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3359 already implemented / 1641 missing (marks refreshed 2026-10-09)
+3368 already implemented / 1632 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -303,7 +303,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   304  The Ozolith                              {1}              Legendary Artifact
 [x]   305  Finale of Devastation                    {X}{G}{G}        Sorcery
 [x]   306  Seething Song                            {2}{R}           Instant
-[ ]   307  Flusterstorm                             {U}              Instant
+[x]   307  Flusterstorm                             {U}              Instant
 [x]   308  Dryad of the Ilysian Grove               {2}{G}           Enchantment Creature — Nymph Dryad
 [ ]   309  Shadowspear                              {1}              Legendary Artifact — Equipment
 [x]   310  Phyrexian Altar                          {3}              Artifact
@@ -869,7 +869,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   873  Splendid Reclamation                     {3}{G}           Sorcery
 [x]   874  Lotus Field                              {0}              Land
 [x]   875  Tragic Slip                              {B}              Instant
-[ ]   876  Buster Sword                             {3}              Artifact — Equipment
+[x]   876  Buster Sword                             {3}              Artifact — Equipment
 [x]   877  The Fire Crystal                         {2}{R}{R}        Legendary Artifact
 [x]   878  City on Fire                             {5}{R}{R}{R}     Enchantment
 [x]   879  Expressive Iteration                     {U}{R}           Sorcery
@@ -1285,7 +1285,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1291  Nuka-Cola Vending Machine                {3}              Artifact
 [x]  1292  Flux Channeler                           {2}{U}           Creature — Human Wizard
 [x]  1293  Windcrag Siege                           {1}{R}{W}        Enchantment
-[ ]  1294  Dakmor Salvage                           {0}              Land
+[x]  1294  Dakmor Salvage                           {0}              Land
 [ ]  1295  Flare of Malice                          {2}{B}{B}        Instant
 [x]  1296  Haunted Mire                             {0}              Land — Swamp Forest
 [ ]  1297  Electro, Assaulting Battery              {1}{R}{R}        Legendary Creature — Human Villain
@@ -1960,7 +1960,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1967  Stormfist Crusader                       {B}{R}           Creature — Human Knight
 [x]  1968  Many Partings                            {G}              Sorcery
 [ ]  1969  Overpowering Attack                      {3}{R}{R}        Sorcery
-[ ]  1970  Venser, Shaper Savant                    {2}{U}{U}        Legendary Creature — Human Wizard
+[x]  1970  Venser, Shaper Savant                    {2}{U}{U}        Legendary Creature — Human Wizard
 [ ]  1971  Solitude                                 {3}{W}{W}        Creature — Elemental Incarnation
 [ ]  1972  Anticausal Vestige                       {6}              Creature — Eldrazi
 [x]  1973  The Eldest Reborn                        {4}{B}           Enchantment — Saga
@@ -2468,7 +2468,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2475  Disciple of the Vault                    {B}              Creature — Human Cleric
 [ ]  2476  Dionus, Elvish Archdruid                 {3}{G}           Legendary Creature — Elf Druid
 [ ]  2477  Mnemonic Betrayal                        {1}{U}{B}        Sorcery
-[ ]  2478  Ilharg, the Raze-Boar                    {3}{R}{R}        Legendary Creature — Boar God
+[x]  2478  Ilharg, the Raze-Boar                    {3}{R}{R}        Legendary Creature — Boar God
 [ ]  2479  Kozilek, the Broken Reality              {9}              Legendary Creature — Eldrazi
 [x]  2480  Manor Gate                               {0}              Land — Gate
 [x]  2481  Inga and Esika                           {2}{G}{U}        Legendary Creature — Human God
@@ -2765,7 +2765,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2772  Emiel the Blessed                        {2}{W}{W}        Legendary Creature — Unicorn
 [x]  2773  Dwarven Mine                             {0}              Land — Mountain
 [x]  2774  Expel the Interlopers                    {3}{W}{W}        Sorcery
-[ ]  2775  Golgari Grave-Troll                      {4}{G}           Creature — Troll Skeleton
+[x]  2775  Golgari Grave-Troll                      {4}{G}           Creature — Troll Skeleton
 [ ]  2776  Troll of Khazad-dûm                      {5}{B}           Creature — Troll
 [x]  2777  Great Divide Guide                       {1}{G}           Creature — Human Scout Ally
 [ ]  2778  Aerial Extortionist                      {3}{W}{W}        Creature — Bird Soldier
@@ -3117,7 +3117,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3124  Hollowmurk Siege                         {B}{G}           Enchantment
 [ ]  3125  Toph, the Blind Bandit                   {2}{G}           Legendary Creature — Human Warrior Ally
 [ ]  3126  Power Conduit                            {2}              Artifact
-[ ]  3127  Stinkweed Imp                            {2}{B}           Creature — Imp
+[x]  3127  Stinkweed Imp                            {2}{B}           Creature — Imp
 [ ]  3128  Diamond City                             {0}              Land
 [ ]  3129  Render Silent                            {W}{U}{U}        Instant
 [x]  3130  Mountain Valley                          {0}              Land
@@ -3451,7 +3451,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3458  River Kelpie                             {3}{U}{U}        Creature — Beast
 [ ]  3459  Bonny Pall, Clearcutter                  {3}{G}{U}{U}     Legendary Creature — Giant Scout
 [x]  3460  Ignite the Future                        {3}{R}           Sorcery
-[ ]  3461  Golgari Thug                             {1}{B}           Creature — Human Warrior
+[x]  3461  Golgari Thug                             {1}{B}           Creature — Human Warrior
 [x]  3462  Devilish Valet                           {2}{R}           Creature — Devil Warrior
 [ ]  3463  Spirit Water Revival                     {1}{U}{U}        Sorcery
 [x]  3464  Auriok Champion                          {W}{W}           Creature — Human Cleric
@@ -4980,7 +4980,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4987  Abomination of Llanowar                  {1}{B}{G}        Legendary Creature — Elf Horror
 [x]  4988  Stadium Headliner                        {R}              Creature — Goblin Warrior
 [ ]  4989  The Wanderer                             {3}{W}           Legendary Planeswalker
-[ ]  4990  God-Eternal Rhonas                       {3}{G}{G}        Legendary Creature — Zombie God
+[x]  4990  God-Eternal Rhonas                       {3}{G}{G}        Legendary Creature — Zombie God
 [x]  4991  Rydia, Summoner of Mist                  {R}{G}           Legendary Creature — Human Shaman
 [x]  4992  Lightning Runner                         {3}{R}{R}        Creature — Human Warrior
 [x]  4993  Phyrexian Swarmlord                      {4}{G}{G}        Creature — Phyrexian Insect Horror

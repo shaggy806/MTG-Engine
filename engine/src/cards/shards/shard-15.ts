@@ -96,6 +96,7 @@ import _poolGoForTheThroat from "../pool/go-for-the-throat.js";
 import _poolGoblinBrigand from "../pool/goblin-brigand.js";
 import _poolGoblinSledder from "../pool/goblin-sledder.js";
 import _poolGolgariCharm from "../pool/golgari-charm.js";
+import _poolGolgariGraveTroll from "../pool/golgari-grave-troll.js";
 import _poolGolgariLonglegs from "../pool/golgari-longlegs.js";
 import _poolGolgariRotFarm from "../pool/golgari-rot-farm.js";
 import _poolGraniteGargoyle from "../pool/granite-gargoyle.js";
@@ -360,6 +361,7 @@ const shard: CardShard = {
     _poolGoblinBrigand,
     _poolGoblinSledder,
     _poolGolgariCharm,
+    _poolGolgariGraveTroll,
     _poolGolgariLonglegs,
     _poolGolgariRotFarm,
     _poolGraniteGargoyle,

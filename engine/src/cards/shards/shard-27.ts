@@ -80,6 +80,7 @@ import _poolFalseDefeat from "../pool/false-defeat.js";
 import _poolFellMire from "../pool/fell-mire.js";
 import _poolFeralInvocation from "../pool/feral-invocation.js";
 import _poolFlowstoneWyvern from "../pool/flowstone-wyvern.js";
+import _poolFlusterstorm from "../pool/flusterstorm.js";
 import _poolForceOfSavagery from "../pool/force-of-savagery.js";
 import _poolForgottenSentinel from "../pool/forgotten-sentinel.js";
 import _poolFumeSpitter from "../pool/fume-spitter.js";
@@ -353,6 +354,7 @@ const shard: CardShard = {
     _poolFellMire,
     _poolFeralInvocation,
     _poolFlowstoneWyvern,
+    _poolFlusterstorm,
     _poolForceOfSavagery,
     _poolForgottenSentinel,
     _poolFumeSpitter,
