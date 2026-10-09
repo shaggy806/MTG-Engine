@@ -135,6 +135,7 @@ import _poolLifelink from "../pool/lifelink.js";
 import _poolLoreWeaver from "../pool/lore-weaver.js";
 import _poolLoreholdCharm from "../pool/lorehold-charm.js";
 import _poolLossarnachCaptain from "../pool/lossarnach-captain.js";
+import _poolLunarchVeteran from "../pool/lunarch-veteran.js";
 import _poolLurkingPredators from "../pool/lurking-predators.js";
 import _poolLylaHolographicAssistant from "../pool/lyla-holographic-assistant.js";
 import _poolMabel from "../pool/mabel.js";
@@ -418,6 +419,7 @@ const shard: CardShard = {
     _poolLoreWeaver,
     _poolLoreholdCharm,
     _poolLossarnachCaptain,
+    _poolLunarchVeteran,
     _poolLurkingPredators,
     _poolLylaHolographicAssistant,
     _poolMabel,

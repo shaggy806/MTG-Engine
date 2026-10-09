@@ -297,7 +297,7 @@ from the same link.
 | `chapters` | `SagaChapter[]` | a Saga — §12 |
 | `faces` | `string[]` | a multi-face card (front first) — §12 |
 | `transform` | `boolean` | a *transforming* DFC (set on both faces) — §12 |
-| `disturb` | `{ cost }` | cast the back face from the graveyard (front face's def) |
+| `disturb` | `{ cost }` | cast the back face from the graveyard (front face's def); the back face's "exile it instead" is its own `self` graveyard replacement (§ replacements) |
 | `adventure` | `boolean` | an Adventure card (with `faces: [creature, adventure]`) |
 | `copyOnEnter` | `CopyOnEnter` — `{ filter, except?, tapped?, counters?, untilEndOfTurn? }` | "You may have this enter as a copy of …" (rule 707.9), asked before it moves however it enters (§15). `filter` is a `CardFilter` over permanents already on the battlefield, from the side of the player it enters under: Clone's "any creature" `{ type: "creature" }`, Sakashima's "another creature you control" `{ type: "creature", controlledBy: "you" }`, Phyrexian Metamorph's `{ typesAnyOf: ["artifact", "creature"] }`, Vesuva's `{ type: "land" }`, Deceptive Frostkite's `power: { op: "gte", n: 4 }`; an `{ amount }` operand reads the entering permanent (Mockingbird: `manaValue: { op: "lte", n: { amount: { manaSpentOf: "source" } } }`). Never itself. `except` is a `CopyExceptions` (the `create-token-copy` row, §6): copiable values, so a copy of the copy has them (Phantasmal Image's `triggered`, Spark Double's `notLegendary`, Sakashima's `legendRuleOff`). A creature subtype added in addition doesn't stick to a copy that isn't a creature (rule 205.3d — Glasspool Mimic's ruling). `tapped` is Vesuva's "enter **tapped** as a copy"; `counters: [{ kind, amount: number \| "x", ifType? }]` is "it enters with an additional counter if it's a creature" (Spark Double) or "X additional counters" (Altered Ego) — both happen only when it copies something, judged by what it became (rules 707.9e–f), and aren't copied by a later copy. `untilEndOfTurn` is Cursed Mirror's "become a copy … until end of turn": it's itself again in the cleanup step, and a copy of it made meanwhile keeps being the creature. Not yet: a copy of a card in a graveyard or exile (The Mimeoplasm, Echoing Deeps). |
 | `omen` | `boolean` | an omen card (rule 720 — Stormshriek Feral // Flush Out): `faces: [creature, Omen]` on both faces, the Omen face a `sorcery`/`instant` with subtype `Omen`. Cast as either; the Omen resolving is shuffled into its owner's library (720.3d) — a copy of one ceases to exist, its owner still shuffling — and countered or fizzled it goes to the graveyard. Scryfall files these under the adventure layout; the scaffold writes `omen`. |
@@ -3384,12 +3384,18 @@ clause (section 9):
   is `filter: { ownedBy: "opponent", token: false }` — a token isn't a card,
   and still dies; Rest in Peace's "a card or token" has no filter). When
   another replacement would exile the card too — Rest in Peace, a finality
-  counter, flashback, disturb, a Kess-style permission — the affected
+  counter, flashback, a disturb face's own, a Kess-style permission — the affected
   object's controller (its owner, off the battlefield and the stack) picks
   which applies (rule 616.1), and the two differ only in the counter: it's
   put on only when one of the replacements putting it is the chooser's own,
   the one choice that serves them (an opponent's flashback spell is exiled
-  by flashback, with no void counter).
+  by flashback, with no void counter). `self: true` is a disturb back face's
+  "If ~ would be put into a graveyard from anywhere, exile it instead"
+  (Hook-Haunt Drifter, rule 702.146): the face's own ability, catching only
+  the object it's on (a token too), on the stack or the battlefield — so a
+  Clone of the face is exiled too (rule 707.2) and the face that lost its
+  abilities isn't. Give every disturb back face one; the disturb cast itself
+  exiles nothing.
 - **Finality counters** (rule 122) need no spec: any permanent with a
   `finality` counter that would go to a graveyard from the battlefield is
   exiled instead, by `moveObject` itself. Put one on with

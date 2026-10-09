@@ -319,6 +319,7 @@ export const PINNED_ART: Readonly<Partial<Record<string, string>>> = {
   "Legion Stronghold": "https://cards.scryfall.io/art_crop/back/7/6/7676abd9-0a3d-4721-b17b-778d2e3c2e25.jpg",
   "Lord of Lineage": "https://cards.scryfall.io/art_crop/back/6/0/60658907-dd63-478d-a66a-123e4e9d2a00.jpg",
   "Lost Vale": "https://cards.scryfall.io/art_crop/back/5/1/514d53be-6ade-4f73-a844-e9ae2dafd6ce.jpg",
+  "Luminous Phantom": "https://cards.scryfall.io/art_crop/back/4/3/438e3302-daf9-436b-8b08-24b3f33295f6.jpg",
   "Makindi Mesas": "https://cards.scryfall.io/art_crop/back/a/d/ada9a974-8f1f-4148-bd61-200fc14714b2.jpg",
   "Malakir Mire": "https://cards.scryfall.io/art_crop/back/6/0/609d3ecf-f88d-4268-a8d3-4bf2bcf5df60.jpg",
   "Mesmeric Glare": "https://cards.scryfall.io/art_crop/back/7/a/7acbd812-b994-4e68-8f95-04222796e994.jpg",

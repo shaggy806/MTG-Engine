@@ -4260,8 +4260,10 @@ import _poolLuminarchAspirant from "./pool/luminarch-aspirant.js";
 import _poolLuminousAngel from "./pool/luminous-angel.js";
 import _poolLuminousBonds from "./pool/luminous-bonds.js";
 import _poolLuminousBroodmoth from "./pool/luminous-broodmoth.js";
+import _poolLuminousPhantom from "./pool/luminous-phantom.js";
 import _poolLumraBellowOfTheWoods from "./pool/lumra-bellow-of-the-woods.js";
 import _poolLunarConvocation from "./pool/lunar-convocation.js";
+import _poolLunarchVeteran from "./pool/lunarch-veteran.js";
 import _poolLunaticPandora from "./pool/lunatic-pandora.js";
 import _poolLupinflowerVillage from "./pool/lupinflower-village.js";
 import _poolLurchingRotbeast from "./pool/lurching-rotbeast.js";
@@ -13013,8 +13015,10 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLuminousAngel,
   _poolLuminousBonds,
   _poolLuminousBroodmoth,
+  _poolLuminousPhantom,
   _poolLumraBellowOfTheWoods,
   _poolLunarConvocation,
+  _poolLunarchVeteran,
   _poolLunaticPandora,
   _poolLupinflowerVillage,
   _poolLurchingRotbeast,

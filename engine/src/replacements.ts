@@ -237,6 +237,15 @@ export interface GraveyardExileReplacement {
    * there — not an effect putting counters, so a doubler doesn't touch
    * them. */
   readonly withCounters?: { readonly kind: string; readonly amount: number };
+  /** "If **this** would be put into a graveyard from anywhere, exile it
+   * instead" — a disturb back face's (Hook-Haunt Drifter, rule 702.146):
+   * the object's own ability, not an external one, so it catches only the
+   * object it's on — tokens included — from whatever zone it has the
+   * ability in (the battlefield, the stack). Being an ability of the face,
+   * it goes wherever the face's text goes: a Clone of the face has it (rule
+   * 707.2), and the face that lost its abilities doesn't. Applied by
+   * `Game.moveObject` to the moving object, never by the external scan. */
+  readonly self?: true;
 }
 
 /** "If a player [who] would draw a card, [this permanent's controller] draws a

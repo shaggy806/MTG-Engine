@@ -154,6 +154,7 @@ import _poolLingeringSouls from "../pool/lingering-souls.js";
 import _poolLlanowarElves from "../pool/llanowar-elves.js";
 import _poolLoxodonStalwart from "../pool/loxodon-stalwart.js";
 import _poolLoyalWarhound from "../pool/loyal-warhound.js";
+import _poolLuminousPhantom from "../pool/luminous-phantom.js";
 import _poolManaFlare from "../pool/mana-flare.js";
 import _poolMedusaInhumanQueen from "../pool/medusa-inhuman-queen.js";
 import _poolMemoryDeluge from "../pool/memory-deluge.js";
@@ -426,6 +427,7 @@ const shard: CardShard = {
     _poolLlanowarElves,
     _poolLoxodonStalwart,
     _poolLoyalWarhound,
+    _poolLuminousPhantom,
     _poolManaFlare,
     _poolMedusaInhumanQueen,
     _poolMemoryDeluge,

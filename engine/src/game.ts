@@ -13695,7 +13695,7 @@ export class Game {
         adventure ||
         object.castVia === "flashback" ||
         object.castVia === "harmonize" ||
-        object.castVia === "disturb" ||
+        this.exilesItselfInstead(object) ||
         object.exileIfWouldGoToGraveyard === true ||
         this.graveyardIsReplacedWithExile(id, false);
       if (!competing) {
@@ -26540,6 +26540,9 @@ export class Game {
         if (
           r?.event !== "would-be-put-into-graveyard" ||
           r.instead !== "exile" ||
+          // An object's own "exile it instead" is about it alone (see
+          // `exilesItselfInstead`).
+          r.self === true ||
           // The dies-only form (rule 700.4) lets a discard or a mill through.
           (r.from === "battlefield" && !fromBattlefield) ||
           !this.staticActive(object, ability)
@@ -26570,7 +26573,7 @@ export class Game {
         if (was === undefined || was.zone === "battlefield" || last === undefined || last.lostAbilities) continue;
         for (const ability of this.registry.get(last.textName ?? last.name).static) {
           const r = ability.replacement;
-          if (r?.event !== "would-be-put-into-graveyard" || r.instead !== "exile") continue;
+          if (r?.event !== "would-be-put-into-graveyard" || r.instead !== "exile" || r.self === true) continue;
           if (ability.condition !== undefined) continue;
           if (
             r.filter !== undefined &&
@@ -26584,6 +26587,20 @@ export class Game {
       }
     }
     return found;
+  }
+
+  /** Whether `object` has its own "if this would be put into a graveyard
+   * from anywhere, exile it instead" (a disturb back face — rule 702.146 —
+   * `GraveyardExileReplacement.self`). Read from the text it has now, so a
+   * copy of the face has it (rule 707.2) and the face once it has lost all
+   * its abilities doesn't — not from how it was cast. "From anywhere": the
+   * stack as well as the battlefield. */
+  private exilesItselfInstead(object: GameObject): boolean {
+    if (hasLostAbilities(object)) return false;
+    return this.registry.get(rulesTextName(object)).static.some((ability) => {
+      const r = ability.replacement;
+      return r?.event === "would-be-put-into-graveyard" && r.instead === "exile" && r.self === true;
+    });
   }
 
   /**
@@ -26905,9 +26922,10 @@ export class Game {
     // "…instead exile it with a void counter on it" (Dauthi Voidwalker): the
     // counters it has as it arrives in exile — unless a replacement that
     // exiles it with none is the one its controller picks (rule 616.1, see
-    // `exileCountersChosen`): a finality counter, or flashback's, disturb's
-    // or a Kess-style permission's below.
+    // `exileCountersChosen`): a finality counter, or flashback's, a disturb
+    // face's own or a Kess-style permission's below.
     let exileCounters: { readonly kind: string; readonly amount: number } | undefined;
+    const exilesItself = to === "graveyard" && this.exilesItselfInstead(object);
     if (to === "graveyard") {
       const finality = leavingBattlefield && (object.counters["finality"] ?? 0) > 0;
       const replaced = this.graveyardExileReplacements(id, leavingBattlefield);
@@ -26919,20 +26937,20 @@ export class Game {
           finality ||
             object.castVia === "flashback" ||
             object.castVia === "harmonize" ||
-            object.castVia === "disturb" ||
+            exilesItself ||
             object.exileIfWouldGoToGraveyard === true,
         );
         this.emit({ type: "graveyard-replaced-with-exile", object: id });
       }
     }
 
-    // Flashback (rule 702.34) / harmonize (702.180a) / disturb (rule 702.150):
-    // a card cast this way is exiled instead of ever going to a graveyard —
-    // from the stack (fizzle / counter) or, for a disturb permanent, from the
-    // battlefield when it dies. `castVia` rides on the object (kept across the
-    // stack→battlefield move).
+    // Flashback (rule 702.34) / harmonize (702.180a): a card cast this way is
+    // exiled instead of ever going to a graveyard — from the stack (fizzle /
+    // counter) or the battlefield. `castVia` rides on the object (kept across
+    // the stack→battlefield move). A disturb back face's "exile it instead"
+    // is the face's own ability (`exilesItselfInstead`), not the cast's.
     if (
-      (object.castVia === "flashback" || object.castVia === "harmonize" || object.castVia === "disturb") &&
+      (object.castVia === "flashback" || object.castVia === "harmonize" || exilesItself) &&
       to === "graveyard"
     ) {
       to = "exile";

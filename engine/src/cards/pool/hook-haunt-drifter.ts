@@ -1,8 +1,8 @@
 import { defineCard } from "../define.js";
 
-/** The disturb back face of Baithook Angler. The "exile it instead of putting
- * it anywhere else" clause is what `disturb` already does to a card cast that
- * way, so it needs no separate replacement. */
+/** The disturb back face of Baithook Angler. Its "exile it instead" is the
+ * face's own ability (`self`), not something the disturb cast does: a Clone
+ * of it is exiled too (rule 707.2), and it, having lost its abilities, isn't. */
 export default defineCard({
   name: "Hook-Haunt Drifter",
   // A back face has no Scryfall card of its own name — point at its art.
@@ -19,4 +19,11 @@ export default defineCard({
   faces: ["Baithook Angler", "Hook-Haunt Drifter"],
   transform: true,
   disturb: { cost: "{1}{U}" },
+  static: [
+    {
+      affects: { scope: "self" },
+      replacement: { event: "would-be-put-into-graveyard", instead: "exile", self: true },
+      text: "If Hook-Haunt Drifter would be put into a graveyard from anywhere, exile it instead.",
+    },
+  ],
 });
