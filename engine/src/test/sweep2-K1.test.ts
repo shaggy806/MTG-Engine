@@ -277,6 +277,7 @@ describe("Demolition Field", () => {
     const theirs = game.debugSpawn("Plains", B, "library");
     a.chooseFromZoneFn = (_view, eligible) => eligible.filter((id) => id === mine);
     b.chooseFromZoneFn = (_view, eligible) => eligible.filter((id) => id === theirs);
+    a.chooseModesFn = () => [0]; // "You may search": yes
     activate(game, field, 1, [obj(target)]);
     expect(game.state.objects[target].zone).toBe("graveyard");
     expect(game.state.objects[theirs].zone).toBe("battlefield");

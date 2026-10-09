@@ -181,6 +181,8 @@ describe("Sword of the Animist", () => {
     const bears = spawn(game, "Grizzly Bears");
     equip(game, sword, bears, 2);
     expect(game.characteristics(bears).power).toBe(3);
+    // "You may search": yes, then the first basic.
+    a.chooseModesFn = () => [0];
     a.chooseFromZoneFn = (_view, eligible) => eligible.slice(0, 1);
     const before = lands(game).length;
     const library = game.state.zones.perPlayer[A].library.length;

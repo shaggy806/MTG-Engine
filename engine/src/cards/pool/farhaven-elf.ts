@@ -16,12 +16,16 @@ export default defineCard({
       trigger: { on: "enters-battlefield", who: "self" },
       targets: [],
       effect: {
-        kind: "search-library",
-        filter: { type: "land", supertype: "basic" },
-        destination: "battlefield",
-        min: 0,
-        max: 1,
-        enterTapped: true,
+        kind: "may",
+        prompt: "Search your library for a basic land card?",
+        effect: {
+          kind: "search-library",
+          filter: { type: "land", supertype: "basic" },
+          destination: "battlefield",
+          min: 0,
+          max: 1,
+          enterTapped: true,
+        },
       },
       resolve: null,
       text:

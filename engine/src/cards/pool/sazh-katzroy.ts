@@ -21,14 +21,19 @@ export default defineCard({
     {
       trigger: { on: "enters-battlefield", who: "self" },
       targets: [],
-      // Borderland Ranger's "you may search" (min 0).
+      // Borderland Ranger's "you may search": a `may`, so declining doesn't
+      // search or shuffle.
       effect: {
-        kind: "search-library",
-        filter: { anyOf: [{ subtype: "Bird" }, { supertype: "basic", type: "land" }] },
-        destination: "hand",
-        min: 0,
-        max: 1,
-        reveal: true,
+        kind: "may",
+        prompt: "Search your library for a Bird or basic land card?",
+        effect: {
+          kind: "search-library",
+          filter: { anyOf: [{ subtype: "Bird" }, { supertype: "basic", type: "land" }] },
+          destination: "hand",
+          min: 0,
+          max: 1,
+          reveal: true,
+        },
       },
       resolve: null,
       text: "When Sazh Katzroy enters, you may search your library for a Bird or basic land card, reveal it, put it into your hand, then shuffle.",

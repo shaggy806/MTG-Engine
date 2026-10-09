@@ -38,7 +38,12 @@ export default defineCard({
             min: 0,
             max: 1,
           },
-          { kind: "search-library", filter: BASIC_LAND, destination: "battlefield", min: 0, max: 1 },
+          // "You may search": a `may`, so declining doesn't search or shuffle.
+          {
+            kind: "may",
+            prompt: "Search your library for a basic land card?",
+            effect: { kind: "search-library", filter: BASIC_LAND, destination: "battlefield", min: 0, max: 1 },
+          },
         ],
       },
       resolve: null,

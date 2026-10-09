@@ -309,6 +309,7 @@ describe("Rocco, Cabaretti Caterer", () => {
     for (const land of ["Mountain", "Forest", "Plains", "Forest", "Forest"]) spawn(game, land);
     const bears = game.debugSpawn("Grizzly Bears", A, "library");
     game.debugSpawn("Craw Wurm", A, "library");
+    a.chooseModesFn = () => [0]; // "you may search": yes
     a.chooseFromZoneFn = (_view, eligible) => eligible.slice(0, 1);
     cast(game, inHand(game, A, "Rocco, Cabaretti Caterer"), [], { xValue: 2 });
     expect(game.state.objects[bears].zone).toBe("battlefield");

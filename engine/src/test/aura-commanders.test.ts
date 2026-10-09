@@ -58,6 +58,7 @@ describe("Zur the Enchanter", () => {
     const giant = spawn(game, "Hill Giant", B);
     const pacifism = game.debugSpawn("Pacifism", A, "library");
     a.declareAttackersFn = () => [{ attacker: zur, defender: B }];
+    a.chooseModesFn = () => [0]; // "you may search": yes
     a.chooseFromZoneFn = (_view, eligible) => eligible.slice(0, 1);
     let offered: readonly ObjectId[] = [];
     a.chooseEnchantFn = (_view, _source, options) => {

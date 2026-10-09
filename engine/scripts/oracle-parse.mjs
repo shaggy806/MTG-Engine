@@ -685,9 +685,11 @@ export function parseSentence(sentence, ctx) {
   if ((m = /^you may (.+)\.$/i.exec(s))) {
     const inner = parseSentence(`${m[1][0].toUpperCase()}${m[1].slice(1)}.`, ctx);
     if (inner === null) return null;
-    // A search may already find nothing (`min: 0`) — that is its "may".
-    if (inner.kind === "search-library") return inner;
-    return { kind: "may", prompt: `${m[1][0].toUpperCase()}${m[1].slice(1)}?`, effect: inner };
+    // A search's `min: 0` lets it find nothing, but it still searches and
+    // shuffles: "you may search" is a `may` like any other, asked as
+    // "Search your library for …?".
+    const asked = inner.kind === "search-library" ? m[1].replace(/,.*$/, "") : m[1];
+    return { kind: "may", prompt: `${asked[0].toUpperCase()}${asked.slice(1)}?`, effect: inner };
   }
   return null;
 }
