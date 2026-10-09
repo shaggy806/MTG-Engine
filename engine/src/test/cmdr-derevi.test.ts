@@ -65,7 +65,7 @@ const abilityOf = (game: Game, source: ObjectId): AbilityLegal | undefined =>
     .find((l): l is AbilityLegal => l.kind === "activate-ability" && l.source === source);
 
 const activate = (game: Game, legal: AbilityLegal): void =>
-  game.dispatch({
+  void game.dispatch({
     type: "activate-ability",
     player: A,
     source: legal.source,

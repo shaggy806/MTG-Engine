@@ -55,7 +55,6 @@ const named = (game: Game, name: string): ObjectId[] =>
 /** Every token a name stands for, a stack counted once per token. */
 const tokenCount = (game: Game, name: string): number =>
   named(game, name).reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
-const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
 const pt = (game: Game, id: ObjectId): [number, number] => {
   const c = computeCharacteristics(game.state, registry, id);
   return [c.power, c.toughness];

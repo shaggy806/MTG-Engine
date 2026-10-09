@@ -60,11 +60,6 @@ const toPostcombat = (s: GameState): boolean =>
   s.turn.number === 1 && s.turn.step === "postcombat-main";
 const settled = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null;
-const named = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => {
-  const id = ids.find((each) => game.state.objects[each].cardName === name);
-  if (id === undefined) throw new Error(`no ${name}`);
-  return id;
-};
 const loyaltyAbility = (game: Game, source: ObjectId, cost: number) => {
   const legal = game
     .legalActions(A)

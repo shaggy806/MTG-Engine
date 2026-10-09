@@ -84,7 +84,7 @@ const watcher = defineCard({
   text: "Whenever another creature you control enters, you gain X life.",
   triggered: [
     {
-      trigger: { on: "enters-battlefield", filter: { type: "creature" }, otherOnly: true },
+      trigger: { on: "enters-battlefield", who: "you-control", filter: { type: "creature" }, otherOnly: true },
       targets: [],
       effect: { kind: "gain-life", amount: "x" },
       resolve: null,

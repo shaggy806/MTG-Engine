@@ -314,7 +314,7 @@ describe("can't lose / can't win", () => {
     lands(game, A, "Plains", 1);
     game.dispatch({ type: "cast-spell", player: A, card: inHand(game, A, "Angel's Grace") });
     // Split second: while it's on the stack nobody casts anything.
-    expect(game.legalActions(A).some((x) => x.type === "cast-spell")).toBe(false);
+    expect(game.legalActions(A).some((x) => x.kind === "cast-spell")).toBe(false);
     game.advanceUntil(quiet);
     game.debugApplyEffect(B, { kind: "damage", who: "each-opponent", amount: 50 });
     expect(game.state.players[A].life).toBe(1);

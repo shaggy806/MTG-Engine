@@ -17,7 +17,6 @@ import type { PlayerId } from "../primitives.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
-const C = asPlayerId("carol");
 
 const makeGame = (players: readonly PlayerId[] = [A, B]) =>
   Game.create({

@@ -10,7 +10,6 @@ import { describe, expect, it } from "vitest";
 
 import type { Action, LegalAction } from "../actions.js";
 import { computeCharacteristics } from "../characteristics.js";
-import { whyCannotAttack, whyCannotBlock } from "../combat/eligibility.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import type { EffectSpec } from "../effects.js";

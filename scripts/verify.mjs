@@ -6,26 +6,25 @@
 //   1. gen:cards (the card barrel and shards)
 //   2. build (every workspace), then the backlog lists re-marked against it
 //      and any sample-deck stand-in for a card now in the pool dropped
-//   3. typecheck + lint, side by side
+//   3. typecheck (the engine's tests included — vitest never type-checks a
+//      test, so a wrong chooser signature or a cast could make one pass
+//      without testing) + lint, side by side
 //   4. the engine suite (8 workers), then server + client side by side
-//   5. new test files type-checked (vitest never type-checks a test, so a
-//      wrong chooser signature or a cast can make one pass without testing);
-//      modified ones are reported, not failed — 135 older files have errors
-//   6. card:verify against the Oracle snapshot (offline)
-//   7. side by side: the fuzzer at 2 and 4 players, the fuzzer with every
+//   5. card:verify against the Oracle snapshot (offline)
+//   6. side by side: the fuzzer at 2 and 4 players, the fuzzer with every
 //      card this change adds (or `--with` names) forced in, the bot gate
 //
 // Steps 1-4 stop the run on failure (later results would mean nothing);
-// 5-7 all run, and the exit code is 1 if anything failed. Logs go to the OS
+// 5-6 all run, and the exit code is 1 if anything failed. Logs go to the OS
 // temp dir, one per step, named in the output.
 //
 // Usage: node scripts/verify.mjs [--with "Card Name"]... [--skip step,step]
-//   steps for --skip: marks, lint, server, client, newtests, cardverify,
+//   steps for --skip: marks, lint, server, client, cardverify,
 //   fuzz, fuzzwith, gate
 //   --games N   2-player fuzz games (default 60; 4-player gets half)
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -103,37 +102,6 @@ function addedCards() {
   return names;
 }
 
-/** Test files this change adds (`fresh`) or modifies, under engine/src. */
-function changedTests() {
-  const status = spawnSync("git", ["status", "--porcelain", "--", "engine/src"], { cwd: ROOT, encoding: "utf8" }).stdout;
-  const fresh = [];
-  const modified = [];
-  for (const line of status.split("\n")) {
-    const file = line.slice(3).trim();
-    if (!/\.test\.ts$|\/test\/harness\.ts$/.test(file)) continue;
-    (/^(\?\?|A )/.test(line) ? fresh : modified).push(path.relative("engine", file).replace(/\\/g, "/"));
-  }
-  return { fresh, modified };
-}
-
-async function typecheckTests() {
-  const { fresh, modified } = changedTests();
-  const files = [...fresh, ...modified];
-  if (files.length === 0) return { name: "newtests", ok: true, log: "", out: "", time: "0s", summary: "no test files changed" };
-  const config = path.join(ENGINE, "tsconfig.verify-tests.json");
-  writeFileSync(
-    config,
-    JSON.stringify({ extends: "./tsconfig.json", compilerOptions: { noEmit: true }, include: files, exclude: [] }),
-  );
-  const r = await run("newtests", "npx", ["tsc", "-p", "tsconfig.verify-tests.json"], ENGINE);
-  unlinkSync(config);
-  const errors = r.out.split("\n").filter((l) => /error TS/.test(l));
-  const inFresh = errors.filter((l) => fresh.some((f) => l.startsWith(f)));
-  const inModified = errors.length - inFresh.length;
-  const summary = `${fresh.length} new, ${modified.length} modified; ${inFresh.length} error(s) in new${inModified ? `, ${inModified} in modified (not failed — see log)` : ""}`;
-  return { ...r, ok: inFresh.length === 0, summary };
-}
-
 // ------------------------------------------------------------------ run
 
 const cards = [...new Set([...withNames, ...addedCards()])];
@@ -175,10 +143,6 @@ if (others.some((r) => !r.ok)) {
   process.exit(1);
 }
 
-if (!skip.has("newtests")) {
-  const r = await typecheckTests();
-  report(r, r.summary);
-}
 if (!skip.has("cardverify")) {
   const r = await run("card:verify", "node", ["scripts/verify-cards.mjs", "--offline"], ENGINE);
   report(r, grab(r.out, /checked,/));

@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
-import type { GameRules } from "../game.js";
+import type { GameRules } from "../state.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { nameOf } from "../state.js";

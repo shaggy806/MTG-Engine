@@ -149,7 +149,7 @@ describe("Ainok Strike Leader", () => {
     ready(game, "Ainok Strike Leader");
     const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
     game.state.objects[theirs].isCommander = true;
-    game.debugApplyEffect(A, { kind: "gain-control", target: 0 }, [obj(theirs)]);
+    game.debugApplyEffect(A, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [obj(theirs)]);
     game.state.objects[theirs].summoningSick = false;
     toAttackers(game);
     game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: theirs, defender: B }] });
@@ -522,7 +522,7 @@ describe("Scourge of the Throne", () => {
     game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: scourge, defender: B }] });
     game.advanceUntil((s) => s.zones.shared.stack.length > 0 && s.pendingTriggers.length === 0 && s.awaiting === null);
     // A change of control removes it from combat (rule 506.4); then it dies.
-    game.debugApplyEffect(B, { kind: "gain-control", target: 0 }, [obj(scourge)]);
+    game.debugApplyEffect(B, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [obj(scourge)]);
     game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(scourge)]);
     game.advanceUntil(quiet);
     game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.turn.number > 1);
@@ -796,7 +796,7 @@ describe("Dauthi Voidwalker", () => {
     expect(game.state.objects[his].counters["void"] ?? 0).toBe(0);
     // Bob's creature under Alice's control: hers to choose, and the counter is hers.
     const taken = ready(game, "Hill Giant", B);
-    game.debugApplyEffect(A, { kind: "gain-control", target: 0 }, [obj(taken)]);
+    game.debugApplyEffect(A, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [obj(taken)]);
     game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(taken)]);
     expect(game.state.objects[taken].zone).toBe("exile");
     expect(game.state.objects[taken].counters["void"]).toBe(1);
@@ -885,7 +885,8 @@ describe("Colossal Grave-Reaver", () => {
     expect(awaiting?.kind).toBe("choose-from-zone");
     const names = awaiting?.kind === "choose-from-zone" ? awaiting.eligible.map((id) => game.state.objects[id].cardName).sort() : [];
     expect(names).toEqual(["Grizzly Bears", "Hill Giant"]);
-    const giant = awaiting?.kind === "choose-from-zone" ? awaiting.eligible.find((id) => game.state.objects[id].cardName === "Hill Giant")! : "";
+    const giant = awaiting?.kind === "choose-from-zone" ? awaiting.eligible.find((id) => game.state.objects[id].cardName === "Hill Giant")! : undefined;
+    if (giant === undefined) throw new Error("no choice offered");
     game.dispatch({ type: "choose-from-zone", player: A, chosen: [giant] });
     game.advanceUntil(quiet);
     expect(game.state.objects[giant].zone).toBe("battlefield");

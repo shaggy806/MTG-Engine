@@ -50,12 +50,7 @@ const lands = (game: Game, name: string, n: number, player: PlayerId = A): Objec
   Array.from({ length: n }, () => spawn(game, name, player));
 const inHand = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.handOf(player).find((id) => game.state.objects[id].cardName === name)!;
-const named = (game: Game, name: string): ObjectId[] =>
-  game.battlefield.filter((id) => game.state.objects[id].cardName === name);
 const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
-const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
-const pool = (game: Game, player: PlayerId = A): string[] =>
-  game.state.players[player].manaPool.map((unit) => unit.type).sort();
 const obj = (object: ObjectId) => ({ kind: "object" as const, object });
 const settle = (game: Game): void => {
   for (let guard = 0; guard < 200; guard += 1) {

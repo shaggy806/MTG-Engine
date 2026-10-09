@@ -57,7 +57,6 @@ const countOf = (game: Game, name: string, player: PlayerId): number =>
     .filter((id) => game.state.objects[id].controller === player)
     .reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
 const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
-const counters = (game: Game, id: ObjectId, kind = "+1/+1"): number => game.state.objects[id].counters?.[kind] ?? 0;
 const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
 const pt = (game: Game, id: ObjectId): [number | undefined, number | undefined] => {
   const c = computeCharacteristics(game.state, registry, id);

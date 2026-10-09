@@ -122,9 +122,7 @@ describe("Arachnogenesis", () => {
     );
     const count = spiders.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
     expect(count).toBe(2);
-    const offer = game.legalActions(A).find((o) => o.kind === "declare-blockers");
-    const blocker = offer?.kind === "declare-blockers" ? offer.blockers?.[0] : undefined;
-    const spider = typeof blocker === "string" ? blocker : spiders[0];
+    const spider = spiders[0];
     game.dispatch({ type: "declare-blockers", player: A, blocks: [{ blocker: spider, attacker: bears }] });
     game.advanceUntil((s) => s.turn.step === "postcombat-main" || s.turn.step === "end");
     expect(game.state.players[A].life).toBe(20);

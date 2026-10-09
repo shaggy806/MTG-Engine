@@ -52,7 +52,7 @@ const eligibleAttackers = (game: Game): readonly ObjectId[] => {
 
 const attackAlone = (game: Game, attacker: ObjectId): void => {
   game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker, defender: B }] });
-  game.advanceUntil((s) => s.turn.step === "end-of-combat" || s.result.over);
+  game.advanceUntil((s) => s.turn.step === "end-combat" || s.result.over);
 };
 
 describe("Assault Formation", () => {

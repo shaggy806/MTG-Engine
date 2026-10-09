@@ -67,7 +67,7 @@ const picks = (game: Game, source: ObjectId, abilityIndex?: number): (readonly M
   offers(game, source, abilityIndex).map((a) => a.manaColors);
 
 const tap = (game: Game, source: ObjectId, abilityIndex: number, manaColors?: readonly ManaType[]): void =>
-  game.dispatch({
+  void game.dispatch({
     type: "activate-ability",
     player: A,
     source,

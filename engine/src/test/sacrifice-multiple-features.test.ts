@@ -64,7 +64,7 @@ const offers = (game: Game, source: ObjectId, index = 0): AbilityOffer[] =>
 const sacrificeOffer = (game: Game): Extract<LegalAction, { kind: "sacrifice" }> | undefined =>
   game.legalActions(A).find((a): a is Extract<LegalAction, { kind: "sacrifice" }> => a.kind === "sacrifice");
 const activate = (game: Game, source: ObjectId, index: number, extra: Record<string, unknown> = {}): void =>
-  game.dispatch({ type: "activate-ability", player: A, source, abilityIndex: index, ...extra });
+  void game.dispatch({ type: "activate-ability", player: A, source, abilityIndex: index, ...extra });
 
 describe("Sai, Master Thopterist", () => {
   it("makes a Thopter for an artifact spell, and draws for two artifacts", () => {

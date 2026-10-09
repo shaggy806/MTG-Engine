@@ -377,6 +377,9 @@ describe("commander damage", () => {
     game.state.objects[id] = {
       id,
       cardName: "Test Big Commander",
+      xValue: null,
+      controlEndsAtCleanup: false,
+      copyOf: null,
       owner: A,
       controller: A,
       zone: "battlefield",

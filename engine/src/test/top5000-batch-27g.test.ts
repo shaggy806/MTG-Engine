@@ -65,8 +65,6 @@ const pt = (game: Game, id: ObjectId): [number, number] => {
   const c = game.characteristics(id);
   return [c.power, c.toughness];
 };
-const canCast = (game: Game, card: ObjectId): boolean =>
-  game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === card);
 
 describe("top-5000 batch 27g — Goblin Rabblemaster", () => {
   it("makes other Goblins attack, makes a hasty Goblin, and gets +1/+0 per other attacking Goblin", () => {

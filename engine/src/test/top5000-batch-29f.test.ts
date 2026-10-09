@@ -44,7 +44,6 @@ const quiet = (s: GameState): boolean =>
 const spawn = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.debugSpawn(name, player, "battlefield", { summoningSick: false });
 const obj = (object: ObjectId): TargetRef => ({ kind: "object", object });
-const counters = (game: Game, id: ObjectId, kind = "+1/+1"): number => game.state.objects[id].counters?.[kind] ?? 0;
 const stepsSince = (game: Game, from: number): Step[] =>
   game.state.eventLog.slice(from).flatMap((e) => (e.type === "step-began" ? [e.step] : []));
 

@@ -106,7 +106,9 @@ describe("Agent of Treachery", () => {
     const taken = game.debugSpawn("Grizzly Bears", B, "battlefield");
     game.debugSpawn("Island", B, "battlefield");
     game.debugSpawn("Island", B, "battlefield");
-    c[A].chooseTargetsFn = (_view, _source, _specs, options) => [options[0].includes(taken) ? taken : options[0][0]];
+    c[A].chooseTargetsFn = (_view, _source, _specs, options) => [
+      options[0].find((t) => t.kind === "object" && t.object === taken) ?? options[0][0],
+    ];
     game.debugSpawn("Agent of Treachery", A, "battlefield", { announceEntry: true });
     quiet(game);
     expect(game.state.objects[taken].controller).toBe(A);

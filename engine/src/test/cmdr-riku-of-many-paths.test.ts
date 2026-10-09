@@ -51,7 +51,7 @@ const birds = (game: Game): number =>
 /** Applied Biomancy with both of its modes: +1/+1 on Riku, and Bob's Bears
  * back to hand. */
 const castBothModes = (game: Game, riku: ObjectId, bears: ObjectId): void =>
-  game.dispatch({
+  void game.dispatch({
     type: "cast-spell",
     player: A,
     card: game.debugSpawn("Applied Biomancy", A, "hand"),

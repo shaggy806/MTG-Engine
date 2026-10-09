@@ -65,7 +65,7 @@ const activate = (
   abilityIndex: number,
   opts: { manaColors?: readonly ManaType[]; target?: ObjectId } = {},
 ): void =>
-  game.dispatch({
+  void game.dispatch({
     type: "activate-ability",
     player: A,
     source,

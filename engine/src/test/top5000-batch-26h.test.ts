@@ -55,10 +55,6 @@ const inHand = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.handOf(player).find((id) => game.state.objects[id].cardName === name)!;
 const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
 /** Every token of that name on the battlefield, a token stack counted as each token in it. */
-const countNamed = (game: Game, name: string): number =>
-  game.battlefield
-    .filter((id) => game.state.objects[id].cardName === name)
-    .reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
 const stackLibrary = (game: Game, names: readonly string[], player: PlayerId = A): ObjectId[] =>
   [...names].reverse().map((name) => game.debugSpawn(name, player, "library")).reverse();
 const chars = (game: Game, id: ObjectId) => computeCharacteristics(game.state, registry, id);

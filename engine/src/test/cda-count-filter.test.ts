@@ -36,6 +36,7 @@ const SKY_COUNTER = defineCard({
         plusPower: 0,
         plusToughness: 0,
       },
+      text: "This creature's power and toughness are each equal to the number of creatures with flying you control.",
     },
   ],
 });

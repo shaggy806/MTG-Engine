@@ -71,11 +71,6 @@ const spawn = (game: Game, name: string, player: PlayerId = A): ObjectId => {
 };
 const lands = (game: Game, name: string, n: number, player: PlayerId = A): ObjectId[] =>
   Array.from({ length: n }, () => spawn(game, name, player));
-const inHand = (game: Game, name: string, player: PlayerId = A): ObjectId => {
-  const id = game.handOf(player).find((each) => game.state.objects[each].cardName === name);
-  if (id === undefined) throw new Error(`no ${name} in hand`);
-  return id;
-};
 const named = (game: Game, name: string, player?: PlayerId): ObjectId[] =>
   game.battlefield.filter(
     (id) =>

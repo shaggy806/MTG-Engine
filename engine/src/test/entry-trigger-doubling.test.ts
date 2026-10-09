@@ -9,7 +9,7 @@
 import { describe, expect, it } from "vitest";
 
 import { Game } from "../game.js";
-import { asObjectId, asPlayerId } from "../primitives.js";
+import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 

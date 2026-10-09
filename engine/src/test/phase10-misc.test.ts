@@ -66,7 +66,7 @@ const spawn = (game: Game, cardName: string, controller: PlayerId, tapped = fals
     copyOf: null,
     counters: {},
     modifiers: [],
-  } as GameState["objects"][string];
+  } as GameState["objects"][ObjectId];
   game.state.zones.shared.battlefield.push(id);
   return id;
 };
@@ -77,8 +77,6 @@ const settled = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null;
 const hand = (g: Game, name: string): ObjectId[] =>
   g.handOf(A).filter((i) => g.state.objects[i].cardName === name);
-const onBf = (g: Game, name: string): ObjectId | undefined =>
-  g.state.zones.shared.battlefield.find((i) => g.state.objects[i].cardName === name);
 
 describe("Phase 10 — can't be countered", () => {
   it("Counterspell resolves but fails to counter Carnage Tyrant", () => {

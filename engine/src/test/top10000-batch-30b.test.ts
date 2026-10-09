@@ -47,7 +47,6 @@ const inHand = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.handOf(player).find((id) => game.state.objects[id].cardName === name)!;
 const named = (game: Game, name: string): ObjectId[] =>
   game.battlefield.filter((id) => game.state.objects[id].cardName === name);
-const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
 const counters = (game: Game, id: ObjectId, kind = "+1/+1"): number => game.state.objects[id].counters?.[kind] ?? 0;
 const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
 const settle = (game: Game): void => {

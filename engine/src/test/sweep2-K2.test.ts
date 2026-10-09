@@ -66,7 +66,6 @@ const toStep = (game: Game, step: GameState["turn"]["step"]) =>
 const life = (game: Game, p: PlayerId) => game.state.players[p].life;
 const types = (game: Game, id: ObjectId) => effectiveTypes(game.state, registry, game.state.objects[id]);
 const pool = (game: Game, p: PlayerId = A) => game.state.players[p].manaPool.map((unit) => unit.type).sort();
-const hand = (game: Game, p: PlayerId = A) => game.handOf(p).map((id) => game.state.objects[id].cardName);
 
 describe("Krosan Grip", () => {
   it("destroys an artifact, and nothing can be cast in response", () => {

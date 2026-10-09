@@ -189,7 +189,8 @@ describe("scry / surveil", () => {
     });
     game.advanceUntil((s) => s.awaiting?.kind === "scry");
     expect(game.state.awaiting).toMatchObject({ kind: "scry", mode: "scry" });
-    expect((game.state.awaiting as { cards: string[] }).cards).toHaveLength(2);
+    const scry = game.state.awaiting;
+    expect(scry?.kind === "scry" ? scry.cards : []).toHaveLength(2);
 
     game.advanceUntil(settled);
     // drew the Elvish Visionary (the card that was 2nd, now on top after Wurm bottomed)

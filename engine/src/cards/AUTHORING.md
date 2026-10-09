@@ -4085,7 +4085,7 @@ is invisible to it.
   `engine/src/test/precon-standins.test.ts` is written on it. `npm run
   card:brief -w engine -- "Name" --test` prints a `describe` with an
   `it.todo` per ability and per ruling to start from. Vitest doesn't
-  type-check tests; `npm run verify` type-checks the test files you add.
+  type-check tests; `npm run typecheck -w engine` does (`npm run verify` runs it).
 - **Run the suite:** `npm run test -w engine` — or everything a change must
   pass, the fuzzer with the new cards forced in included: `npm run verify`.
 - **Eyeball it:** in a dev room (§14).

@@ -10,7 +10,6 @@ import { describe, expect, it } from "vitest";
 import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
-import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -43,9 +42,7 @@ const inHand = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.handOf(player).find((id) => game.state.objects[id].cardName === name)!;
 const named = (game: Game, name: string): ObjectId[] =>
   game.battlefield.filter((id) => game.state.objects[id].cardName === name);
-const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
 const obj = (object: ObjectId) => ({ kind: "object" as const, object });
-const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
 const keywordsOf = (game: Game, id: ObjectId): readonly string[] =>
   [...computeCharacteristics(game.state, registry, id).keywords];
 

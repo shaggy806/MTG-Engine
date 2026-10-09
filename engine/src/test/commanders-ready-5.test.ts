@@ -6,7 +6,6 @@
 
 import { describe, expect, it } from "vitest";
 
-import { effectiveSubtypes, effectiveTypes } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
@@ -62,14 +61,8 @@ const activate = (game: Game, source: ObjectId, abilityIndex: number, targets: (
   game.dispatch({ type: "activate-ability", player: A, source, abilityIndex, targets, ...extra });
   game.advanceUntil(quiet);
 };
-const cast = (game: Game, card: ObjectId, targets: (TargetRef | null)[] = [], extra = {}) => {
-  game.dispatch({ type: "cast-spell", player: A, card, targets, ...extra });
-  game.advanceUntil(quiet);
-};
 const toStep = (game: Game, step: GameState["turn"]["step"]) =>
   game.advanceUntil((s) => s.turn.step === step && quiet(s));
-const life = (game: Game, p: PlayerId) => game.state.players[p].life;
-const types = (game: Game, id: ObjectId) => effectiveTypes(game.state, registry, game.state.objects[id]);
 
 const boltOffered = (game: Game): boolean =>
   game.legalActions(A).some((o) => o.kind === "cast-spell" && o.card === inHand(game, A, "Lightning Bolt"));
@@ -129,7 +122,7 @@ describe("Azlask, the Swelling Scourge", () => {
     const { game, a } = setUp();
     const azlask = spawn(game, "Azlask, the Swelling Scourge");
     const myr = spawn(game, "Darksteel Myr");
-    game.state.objects[myr].modifiers.push({ power: 0, toughness: 0, keywords: [], loseAbilities: true });
+    game.state.objects[myr].modifiers.push({ power: 0, toughness: 0, keywords: [], loseAbilities: true, untilEndOfTurn: false });
     game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(myr)], {});
     game.advanceUntil(quiet);
     expect(game.state.players[A].counters.experience).toBe(1);

@@ -254,7 +254,7 @@ describe("Sacrifice X", () => {
     const bears = spawn(game, "Grizzly Bears", B);
     expect(offer(game, hireling)?.xCost).toEqual({ maxX: 2 });
     const activate = (xValue: number) => (): void =>
-      game.dispatch({
+      void game.dispatch({
         type: "activate-ability",
         player: A,
         source: hireling,

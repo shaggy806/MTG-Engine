@@ -6,7 +6,6 @@
 
 import { describe, expect, it } from "vitest";
 
-import { effectiveSubtypes, effectiveTypes } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
@@ -69,7 +68,6 @@ const cast = (game: Game, card: ObjectId, targets: (TargetRef | null)[] = [], ex
 const toStep = (game: Game, step: GameState["turn"]["step"]) =>
   game.advanceUntil((s) => s.turn.step === step && quiet(s));
 const life = (game: Game, p: PlayerId) => game.state.players[p].life;
-const types = (game: Game, id: ObjectId) => effectiveTypes(game.state, registry, game.state.objects[id]);
 
 describe("Betor, Ancestor's Voice", () => {
   it("counters for life gained, and a creature card back for life lost", () => {

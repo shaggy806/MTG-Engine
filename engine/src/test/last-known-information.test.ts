@@ -532,6 +532,7 @@ describe("a resolving ability reads a departed permanent as it last existed (608
       // Juri died a 2/2 with Maja's +1/+1, whichever of them the engine
       // moved first.
       expect(life(game, B)).toBe(20 - 2);
+      expect(game.state.objects[juri].lastKnown?.power).toBe(2);
       expect(game.state.objects[bears].lastKnown?.power).toBe(3);
       expect(game.state.objects[maja as ObjectId].lastKnown?.power).toBe(2);
     });
@@ -739,7 +740,7 @@ describe("the player who sacrifices a permanent is its controller, not its owner
   });
 
   it("sacrificed for mana (a Treasure)", () => {
-    const { game, victim, sacrificedByAlice } = stolenFromBob("Treasure Token");
+    const { game, sacrificedByAlice } = stolenFromBob("Treasure Token");
     const bolt = game.debugSpawn("Lightning Bolt", A, "hand");
 
     game.dispatch({

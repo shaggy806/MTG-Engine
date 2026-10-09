@@ -307,11 +307,11 @@ describe("Breena, the Demagogue", () => {
         continue;
       }
       if (s.awaiting?.kind === "blockers") {
-        game.dispatch({ type: "declare-blockers", player: s.awaiting.player, blockers: [] });
+        game.dispatch({ type: "declare-blockers", player: s.awaiting.player, blocks: [] });
         continue;
       }
       if (s.awaiting !== null) throw new Error(`unexpected ${s.awaiting.kind}`);
-      if (s.turn.step === "combat-damage" || s.turn.step === "end-of-combat") break;
+      if (s.turn.step === "combat-damage" || s.turn.step === "end-combat") break;
       game.dispatch({ type: "pass-priority", player: s.priority.holder! });
     }
     return { game, hill, bears, bHand, asked };

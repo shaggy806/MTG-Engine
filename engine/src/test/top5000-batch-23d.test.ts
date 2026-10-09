@@ -12,21 +12,17 @@
  */
 import { describe, expect, it } from "vitest";
 
-import type { Action, LegalAction } from "../actions.js";
 import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
-import { nameOf } from "../state.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
 const registry = createDefaultRegistry();
-
-type Cast = Extract<Action, { type: "cast-spell" }>;
 
 const yes = (c: ScriptedController): ScriptedController => {
   c.chooseModesFn = () => [0];
@@ -68,9 +64,6 @@ const tokenCount = (game: Game, name: string): number =>
   named(game, name).reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
 const zone = (game: Game, id: ObjectId): string | undefined => game.state.objects[id]?.zone;
 const counters = (game: Game, id: ObjectId, kind = "+1/+1"): number => game.state.objects[id].counters?.[kind] ?? 0;
-const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
-const stackLibrary = (game: Game, names: readonly string[], player: PlayerId = A): ObjectId[] =>
-  [...names].reverse().map((name) => game.debugSpawn(name, player, "library")).reverse();
 const settle = (game: Game): void => {
   for (let guard = 0; guard < 200; guard += 1) {
     game.advanceUntil((s) => quiet(s) || s.awaiting !== null);
@@ -90,12 +83,6 @@ const castable = (game: Game, card: ObjectId, via?: string): boolean =>
     .some(
       (x) => x.kind === "cast-spell" && x.card === card && (via === undefined || (x as { via?: string }).via === via),
     );
-const defendersFor = (game: Game, player: PlayerId, attacker: ObjectId): readonly (PlayerId | ObjectId)[] => {
-  const offer = game
-    .legalActions(player)
-    .find((o): o is Extract<LegalAction, { kind: "declare-attackers" }> => o.kind === "declare-attackers");
-  return offer?.defendersFor[attacker] ?? [];
-};
 
 describe("top-5000 batch 23d — Mortality Spear", () => {
   it("costs {2} less only once you've gained life this turn", () => {

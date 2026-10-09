@@ -18,7 +18,7 @@ import { BUILTIN_CARDS } from "../cards/generated.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
-import type { GameRules } from "../game.js";
+import type { GameRules } from "../state.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";

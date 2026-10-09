@@ -79,8 +79,8 @@ except `cards/pool.test.ts`. Each major mechanic has its own test file; read it 
 example. `vitest.config.ts` turns off `isolate` (one card-barrel import per worker), which is
 safe only while **no engine test mocks, spies, stubs a global or fakes timers**. **A card's
 test starts from `src/test/harness.ts`** (`table`, `spawn`/`enter`, `cast` that throws the
-engine's refusal, `pick*` answers, reads); vitest doesn't type-check tests, so `npm run verify`
-type-checks the ones you add. **While
+engine's refusal, `pick*` answers, reads); vitest doesn't type-check tests, so `npm run typecheck -w engine`
+does (`typecheck:tests` alone; `npm run verify` and CI run it). **While
 authoring, run just the files you touched** (`npx vitest run cmdr-sokka pool.test` from
 `engine/`, ~15s), and the whole suite once per batch before committing.
 

@@ -49,7 +49,7 @@ const canCast = (game: Game, card: ObjectId): boolean =>
   game.legalActions(A).some((a) => a.kind === "cast-spell" && a.card === card);
 
 const cast = (game: Game, card: ObjectId): void =>
-  game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+  void game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
 
 describe("printed stat blocks", () => {
   // Oracle: Kydele is a 2/3 Human Wizard; Vivi is a 0/3 Wizard (no Human).

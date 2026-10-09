@@ -81,7 +81,7 @@ const typesOffered = (game: Game, card: ObjectId) =>
     .map((o) => o.graveyardGrant?.asType)
     .sort();
 
-const castAs = (game: Game, card: ObjectId, offer: Offer): Action =>
+const castAs = (card: ObjectId, offer: Offer): Action =>
   offer.kind === "cast-spell"
     ? {
         type: "cast-spell",
@@ -117,7 +117,7 @@ describe("Muldrotha, the Gravetide", () => {
     expect(typesOffered(game, ring)).toEqual(["artifact"]);
 
     const asArtifact = offersFor(game, myr).find((o) => o.graveyardGrant?.asType === "artifact")!;
-    game.dispatch(castAs(game, myr, asArtifact));
+    game.dispatch(castAs(myr, asArtifact));
     settle(game);
     expect(game.state.objects[myr].zone).toBe("battlefield");
 
@@ -125,7 +125,7 @@ describe("Muldrotha, the Gravetide", () => {
     // Myr only as a creature.
     expect(offersFor(game, ring)).toEqual([]);
     expect(typesOffered(game, myr2)).toEqual(["creature"]);
-    game.dispatch(castAs(game, myr2, offersFor(game, myr2)[0]));
+    game.dispatch(castAs(myr2, offersFor(game, myr2)[0]));
     settle(game);
     expect(game.state.objects[myr2].zone).toBe("battlefield");
     expect(offersFor(game, myr2)).toEqual([]);
@@ -172,7 +172,7 @@ describe("Muldrotha, the Gravetide", () => {
     expect(
       game.legalActions(A).filter((x) => x.kind === "play-land" && x.card === citadel).length,
     ).toBe(1);
-    game.dispatch(castAs(game, citadel, offers[0]));
+    game.dispatch(castAs(citadel, offers[0]));
     expect(game.state.objects[citadel].zone).toBe("battlefield");
     expect(game.state.players[A].landsPlayedThisTurn).toBe(1);
     expect(offersFor(game, citadel2)).toEqual([]);
@@ -217,7 +217,7 @@ describe("Muldrotha, the Gravetide", () => {
       ["cast-spell", 0, "creature"],
       ["play-land", 1, "land"],
     ]);
-    game.dispatch(castAs(game, mammoth, offers[1]));
+    game.dispatch(castAs(mammoth, offers[1]));
     expect(game.state.objects[mammoth].zone).toBe("battlefield");
     expect(game.state.objects[mammoth].face).toBe(1);
   });
@@ -244,7 +244,7 @@ describe("Muldrotha, the Gravetide", () => {
     const muldrotha = game.debugSpawn("Muldrotha, the Gravetide", A, "battlefield");
     const ring = game.debugSpawn("Sol Ring", A, "graveyard");
     const ring2 = game.debugSpawn("Sol Ring", A, "graveyard");
-    game.dispatch(castAs(game, ring, offersFor(game, ring)[0]));
+    game.dispatch(castAs(ring, offersFor(game, ring)[0]));
     settle(game);
     expect(offersFor(game, ring2)).toEqual([]);
 
@@ -261,7 +261,7 @@ describe("Muldrotha, the Gravetide", () => {
     game.debugSpawn("Muldrotha, the Gravetide", A, "battlefield");
     const ring = game.debugSpawn("Sol Ring", A, "graveyard");
     const ring2 = game.debugSpawn("Sol Ring", A, "graveyard");
-    game.dispatch(castAs(game, ring, offersFor(game, ring)[0]));
+    game.dispatch(castAs(ring, offersFor(game, ring)[0]));
     settle(game);
     expect(offersFor(game, ring2)).toEqual([]);
     toMain(game, 3);
@@ -287,7 +287,7 @@ describe("a choice of grantor", () => {
 
     // Spend Gisa's on the Zombie, and Karador's is still there for the Bears.
     const viaGisa = offersFor(game, zombie).find((o) => o.graveyardGrant?.source === gisa)!;
-    game.dispatch(castAs(game, zombie, viaGisa));
+    game.dispatch(castAs(zombie, viaGisa));
     settle(game);
     expect(game.state.objects[zombie].zone).toBe("battlefield");
     expect(offersFor(game, bears).map((o) => o.graveyardGrant?.source)).toEqual([karador]);
@@ -315,7 +315,7 @@ describe("Silas Renn, Seeker Adept", () => {
 
     const offers = offersFor(game, ring);
     expect(offers.map((o) => o.graveyardGrant)).toEqual([{ source: ring }]);
-    game.dispatch(castAs(game, ring, offers[0]));
+    game.dispatch(castAs(ring, offers[0]));
     settle(game);
     expect(game.state.objects[ring].zone).toBe("battlefield");
   });
@@ -484,7 +484,7 @@ describe("the static's other shapes", () => {
     game.debugSpawn("Test Life Grantor", A, "battlefield");
     const ring = game.debugSpawn("Sol Ring", A, "graveyard");
     const ring2 = game.debugSpawn("Sol Ring", A, "graveyard");
-    game.dispatch(castAs(game, ring, offersFor(game, ring)[0]));
+    game.dispatch(castAs(ring, offersFor(game, ring)[0]));
     settle(game);
     expect(game.state.objects[ring].zone).toBe("battlefield");
     expect(game.state.players[A].life).toBe(17);

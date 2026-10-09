@@ -47,7 +47,7 @@ const vehicle = (game: Game, player: PlayerId = A): ObjectId => {
 /** Attack Bob with `attacker` and play on until combat is over. */
 const hitBob = (game: Game, c: Record<PlayerId, ScriptedController>, attacker: ObjectId) => {
   c[A].declareAttackersFn = () => [{ attacker, defender: B }];
-  game.advanceUntil((s) => s.turn.step === "end-of-combat" || s.turn.step === "postcombat-main");
+  game.advanceUntil((s) => s.turn.step === "postcombat-main");
   quiet(game);
   c[A].declareAttackersFn = () => [];
 };

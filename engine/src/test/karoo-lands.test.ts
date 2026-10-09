@@ -61,8 +61,7 @@ describe("Karoo lands", () => {
     expect(game.state.objects[karoo].tapped).toBe(true);
 
     game.state.objects[karoo].tapped = false;
-    const options = game
-      .manaSources(A)
+    const options = game["manaSources"](A)
       .filter((source) => source.id === karoo)
       .flatMap((source) => source.options);
     // One activation yields two mana, not one of a choice of two.

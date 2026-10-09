@@ -241,7 +241,7 @@ describe("TDC batch 2 — Diviner of Mist", () => {
     expect(zone(game, dragon)).toBe("graveyard");
     // Beanstalk Giant is on offer as its adventure, Fertile Footsteps (a
     // sorcery, 3), and never as the creature (7).
-    expect(offer!.cards.sort()).toEqual([giant, spike, divination].sort());
+    expect([...offer!.cards].sort()).toEqual([giant, spike, divination].sort());
     const giantWays = offer!.casts.filter((c) => c.card === giant);
     expect(giantWays.length).toBeGreaterThan(0);
     expect(giantWays.every((c) => c.face === 1)).toBe(true);

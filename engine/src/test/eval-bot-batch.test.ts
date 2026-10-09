@@ -114,6 +114,7 @@ describe("a batch of activations", () => {
     do {
       steps += 1;
       const player = game.state.priority.holder;
+      if (player === null) break;
       const controller = player === A ? bot : watcher;
       const action = controller.act({
         state: game.state,

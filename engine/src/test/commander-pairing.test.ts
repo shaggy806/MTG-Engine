@@ -49,7 +49,7 @@ const COMPANION = legend("Test Companion", { pairing: { kind: "doctors-companion
 const DOCTOR = legend("Test Doctor", { subtypes: ["Time Lord", "Doctor"] });
 const ROGUE_DOCTOR = legend("Test Rogue Doctor", { subtypes: ["Time Lord", "Doctor", "Rogue"] });
 const CHOOSER = legend("Test Chooser", { pairing: { kind: "choose-a-background" } });
-const BACKGROUND = defineCard({
+const BACKGROUND_DRAFT: Parameters<typeof defineCard>[0] = {
   name: "Test Background",
   manaCost: "{1}{W}",
   colors: ["W"],
@@ -57,10 +57,11 @@ const BACKGROUND = defineCard({
   types: ["enchantment"],
   subtypes: ["Background"],
   text: "Commander creatures you own get +1/+1.",
-});
-const BACKGROUND_2 = defineCard({ ...BACKGROUND, name: "Test Background Two" });
+};
+const BACKGROUND = defineCard(BACKGROUND_DRAFT);
+const BACKGROUND_2 = defineCard({ ...BACKGROUND_DRAFT, name: "Test Background Two" });
 // A legendary enchantment that isn't a Background.
-const SHRINE = defineCard({ ...BACKGROUND, name: "Test Legendary Shrine", subtypes: ["Shrine"] });
+const SHRINE = defineCard({ ...BACKGROUND_DRAFT, name: "Test Legendary Shrine", subtypes: ["Shrine"] });
 
 const reg = createDefaultRegistry();
 for (const def of [

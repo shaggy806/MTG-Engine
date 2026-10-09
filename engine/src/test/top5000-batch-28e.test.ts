@@ -65,8 +65,6 @@ const howMany = (game: Game, name: string): number =>
 const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
 const counters = (game: Game, id: ObjectId, kind = "+1/+1"): number => game.state.objects[id].counters?.[kind] ?? 0;
 const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
-const pool = (game: Game, player: PlayerId = A): string[] =>
-  game.state.players[player].manaPool.map((unit) => unit.type).sort();
 const settle = (game: Game): void => {
   for (let guard = 0; guard < 200; guard += 1) {
     game.advanceUntil((s) => quiet(s) || s.awaiting !== null);

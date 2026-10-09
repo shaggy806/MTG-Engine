@@ -60,7 +60,7 @@ describe("becomes-tapped triggers", () => {
     // Vigilance is what decides it: the rule is about the *tap*, not the
     // attack, so a creature that attacks without tapping makes no Soldier.
     game.state.objects[emmara].modifiers = [
-      { power: 0, toughness: 0, keywords: ["vigilance"] },
+      { power: 0, toughness: 0, keywords: ["vigilance"], untilEndOfTurn: false },
     ];
 
     attackWith(game, emmara);

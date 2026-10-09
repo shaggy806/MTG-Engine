@@ -185,7 +185,7 @@ const attackAndSettle = (game: Game, attackers: readonly ObjectId[], answer: (a:
         continue;
       }
       if (a.kind === "blockers") {
-        game.dispatch({ type: "declare-blockers", player: a.player, blockers: [] });
+        game.dispatch({ type: "declare-blockers", player: a.player, blocks: [] });
         continue;
       }
       throw new Error(`unexpected ${a.kind} decision`);

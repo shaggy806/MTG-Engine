@@ -12,7 +12,6 @@ import { describe, expect, it } from "vitest";
 import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
-import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -57,7 +56,6 @@ const inHand = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.handOf(player).find((id) => game.state.objects[id].cardName === name)!;
 const named = (game: Game, name: string): ObjectId[] =>
   game.battlefield.filter((id) => game.state.objects[id].cardName === name);
-const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
 const settle = (game: Game): void => {
   for (let guard = 0; guard < 200; guard += 1) {
     game.advanceUntil((s) => quiet(s) || s.awaiting !== null);
@@ -71,7 +69,6 @@ const settle = (game: Game): void => {
   }
   throw new Error("settle: still unresolved");
 };
-const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
 const pt = (game: Game, id: ObjectId): [number, number] => {
   const c = computeCharacteristics(game.state, registry, id);
   return [c.power ?? 0, c.toughness ?? 0];

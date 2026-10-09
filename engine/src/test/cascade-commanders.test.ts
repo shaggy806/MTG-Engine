@@ -103,7 +103,7 @@ describe("Yidris, Maelstrom Wielder", () => {
       if (a?.kind === "attackers") {
         game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: yidris, defender: B }] });
       } else if (a?.kind === "blockers") {
-        game.dispatch({ type: "declare-blockers", player: a.player, blockers: [] });
+        game.dispatch({ type: "declare-blockers", player: a.player, blocks: [] });
       } else if (a !== null) {
         throw new Error(`unexpected ${a.kind}`);
       } else {

@@ -127,7 +127,7 @@ describe("demonstrate", () => {
     const card = cast(game, "Transforming Flourish", [obj(bears)]);
     // Gone from the stack before the trigger resolves.
     expect(game.state.awaiting?.kind).toBe("choose-modes");
-    game.moveObject(card, "graveyard");
+    game["moveObject"](card, "graveyard");
     demonstrate(game, true);
     game.advanceUntil((s) => s.awaiting !== null || s.zones.shared.stack.length === 0 || s.priority.holder !== null);
     expect(onStack(game).filter((e) => e.copy)).toHaveLength(2);

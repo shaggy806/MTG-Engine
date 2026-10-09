@@ -16,7 +16,6 @@ import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
-import { activePlayerOf } from "../state.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -57,7 +56,6 @@ const named = (game: Game, name: string, player?: PlayerId): ObjectId[] =>
 /** Tokens counted one per token, a stack as every token in it. */
 const count = (game: Game, name: string, player?: PlayerId): number =>
   named(game, name, player).reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
-const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
 const counters = (game: Game, id: ObjectId, kind = "+1/+1"): number => game.state.objects[id].counters?.[kind] ?? 0;
 const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
 const settle = (game: Game): void => {
@@ -72,17 +70,6 @@ const settle = (game: Game): void => {
     }
   }
   throw new Error("settle: still unresolved");
-};
-const attackWith = (game: Game, player: PlayerId, attackers: readonly ObjectId[], defender: PlayerId): void => {
-  game.advanceUntil(
-    (s) => activePlayerOf(s) === player && s.turn.step === "declare-attackers" && s.awaiting?.kind === "attackers",
-  );
-  game.dispatch({
-    type: "declare-attackers",
-    player,
-    attackers: attackers.map((attacker) => ({ attacker, defender })),
-  });
-  settle(game);
 };
 
 describe("top-10000 batch 30h — Super Shredder", () => {

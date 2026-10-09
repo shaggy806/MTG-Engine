@@ -18,7 +18,6 @@ import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
-import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");

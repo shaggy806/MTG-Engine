@@ -5,7 +5,6 @@
 
 import { describe, expect, it } from "vitest";
 
-import { effectiveSubtypes, effectiveTypes } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
@@ -51,26 +50,14 @@ const named = (game: Game, name: string, player?: PlayerId): ObjectId[] =>
     (id) =>
       game.state.objects[id].cardName === name && (player === undefined || game.state.objects[id].controller === player),
   );
-const inHand = (game: Game, player: PlayerId, name: string): ObjectId => {
-  const id = game.handOf(player).find((each) => game.state.objects[each].cardName === name);
-  if (id === undefined) throw new Error(`no ${name} in hand`);
-  return id;
-};
 const obj = (id: ObjectId): TargetRef => ({ kind: "object", object: id });
 const activate = (game: Game, source: ObjectId, abilityIndex: number, targets: (TargetRef | null)[] = [], extra = {}) => {
   game.dispatch({ type: "activate-ability", player: A, source, abilityIndex, targets, ...extra });
   game.advanceUntil(quiet);
 };
-const cast = (game: Game, card: ObjectId, targets: (TargetRef | null)[] = [], extra = {}) => {
-  game.dispatch({ type: "cast-spell", player: A, card, targets, ...extra });
-  game.advanceUntil(quiet);
-};
 const toStep = (game: Game, step: GameState["turn"]["step"]) =>
   game.advanceUntil((s) => s.turn.step === step && quiet(s));
 const life = (game: Game, p: PlayerId) => game.state.players[p].life;
-const types = (game: Game, id: ObjectId) => effectiveTypes(game.state, registry, game.state.objects[id]);
-
-const hand = (game: Game, name: string, player: PlayerId = A): ObjectId => game.debugSpawn(name, player, "hand");
 
 describe("Lathril, Blade of the Elves", () => {
   it("makes that many Elf Warriors on combat damage", () => {

@@ -40,7 +40,7 @@ describe("permanent-type targets read current types", () => {
     spawn(game, "Grizzly Bears", B);
     for (let i = 0; i < 4; i += 1) spawn(game, "Swamp", A);
     const murder = game.debugSpawn("Murder", A, "hand");
-    const factoryRef = { kind: "object", object: factory };
+    const factoryRef = { kind: "object", object: factory } as const;
 
     expect(murderTargets(game, murder)).not.toContainEqual(factoryRef);
 

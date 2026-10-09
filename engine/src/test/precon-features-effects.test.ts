@@ -165,7 +165,7 @@ describe("Unbreathing Horde", () => {
     game.debugApplyEffect(B, { kind: "damage", amount: 5, target: 0 }, [obj(horde)]);
     settle(game);
     expect(onBattlefield(game, horde)).toBe(true);
-    expect(game.state.objects[horde].damage ?? 0).toBe(0);
+    expect(game.state.objects[horde].damageMarked).toBe(0);
     expect(game.state.objects[horde].counters["+1/+1"]).toBe(2);
     expect(game.state.eventLog.filter((e) => e.type === "counter-removed" && e.object === horde)).toHaveLength(1);
   });
@@ -417,7 +417,7 @@ describe("Echoing Assault", () => {
       // One legal target each: the creature attacking that trigger's player.
       expect(legal).toHaveLength(1);
       if (legal[0]?.kind !== "choose-targets") return;
-      game.dispatch({ type: "choose-targets", player: A, targets: legal[0].targets });
+      game.dispatch({ type: "choose-targets", player: A, targets: legal[0].options.map((slot) => slot[0]) });
     });
     const copies = game.battlefield.filter((id) => game.state.objects[id].isToken);
     expect(copies.map((id) => [game.state.objects[id].cardName, game.state.objects[id].attacking]).sort()).toEqual([

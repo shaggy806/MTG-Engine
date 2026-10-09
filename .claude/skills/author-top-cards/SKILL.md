@@ -119,8 +119,8 @@ Target 30-50 cards. For each:
   this batch).
 - While authoring, run only the touched tests (`npx vitest run
   top5000-batch-<N> pool.test` from `engine/`).
-- Then **`npm run verify`** (in the background): the build, every suite, the
-  new test files type-checked, card:verify, both fuzzer table sizes, the
+- Then **`npm run verify`** (in the background): the build, typecheck (tests
+  included), every suite, card:verify, both fuzzer table sizes, the
   fuzzer with every card the batch adds forced in, and the bot gate.
 
 ## 5. Record

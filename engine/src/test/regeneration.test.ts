@@ -134,7 +134,7 @@ describe("Regeneration — Mortivore", () => {
   it("removes it from combat: a regenerated blocker takes no damage, and the attacker stays blocked", () => {
     const { game, mortivore, a, b } = setUp(["Murder"]);
     game.state.objects[mortivore].controller = B;
-    game.state.objects[mortivore].owner = B;
+    Object.assign(game.state.objects[mortivore], { owner: B });
     const wurm = game.debugSpawn("Craw Wurm", A, "battlefield", { summoningSick: false });
     game.debugApplyEffect(B, { kind: "regenerate", target: 0 }, [{ kind: "object", object: mortivore }]);
     a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];

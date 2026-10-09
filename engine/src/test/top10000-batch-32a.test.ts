@@ -12,7 +12,6 @@ import { describe, expect, it } from "vitest";
 import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
-import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -74,7 +73,6 @@ const settle = (game: Game): void => {
   }
   throw new Error("settle: still unresolved");
 };
-const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
 const castOffer = (game: Game, card: ObjectId) =>
   game.legalActions(A).find((x) => x.kind === "cast-spell" && x.card === card);
 const objectOptions = (game: Game, card: ObjectId): ObjectId[] => {

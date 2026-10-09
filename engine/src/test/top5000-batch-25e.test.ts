@@ -71,7 +71,6 @@ const settle = (game: Game): void => {
   throw new Error("settle: still unresolved");
 };
 const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
-const tokens = (game: Game): ObjectId[] => game.battlefield.filter((id) => game.state.objects[id].isToken === true);
 
 describe("top-5000 batch 25e — Prava of the Steel Legion", () => {
   it("gives creature tokens +1/+4 only during its controller's turn", () => {

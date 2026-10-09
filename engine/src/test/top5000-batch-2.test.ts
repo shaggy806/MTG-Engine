@@ -19,7 +19,7 @@ import { restrictionsOf } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
-import type { GameRules } from "../game.js";
+import type { GameRules } from "../state.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
@@ -70,7 +70,7 @@ const offered = (game: Game, source: ObjectId, index: number, player: PlayerId =
     .legalActions(player)
     .some((action) => action.kind === "activate-ability" && action.source === source && action.abilityIndex === index);
 const activate = (game: Game, source: ObjectId, index: number, player: PlayerId = A): void =>
-  game.dispatch({ type: "activate-ability", player, source, abilityIndex: index });
+  void game.dispatch({ type: "activate-ability", player, source, abilityIndex: index });
 const tokensNamed = (game: Game, name: string): ObjectId[] =>
   game.state.zones.shared.battlefield.filter((id) => game.state.objects[id].cardName === name);
 /** How many tokens those are — a compacted stack counts every token in it. */

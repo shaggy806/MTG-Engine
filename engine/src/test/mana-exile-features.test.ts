@@ -45,7 +45,7 @@ const ready = (game: Game, name: string, player: PlayerId = A) =>
 /** Attack Bob with `attackers` and play on until combat is over. */
 const hitBob = (game: Game, c: Record<PlayerId, ScriptedController>, attackers: readonly ObjectId[]) => {
   c[A].declareAttackersFn = () => attackers.map((attacker) => ({ attacker, defender: B }));
-  game.advanceUntil((s) => s.turn.step === "end-of-combat" || s.turn.step === "postcombat-main");
+  game.advanceUntil((s) => s.turn.step === "postcombat-main");
   quiet(game);
   c[A].declareAttackersFn = () => [];
 };

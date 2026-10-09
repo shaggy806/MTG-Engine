@@ -45,7 +45,7 @@ const treasureCount = (game: Game) =>
 /** Put `name` in A's hand owned by B — a card A came to hold without owning it. */
 function borrowed(game: Game, name: string): ObjectId {
   const id = game.debugSpawn(name, A, "hand");
-  game.state.objects[id].owner = B;
+  Object.assign(game.state.objects[id], { owner: B });
   return id;
 }
 

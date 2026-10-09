@@ -55,8 +55,6 @@ const pt = (game: Game, id: ObjectId): [number, number] => {
   const c = computeCharacteristics(game.state, registry, id);
   return [c.power ?? 0, c.toughness ?? 0];
 };
-const graveyardNames = (game: Game, player: PlayerId = A): string[] =>
-  game.state.zones.perPlayer[player].graveyard.map((id) => game.state.objects[id].cardName).sort();
 const settle = (game: Game): void => {
   for (let guard = 0; guard < 200; guard += 1) {
     game.advanceUntil((s) => quiet(s) || s.awaiting !== null);

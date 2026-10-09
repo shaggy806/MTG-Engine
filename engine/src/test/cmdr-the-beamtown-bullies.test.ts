@@ -49,7 +49,7 @@ const offerOf = (game: Game, bullies: ObjectId): Offer | undefined =>
 const alicesWindow = (game: Game, n: number) =>
   game.advanceUntil((s) => s.turn.number === n && s.turn.step === "precombat-main" && s.priority.holder === A);
 const activate = (game: Game, bullies: ObjectId, opponent: PlayerId, card: ObjectId): void =>
-  game.dispatch({
+  void game.dispatch({
     type: "activate-ability",
     player: A,
     source: bullies,

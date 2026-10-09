@@ -44,7 +44,7 @@ const setUp = (graveyard: string, lands: readonly string[], bot?: PlayerControll
 };
 
 const minusTwo = (game: Game, chandra: ObjectId, card: ObjectId): void =>
-  game.dispatch({
+  void game.dispatch({
     type: "activate-ability",
     player: A,
     source: chandra,
@@ -187,7 +187,7 @@ describe("cast-now — a free spell from hand (Baral's Expertise)", () => {
     for (let i = 0; i < 5; i += 1) game.debugSpawn("Island", A, "battlefield");
     const inHand = (name: string): ObjectId => game.handOf(A).find((id) => game.state.objects[id].cardName === name)!;
     const expertise = (): void =>
-      game.dispatch({ type: "cast-spell", player: A, card: inHand("Baral's Expertise"), targets: [null, null, null] });
+      void game.dispatch({ type: "cast-spell", player: A, card: inHand("Baral's Expertise"), targets: [null, null, null] });
     return { game, a, inHand, expertise };
   };
 

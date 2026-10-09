@@ -70,8 +70,7 @@ describe("Battlebond lands (opponent-count)", () => {
     game.state.objects[id]!.tapped = false;
     // One `ManaOption` per alternative the tap ability offers, each carrying
     // the concrete mana it adds in `fixed`.
-    const produced = game
-      .manaSources(A)
+    const produced = game["manaSources"](A)
       .filter((source) => source.id === id)
       .flatMap((source) => source.options.flatMap((option) => [...option.fixed]));
     expect(produced).toContain("U");

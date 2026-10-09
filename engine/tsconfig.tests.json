@@ -1,0 +1,10 @@
+{
+  // The engine's tests, type-checked: vitest runs them without checking
+  // types, so a wrong callback signature or a stale cast lets a test pass
+  // without testing. Everything the build compiles plus every test file;
+  // nothing is emitted. `npm run typecheck` runs it after the build check.
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["src"],
+  "exclude": ["dist", "node_modules"]
+}

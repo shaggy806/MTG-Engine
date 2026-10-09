@@ -11,7 +11,6 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import type { EffectSpec } from "../effects.js";

@@ -40,7 +40,7 @@ const setUp = (giveGiant: boolean) => {
   game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
   game.debugSpawn("Jon Irenicus, Shattered One", A, "battlefield", { summoningSick: false });
   const giant = game.debugSpawn("Hill Giant", A, "battlefield", { summoningSick: false });
-  a.chooseTargetsFn = () => [{ kind: "player", player: B }, giveGiant ? { kind: "object", object: giant } : undefined];
+  a.chooseTargetsFn = () => [{ kind: "player", player: B }, giveGiant ? { kind: "object", object: giant } : null];
   return { game, a, b, giant };
 };
 

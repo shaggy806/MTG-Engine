@@ -96,7 +96,7 @@ describe("Baldin, Century Herdmaster", () => {
     expect(game.characteristics(bears).toughness).toBe(2 + x);
     expect(game.characteristics(other).toughness).toBe(2 + x);
     expect(game.characteristics(bears).power).toBe(2);
-    game.advanceUntil((s) => s.turn.step === "end-of-combat" || s.result.over);
+    game.advanceUntil((s) => s.turn.step === "end-combat" || s.result.over);
     // Each dealt its toughness: Baldin's 0 power doesn't matter.
     expect(life(game, B)).toBe(20 - (7 + x) - (2 + x));
   });

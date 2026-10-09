@@ -133,7 +133,7 @@ describe("a oneOf mana ability with same", () => {
         resolve: null,
         text: "{T}: Add {G}{G}{G} or {W}{W}{W}.",
       },
-      (mana) => mana.oneOf ?? [],
+      (mana) => ("oneOf" in mana ? mana.oneOf : []),
     );
     expect(choices?.map((m) => m.join(""))).toEqual(["GGG", "WWW"]);
   });

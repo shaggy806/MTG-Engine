@@ -823,7 +823,9 @@ function durationBegins(object: GameObject, duration: EffectDuration): boolean {
 
 export class Game {
   readonly state: GameState;
-  private readonly registry: CardRegistry;
+  /** The card definitions this game reads — readable so tests and tools
+   * can compute characteristics against the same registry; never replaced. */
+  readonly registry: CardRegistry;
   private readonly controllers: Record<PlayerId, PlayerController>;
   private readonly rng: Rng;
   /** The commander whose 903.9b choice `applyCommanderChoice` is carrying out

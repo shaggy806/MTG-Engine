@@ -48,8 +48,6 @@ const spawn = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.debugSpawn(name, player, "battlefield", { summoningSick: false });
 const lands = (game: Game, name: string, n: number, player: PlayerId = A): ObjectId[] =>
   Array.from({ length: n }, () => spawn(game, name, player));
-const inHand = (game: Game, name: string, player: PlayerId = A): ObjectId =>
-  game.handOf(player).find((id) => game.state.objects[id].cardName === name)!;
 const named = (game: Game, name: string): ObjectId[] =>
   game.battlefield.filter((id) => game.state.objects[id].cardName === name);
 const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;

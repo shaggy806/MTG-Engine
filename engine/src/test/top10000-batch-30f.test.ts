@@ -12,7 +12,6 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -22,7 +21,6 @@ import type { Step } from "../turn.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
-const registry = createDefaultRegistry();
 
 const yes = (c: ScriptedController): ScriptedController => {
   c.chooseModesFn = () => [0];

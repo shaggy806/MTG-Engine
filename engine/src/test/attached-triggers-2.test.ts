@@ -58,10 +58,6 @@ const named = (game: Game, name: string, player: PlayerId = A): ObjectId[] =>
   );
 const tokenCount = (game: Game, name: string, player: PlayerId = A): number =>
   named(game, name, player).reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
-const lands = (game: Game, player: PlayerId = A): ObjectId[] =>
-  game.state.zones.shared.battlefield.filter(
-    (id) => game.state.objects[id].controller === player && game.characteristics(id).types.includes("land"),
-  );
 
 /** Equip `equipment` to `creature` for real, paid from fresh Wastes. */
 const equip = (game: Game, equipment: ObjectId, creature: ObjectId, cost: number, abilityIndex = 0): void => {

@@ -51,7 +51,7 @@ const choose = (game: Game, chosen: readonly ObjectId[], player: PlayerId = A): 
   game.dispatch({ type: "choose-from-zone", player, chosen: [...chosen] });
 };
 const activate = (game: Game, source: ObjectId, abilityIndex: number, extra: Record<string, unknown> = {}): void =>
-  game.dispatch({ type: "activate-ability", player: A, source, abilityIndex, ...extra });
+  void game.dispatch({ type: "activate-ability", player: A, source, abilityIndex, ...extra });
 const named = (game: Game, name: string, player: PlayerId = A): ObjectId[] =>
   game.state.zones.shared.battlefield.filter(
     (id) => game.state.objects[id].cardName === name && game.state.objects[id].controller === player,

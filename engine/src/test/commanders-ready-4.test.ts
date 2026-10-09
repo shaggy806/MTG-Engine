@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { effectiveSubtypes, effectiveTypes } from "../characteristics.js";
+import { effectiveSubtypes } from "../characteristics.js";
 import { whyCannotBlock } from "../combat/eligibility.js";
 import { createDefaultRegistry } from "../cards.js";
 import { ScriptedController } from "../controller.js";
@@ -69,7 +69,6 @@ const cast = (game: Game, card: ObjectId, targets: (TargetRef | null)[] = [], ex
 const toStep = (game: Game, step: GameState["turn"]["step"]) =>
   game.advanceUntil((s) => s.turn.step === step && quiet(s));
 const life = (game: Game, p: PlayerId) => game.state.players[p].life;
-const types = (game: Game, id: ObjectId) => effectiveTypes(game.state, registry, game.state.objects[id]);
 
 describe("Ikra Shidiqi, the Usurper", () => {
   it("life equal to a connecting creature's toughness", () => {

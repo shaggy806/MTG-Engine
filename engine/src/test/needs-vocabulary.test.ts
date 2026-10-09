@@ -8,6 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 
+// @ts-expect-error — a plain .mjs script, typed only at runtime.
 import { loadRecords, loadVocabulary } from "../../scripts/needs-vocabulary.mjs";
 
 describe("the need vocabulary", () => {

@@ -490,9 +490,9 @@ describe("target counting", () => {
       { kind: "optional", of: "player" },
     ] as const;
     const options = [[p(A), p(B)], [p(A), p(B)]];
-    expect(distinctTargetCount(fitTargetCount([p(A), p(B)], options, opt, { min: 0, max: 1 }))).toBe(1);
-    expect(distinctTargetCount(fitTargetCount([null, null], options, opt, { min: 2, max: 2 }))).toBe(2);
-    expect(distinctTargetCount(fitTargetCount([p(A), p(A)], options, ["player", "player"], { min: 2, max: 2 }))).toBe(2);
+    expect(distinctTargetCount(fitTargetCount([p(A), p(B)], options, opt, { min: 0, max: 1 }) ?? undefined)).toBe(1);
+    expect(distinctTargetCount(fitTargetCount([null, null], options, opt, { min: 2, max: 2 }) ?? undefined)).toBe(2);
+    expect(distinctTargetCount(fitTargetCount([p(A), p(A)], options, ["player", "player"], { min: 2, max: 2 }) ?? undefined)).toBe(2);
     expect(fitTargetCount([p(A)], [[p(A)]], ["player"], { min: 2, max: 2 })).toBeNull();
   });
 

@@ -58,8 +58,6 @@ const named = (game: Game, name: string): ObjectId[] =>
   game.battlefield.filter((id) => game.state.objects[id].cardName === name);
 const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
 const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
-const colorless = (game: Game, player: PlayerId = A): number =>
-  game.state.players[player].manaPool.filter((unit) => unit.type === "C").length;
 const pt = (game: Game, id: ObjectId): [number, number] => {
   const c = game.characteristics(id);
   return [c.power ?? 0, c.toughness ?? 0];

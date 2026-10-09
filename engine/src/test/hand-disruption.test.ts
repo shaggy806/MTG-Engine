@@ -31,7 +31,6 @@ const mkGame = (
   });
 
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
-const stackEmpty = (s: GameState): boolean => s.zones.shared.stack.length === 0;
 const settled = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null;
 

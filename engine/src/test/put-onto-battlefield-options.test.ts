@@ -187,7 +187,7 @@ describe("a card that can't enter the battlefield stays where it was", () => {
     let offered: readonly TargetRef[] = [];
     a.chooseTargetsFn = (_view, _source, _specs, options) => {
       offered = options[0] ?? [];
-      return [undefined];
+      return [null];
     };
     const game = setUp(a);
     const bolt = game.debugSpawn("Lightning Bolt", A, "graveyard");

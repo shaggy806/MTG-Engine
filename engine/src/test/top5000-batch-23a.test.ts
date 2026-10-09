@@ -75,7 +75,6 @@ const settle = (game: Game): void => {
   }
   throw new Error("settle: still unresolved");
 };
-const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
 const triggerEffect = (name: string, index: number): EffectSpec => registry.get(name)!.triggered[index].effect!;
 
 describe("top-5000 batch 23a — Keeper of Secrets", () => {

@@ -7,7 +7,6 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -16,7 +15,6 @@ import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
-const registry = createDefaultRegistry();
 
 const setUp = (): { game: Game } => {
   const game = Game.create({

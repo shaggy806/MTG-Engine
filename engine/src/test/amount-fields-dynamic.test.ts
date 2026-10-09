@@ -85,7 +85,7 @@ describe("amount fields read as the effect applies", () => {
       min: 0,
       max: LANDS,
       destination: "hand",
-      leftover: "bottom",
+      leftover: "bottom-random",
     });
     const choose = game.state.awaiting;
     expect(choose?.kind === "choose-from-zone" ? [choose.min, choose.max] : null).toEqual([0, 3]);

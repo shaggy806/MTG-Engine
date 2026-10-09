@@ -13,7 +13,6 @@ import type { LegalAction } from "../actions.js";
 import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
-import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -76,7 +75,6 @@ const activatable = (game: Game, source: ObjectId, player: PlayerId = A): boolea
   game.legalActions(player).some((o: LegalAction) => o.kind === "activate-ability" && o.source === source);
 const obj = (object: ObjectId) => ({ kind: "object", object }) as const;
 const player = (p: PlayerId) => ({ kind: "player", player: p }) as const;
-const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
 
 describe("top-5000 batch 20f — Linvala, Keeper of Silence", () => {
   it("stops the abilities of her controller's opponents' creatures, mana ones included, and nothing else", () => {

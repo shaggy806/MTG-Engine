@@ -9,7 +9,6 @@ import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
-import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -60,7 +59,6 @@ const settle = (game: Game): void => {
   }
   throw new Error("settle: still unresolved");
 };
-const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
 const has = (game: Game, id: ObjectId, keyword: string): boolean =>
   (game.characteristics(id).keywords as ReadonlySet<string>).has(keyword);
 const attackWith = (game: Game, attackers: readonly ObjectId[]): void => {

@@ -48,6 +48,9 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
   game.state.objects[id] = {
     id,
     cardName,
+    xValue: null,
+    controlEndsAtCleanup: false,
+    copyOf: null,
     owner: controller,
     controller,
     zone: "battlefield",

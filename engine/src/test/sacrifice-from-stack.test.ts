@@ -149,7 +149,7 @@ describe("sacrificing several tokens out of one compacted stack", () => {
       seed: 1,
       shuffle: false,
       decks: [A, B].map((player) => ({ player, cards: Array(60).fill("Swamp") })),
-      controllers: [A, B].map((player) => new AutomaticController(player)),
+      controllers: Object.fromEntries([A, B].map((player) => [player, new AutomaticController(player)])),
     });
     game.advanceUntil((s) => s.turn.step === "precombat-main" && s.priority.holder === A);
     stackOf(game, "Goblin Token", A, 9);

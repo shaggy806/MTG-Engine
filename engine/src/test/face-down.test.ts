@@ -94,7 +94,7 @@ describe("face-down permanents (rule 708)", () => {
       expect(view).toMatchObject({ cardName: FACE_DOWN_CARDS.manifest, art: null, manaCost: null, text: "", power: 2 });
     }
     // The log never names it either.
-    expect(publicNameAt(game.state.publicStints, visionary, game.state.eventSeq)).toBe(FACE_DOWN_CARDS.manifest);
+    expect(publicNameAt(game.state.publicStints ?? {}, visionary, game.state.eventSeq)).toBe(FACE_DOWN_CARDS.manifest);
   });
 
   it("is turned face up for its mana cost, without entering again", () => {
@@ -119,8 +119,8 @@ describe("face-down permanents (rule 708)", () => {
     expect(game.handOf(B).length).toBe(hand);
     expect(game.viewFor(A).objects[visionary]?.cardName).toBe("Elvish Visionary");
     // Before, the log knew it as a face-down 2/2; from now on by its name.
-    expect(publicNameAt(game.state.publicStints, visionary, before - 1)).toBe(FACE_DOWN_CARDS.manifest);
-    expect(publicNameAt(game.state.publicStints, visionary, game.state.eventSeq)).toBe("Elvish Visionary");
+    expect(publicNameAt(game.state.publicStints ?? {}, visionary, before - 1)).toBe(FACE_DOWN_CARDS.manifest);
+    expect(publicNameAt(game.state.publicStints ?? {}, visionary, game.state.eventSeq)).toBe("Elvish Visionary");
   });
 
   it("can't turn a noncreature card face up", () => {
@@ -147,7 +147,7 @@ describe("face-down permanents (rule 708)", () => {
     // It died as a face-down 2/2 (its last-known information) and is known by
     // name in the graveyard.
     expect(game.state.objects[visionary].lastKnown?.name).toBe(FACE_DOWN_CARDS.manifest);
-    expect(publicNameAt(game.state.publicStints, visionary, game.state.eventSeq)).toBe("Elvish Visionary");
+    expect(publicNameAt(game.state.publicStints ?? {}, visionary, game.state.eventSeq)).toBe("Elvish Visionary");
   });
 
   it("cloaked, it has ward {2}", () => {

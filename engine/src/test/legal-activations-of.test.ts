@@ -23,7 +23,10 @@ describe("legalActivationsOf", () => {
   it("is legalActions narrowed to one source, at every window of a game", () => {
     let game: Game | undefined;
     let checked = 0;
-    const checking = (inner: PlayerController): PlayerController => ({
+    // The engine only asks a controller to `act`; every other method is the
+    // wrapped one's.
+    const checking = (inner: PlayerController): PlayerController =>
+      Object.assign(Object.create(inner) as PlayerController, {
       act(view: ControllerView) {
         const g = game;
         if (g !== undefined && view.state.awaiting === null && view.state.priority.holder === view.player) {

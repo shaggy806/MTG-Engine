@@ -44,7 +44,7 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
     kind: "card", abilityKind: null, sourceObjectId: null, abilityIndex: null,
     timestamp: 0, isToken: false, attachedTo: null, isCommander: false, xValue: null,
     controlEndsAtCleanup: false, copyOf: null, counters: {}, modifiers: [],
-  } as GameState["objects"][string];
+  } as GameState["objects"][ObjectId];
   game.state.zones.shared.battlefield.push(id);
   return id;
 };

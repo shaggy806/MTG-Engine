@@ -52,13 +52,9 @@ const quiet = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null && s.pendingTriggers.length === 0;
 const spawn = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.debugSpawn(name, player, "battlefield", { summoningSick: false });
-const named = (game: Game, name: string): ObjectId[] =>
-  game.battlefield.filter((id) => game.state.objects[id].cardName === name);
 const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
 const counters = (game: Game, id: ObjectId, kind = "+1/+1"): number => game.state.objects[id].counters?.[kind] ?? 0;
 const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
-const pool = (game: Game, player: PlayerId = A): string[] =>
-  game.state.players[player].manaPool.map((unit) => unit.type).sort();
 const hasKeyword = (game: Game, id: ObjectId, keyword: string): boolean =>
   computeCharacteristics(game.state, registry, id).keywords.has(keyword as never);
 const settle = (game: Game): void => {

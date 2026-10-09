@@ -58,7 +58,7 @@ describe("a `{T}` ability cost can't be paid for by tapping the same permanent",
 
     // Nothing else on the board makes mana, so the `{1}` is unpayable.
     expect(
-      game.whyCannotActivateAbility(A, stone, draw),
+      game["whyCannotActivateAbility"](A, stone, draw),
     ).toMatch(/cannot pay/);
     expect(() =>
       game.dispatch({ type: "activate-ability", player: A, source: stone, abilityIndex: draw }),
@@ -87,7 +87,7 @@ describe("a `{T}` ability cost can't be paid for by tapping the same permanent",
     const draw = abilityIndex(game, stone, "{1}, {T}");
     const handBefore = game.handOf(A).length;
 
-    expect(game.whyCannotActivateAbility(A, stone, draw)).toBeNull();
+    expect(game["whyCannotActivateAbility"](A, stone, draw)).toBeNull();
     game.dispatch({ type: "activate-ability", player: A, source: stone, abilityIndex: draw });
     game.advanceUntil((s) => s.zones.shared.stack.length === 0);
 
@@ -108,6 +108,6 @@ describe("a `{T}` ability cost can't be paid for by tapping the same permanent",
     game.advanceUntil(toPrecombat);
     game.debugSpawn("Sol Ring", A, "battlefield");
     const ring = onBattlefield(game, "Sol Ring");
-    expect(game.whyCannotActivateAbility(A, ring, 0)).toBeNull();
+    expect(game["whyCannotActivateAbility"](A, ring, 0)).toBeNull();
   });
 });

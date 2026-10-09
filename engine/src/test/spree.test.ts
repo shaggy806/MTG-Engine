@@ -50,8 +50,6 @@ const toHand = (game: Game, name: string): ObjectId => game.debugSpawn(name, A, 
 const castOffers = (game: Game, card: ObjectId): CastOffer[] =>
   game.legalActions(A).filter((a): a is CastOffer => a.kind === "cast-spell" && a.card === card);
 const tapped = (game: Game, ids: readonly ObjectId[]): number => ids.filter((id) => game.state.objects[id].tapped).length;
-const named = (game: Game, name: string): ObjectId[] =>
-  game.state.zones.shared.battlefield.filter((id) => game.state.objects[id].cardName === name);
 
 describe("spree — what the offer can pay for", () => {
   it("lists only the sets of modes the mana pays for, each mode with a legal target", () => {

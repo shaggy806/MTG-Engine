@@ -39,6 +39,7 @@ const creature = (
   canBlock: true,
   canAttack: true,
   isCommander: false,
+  controllerLands: new Set(),
   ...extra,
 });
 

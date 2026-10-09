@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
-import type { ObjectId, PlayerId } from "../primitives.js";
+import type { ObjectId } from "../primitives.js";
 import { asPlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 import { poolCounts } from "../mana.js";

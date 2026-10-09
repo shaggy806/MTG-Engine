@@ -132,7 +132,7 @@ describe("top-5000 batch 24d — Summon: Ixion", () => {
     const { game } = setUp();
     const ixion = spawn(game, "Summon: Ixion");
     const bears = spawn(game, "Grizzly Bears", B);
-    const [chapterI, chapterII] = registry.get("Summon: Ixion")!.chapters;
+    const [chapterI, chapterII] = registry.get("Summon: Ixion")!.chapters ?? [];
     game.debugApplyEffect(A, chapterI.effect!, [obj(bears)], { source: ixion });
     settle(game);
     expect(named(game, "Grizzly Bears")).toHaveLength(0);

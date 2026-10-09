@@ -29,12 +29,6 @@ const mkGame = (aCards: readonly string[], overrides: Partial<GameConfig> = {}):
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
 const stackEmpty = (s: GameState): boolean => s.zones.shared.stack.length === 0;
 
-const cardNamed = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => {
-  const id = ids.find((each) => game.state.objects[each].cardName === name);
-  if (id === undefined) throw new Error(`no ${name} found`);
-  return id;
-};
-
 const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => {
   const id = asObjectId(`spawn-${game.state.nextObjectSeq}`);
   game.state.nextObjectSeq += 1;

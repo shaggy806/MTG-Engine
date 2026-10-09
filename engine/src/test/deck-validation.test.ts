@@ -142,7 +142,7 @@ describe("commandersOf", () => {
 
 describe("who can be a commander (rule 903.3)", () => {
   // No legendary Vehicle or Spacecraft is in the pool yet.
-  const vehicle = defineCard({
+  const vehicleDraft: Parameters<typeof defineCard>[0] = {
     name: "Test Legendary Vehicle",
     manaCost: "{3}",
     supertypes: ["legendary"],
@@ -151,10 +151,11 @@ describe("who can be a commander (rule 903.3)", () => {
     power: 4,
     toughness: 4,
     text: "Crew 2",
-  });
-  const spacecraft = defineCard({ ...vehicle, name: "Test Spacecraft", subtypes: ["Spacecraft"] });
+  };
+  const vehicle = defineCard(vehicleDraft);
+  const spacecraft = defineCard({ ...vehicleDraft, name: "Test Spacecraft", subtypes: ["Spacecraft"] });
   const unstationed = defineCard({
-    ...vehicle,
+    ...vehicleDraft,
     name: "Test Spacecraft Without A Box",
     subtypes: ["Spacecraft"],
     power: undefined,
@@ -166,7 +167,7 @@ describe("who can be a commander (rule 903.3)", () => {
     expect(canCommandAlone(vehicle)).toBe(true);
     expect(canCommandAlone(spacecraft)).toBe(true);
     expect(canCommandAlone(unstationed)).toBe(false);
-    expect(canCommandAlone(defineCard({ ...vehicle, name: "Test Vehicle", supertypes: [] }))).toBe(false);
+    expect(canCommandAlone(defineCard({ ...vehicleDraft, name: "Test Vehicle", supertypes: [] }))).toBe(false);
   });
 
   it("is a planeswalker only when it says it can be your commander (903.3a)", () => {

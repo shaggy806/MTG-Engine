@@ -175,7 +175,7 @@ describe("Feather, the Redeemed", () => {
     const growth = cast(game, "Giant Growth", [objectRef(bear)]);
     // Stands in for a card of B's that A cast (the pool's ways to do that
     // bring their own exile, which would compete).
-    game.state.objects[growth].owner = B;
+    Object.assign(game.state.objects[growth], { owner: B });
     game.advanceUntil(quiet);
     expect(game.state.objects[growth].zone).toBe("graveyard");
     expect(game.state.zones.perPlayer[B].graveyard).toContain(growth);

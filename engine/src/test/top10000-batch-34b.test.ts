@@ -14,7 +14,6 @@ import { describe, expect, it } from "vitest";
 import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
-import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -68,7 +67,6 @@ const settle = (game: Game): void => {
   }
   throw new Error("settle: still unresolved");
 };
-const effectOf = (name: string): EffectSpec => registry.get(name)!.effect!;
 const attack = (game: Game, attackers: readonly ObjectId[]): void => {
   game.advanceUntil((s) => s.turn.step === "declare-attackers" && s.awaiting?.kind === "attackers");
   game.dispatch({
@@ -132,7 +130,7 @@ describe("top-10000 batch 34b — Corsairs of Umbar", () => {
     const { game } = setUp();
     const corsairs = spawn(game, "Corsairs of Umbar");
     attack(game, [corsairs]);
-    game.advanceUntil((s) => s.turn.step === "end-of-combat");
+    game.advanceUntil((s) => s.turn.step === "end-combat");
     settle(game);
     expect(life(game, B)).toBe(17);
     const [army] = named(game, "Army Token");

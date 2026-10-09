@@ -299,8 +299,8 @@ export function pickFromZone(seat: ScriptedController, ...ids: readonly ObjectId
 
 // ------------------------------------------------------------------ reads
 
-/** The game's card registry (private on `Game`; tests read it). */
-export const registryOf = (game: Game): CardRegistry => (game as unknown as { registry: CardRegistry }).registry;
+/** The game's card registry. */
+export const registryOf = (game: Game): CardRegistry => game.registry;
 
 export const zone = (game: Game, id: ObjectId): string => game.state.objects[id].zone;
 export const controller = (game: Game, id: ObjectId): PlayerId => game.state.objects[id].controller;
