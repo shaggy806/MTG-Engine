@@ -24584,24 +24584,24 @@ export class Game {
   /**
    * Does `player` hold a card with one of `subtypes`, for the reveal-land
    * cycle's "you may reveal a Plains or Island card from your hand"?
-   *
-   * Reads the *printed* subtypes off the registry rather than computed
-   * characteristics: the card is in hand, where layer effects don't reach,
-   * and `computeCharacteristics` degrades to printed values there anyway.
    */
   private canRevealFromHand(player: PlayerId, subtypes: readonly string[]): boolean {
     return this.revealableFromHand(player, subtypes).length > 0;
   }
 
   /** The cards in `player`'s hand with one of `subtypes` — what a reveal
-   * land offers to reveal. */
+   * land offers to reveal. Its layer-4 subtypes, which in a hand are the
+   * printed ones plus changeling's every creature type (rule 702.73a: a
+   * characteristic-defining ability, so it works in every zone — rule
+   * 604.3), asked through `hasSubtype`: a changeling card is a Treefolk to
+   * reveal for Murmuring Bosk and a Dragon for Temple of the Dragon Queen. */
   private revealableFromHand(player: PlayerId, subtypes: readonly string[]): ObjectId[] {
     return this.state.zones.perPlayer[player].hand.filter((id) => {
       const object = this.state.objects[id];
       if (object === undefined) return false;
-      const name = printedCardName(object);
-      if (!this.registry.has(name)) return false;
-      return this.registry.get(name).subtypes.some((subtype) => subtypes.includes(subtype));
+      if (!this.registry.has(printedCardName(object))) return false;
+      const its = effectiveSubtypes(this.state, this.registry, object);
+      return subtypes.some((subtype) => hasSubtype(its, subtype));
     });
   }
 

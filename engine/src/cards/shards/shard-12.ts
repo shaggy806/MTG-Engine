@@ -145,6 +145,7 @@ import _poolMinesOfMoria from "../pool/mines-of-moria.js";
 import _poolMireTriton from "../pool/mire-triton.js";
 import _poolMishrasWorkshop from "../pool/mishras-workshop.js";
 import _poolMoltenBlast from "../pool/molten-blast.js";
+import _poolMurmuringBosk from "../pool/murmuring-bosk.js";
 import _poolMurmuringMystic from "../pool/murmuring-mystic.js";
 import _poolMutilate from "../pool/mutilate.js";
 import _poolMyrConvert from "../pool/myr-convert.js";
@@ -417,6 +418,7 @@ const shard: CardShard = {
     _poolMireTriton,
     _poolMishrasWorkshop,
     _poolMoltenBlast,
+    _poolMurmuringBosk,
     _poolMurmuringMystic,
     _poolMutilate,
     _poolMyrConvert,

@@ -153,4 +153,28 @@ describe("reveal lands ask before they enter", () => {
     expect(game.state.objects[card].zone).toBe("battlefield");
     expect(game.state.objects[card].tapped).toBe(true);
   });
+
+  // Rule 702.73a: changeling is a characteristic-defining ability, so it
+  // works in a hand too (rule 604.3) — Changeling Outcast is a Treefolk card.
+  it("offers a changeling card as a Treefolk to Murmuring Bosk, beside a real one", () => {
+    const { game, card } = playing("Murmuring Bosk", ["Changeling Outcast", "Battlewand Oak", "Grizzly Bears"]);
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind).toBe("reveal-for-untapped");
+    if (awaiting?.kind !== "reveal-for-untapped") return;
+    expect(awaiting.options.map((id) => game.state.objects[id].cardName).sort()).toEqual([
+      "Battlewand Oak",
+      "Changeling Outcast",
+    ]);
+    const outcast = awaiting.options.find((id) => game.state.objects[id].cardName === "Changeling Outcast")!;
+    game.dispatch({ type: "reveal-for-untapped", player: A, reveal: outcast });
+    expect(game.state.objects[card].tapped).toBe(false);
+  });
+});
+
+describe("a changeling card is every creature type to reveal", () => {
+  it("lets Murmuring Bosk and Temple of the Dragon Queen enter untapped", () => {
+    expect(entersTapped(gameWithHand(["Changeling Outcast"]), "Murmuring Bosk")).toBe(false);
+    expect(entersTapped(gameWithHand(["Grizzly Bears"]), "Murmuring Bosk")).toBe(true);
+    expect(entersTapped(gameWithHand(["Changeling Outcast"]), "Temple of the Dragon Queen")).toBe(false);
+  });
 });

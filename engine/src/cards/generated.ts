@@ -4728,6 +4728,7 @@ import _poolMurderousRider from "./pool/murderous-rider.js";
 import _poolMurkfiendLiege from "./pool/murkfiend-liege.js";
 import _poolMurkwaterPathway from "./pool/murkwater-pathway.js";
 import _poolMurmuration from "./pool/murmuration.js";
+import _poolMurmuringBosk from "./pool/murmuring-bosk.js";
 import _poolMurmuringMystic from "./pool/murmuring-mystic.js";
 import _poolMurmuringPhantasm from "./pool/murmuring-phantasm.js";
 import _poolMuscleSliver from "./pool/muscle-sliver.js";
@@ -13490,6 +13491,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMurkfiendLiege,
   _poolMurkwaterPathway,
   _poolMurmuration,
+  _poolMurmuringBosk,
   _poolMurmuringMystic,
   _poolMurmuringPhantasm,
   _poolMuscleSliver,
