@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3381 already implemented / 1619 missing (marks refreshed 2026-10-09)
+3383 already implemented / 1617 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -389,7 +389,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   390  Forgotten Ancient                        {3}{G}           Creature — Elemental
 [x]   391  Spark Double                             {3}{U}           Creature — Illusion
 [x]   392  Dauthi Voidwalker                        {B}{B}           Creature — Dauthi Rogue
-[ ]   393  Helm of the Host                         {4}              Legendary Artifact — Equipment
+[x]   393  Helm of the Host                         {4}              Legendary Artifact — Equipment
 [x]   394  Spire of Industry                        {0}              Land
 [x]   395  Kutzil, Malamet Exemplar                 {1}{G}{W}        Legendary Creature — Cat Warrior
 [x]   396  Game Trail                               {0}              Land
@@ -3510,7 +3510,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3517  Agent Frank Horrigan                     {5}{B}{G}        Legendary Creature — Mutant Warrior
 [x]  3518  Karumonix, the Rat King                  {1}{B}{B}        Legendary Creature — Phyrexian Rat
 [ ]  3519  Leyline of Transformation                {2}{U}{U}        Enchantment
-[ ]  3520  God-Eternal Bontu                        {3}{B}{B}        Legendary Creature — Zombie God
+[x]  3520  God-Eternal Bontu                        {3}{B}{B}        Legendary Creature — Zombie God
 [ ]  3521  Blitzball                                {3}              Artifact
 [x]  3522  Amphin Mutineer                          {3}{U}           Creature — Salamander Pirate
 [x]  3523  Dihada, Binder of Wills                  {1}{R}{W}{B}     Legendary Planeswalker — Dihada

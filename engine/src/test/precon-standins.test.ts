@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 
 import { computeCharacteristics } from "../characteristics.js";
+import { supertypesOf } from "../filter.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -307,5 +308,74 @@ describe("Foe-Razer Regent", () => {
     expect(game.state.eventLog.some((e) => e.type === "creature-fought")).toBe(false);
     game.advanceUntil((s) => s.turn.step === "cleanup");
     expect(game.state.objects[regent].counters["+1/+1"] ?? 0).toBe(0);
+  });
+});
+
+describe("Helm of the Host", () => {
+  const helmOn = (game: Game, creature: ObjectId): ObjectId => {
+    const helm = spawn(game, "Helm of the Host");
+    game.state.objects[helm].attachedTo = creature;
+    return helm;
+  };
+  const copiesOf = (game: Game, name: string): ObjectId[] =>
+    game.battlefield.filter((id) => game.state.objects[id].isToken && game.state.objects[id].cardName === name);
+
+  it("makes a nonlegendary, hasty token copy of the equipped creature each combat", () => {
+    const { game } = setUp();
+    const commander = spawn(game, "Tetsuko Umezawa, Fugitive");
+    helmOn(game, commander);
+    game.advanceUntil((s) => s.turn.step === "begin-combat" && s.priority.holder === A);
+    settle(game);
+    const [token] = copiesOf(game, "Tetsuko Umezawa, Fugitive");
+    expect(token).toBeDefined();
+    const c = computeCharacteristics(game.state, game.registry, token);
+    expect(supertypesOf(game.registry, game.state.objects[token])).not.toContain("legendary");
+    expect(c.keywords.has("haste")).toBe(true);
+    // The legend rule didn't apply: both are still here.
+    expect(zone(game, commander)).toBe("battlefield");
+  });
+
+  it("makes nothing when it equips nothing", () => {
+    const { game } = setUp();
+    spawn(game, "Helm of the Host");
+    spawn(game, "Grizzly Bears");
+    game.advanceUntil((s) => s.turn.step === "begin-combat" && s.priority.holder === A);
+    settle(game);
+    expect(game.battlefield.some((id) => game.state.objects[id].isToken)).toBe(false);
+  });
+});
+
+describe("God-Eternal Bontu", () => {
+  const handSize = (game: Game): number => game.state.zones.perPlayer[A].hand.length;
+
+  it("sacrifices the other permanents chosen, at once, and draws that many", () => {
+    const { game, a } = setUp();
+    const bears = spawn(game, "Grizzly Bears");
+    const piker = spawn(game, "Goblin Piker");
+    const keep = spawn(game, "Wastes");
+    let offered: readonly ObjectId[] = [];
+    a.choosePermanentsFn = (_view, eligible) => {
+      offered = eligible;
+      return [bears, piker];
+    };
+    const before = handSize(game);
+    const bontu = game.debugSpawn("God-Eternal Bontu", A, "battlefield", { announceEntry: true });
+    settle(game);
+    // Never Bontu itself: "other permanents".
+    expect(offered).not.toContain(bontu);
+    expect(offered).toContain(keep);
+    expect([zone(game, bears), zone(game, piker), zone(game, keep)]).toEqual(["graveyard", "graveyard", "battlefield"]);
+    expect(handSize(game)).toBe(before + 2);
+  });
+
+  it("may sacrifice nothing, and then draws nothing", () => {
+    const { game, a } = setUp();
+    const bears = spawn(game, "Grizzly Bears");
+    a.choosePermanentsFn = () => [];
+    const before = handSize(game);
+    game.debugSpawn("God-Eternal Bontu", A, "battlefield", { announceEntry: true });
+    settle(game);
+    expect(zone(game, bears)).toBe("battlefield");
+    expect(handSize(game)).toBe(before);
   });
 });

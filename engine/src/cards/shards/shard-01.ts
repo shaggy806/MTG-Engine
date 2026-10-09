@@ -77,6 +77,7 @@ import _poolGhoulcallersAccomplice from "../pool/ghoulcallers-accomplice.js";
 import _poolGiftOfStrands from "../pool/gift-of-strands.js";
 import _poolGlareOfSubdual from "../pool/glare-of-subdual.js";
 import _poolGoblinRaider from "../pool/goblin-raider.js";
+import _poolGodEternalBontu from "../pool/god-eternal-bontu.js";
 import _poolGolgariGuildmage from "../pool/golgari-guildmage.js";
 import _poolGorgonFlail from "../pool/gorgon-flail.js";
 import _poolGravelighter from "../pool/gravelighter.js";
@@ -329,6 +330,7 @@ const shard: CardShard = {
     _poolGiftOfStrands,
     _poolGlareOfSubdual,
     _poolGoblinRaider,
+    _poolGodEternalBontu,
     _poolGolgariGuildmage,
     _poolGorgonFlail,
     _poolGravelighter,

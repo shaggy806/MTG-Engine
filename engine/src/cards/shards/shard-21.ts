@@ -101,6 +101,7 @@ import _poolHardWonJitte from "../pool/hard-won-jitte.js";
 import _poolHeadwaterSentries from "../pool/headwater-sentries.js";
 import _poolHeartbeatOfSpring from "../pool/heartbeat-of-spring.js";
 import _poolHellkitePunisher from "../pool/hellkite-punisher.js";
+import _poolHelmOfTheHost from "../pool/helm-of-the-host.js";
 import _poolHengegatePathway from "../pool/hengegate-pathway.js";
 import _poolHighPriestOfPenance from "../pool/high-priest-of-penance.js";
 import _poolHighlandForest from "../pool/highland-forest.js";
@@ -360,6 +361,7 @@ const shard: CardShard = {
     _poolHeadwaterSentries,
     _poolHeartbeatOfSpring,
     _poolHellkitePunisher,
+    _poolHelmOfTheHost,
     _poolHengegatePathway,
     _poolHighPriestOfPenance,
     _poolHighlandForest,

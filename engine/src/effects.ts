@@ -3155,8 +3155,13 @@ export type EffectSpec =
        * fired on — Kambal, Profiteering Mayor. `{ each }` is a copy of each
        * permanent matching the filter as this resolves, a token stack once
        * per token in it — Redoubled Stormsinger's "for each creature token
-       * you control that entered this turn, create … a copy of that token". */
-      readonly of: "source" | "trigger-object" | "entered-together" | number | { readonly each: CardFilter };
+       * you control that entered this turn, create … a copy of that token".
+       * `"equipped"` is the creature the source is attached to — Helm of the
+       * Host's "a copy of equipped creature": as this resolves, or, if the
+       * source has left, the one it was last attached to (its last-known
+       * information if that's gone too); nothing if it equips nothing (the
+       * Helm's rulings). */
+      readonly of: "source" | "trigger-object" | "entered-together" | "equipped" | number | { readonly each: CardFilter };
       readonly count: number;
       /** The token copies have haste — a copy exception ("except it has
        * haste" — Kiki-Jiki), which lasts as long as they do. */
@@ -4461,6 +4466,9 @@ export interface EffectApi {
    * enter (rule 603.6a). See the `sequence` {@link EffectSpec}'s
    * `simultaneous`. */
   simultaneously(fn: () => void): void;
+  /** The creature this effect's source equips — see `create-token-copy`'s
+   * `of: "equipped"`. */
+  equippedCreature(): ObjectId | undefined;
   /** How much damage from the effect's damage source (`from`) is lethal to
    * the creature `target` now — see the `damage` effect's
    * `excessToController`. */
@@ -7387,6 +7395,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       let of: ObjectId | undefined;
       if (spec.of === "source") of = ctx.source;
       else if (spec.of === "trigger-object") of = ctx.triggerObject;
+      else if (spec.of === "equipped") of = ctx.equippedCreature();
       else {
         const ref = ctx.targets[spec.of];
         of = ref?.kind === "object" ? ref.object : undefined;

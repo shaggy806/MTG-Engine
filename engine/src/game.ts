@@ -17025,6 +17025,16 @@ export class Game {
         if (by === undefined) return;
         this.dealDamage(by.id, this.splitTargetRef(target), amount, false, by.lastKnown);
       },
+      equippedCreature: () => {
+        // The Helm's rulings: still on the battlefield, what it equips now —
+        // nothing once that creature has left (it's unattached); gone itself,
+        // the creature it last equipped, which the copy reads as it last
+        // existed if it has left too (`createTokenCopy`'s `lastKnownOf`).
+        const departed = departedSource();
+        if (departed !== undefined) return departed.attachedTo;
+        const host = this.state.objects[source]?.attachedTo;
+        return host !== null && host !== undefined && this.state.objects[host]?.zone === "battlefield" ? host : undefined;
+      },
       lethalDamageTo: (target, from) => {
         const by = damageSource(from);
         const object = this.state.objects[target];
@@ -22202,11 +22212,18 @@ export class Game {
     }
     const { then, source, x, priorityTo } = awaiting;
     this.state.awaiting = null;
-    for (const id of chosen) {
-      // Re-checked rather than trusted: something may have left since.
-      if (this.state.objects[id]?.zone !== "battlefield") continue;
-      applyEffectSpec(then, this.makeResolutionContext(source, player, [{ kind: "object", object: id }], x));
-    }
+    // One instruction acting on each permanent chosen (rule 608.2c), so one
+    // event: God-Eternal Bontu's "sacrifice any number of other permanents"
+    // sacrifices them all at once, and a "whenever one or more" sees one batch.
+    this.withLeaveBatch(() =>
+      this.withEnterBatch(() => {
+        for (const id of chosen) {
+          // Re-checked rather than trusted: something may have left since.
+          if (this.state.objects[id]?.zone !== "battlefield") continue;
+          applyEffectSpec(then, this.makeResolutionContext(source, player, [{ kind: "object", object: id }], x));
+        }
+      }),
+    );
     if (this.state.awaiting === null) this.prepareForPriority(priorityTo ?? this.activePlayer);
   }
 

@@ -2999,6 +2999,7 @@ import _poolGoblinWarDrums from "./pool/goblin-war-drums.js";
 import _poolGoblinWarPaint from "./pool/goblin-war-paint.js";
 import _poolGoblinWarStrike from "./pool/goblin-war-strike.js";
 import _poolGoblinWarchief from "./pool/goblin-warchief.js";
+import _poolGodEternalBontu from "./pool/god-eternal-bontu.js";
 import _poolGodEternalOketra from "./pool/god-eternal-oketra.js";
 import _poolGodEternalRhonas from "./pool/god-eternal-rhonas.js";
 import _poolGodPharaohsStatue from "./pool/god-pharaohs-statue.js";
@@ -3330,6 +3331,7 @@ import _poolHellrider from "./pool/hellrider.js";
 import _poolHellsKitchen from "./pool/hells-kitchen.js";
 import _poolHelmOfAwakening from "./pool/helm-of-awakening.js";
 import _poolHelmOfTheGods from "./pool/helm-of-the-gods.js";
+import _poolHelmOfTheHost from "./pool/helm-of-the-host.js";
 import _poolHelpfulHunter from "./pool/helpful-hunter.js";
 import _poolHelpingHand from "./pool/helping-hand.js";
 import _poolHematiteGolem from "./pool/hematite-golem.js";
@@ -11776,6 +11778,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGoblinWarPaint,
   _poolGoblinWarStrike,
   _poolGoblinWarchief,
+  _poolGodEternalBontu,
   _poolGodEternalOketra,
   _poolGodEternalRhonas,
   _poolGodPharaohsStatue,
@@ -12107,6 +12110,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHellsKitchen,
   _poolHelmOfAwakening,
   _poolHelmOfTheGods,
+  _poolHelmOfTheHost,
   _poolHelpfulHunter,
   _poolHelpingHand,
   _poolHematiteGolem,
