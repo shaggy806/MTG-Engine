@@ -63,6 +63,7 @@ import _poolDemolitionField from "../pool/demolition-field.js";
 import _poolDistinguishedConjurer from "../pool/distinguished-conjurer.js";
 import _poolDrivnodCarnageDominus from "../pool/drivnod-carnage-dominus.js";
 import _poolEarthOriginYak from "../pool/earth-origin-yak.js";
+import _poolEatenAlive from "../pool/eaten-alive.js";
 import _poolEclipsedSteppe from "../pool/eclipsed-steppe.js";
 import _poolEiganjoSeatOfTheEmpire from "../pool/eiganjo-seat-of-the-empire.js";
 import _poolEncampmentKeeper from "../pool/encampment-keeper.js";
@@ -333,6 +334,7 @@ const shard: CardShard = {
     _poolDistinguishedConjurer,
     _poolDrivnodCarnageDominus,
     _poolEarthOriginYak,
+    _poolEatenAlive,
     _poolEclipsedSteppe,
     _poolEiganjoSeatOfTheEmpire,
     _poolEncampmentKeeper,

@@ -683,4 +683,100 @@ describe("a choice of additional costs", () => {
     // −1 the spell, +2 drawn, nothing discarded.
     expect(game.handOf(A).length).toBe(hand + 1);
   });
+
+  // A branch paid in mana is part of the total cost (rule 601.2f), so it's
+  // offered only when that total can be paid — Eaten Alive's "pay {3}{B}"
+  // on top of its {B} needs five mana, not one.
+  const eatenAlive = (swamps: number, withCreature: boolean) => {
+    const { game } = mkGame(["Eaten Alive"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < swamps; i += 1) game.debugSpawn("Swamp", A, "battlefield");
+    if (withCreature) game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const victim = game.debugSpawn("Hill Giant", B, "battlefield");
+    const texts = castOffers(game, "Eaten Alive")
+      .map((o) => (o.kind === "cast-spell" ? o.costOptionText : null))
+      .sort();
+    return { game, victim, texts };
+  };
+
+  it("Eaten Alive offers its {3}{B} branch only when the total {3}{B}{B} can be paid", () => {
+    expect(eatenAlive(4, true).texts).toEqual(["Sacrifice a creature"]);
+    expect(eatenAlive(1, false).texts).toEqual([]);
+    expect(eatenAlive(5, false).texts).toEqual(["Pay {3}{B}"]);
+    expect(eatenAlive(5, true).texts).toEqual(["Pay {3}{B}", "Sacrifice a creature"]);
+  });
+
+  it("Eaten Alive refuses the {3}{B} branch it can't pay, rather than throwing mid-cast", () => {
+    const { game, victim } = eatenAlive(4, false);
+    const card = named(game, game.handOf(A), "Eaten Alive");
+    expect(() =>
+      game.dispatch({
+        type: "cast-spell",
+        player: A,
+        card,
+        targets: [{ kind: "object", object: victim }],
+        costOption: 1,
+      }),
+    ).toThrow(/cannot pay the cost of Eaten Alive/);
+    // Nothing moved: the card is still in hand, the Swamps untapped.
+    expect(game.state.objects[card].zone).toBe("hand");
+    expect(landsOf(game, A).every((id) => !game.state.objects[id].tapped)).toBe(true);
+  });
+
+  it("Eaten Alive pays {3}{B}{B} for the mana branch and exiles the target", () => {
+    const { game, victim } = eatenAlive(5, false);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Eaten Alive"),
+      targets: [{ kind: "object", object: victim }],
+      costOption: 1,
+    });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[victim].zone).toBe("exile");
+    expect(landsOf(game, A).every((id) => game.state.objects[id].tapped)).toBe(true);
+  });
+
+  it("the mana branch is paid on top of an alternative cost too (rule 118.9d — Fist of Suns)", () => {
+    const { game } = mkGame(["Eaten Alive"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Fist of Suns", A, "battlefield");
+    for (const land of ["Plains", "Island", "Swamp", "Mountain", "Forest"]) game.debugSpawn(land, A, "battlefield");
+    const victim = game.debugSpawn("Hill Giant", B, "battlefield");
+    const altPay = () =>
+      castOffers(game, "Eaten Alive").filter(
+        (o) => o.kind === "cast-spell" && o.altCost === true && o.costOptionText === "Pay {3}{B}",
+      );
+    // {W}{U}{B}{R}{G} alone pays the alternative cost, not the {3}{B} too.
+    expect(altPay()).toHaveLength(0);
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Swamp", A, "battlefield");
+    expect(altPay()).toHaveLength(1);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Eaten Alive"),
+      targets: [{ kind: "object", object: victim }],
+      altCost: true,
+      costOption: 1,
+    });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[victim].zone).toBe("exile");
+    expect(landsOf(game, A).every((id) => game.state.objects[id].tapped)).toBe(true);
+  });
+
+  it("Eaten Alive's sacrifice branch costs just {B}", () => {
+    const { game, victim } = eatenAlive(1, true);
+    const bears = game.battlefield.find((id) => game.state.objects[id].cardName === "Grizzly Bears")!;
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Eaten Alive"),
+      targets: [{ kind: "object", object: victim }],
+      costOption: 0,
+      sacrifice: bears,
+    });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bears].zone).toBe("graveyard");
+    expect(game.state.objects[victim].zone).toBe("exile");
+  });
 });

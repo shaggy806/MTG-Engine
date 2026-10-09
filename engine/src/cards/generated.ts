@@ -2093,6 +2093,7 @@ import _poolEarthshakerDreadmaw from "./pool/earthshaker-dreadmaw.js";
 import _poolEarthshakingSi from "./pool/earthshaking-si.js";
 import _poolEastWindAvatar from "./pool/east-wind-avatar.js";
 import _poolEatToExtinction from "./pool/eat-to-extinction.js";
+import _poolEatenAlive from "./pool/eaten-alive.js";
 import _poolEbonStronghold from "./pool/ebon-stronghold.js";
 import _poolEbonyRhino from "./pool/ebony-rhino.js";
 import _poolEbonyTreefolk from "./pool/ebony-treefolk.js";
@@ -10852,6 +10853,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEarthshakingSi,
   _poolEastWindAvatar,
   _poolEatToExtinction,
+  _poolEatenAlive,
   _poolEbonStronghold,
   _poolEbonyRhino,
   _poolEbonyTreefolk,

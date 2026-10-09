@@ -8521,12 +8521,20 @@ export class Game {
     const spree = modes.map((i) => def.castModal?.modes[i]?.spreeCost ?? "").join("");
     const escalate =
       (escalateCost === undefined || extraModes <= 0 ? "" : escalateCost.repeat(extraModes)) + spree;
+    // A chosen additional-cost branch that is paid in mana (Redirect
+    // Lightning's "or pay {2}") concatenates the same way kicker does, and
+    // for the same reason — an additional cost adds to what's being paid,
+    // an alternative cost included (rule 118.9d).
+    const optionMana =
+      costOption === undefined
+        ? undefined
+        : def.additionalCost?.options?.[costOption]?.mana;
     // An alternative cost (Sephara, Jodah) replaces the mana cost entirely,
     // like overload and a free-cast permission — the creature-tapping half
     // is paid separately in `castSpell`.
     if (altCost) {
       const alternative = this.alternativeCostOf(cardId, def, via, caster ?? this.state.objects[cardId]?.owner);
-      if (alternative !== null) return alternative.mana + escalate;
+      if (alternative !== null) return alternative.mana + (optionMana ?? "") + escalate;
     }
     // A free-cast permission — conditional (Fierce Guardianship), a static's
     // (Omniscience), an impulse's, or a resolving effect's "without paying
@@ -8566,15 +8574,8 @@ export class Game {
               : // Adventure (rule 715) — the creature is cast for its own cost.
                 // Prototyped, its prototype cost (rule 718.3b).
                 (this.prototypeApplied(cardId) ? (manaCostOverride(this.state.objects[cardId]) ?? def.manaCost) : def.manaCost);
-    // A chosen additional-cost branch that is paid in mana (Redirect
-    // Lightning's "or pay {2}") concatenates the same way kicker does, and
-    // for the same reason — an additional cost adds to what's being paid.
-    // Applied before kicker only because the concatenation is commutative;
-    // `parseManaCost` is order-independent.
-    const optionMana =
-      costOption === undefined
-        ? undefined
-        : def.additionalCost?.options?.[costOption]?.mana;
+    // The additional-cost branch's mana goes on before kicker only because
+    // the concatenation is commutative; `parseManaCost` is order-independent.
     const withOption = base === null || optionMana === undefined ? base : base + optionMana;
     // Kicker (rule 702.33) is an additional cost, so it just concatenates onto
     // whatever cost is being paid — `parseManaCost` is order-independent.
@@ -9044,8 +9045,11 @@ export class Game {
     // be cast for it — only for an alternative cost or without paying it
     // (118.6a), each of which names a cost of its own (Ancestral Vision is
     // only ever suspended).
+    // A branch of a choice of additional costs paid in mana (Eaten Alive's
+    // "or pay {3}{B}") is part of the total cost (rule 601.2f), so it's
+    // priced in here with the rest.
     const costString = this.withFace(cardId, face, () =>
-      this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant, offspring, evoke,
+      this.castCostString(cardId, via, face, kicked, overload, free, altCost, costOption, player, graveyardGrant, offspring, evoke,
         modes ?? []),
     );
     if (costString === null) return `${def.name} has no mana cost to pay (rule 118.6)`;
