@@ -37,7 +37,7 @@ import type {
   LegalAction,
 } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
-import type { Color } from "../mana.js";
+import type { Color, ManaType } from "../mana.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { AwaitingDecision, GameState } from "../state.js";
@@ -102,6 +102,7 @@ export const DECISION_ACTIONS = {
   "cast-now": ["cast-now"],
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
+  "split-mana": ["split-mana"],
   "choose-permanents": ["choose-permanents"],
   "enter-attacking": ["enter-attacking"],
   scry: ["scry"],
@@ -138,6 +139,7 @@ export const DECISION_OFFERS = {
   "cast-now": ["cast-now"],
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
+  "split-mana": ["split-mana"],
   "choose-permanents": ["choose-permanents"],
   "enter-attacking": ["enter-attacking"],
   scry: ["scry"],
@@ -232,6 +234,7 @@ export interface DecisionHost {
   readonly applyTriggerOrder: (player: PlayerId, order: readonly number[]) => void;
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
+  readonly applyManaSplit: (player: PlayerId, counts: Readonly<Partial<Record<ManaType, number>>>) => void;
   readonly applyChoosePermanents: (player: PlayerId, chosen: readonly ObjectId[]) => void;
   readonly applyEnterAttacking: (
     player: PlayerId,

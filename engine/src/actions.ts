@@ -496,6 +496,14 @@ export type Action =
       readonly chosen: readonly TargetRef[];
     }
   | {
+      /** Answers a pending `split-mana` decision: how many of each offered
+       * colour, every count a whole number and their sum the decision's
+       * `amount`. A colour left out is none. */
+      readonly type: "split-mana";
+      readonly player: PlayerId;
+      readonly counts: Readonly<Partial<Record<ManaType, number>>>;
+    }
+  | {
       /** Answers a pending `scry` / `surveil` decision: the looked-at cards to
        * move away from the top — to the bottom of the library (scry) or the
        * graveyard (surveil). The rest stay on top in their current order. */
@@ -1188,6 +1196,13 @@ export type LegalAction =
        * including none. No `count`: that is the point of the card. */
       readonly kind: "proliferate";
       readonly eligible: readonly TargetRef[];
+    }
+  | {
+      /** "Add N mana in any combination of …": how many of each of `colors`,
+       * summing to `amount`. */
+      readonly kind: "split-mana";
+      readonly colors: readonly ManaType[];
+      readonly amount: number;
     }
   | {
       /** Choose what each of these creatures, put onto the battlefield

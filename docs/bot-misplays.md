@@ -35,7 +35,12 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
      middle ground: give each per-unit choice "the rest as {X}" modes, ending the run in one pick.
   Might break: a deck whose hand needs nothing still gets some colour, which is harmless; the new
   decision kind touches engine, protocol, server and client together.
-- **Status:** open.
+- **Status:** fixed, both parts (the user chose the one split prompt, 2026-10-08). Past 35 splits
+  `addManaChoice` raises one `split-mana` decision (`decisions/split-mana.ts`, `Game.applyManaSplit`):
+  how many of each colour, summing to N. v1's `chooseManaSplit` fills the hand's coloured pips
+  less the pool first, then shares the rest among the commander's colours (or the hand's); v2 has
+  no candidates for it and takes v1's. The client's prompt is a `CountStepper` per colour. The
+  scenario gates: sixteen mana as eight {R} and eight {G}, in one decision.
 
 ## 2026-10-08 — a basic played over a fetch land with a landfall payoff out
 

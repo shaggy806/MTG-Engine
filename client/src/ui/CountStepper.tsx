@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 
 /**
  * How many of a folded stack take part in something: − / + buttons around a
@@ -12,20 +13,29 @@ import { useState } from 'react'
  */
 export function CountStepper({
   label,
+  symbol,
   count,
   max,
+  showMax = true,
   onChange,
 }: {
+  /** What it counts — shown, and the field's accessible name. */
   readonly label: string
+  /** Shown in place of `label` (a mana symbol), which still names the field. */
+  readonly symbol?: ReactNode
   readonly count: number
   readonly max: number
+  /** "of N" after the field; off where `max` is only what's left to share
+   * out (a mana split), which would read as a moving total. The cell stays,
+   * empty. */
+  readonly showMax?: boolean
   readonly onChange: (n: number) => void
 }) {
   const [draft, setDraft] = useState<string | null>(null)
   const send = (n: number) => onChange(Math.max(0, Math.min(max, n)))
   return (
     <span className="count-stepper">
-      <span className="count-stepper-label">{label}</span>
+      <span className="count-stepper-label">{symbol ?? label}</span>
       <button type="button" disabled={count <= 0} onClick={() => send(count - 1)} aria-label="One fewer">
         −
       </button>
@@ -46,7 +56,9 @@ export function CountStepper({
       <button type="button" disabled={count >= max} onClick={() => send(count + 1)} aria-label="One more">
         +
       </button>
-      <span className="muted">of {max}</span>
+      {/* Always a cell: in `.stack-counts`' grid each stepper is five of them
+          (`display: contents`), and one short shifts every row after it. */}
+      <span className="muted">{showMax ? `of ${max}` : ''}</span>
     </span>
   )
 }

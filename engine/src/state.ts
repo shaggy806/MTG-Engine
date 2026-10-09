@@ -21,11 +21,12 @@ import type {
   EffectSpec,
   EnterTypes,
   LookAndChooseLeftoverIf,
+  ManaSplitRiders,
   ResolvedEnterAttacking,
   ZoneSecondPick,
 } from "./effects.js";
 import type { CardFilter } from "./filter.js";
-import type { Color, ManaOrigin, ManaUnit, SpendAs } from "./mana.js";
+import type { Color, ManaOrigin, ManaType, ManaUnit, SpendAs } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -2074,6 +2075,27 @@ export type AwaitingDecision =
        * card." `source`/`x` rebuild the resolution context, exactly as
        * `scry`'s `then` does, because the spell that set this up has finished
        * resolving by the time the choice comes back. */
+      readonly then: EffectSpec | null;
+      readonly source: ObjectId;
+      readonly x: number;
+    }
+  | {
+      /**
+       * "Add N mana in any combination of …" with too many splits to list as
+       * modes (Klauth, Unrivaled Ancient's power-sized attack trigger):
+       * `player` says how many of each of `colors`, summing to `amount` —
+       * one decision, where each unit's colour used to be asked in turn
+       * (`effects.ts`' `addManaChoice`; rule 608.2d, chosen as it's added).
+       */
+      readonly kind: "split-mana";
+      readonly player: PlayerId;
+      readonly colors: readonly ManaType[];
+      readonly amount: number;
+      /** What every colour's share carries: a spend restriction, `persists`
+       * (`ManaSplitRiders`). */
+      readonly riders: ManaSplitRiders;
+      /** The rest of the instruction, applied once answered, in a context
+       * rebuilt from `source`/`x` as `proliferate`'s `then` is. */
       readonly then: EffectSpec | null;
       readonly source: ObjectId;
       readonly x: number;

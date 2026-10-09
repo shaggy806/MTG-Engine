@@ -285,6 +285,7 @@ type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-ty
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
 type ProliferateAction = Extract<LegalAction, { kind: 'proliferate' }>
+type SplitManaAction = Extract<LegalAction, { kind: 'split-mana' }>
 type ChoosePermanentsAction = Extract<LegalAction, { kind: 'choose-permanents' }>
 type ScryAction = Extract<LegalAction, { kind: 'scry' }>
 type CastNowAction = Extract<LegalAction, { kind: 'cast-now' }>
@@ -516,6 +517,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'assign-combat-damage': 'assign combat damage',
   sacrifice: 'choose what to sacrifice',
   proliferate: 'choose what to proliferate',
+  'split-mana': 'choose their mana',
   'choose-permanents': 'choose permanents',
   'enter-attacking': 'choose what their creatures attack',
   scry: 'scry',
@@ -1364,6 +1366,9 @@ function Table({
   // players as well as permanents (a player with energy, poison or experience
   // counters).
   const [proliferatePicks, setProliferatePicks] = useState<readonly TargetRef[]>([])
+  // "N mana in any combination of …": how many of each colour so far.
+  // Cleared once sent, so the next split starts from nothing.
+  const [manaSplit, setManaSplit] = useState<Readonly<Record<string, number>>>({})
   const [zoneView, setZoneView] = useState<{
     readonly title: string
     readonly ids: readonly ObjectId[]
@@ -1594,6 +1599,7 @@ function Table({
   const proliferateAction = actions.find(
     (a): a is ProliferateAction => a.kind === 'proliferate',
   )
+  const splitManaAction = actions.find((a): a is SplitManaAction => a.kind === 'split-mana')
   const scryAction = actions.find((a): a is ScryAction => a.kind === 'scry')
   const castNowAction = actions.find((a): a is CastNowAction => a.kind === 'cast-now')
   // "You may cast a spell from your hand" and the like: more than one card on
@@ -1688,6 +1694,7 @@ function Table({
     | 'choose-modes'
     | 'sacrifice'
     | 'proliferate'
+    | 'split-mana'
     | 'choose-permanents'
     | 'scry'
     | 'choose-x'
@@ -1727,6 +1734,8 @@ function Table({
           ? 'sacrifice'
         : proliferateAction
           ? 'proliferate'
+        : splitManaAction
+          ? 'split-mana'
         : choosePermanentsAction
           ? 'choose-permanents'
         : scryAction
@@ -3713,6 +3722,48 @@ function Table({
         </button>
         <button type="button" onClick={() => setPendingTap(null)}>
           Cancel
+        </button>
+      </div>
+    )
+  } else if (mode === 'split-mana' && splitManaAction) {
+    // "N mana in any combination of …", how many of each colour, as one
+    // answer — the engine used to ask each unit's colour in turn, fifty times
+    // for a big Klauth attack (a live report, 2026-10-08).
+    const { colors, amount } = splitManaAction
+    const sum = colors.reduce((n, c) => n + (manaSplit[c] ?? 0), 0)
+    controls = (
+      <div className="controls">
+        <span>
+          Add {amount} mana in any combination — {sum}/{amount}
+        </span>
+        <span className="stack-counts">
+          {colors.map((color) => {
+            const count = manaSplit[color] ?? 0
+            return (
+              <CountStepper
+                key={color}
+                label={`{${color}}`}
+                symbol={<Symbols text={`{${color}}`} />}
+                count={count}
+                max={count + (amount - sum)}
+                showMax={false}
+                onChange={(n) => setManaSplit((cur) => ({ ...cur, [color]: n }))}
+              />
+            )
+          })}
+        </span>
+        <button
+          type="button"
+          disabled={sum !== amount}
+          onClick={() => {
+            const counts = Object.fromEntries(
+              colors.flatMap((c): [string, number][] => ((manaSplit[c] ?? 0) > 0 ? [[c, manaSplit[c] ?? 0]] : [])),
+            )
+            setManaSplit({})
+            game.dispatch({ type: 'split-mana', player: seat, counts } as Action)
+          }}
+        >
+          Add mana
         </button>
       </div>
     )

@@ -2051,21 +2051,23 @@ How to use it:
 
 ### Klauth, Unrivaled Ancient
 
-*New decision* — 971565cd (per-unit colour prompts, spendOnly spells, persists)
+*New decision* — 971565cd (spendOnly spells, persists); the colours asked as one split since
+2026-10-08 (`split-mana`)
 
 - **Setup:** Your precombat main, 2-player. Klauth on the battlefield (haste), Grizzly Bears (not
   summoning sick), an untapped Mountain and Lightning Bolt in hand, Mind Stone, and a cheap spell in
   hand for the second main phase.
 - **Do:** Attack with Klauth and Bears. With the trigger on the stack, Bolt your own Bears. Answer
-  the colour prompts. Move on to postcombat main; try Mind Stone's draw ability using only the
+  the split prompt — try typing more into a field than is left. Move on to postcombat main; try Mind Stone's draw ability using only the
   floating mana, then cast the spell. Pass to the end step and the next turn.
 - **Check:** The trigger goes on the stack (not a mana ability — ruling) and X is read on
-  resolution: after the Bolt it's 4 (Klauth only), not 6. Four sequential 'Klauth, Unrivaled Ancient
-  — choose one' prompts of five buttons each (70 splits is too many to list), producing exactly what
-  you picked. The mana stays through combat into postcombat main, can cast a spell, can't pay an
+  resolution: after the Bolt it's 4 (Klauth only), not 6. One prompt, "Add 4 mana in any
+  combination" (70 splits is too many to list as options): a row per colour with its mana symbol,
+  − / field / +, and a running total. No field goes past what's left to share out, "Add mana" is
+  enabled only at 4/4, and the pool in your player header shows exactly what you picked. The mana stays through combat into postcombat main, can cast a spell, can't pay an
   ability (Mind Stone's draw isn't payable with it), and is gone by the next turn.
-- **Known limits:** The prompt for each unit looks the same and may not show how many remain. The
-  pool pips don't show the spells-only restriction.
+- **Known limits:** Up to 35 splits (three mana over five colours) are still one list of
+  combinations. The pool pips don't show the spells-only restriction.
 
 ### Gwenna, Eyes of Gaea
 

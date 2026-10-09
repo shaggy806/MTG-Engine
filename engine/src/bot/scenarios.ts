@@ -4098,7 +4098,6 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "splits Klauth's mana into the colours its hand casts",
     rule: "Mana in any combination of colours is for the spells in hand: Klauth's red and green, not five piles of white.",
-    kind: "training",
     run(weights, registry, makeBot) {
       // Reported from a live game (2026-10-08, no capture): the bot "has no
       // clue how to add mana in any combination of colors", and is asked it
@@ -4136,7 +4135,7 @@ const SCENARIOS: readonly BotScenario[] = [
       for (let i = 0; i < 500 && !game.state.result.over; i += 1) {
         const awaiting = pending();
         if (awaiting !== null && awaiting.player === A) {
-          if (awaiting.kind === "choose-modes") asked += 1;
+          if (awaiting.kind === "choose-modes" || awaiting.kind === "split-mana") asked += 1;
           game.dispatch(bot.act(viewOf(game, A)));
           continue;
         }
@@ -4150,7 +4149,7 @@ const SCENARIOS: readonly BotScenario[] = [
       const counts = (type: string): number => pool().filter((t) => t === type).length;
       return {
         passed: counts("R") >= 1 && counts("G") >= 2,
-        detail: `pool ${pool().join("") || "empty"} after ${asked} choose-modes decisions`,
+        detail: `pool ${pool().join("") || "empty"} after ${asked} colour decisions`,
       };
     },
   },

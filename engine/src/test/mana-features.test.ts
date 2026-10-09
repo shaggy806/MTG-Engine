@@ -592,19 +592,12 @@ describe("Klauth, Unrivaled Ancient", () => {
     game.advanceUntil((s: GameState) => s.turn.step === "precombat-main" && s.priority.holder === A);
     const klauth = spawn(game, "Klauth, Unrivaled Ancient");
     a.declareAttackersFn = () => [{ attacker: klauth, defender: B }];
-    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
-    // Four units over five colours are 70 splits: each unit is asked in turn.
-    for (const pick of [4, 4, 3, 0]) {
-      const awaiting = game.state.awaiting;
-      expect(awaiting?.kind === "choose-modes" && awaiting.modes.map((m) => m.text)).toEqual([
-        "Add {W}.",
-        "Add {U}.",
-        "Add {B}.",
-        "Add {R}.",
-        "Add {G}.",
-      ]);
-      game.dispatch({ type: "choose-modes", player: A, modes: [pick] });
-    }
+    game.advanceUntil((s) => s.awaiting?.kind === "split-mana");
+    // Four units over five colours are 70 splits: one decision of how many
+    // of each.
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind === "split-mana" && [awaiting.colors, awaiting.amount]).toEqual([["W", "U", "B", "R", "G"], 4]);
+    game.dispatch({ type: "split-mana", player: A, counts: { G: 2, R: 1, W: 1 } });
     expect(pool(game)).toMatchObject({ G: 2, R: 1, W: 1 });
     expect(game.state.players[A].manaPool.every((u) => u.persists === true && u.restriction !== undefined)).toBe(true);
     game.advanceUntil((s) => s.turn.step === "postcombat-main");

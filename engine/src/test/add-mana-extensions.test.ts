@@ -117,17 +117,35 @@ describe("mana a spell or an ability on the stack adds is chosen as it resolves"
     expect(pool(game)).toMatchObject({ B: 2, G: 1 });
   });
 
-  it("asks each unit's colour in turn when the splits are too many to list", () => {
+  it("asks how many of each colour, once, when the splits are too many to list", () => {
     const game = mkGame();
-    // Four mana in any combination of five colours: 70 splits.
+    // Four mana in any combination of five colours: 70 splits — one
+    // `split-mana` decision, where each unit used to be asked in turn (a live
+    // report, 2026-10-08: a big Klauth attack asked fifty times).
     game.debugApplyEffect(A, { kind: "add-mana", mana: { oneOf: ["W", "U", "B", "R", "G"] }, amount: 4 }, []);
-    for (const pick of [0, 1, 1, 4]) {
-      const awaiting = game.state.awaiting;
-      expect(awaiting?.kind === "choose-modes" && awaiting.modes).toHaveLength(5);
-      game.dispatch({ type: "choose-modes", player: A, modes: [pick] });
-    }
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind === "split-mana" && [awaiting.colors, awaiting.amount]).toEqual([["W", "U", "B", "R", "G"], 4]);
+    expect(game.legalActions(A)).toEqual([{ kind: "split-mana", colors: ["W", "U", "B", "R", "G"], amount: 4 }]);
+    // A split that doesn't add up, or names a colour not offered, is refused.
+    expect(() => game.dispatch({ type: "split-mana", player: A, counts: { W: 1, U: 2 } })).toThrow(/adds 3 mana, not 4/);
+    expect(() => game.dispatch({ type: "split-mana", player: A, counts: { C: 4 } })).toThrow(/not one of the colours/);
+    expect(() => game.dispatch({ type: "split-mana", player: A, counts: { W: 4.5, U: -0.5 } })).toThrow(/whole number/);
+    game.dispatch({ type: "split-mana", player: A, counts: { W: 1, U: 2, G: 1 } });
     expect(game.state.awaiting).toBeNull();
     expect(pool(game)).toMatchObject({ W: 1, U: 2, B: 0, R: 0, G: 1 });
+  });
+
+  it("still lists the splits as modes while there are few enough", () => {
+    const game = mkGame();
+    // Three mana over {R} and {G}: four splits, one modes choice.
+    game.debugApplyEffect(A, { kind: "add-mana", mana: { oneOf: ["R", "G"] }, amount: 3 }, []);
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind === "choose-modes" && awaiting.modes.map((m) => m.text)).toEqual([
+      "Add {R}{R}{R}.",
+      "Add {R}{R}{G}.",
+      "Add {R}{G}{G}.",
+      "Add {G}{G}{G}.",
+    ]);
   });
 
   it("'each player adds {B}{R}{G}' fills every player's pool (`who`)", () => {

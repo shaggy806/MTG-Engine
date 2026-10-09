@@ -892,5 +892,25 @@ export default {
     battlefield: { carol: ["Bontu's Monument"] },
     bots: { bob: {}, carol: {}, dave: {} },
   },
+  KLAUT: {
+    about:
+      "2p. Klauth's mana in one split: attack with Klauth and both Craw Wurms (16 power), pass, and its " +
+      "trigger asks how many of each colour in one prompt — steppers per colour, Add mana once they sum to 16.",
+    players: ["alice", "bob"],
+    lands: { alice: 3, bob: 3 },
+    battlefield: { alice: ["Klauth, Unrivaled Ancient", "Craw Wurm", "Craw Wurm"] },
+    hand: { alice: ["Lightning Bolt", "Craw Wurm"] },
+    setup: handOfSpellsOnly("alice"),
+    bots: { bob: {} },
+  },
+  KLAU4: {
+    about: "4p. KLAUT at a full table: attack bob, and the split prompt sits beside the four boards.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 3, bob: 3, carol: 3, dave: 3 },
+    battlefield: { alice: ["Klauth, Unrivaled Ancient", "Craw Wurm", "Craw Wurm"] },
+    hand: { alice: ["Lightning Bolt", "Craw Wurm"] },
+    setup: handOfSpellsOnly("alice"),
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
 
 };

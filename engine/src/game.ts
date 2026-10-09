@@ -140,6 +140,7 @@ import { chooseFromZone } from "./decisions/choose-from-zone.js";
 import { chooseModes } from "./decisions/choose-modes.js";
 import { chooseCreatureType } from "./decisions/choose-creature-type.js";
 import { proliferate } from "./decisions/proliferate.js";
+import { splitMana } from "./decisions/split-mana.js";
 import { CHANGEABLE_CREATURE_TYPES, chooseText } from "./decisions/choose-text.js";
 import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
 import { revealForUntapped } from "./decisions/reveal-for-untapped.js";
@@ -161,6 +162,7 @@ import type {
   DelayedNextSpell,
   EffectAmount,
   EffectSpec,
+  ManaSplitAsk,
   EnterTypes,
   FlickerCounters,
   FlickerOptions,
@@ -966,6 +968,7 @@ export class Game {
       applyTriggerOrder: (player, order) => this.applyTriggerOrder(player, order),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
+      applyManaSplit: (player, counts) => this.applyManaSplit(player, counts),
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
       applyModesChoice: (player, modes, x, forAll) =>
         this.applyModesChoice(player, modes, x, forAll),
@@ -17973,6 +17976,7 @@ export class Game {
         }
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
+      splitMana: (ask) => this.beginManaSplit(source, controller, x, ask),
       choosePermanents: (filter, min, max, then, prompt, exceptSource) =>
         this.beginChoosePermanents(source, controller, x, filter, min, max, then, prompt, exceptSource === true),
       grantKeyword: (target, keyword, duration) =>
@@ -21836,6 +21840,45 @@ export class Game {
     }
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
+
+  /** Raise a `split-mana` decision: `ask.amount` mana over `ask.colors`, how
+   * many of each `player` says (`effects.ts`' `addManaChoice`, past the
+   * splits it lists as modes). Nothing to ask with one colour or no mana. */
+  private beginManaSplit(source: ObjectId, player: PlayerId, x: number, ask: ManaSplitAsk): void {
+    this.state.awaiting = {
+      kind: "split-mana",
+      player,
+      colors: [...ask.colors],
+      amount: ask.amount,
+      riders: ask.riders,
+      then: ask.then,
+      source,
+      x,
+    };
+  }
+
+  /** Answers a pending `split-mana` decision: each colour's share added as
+   * its own `add-mana` with the mana's riders (a spend restriction,
+   * `persists`), in the order the colours were offered, then the rest of the
+   * instruction. */
+  private applyManaSplit(player: PlayerId, counts: Readonly<Partial<Record<ManaType, number>>>): void {
+    const why = splitMana.whyCannot(this.decisionCtx, { type: "split-mana", player, counts }, player);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "split-mana") {
+      throw new Error("unreachable: splitMana.whyCannot should have caught this");
+    }
+    const { colors, riders, then, source, x } = awaiting;
+    this.state.awaiting = null;
+    const context = this.makeResolutionContext(source, player, [], x);
+    for (const color of colors) {
+      const amount = counts[color] ?? 0;
+      if (amount > 0) applyEffectSpec({ kind: "add-mana", ...riders, mana: color, amount }, context);
+    }
+    if (then !== null) applyEffectSpec(then, context);
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+  }
+
 
   /**
    * See the `"choose-permanents"` {@link EffectSpec}: `player` chooses from

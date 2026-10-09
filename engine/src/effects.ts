@@ -4700,6 +4700,10 @@ export interface EffectApi {
   addCounter(target: TargetRef, counter: string, amount: number, by?: PlayerId): void;
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
   proliferate(then: EffectSpec | null): void;
+  /** "N mana in any combination of …" with too many splits to list as
+   * modes: the controller says how many of each colour, as one decision
+   * (`addManaChoice`). Absent on a bare context, which asks unit by unit. */
+  splitMana?(ask: ManaSplitAsk): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
   /** See the `"grant-triggered"` {@link EffectSpec}. */
   grantTriggered(
@@ -5854,8 +5858,26 @@ function targetsPermanentOrPlayer(spell: SpellSnapshot): boolean {
 }
 
 /** The most splits of "N mana in any combination of …" offered as the modes
- * of one choice; past it, each unit's colour is asked in turn. */
+ * of one choice; past it, one `split-mana` decision says how many of each
+ * colour. */
 const MAX_MANA_SPLIT_MODES = 35;
+
+/** What an `add-mana`'s mana carries besides its type and amount — a spend
+ * restriction, `persists` — laid on each colour of a split. */
+export type ManaSplitRiders = Omit<
+  Extract<EffectSpec, { kind: "add-mana" }>,
+  "kind" | "mana" | "amount" | "painToController" | "also"
+>;
+
+/** A `split-mana` decision to raise: `amount` mana over `colors`, each
+ * colour's share added with `riders`, then `then` (the rest of the
+ * instruction, if any). */
+export interface ManaSplitAsk {
+  readonly colors: readonly ManaType[];
+  readonly amount: number;
+  readonly riders: ManaSplitRiders;
+  readonly then: EffectSpec | null;
+}
 
 /**
  * An `add-mana` with a choice in it, as a spell or an ability on the stack
@@ -5867,8 +5889,10 @@ const MAX_MANA_SPLIT_MODES = 35;
  * colour, for every unit; "N mana in any combination of …" is one choice of
  * split when there are few enough of them (`MAX_MANA_SPLIT_MODES` — a
  * Culling Ritual's ten units over {B} and {G} are eleven; two of any colour
- * are fifteen), and otherwise each
- * unit's colour in turn. An amount read for "that color" (`{ devotionTo:
+ * are fifteen), and otherwise one `split-mana` decision of how many of each
+ * (`ResolutionContext.splitMana`) — before it, each unit's colour in turn,
+ * which a big Klauth attack made fifty decisions (a live report, 2026-10-08).
+ * A bare context without `splitMana` still asks unit by unit. An amount read for "that color" (`{ devotionTo:
  * "that-color" }`) is read for each colour on offer. What the mana carries
  * (a spend restriction, a rider, `persists`) rides on every mode; the rest of
  * the instruction — damage to its controller, `also` — follows once.
@@ -5921,6 +5945,20 @@ function addManaChoice(spec: Extract<EffectSpec, { kind: "add-mana" }>, ctx: Res
         }),
       );
       steps.push({ kind: "modal", minModes: 1, maxModes: 1, modes });
+    } else if (ctx.splitMana !== undefined) {
+      const rest: EffectSpec | null =
+        (painToController ?? 0) > 0 || also !== undefined
+          ? {
+              kind: "add-mana",
+              mana: "C",
+              amount: 0,
+              ...(painToController !== undefined ? { painToController } : {}),
+              ...(also !== undefined ? { also } : {}),
+            }
+          : null;
+      ctx.splitMana({ colors, amount: n, riders: carried, then: rest });
+      // Asked: the rest of the instruction rides on the decision.
+      return { kind: "sequence", effects: [] };
     } else {
       const modes = colors.map(
         (color): ModeOption => ({

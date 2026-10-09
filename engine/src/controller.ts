@@ -45,7 +45,7 @@ import {
   onlyUntilEndOfTurn,
   temporaryEffectCanMatter,
 } from "./effect-worth.js";
-import type { Color } from "./mana.js";
+import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { EnterAttackingChoice, GameObject, GameState, TriggerOrderEntry } from "./state.js";
 import { activePlayerOf, printedCardName } from "./state.js";
@@ -322,6 +322,16 @@ export interface PlayerController {
     view: ControllerView,
     eligible: readonly TargetRef[],
   ): readonly TargetRef[];
+  /**
+   * "Add `amount` mana in any combination of `colors`" (the `split-mana`
+   * decision): how many of each, summing to `amount`; a colour left out is
+   * none.
+   */
+  chooseManaSplit(
+    view: ControllerView,
+    colors: readonly ManaType[],
+    amount: number,
+  ): Readonly<Partial<Record<ManaType, number>>>;
   /**
    * An effect is resolving that chooses permanents without targeting them
    * ("untap up to two lands"): return from `min` to `max` of `eligible`,
@@ -648,6 +658,16 @@ export class AutomaticController implements PlayerController {
     return ownedProliferateTargets(view, eligible);
   }
 
+  chooseManaSplit(
+    _view: ControllerView,
+    colors: readonly ManaType[],
+    amount: number,
+  ): Readonly<Partial<Record<ManaType, number>>> {
+    // All of the first colour: the plain answer. The bots ask what the hand
+    // needs (`HeuristicBotController.chooseManaSplit`).
+    return colors.length === 0 ? {} : { [colors[0]]: amount };
+  }
+
   choosePermanents(
     view: ControllerView,
     eligible: readonly ObjectId[],
@@ -788,6 +808,11 @@ type ProliferateChooser = (
   view: ControllerView,
   eligible: readonly TargetRef[],
 ) => readonly TargetRef[];
+type ManaSplitChooser = (
+  view: ControllerView,
+  colors: readonly ManaType[],
+  amount: number,
+) => Readonly<Partial<Record<ManaType, number>>>;
 type DamageAssigner = (
   view: ControllerView,
   assignment: {
@@ -858,6 +883,9 @@ export class ScriptedController implements PlayerController {
    * about the choice. */
   chooseProliferateFn: ProliferateChooser = (view, eligible) =>
     ownedProliferateTargets(view, eligible);
+  /** All of the first colour, as `AutomaticController`'s. */
+  chooseManaSplitFn: ManaSplitChooser = (_view, colors, amount) =>
+    colors.length === 0 ? {} : { [colors[0]]: amount };
   /** Your own first, up to `max` — see `ownPermanentsFirst`; under a power
    * cap, the most power that fits (`keepMostPower`). */
   choosePermanentsFn: (
@@ -1058,6 +1086,14 @@ export class ScriptedController implements PlayerController {
     eligible: readonly TargetRef[],
   ): readonly TargetRef[] {
     return this.chooseProliferateFn(view, eligible);
+  }
+
+  chooseManaSplit(
+    view: ControllerView,
+    colors: readonly ManaType[],
+    amount: number,
+  ): Readonly<Partial<Record<ManaType, number>>> {
+    return this.chooseManaSplitFn(view, colors, amount);
   }
 
   choosePermanents(
@@ -3233,6 +3269,67 @@ export class HeuristicBotController extends AutomaticController {
       if (taken <= declined) return [];
     }
     return chosen.map((mode) => mode.index).sort((a, b) => a - b);
+  }
+
+  /**
+   * "N mana in any combination of …", split by need: one unit at a time to
+   * the colour the coloured pips of our hand's spells and our commanders in
+   * the command zone want most, less what the pool already holds; past what
+   * they want, shared among our commander's colours (and any the hand
+   * wants), or the hand's colours without a commander, or all of them. Before it
+   * every unit went to the first colour offered — white — and a red-green
+   * Klauth deck's attack made a pool it couldn't spend (a live report,
+   * 2026-10-08).
+   */
+  chooseManaSplit(
+    view: ControllerView,
+    colors: readonly ManaType[],
+    amount: number,
+  ): Readonly<Partial<Record<ManaType, number>>> {
+    const state = view.state;
+    const me = this.playerId;
+    const want = new Map<ManaType, number>(colors.map((c) => [c, 0]));
+    const castable = [
+      ...state.zones.perPlayer[me].hand,
+      ...state.zones.shared.command.filter((id) => state.objects[id]?.owner === me),
+    ];
+    for (const id of castable) {
+      const name = state.objects[id]?.cardName;
+      if (name === undefined || !this.registry.has(name)) continue;
+      const def = this.registry.get(name);
+      if (def.manaCost === null || def.types.includes("land")) continue;
+      for (const [color, n] of Object.entries(parseManaCost(def.manaCost).colored)) {
+        if (want.has(color as ManaType)) want.set(color as ManaType, (want.get(color as ManaType) ?? 0) + n);
+      }
+    }
+    for (const unit of state.players[me]?.manaPool ?? []) {
+      if (want.has(unit.type)) want.set(unit.type, (want.get(unit.type) ?? 0) - 1);
+    }
+    const identity = new Set<ManaType>(state.players[me]?.commanderIdentity ?? []);
+    const wanted = new Set(colors.filter((c) => (want.get(c) ?? 0) > 0));
+    const rank = (c: ManaType): number => (identity.has(c) ? 2 : 0) + (wanted.has(c) ? 1 : 0);
+    // Past what the hand wants, the rest is shared among the best-ranked
+    // colours only — not spread over all five.
+    const top = Math.max(...colors.map(rank));
+    const spare = colors.filter((c) => rank(c) === top);
+    const counts: Partial<Record<ManaType, number>> = {};
+    for (let i = 0; i < amount; i += 1) {
+      let best: ManaType | undefined;
+      let bestShort = 0;
+      for (const c of colors) {
+        const short = (want.get(c) ?? 0) - (counts[c] ?? 0);
+        if (short > bestShort || (short === bestShort && best !== undefined && rank(c) > rank(best))) {
+          best = c;
+          bestShort = short;
+        }
+      }
+      if (best === undefined) {
+        for (const c of spare) if (best === undefined || (counts[c] ?? 0) < (counts[best] ?? 0)) best = c;
+      }
+      if (best === undefined) break;
+      counts[best] = (counts[best] ?? 0) + 1;
+    }
+    return counts;
   }
 
   /** The cheapest of what may be sacrificed — see `cheapestPermanents`. */
