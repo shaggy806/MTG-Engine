@@ -2403,6 +2403,13 @@ export type EffectSpec =
       readonly duration: "end-of-turn" | "until-your-next-turn";
       readonly reduceSpells?: { readonly applies: CardFilter; readonly reduceGeneric: EffectAmount };
       readonly castFromHandFree?: { readonly filter?: CardFilter };
+      /** "You may cast Zombie spells from your graveyard this turn"
+       * (Liliana, Untouched by Death's −3): a permission over the
+       * controller's graveyard cards matching `filter`, the ones that reach
+       * it later this turn included (its ruling), each cast following its
+       * own timing and costs — the same graveyard-permission cast a
+       * `castFromGraveyard` static offers, never used up. */
+      readonly castFromGraveyard?: { readonly filter: CardFilter };
       readonly damageTo?: {
         readonly who: PlayerScope;
         readonly multiplier: number;
@@ -7004,6 +7011,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
             }
           : {}),
         ...(spec.castFromHandFree !== undefined ? { castFromHandFree: spec.castFromHandFree } : {}),
+        ...(spec.castFromGraveyard !== undefined
+          ? { castFromGraveyard: { filter: spec.castFromGraveyard.filter, source: ctx.source } }
+          : {}),
         ...(spec.damageTo !== undefined
           ? {
               damageTo: {

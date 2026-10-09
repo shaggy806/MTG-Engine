@@ -19634,6 +19634,20 @@ export class Game {
     ) {
       out.push({ grant: { source: card }, permission: null });
     }
+    // A resolved "you may cast [filter] spells from your graveyard this turn"
+    // (a `player-effect` — Liliana, Untouched by Death's −3): never used up,
+    // so it spends nothing.
+    for (const effect of this.state.playerEffects ?? []) {
+      const permission = effect.castFromGraveyard;
+      if (isLand || effect.owner !== player || permission === undefined) continue;
+      if (
+        this.withFace(card, face, () =>
+          matchesFilter(this.state, this.registry, card, permission.filter, { you: player }),
+        )
+      ) {
+        out.push({ grant: { source: permission.source }, permission: { filter: permission.filter } });
+      }
+    }
     for (const id of this.state.zones.shared.battlefield) {
       const grantor = this.state.objects[id];
       if (grantor.controller !== player) continue;
@@ -20899,14 +20913,23 @@ export class Game {
     const slotSpecs: TargetSpec[] = [];
     const options: TargetRef[][] = [];
     const current: TargetRef[] = [];
+    // A copy keeps its number of targets (rule 707.10c), so an "any number
+    // of target …" group is as many single slots as it has members — each
+    // one target of the group's spec, another than the members before it
+    // (rule 601.2c) — never a group again: offered as one, a chooser took it
+    // for a fresh "any number" and answered six for a copy with two.
+    const concrete = concreteTargetSpecs(specs, targets.length);
+    const group = anyNumberSlot(specs);
     targets.forEach((target, i) => {
       if (target === undefined || auto.has(i)) return;
-      // An "any number of" group is the last spec, standing for every
-      // target from there on.
-      const spec = specs[Math.min(i, specs.length - 1)];
+      const spec = concrete[Math.min(i, concrete.length - 1)];
+      // What a group member may be is the group's own spec; the "another
+      // than the ones before it" relation is checked across the answer.
+      const inGroup = group >= 0 && i >= group;
+      const member = inGroup && typeof spec === "object" && spec.kind === "other" ? spec.of : spec;
       // Never the copy itself: a spell or ability on the stack is an illegal
       // target for itself (rule 115.5).
-      const legal = legalTargets(this.state, this.registry, spec, copy.controller, source).filter(
+      const legal = legalTargets(this.state, this.registry, member, copy.controller, source).filter(
         (t) => t.kind !== "object" || t.object !== copyId,
       );
       slots.push(i);

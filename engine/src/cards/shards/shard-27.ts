@@ -127,6 +127,7 @@ import _poolLathnuSailback from "../pool/lathnu-sailback.js";
 import _poolLeatherbackBaloth from "../pool/leatherback-baloth.js";
 import _poolLeatherheadIronGator from "../pool/leatherhead-iron-gator.js";
 import _poolLeoninSunStandard from "../pool/leonin-sun-standard.js";
+import _poolLilianaUntouchedByDeath from "../pool/liliana-untouched-by-death.js";
 import _poolLlanowarStalker from "../pool/llanowar-stalker.js";
 import _poolLongRangeSensor from "../pool/long-range-sensor.js";
 import _poolLordOfTheForsaken from "../pool/lord-of-the-forsaken.js";
@@ -404,6 +405,7 @@ const shard: CardShard = {
     _poolLeatherbackBaloth,
     _poolLeatherheadIronGator,
     _poolLeoninSunStandard,
+    _poolLilianaUntouchedByDeath,
     _poolLlanowarStalker,
     _poolLongRangeSensor,
     _poolLordOfTheForsaken,

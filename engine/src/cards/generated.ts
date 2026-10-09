@@ -4155,6 +4155,7 @@ import _poolLightningStrike from "./pool/lightning-strike.js";
 import _poolLightningTalons from "./pool/lightning-talons.js";
 import _poolLightningWolf from "./pool/lightning-wolf.js";
 import _poolLightshieldParry from "./pool/lightshield-parry.js";
+import _poolLilianaUntouchedByDeath from "./pool/liliana-untouched-by-death.js";
 import _poolLilianaVess from "./pool/liliana-vess.js";
 import _poolLilianasCaress from "./pool/lilianas-caress.js";
 import _poolLilianasDevotee from "./pool/lilianas-devotee.js";
@@ -12947,6 +12948,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLightningTalons,
   _poolLightningWolf,
   _poolLightshieldParry,
+  _poolLilianaUntouchedByDeath,
   _poolLilianaVess,
   _poolLilianasCaress,
   _poolLilianasDevotee,

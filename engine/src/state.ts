@@ -2835,6 +2835,10 @@ export interface PlayerEffect {
   /** `owner` may cast matching spells from their hand without paying their
    * mana costs. */
   readonly castFromHandFree?: { readonly filter?: CardFilter };
+  /** `owner` may cast matching spells from their graveyard (Liliana,
+   * Untouched by Death's −3) — a graveyard grant whose `source` is the
+   * effect's source, never used up. */
+  readonly castFromGraveyard?: { readonly filter: CardFilter; readonly source: ObjectId };
   /** Damage any source would deal to one of `players` — or, with
    * `permanentsToo`, to a permanent one of them controls — is multiplied. */
   readonly damageTo?: {

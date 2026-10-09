@@ -218,7 +218,8 @@ How to use it:
 | [Life from the Loam](#life-from-the-loam) | new decision | The TDC precons' last cards |
 | [Deadpool, Trading Card](#deadpool-trading-card) | new decision | Exchanging text boxes |
 | [Reality Shift](#reality-shift) | new decision | Face-down permanents |
-| [Ob Nixilis Reignited, Koth, Fire of Resistance](#ob-nixilis-reignited-koth-fire-of-resistance) | rules call | Emblems with triggered abilities |
+| [Ob Nixilis Reignited, Koth, Fire of Resistance](#ob-nixilis-reignited-koth-fire-of-resistance) | rules call | Emblems with triggered abilities, and a turn-long graveyard permission |
+| [Liliana, Untouched by Death](#liliana-untouched-by-death) | rules call | Emblems with triggered abilities, and a turn-long graveyard permission |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4163,7 +4164,7 @@ stack count once per token)
   Killed while face down, it's revealed as it goes to the graveyard. A face-down Forest or other
   noncreature card is never offered to turn face up.
 
-## Emblems with triggered abilities (2026-10-09)
+## Emblems with triggered abilities, and a turn-long graveyard permission (2026-10-09)
 
 ### Ob Nixilis Reignited, Koth, Fire of Resistance
 
@@ -4179,3 +4180,16 @@ stack count once per token)
   When bob draws for his turn the stack shows the Ob Nixilis emblem's ability, and it's bob who loses
   2 life — and again for each card you draw.
 - **Known limits:** An emblem's static abilities are still anthems only (AUTHORING §15).
+
+### Liliana, Untouched by Death
+
+*Rules call* — a turn-long permission to cast Zombie spells from your graveyard
+
+- **Setup:** Your battlefield: Liliana, Untouched by Death and four Swamps. Your graveyard: Diregraf
+  Ghoul and Grizzly Bears. Your hand: Diregraf Ghoul and Village Rites.
+- **Do:** Activate Liliana's −3. Cast the Diregraf Ghoul from your graveyard. Then cast the one in
+  your hand, cast Village Rites sacrificing it, and cast it again from your graveyard.
+- **Check:** After the −3 the graveyard Ghoul is castable from your graveyard (paying {B}); the
+  Grizzly Bears isn't. A Ghoul that reaches the graveyard later in the turn is castable too (its
+  ruling). On your next turn neither is offered.
+- **Known limits:** None documented.

@@ -34,7 +34,9 @@ import {
   subtypes,
   supertypes,
   table,
+  toGraveyard,
   toHand,
+  toLibrary,
   toStep,
   types,
   tokensNamed,
@@ -423,5 +425,48 @@ describe("prevent-damage amount: \"all\"", () => {
     settle(game);
     expect(game.state.objects[wurm].damageMarked).toBe(0);
     expect(zone(game, wurm)).toBe("battlefield");
+  });
+});
+
+describe("Liliana, Untouched by Death", () => {
+  it("−3: Zombie spells castable from your graveyard this turn — one put there afterwards too, and not other cards", () => {
+    const { game } = table();
+    const liliana = spawn(game, "Liliana, Untouched by Death");
+    lands(game, "Swamp", 4);
+    const bears = toGraveyard(game, "Grizzly Bears");
+    loyalty(game, liliana, -3);
+    // Put there after the ability resolved, still castable (its ruling).
+    const zombie = toGraveyard(game, "Diregraf Ghoul");
+    const offered = (id: string): boolean => game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === id);
+    expect(offered(zombie)).toBe(true);
+    expect(offered(bears)).toBe(false);
+    cast(game, zombie, { via: "graveyard-permission" });
+    expect(zone(game, zombie)).toBe("battlefield");
+    // The permission ends with the turn.
+    const later = toGraveyard(game, "Diregraf Ghoul");
+    toStep(game, "precombat-main", B);
+    toStep(game, "precombat-main");
+    expect(offered(later)).toBe(false);
+  });
+
+  it("+1: drains only if a Zombie card was milled", () => {
+    const { game } = table();
+    const liliana = spawn(game, "Liliana, Untouched by Death");
+    toLibrary(game, "Diregraf Ghoul");
+    loyalty(game, liliana, 1);
+    expect([life(game, A), life(game, B)]).toEqual([22, 18]);
+    const second = table();
+    const other = spawn(second.game, "Liliana, Untouched by Death");
+    loyalty(second.game, other, 1);
+    expect([life(second.game, A), life(second.game, B)]).toEqual([20, 20]);
+  });
+
+  it("−2: -X/-X where X is your Zombies", () => {
+    const { game } = table();
+    const liliana = spawn(game, "Liliana, Untouched by Death");
+    lands(game, "Diregraf Ghoul", 2);
+    const wurm = spawn(game, "Craw Wurm", B);
+    loyalty(game, liliana, -2, { targets: [ref(wurm)] });
+    expect(pt(game, wurm)).toEqual({ power: 4, toughness: 2 });
   });
 });

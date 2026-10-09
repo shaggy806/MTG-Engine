@@ -2474,6 +2474,16 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Liliana, Untouched by Death',
+    board({
+      you: {
+        bf: ['Liliana, Untouched by Death', 'Swamp*4'],
+        gy: ['Diregraf Ghoul', 'Grizzly Bears'],
+        hand: ['Diregraf Ghoul', 'Village Rites'],
+      },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },
