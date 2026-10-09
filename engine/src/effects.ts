@@ -1365,7 +1365,11 @@ export type EffectSpec =
        * Sacrifice one named permanent — "**sacrifice the creature** at the
        * beginning of the next end step" (Sneak Attack). Unlike `sacrifice`,
        * which is an edict its victim's controller answers, this one already
-       * knows which permanent, so there is no decision at all.
+       * knows which permanent, so there is no decision at all. The effect's
+       * controller sacrifices it, so only while they control it (rule
+       * 701.21a): one someone else has taken by the end step stays. "Its
+       * controller may sacrifice it" (Star Athlete) is an `each-player-may`
+       * asking that controller, whose effect this then is.
        */
       readonly kind: "sacrifice-target";
       readonly target: EffectTargetRef;

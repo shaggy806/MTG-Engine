@@ -301,6 +301,7 @@ import _poolAphettoGrifter from "./pool/aphetto-grifter.js";
 import _poolAppendageAmalgam from "./pool/appendage-amalgam.js";
 import _poolAppetiteForTheUnnatural from "./pool/appetite-for-the-unnatural.js";
 import _poolAppliedBiomancy from "./pool/applied-biomancy.js";
+import _poolApprenticeNecromancer from "./pool/apprentice-necromancer.js";
 import _poolApprenticeWizard from "./pool/apprentice-wizard.js";
 import _poolApproachOfTheSecondSun from "./pool/approach-of-the-second-sun.js";
 import _poolAqueousForm from "./pool/aqueous-form.js";
@@ -1379,6 +1380,7 @@ import _poolCombatTutorial from "./pool/combat-tutorial.js";
 import _poolCombineChrysalis from "./pool/combine-chrysalis.js";
 import _poolCombustibleGearhulk from "./pool/combustible-gearhulk.js";
 import _poolCombustionMan from "./pool/combustion-man.js";
+import _poolComeBackWrong from "./pool/come-back-wrong.js";
 import _poolCommandBeacon from "./pool/command-beacon.js";
 import _poolCommandTheStorm from "./pool/command-the-storm.js";
 import _poolCommandTower from "./pool/command-tower.js";
@@ -9058,6 +9060,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAppendageAmalgam,
   _poolAppetiteForTheUnnatural,
   _poolAppliedBiomancy,
+  _poolApprenticeNecromancer,
   _poolApprenticeWizard,
   _poolApproachOfTheSecondSun,
   _poolAqueousForm,
@@ -10136,6 +10139,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCombineChrysalis,
   _poolCombustibleGearhulk,
   _poolCombustionMan,
+  _poolComeBackWrong,
   _poolCommandBeacon,
   _poolCommandTheStorm,
   _poolCommandTower,

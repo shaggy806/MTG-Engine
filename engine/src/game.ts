@@ -17374,10 +17374,15 @@ export class Game {
         // One that can't be sacrificed just stays (rule 701.21a) — checked
         // before a token is peeled off a stack for it.
         if (!this.canBeSacrificed(target.object)) return;
+        // "Sacrifice it" is the effect's controller's instruction, and a
+        // player can't sacrifice a permanent they don't control (rule
+        // 701.21a): once someone else has taken it, nothing happens (Sneak
+        // Attack's end step, Come Back Wrong). "Its controller may sacrifice
+        // it" (Star Athlete) is asked of that controller, whose effect it is.
+        if (this.state.objects[target.object]?.controller !== controller) return;
         const id = this.splitOneFromStack(target.object);
         const object = this.state.objects[id];
         if (object === undefined || object.zone !== "battlefield") return;
-        // Its controller sacrifices it (rule 701.21a), not its owner.
         const sacrificer = object.controller;
         this.moveObject(id, "graveyard");
         this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });

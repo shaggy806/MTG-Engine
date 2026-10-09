@@ -10,6 +10,7 @@ import _poolAlrundsEpiphany from "../pool/alrunds-epiphany.js";
 import _poolAltarOfDementia from "../pool/altar-of-dementia.js";
 import _poolAlwaysWatching from "../pool/always-watching.js";
 import _poolAncientGrudge from "../pool/ancient-grudge.js";
+import _poolApprenticeNecromancer from "../pool/apprentice-necromancer.js";
 import _poolAquusSteed from "../pool/aquus-steed.js";
 import _poolArcaneEncyclopedia from "../pool/arcane-encyclopedia.js";
 import _poolArmoredPegasus from "../pool/armored-pegasus.js";
@@ -287,6 +288,7 @@ const shard: CardShard = {
     _poolAltarOfDementia,
     _poolAlwaysWatching,
     _poolAncientGrudge,
+    _poolApprenticeNecromancer,
     _poolAquusSteed,
     _poolArcaneEncyclopedia,
     _poolArmoredPegasus,

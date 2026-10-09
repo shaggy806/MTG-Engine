@@ -41,6 +41,7 @@ import _poolClarionCathars from "../pool/clarion-cathars.js";
 import _poolClementTheWorrywort from "../pool/clement-the-worrywort.js";
 import _poolCloudheathDrake from "../pool/cloudheath-drake.js";
 import _poolCodexShredder from "../pool/codex-shredder.js";
+import _poolComeBackWrong from "../pool/come-back-wrong.js";
 import _poolConformerShuriken from "../pool/conformer-shuriken.js";
 import _poolCosmicSpiderMan from "../pool/cosmic-spider-man.js";
 import _poolCourierHawk from "../pool/courier-hawk.js";
@@ -292,6 +293,7 @@ const shard: CardShard = {
     _poolClementTheWorrywort,
     _poolCloudheathDrake,
     _poolCodexShredder,
+    _poolComeBackWrong,
     _poolConformerShuriken,
     _poolCosmicSpiderMan,
     _poolCourierHawk,
