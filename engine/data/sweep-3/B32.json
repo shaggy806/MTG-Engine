@@ -1105,7 +1105,7 @@
     {
       "name": "Tamiyo, the Moon Sage",
       "needs": [
-        "effect:emblem-triggered-abilities"
+        "effect:emblem-static-abilities"
       ],
       "why": "-8 emblem has a triggered ability; +1 'doesn't untap during its controller's next untap step' also unchecked"
     },

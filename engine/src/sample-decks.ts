@@ -1009,7 +1009,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Explosion of Riches", "Fireball", "Top-end damage spell aimed at opponents."),
       sub("Fiery Confluence", "Chain Reaction", "Four-mana red sweeper."),
       sub("Molten Slagheap", "Sulfurous Springs", "Land that makes both colours."),
-      sub("Ob Nixilis Reignited", "Ob Nixilis, the Fallen", "Same-cost black Ob Nixilis that drains life; no black-red planeswalker of the kind is implemented."),
       sub("Profane Command", "Kolaghan's Command", "Modal black-red Command with a recursion mode."),
       sub("Scythe Specter", "Hypnotic Specter", "Flying Specter that makes opponents discard."),
       sub("Sunbird's Invocation", "Phyrexian Arena", "Card-advantage enchantment."),

@@ -132,6 +132,7 @@ import _poolIymrithDesertDoom from "../pool/iymrith-desert-doom.js";
 import _poolIzzetSignet from "../pool/izzet-signet.js";
 import _poolJerrardOfTheClosedFist from "../pool/jerrard-of-the-closed-fist.js";
 import _poolJungleBarrier from "../pool/jungle-barrier.js";
+import _poolKaitoCunningInfiltrator from "../pool/kaito-cunning-infiltrator.js";
 import _poolKarplusanForest from "../pool/karplusan-forest.js";
 import _poolKazanduRefuge from "../pool/kazandu-refuge.js";
 import _poolKiteShield from "../pool/kite-shield.js";
@@ -396,6 +397,7 @@ const shard: CardShard = {
     _poolIzzetSignet,
     _poolJerrardOfTheClosedFist,
     _poolJungleBarrier,
+    _poolKaitoCunningInfiltrator,
     _poolKarplusanForest,
     _poolKazanduRefuge,
     _poolKiteShield,

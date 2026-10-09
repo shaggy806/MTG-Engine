@@ -281,6 +281,7 @@ import _tokensInsectTokenCanoptekScarabSwarm from "../tokens/insect-token-canopt
 import _tokensJunkToken from "../tokens/junk-token.js";
 import _tokensLanderToken from "../tokens/lander-token.js";
 import _tokensMeteoriteToken from "../tokens/meteorite-token.js";
+import _tokensNinjaToken from "../tokens/ninja-token.js";
 import _tokensPowerstoneToken from "../tokens/powerstone-token.js";
 import _tokensWizardTokenGuff from "../tokens/wizard-token-guff.js";
 
@@ -566,6 +567,7 @@ const shard: CardShard = {
     _tokensJunkToken,
     _tokensLanderToken,
     _tokensMeteoriteToken,
+    _tokensNinjaToken,
     _tokensPowerstoneToken,
     _tokensWizardTokenGuff,
   ],

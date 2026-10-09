@@ -3717,6 +3717,7 @@ import _poolIzzetLocket from "./pool/izzet-locket.js";
 import _poolIzzetSignet from "./pool/izzet-signet.js";
 import _poolJaceBeleren from "./pool/jace-beleren.js";
 import _poolJaceMemoryAdept from "./pool/jace-memory-adept.js";
+import _poolJaceUnravelerOfSecrets from "./pool/jace-unraveler-of-secrets.js";
 import _poolJaceWielderOfMysteries from "./pool/jace-wielder-of-mysteries.js";
 import _poolJacesIngenuity from "./pool/jaces-ingenuity.js";
 import _poolJacesSanctum from "./pool/jaces-sanctum.js";
@@ -3819,6 +3820,7 @@ import _poolKabiraPlateau from "./pool/kabira-plateau.js";
 import _poolKabiraTakedown from "./pool/kabira-takedown.js";
 import _poolKabutoMoth from "./pool/kabuto-moth.js";
 import _poolKaervekTheMerciless from "./pool/kaervek-the-merciless.js";
+import _poolKaitoCunningInfiltrator from "./pool/kaito-cunning-infiltrator.js";
 import _poolKalakscionHungerTyrant from "./pool/kalakscion-hunger-tyrant.js";
 import _poolKalamaxTheStormsire from "./pool/kalamax-the-stormsire.js";
 import _poolKalastriaNightwatch from "./pool/kalastria-nightwatch.js";
@@ -3988,6 +3990,7 @@ import _poolKorSkyClimber from "./pool/kor-sky-climber.js";
 import _poolKorlessaScaleSinger from "./pool/korlessa-scale-singer.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolKoskunKeep from "./pool/koskun-keep.js";
+import _poolKothFireOfResistance from "./pool/koth-fire-of-resistance.js";
 import _poolKothsCourier from "./pool/koths-courier.js";
 import _poolKotisSibsigChampion from "./pool/kotis-sibsig-champion.js";
 import _poolKozileksChanneler from "./pool/kozileks-channeler.js";
@@ -4900,6 +4903,7 @@ import _poolNipGwyllion from "./pool/nip-gwyllion.js";
 import _poolNirkanaAssassin from "./pool/nirkana-assassin.js";
 import _poolNirkanaRevenant from "./pool/nirkana-revenant.js";
 import _poolNissaResurgentAnimist from "./pool/nissa-resurgent-animist.js";
+import _poolNissaVitalForce from "./pool/nissa-vital-force.js";
 import _poolNissaVoiceOfZendikar from "./pool/nissa-voice-of-zendikar.js";
 import _poolNissaWhoShakesTheWorld from "./pool/nissa-who-shakes-the-world.js";
 import _poolNissasExpedition from "./pool/nissas-expedition.js";
@@ -4963,6 +4967,7 @@ import _poolOakhollowVillage from "./pool/oakhollow-village.js";
 import _poolOashraCultivator from "./pool/oashra-cultivator.js";
 import _poolOasisGardener from "./pool/oasis-gardener.js";
 import _poolOathswornVampire from "./pool/oathsworn-vampire.js";
+import _poolObNixilisReignited from "./pool/ob-nixilis-reignited.js";
 import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
 import _poolObekaSplitterOfSeconds from "./pool/obeka-splitter-of-seconds.js";
 import _poolObeliskOfAlara from "./pool/obelisk-of-alara.js";
@@ -7191,6 +7196,7 @@ import _poolTectonicGiant from "./pool/tectonic-giant.js";
 import _poolTectonicHazard from "./pool/tectonic-hazard.js";
 import _poolTeeteringPeaks from "./pool/teetering-peaks.js";
 import _poolTeeterpeakAmbusher from "./pool/teeterpeak-ambusher.js";
+import _poolTeferiHeroOfDominaria from "./pool/teferi-hero-of-dominaria.js";
 import _poolTeferisProtege from "./pool/teferis-protege.js";
 import _poolTeferisPuzzleBox from "./pool/teferis-puzzle-box.js";
 import _poolTeferisTimeTwist from "./pool/teferis-time-twist.js";
@@ -7271,6 +7277,8 @@ import _poolTeysaEnvoyOfGhosts from "./pool/teysa-envoy-of-ghosts.js";
 import _poolTeysaKarlov from "./pool/teysa-karlov.js";
 import _poolTeysaOpulentOligarch from "./pool/teysa-opulent-oligarch.js";
 import _poolTeysaOrzhovScion from "./pool/teysa-orzhov-scion.js";
+import _poolTezzeretArtificeMaster from "./pool/tezzeret-artifice-master.js";
+import _poolTezzeretCruelCaptain from "./pool/tezzeret-cruel-captain.js";
 import _poolTezzeretsGambit from "./pool/tezzerets-gambit.js";
 import _poolThaliaAndTheGitrogMonster from "./pool/thalia-and-the-gitrog-monster.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
@@ -8073,6 +8081,7 @@ import _poolVoyagerQuickwelder from "./pool/voyager-quickwelder.js";
 import _poolVoyagesEnd from "./pool/voyages-end.js";
 import _poolVoyagingSatyr from "./pool/voyaging-satyr.js";
 import _poolVraanExecutionerThane from "./pool/vraan-executioner-thane.js";
+import _poolVraskaGolgariQueen from "./pool/vraska-golgari-queen.js";
 import _poolVraskaJoinsUp from "./pool/vraska-joins-up.js";
 import _poolVraskasContempt from "./pool/vraskas-contempt.js";
 import _poolVraskasFall from "./pool/vraskas-fall.js";
@@ -8461,6 +8470,7 @@ import _poolZagothCrystal from "./pool/zagoth-crystal.js";
 import _poolZagothTriome from "./pool/zagoth-triome.js";
 import _poolZap from "./pool/zap.js";
 import _poolZarichiTiger from "./pool/zarichi-tiger.js";
+import _poolZarielArchdukeOfAvernus from "./pool/zariel-archduke-of-avernus.js";
 import _poolZaxaraTheExemplary from "./pool/zaxara-the-exemplary.js";
 import _poolZealotOfTheGodPharaoh from "./pool/zealot-of-the-god-pharaoh.js";
 import _poolZealousConscripts from "./pool/zealous-conscripts.js";
@@ -8576,6 +8586,7 @@ import _tokensConstructTokenRetrofitterFoundry from "./tokens/construct-token-re
 import _tokensCragflame from "./tokens/cragflame.js";
 import _tokensDeathtouchRatToken from "./tokens/deathtouch-rat-token.js";
 import _tokensDeathtouchSnakeToken from "./tokens/deathtouch-snake-token.js";
+import _tokensDevilToken from "./tokens/devil-token.js";
 import _tokensDinosaurToken31 from "./tokens/dinosaur-token-3-1.js";
 import _tokensDinosaurToken from "./tokens/dinosaur-token.js";
 import _tokensDragonEggToken from "./tokens/dragon-egg-token.js";
@@ -8679,6 +8690,7 @@ import _tokensMunitionsToken from "./tokens/munitions-token.js";
 import _tokensMutavaultToken from "./tokens/mutavault-token.js";
 import _tokensMyrToken from "./tokens/myr-token.js";
 import _tokensNecronWarriorToken from "./tokens/necron-warrior-token.js";
+import _tokensNinjaToken from "./tokens/ninja-token.js";
 import _tokensOctopusToken from "./tokens/octopus-token.js";
 import _tokensOgreToken from "./tokens/ogre-token.js";
 import _tokensOxToken from "./tokens/ox-token.js";
@@ -12496,6 +12508,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolIzzetSignet,
   _poolJaceBeleren,
   _poolJaceMemoryAdept,
+  _poolJaceUnravelerOfSecrets,
   _poolJaceWielderOfMysteries,
   _poolJacesIngenuity,
   _poolJacesSanctum,
@@ -12598,6 +12611,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKabiraTakedown,
   _poolKabutoMoth,
   _poolKaervekTheMerciless,
+  _poolKaitoCunningInfiltrator,
   _poolKalakscionHungerTyrant,
   _poolKalamaxTheStormsire,
   _poolKalastriaNightwatch,
@@ -12767,6 +12781,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKorlessaScaleSinger,
   _poolKorvoldFaeCursedKing,
   _poolKoskunKeep,
+  _poolKothFireOfResistance,
   _poolKothsCourier,
   _poolKotisSibsigChampion,
   _poolKozileksChanneler,
@@ -13679,6 +13694,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNirkanaAssassin,
   _poolNirkanaRevenant,
   _poolNissaResurgentAnimist,
+  _poolNissaVitalForce,
   _poolNissaVoiceOfZendikar,
   _poolNissaWhoShakesTheWorld,
   _poolNissasExpedition,
@@ -13742,6 +13758,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOashraCultivator,
   _poolOasisGardener,
   _poolOathswornVampire,
+  _poolObNixilisReignited,
   _poolObNixilisTheFallen,
   _poolObekaSplitterOfSeconds,
   _poolObeliskOfAlara,
@@ -15970,6 +15987,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTectonicHazard,
   _poolTeeteringPeaks,
   _poolTeeterpeakAmbusher,
+  _poolTeferiHeroOfDominaria,
   _poolTeferisProtege,
   _poolTeferisPuzzleBox,
   _poolTeferisTimeTwist,
@@ -16050,6 +16068,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTeysaKarlov,
   _poolTeysaOpulentOligarch,
   _poolTeysaOrzhovScion,
+  _poolTezzeretArtificeMaster,
+  _poolTezzeretCruelCaptain,
   _poolTezzeretsGambit,
   _poolThaliaAndTheGitrogMonster,
   _poolThaliaGuardianOfThraben,
@@ -16852,6 +16872,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVoyagesEnd,
   _poolVoyagingSatyr,
   _poolVraanExecutionerThane,
+  _poolVraskaGolgariQueen,
   _poolVraskaJoinsUp,
   _poolVraskasContempt,
   _poolVraskasFall,
@@ -17240,6 +17261,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZagothTriome,
   _poolZap,
   _poolZarichiTiger,
+  _poolZarielArchdukeOfAvernus,
   _poolZaxaraTheExemplary,
   _poolZealotOfTheGodPharaoh,
   _poolZealousConscripts,
@@ -17361,6 +17383,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensCragflame,
   _tokensDeathtouchRatToken,
   _tokensDeathtouchSnakeToken,
+  _tokensDevilToken,
   _tokensDinosaurToken31,
   _tokensDinosaurToken,
   _tokensDragonEggToken,
@@ -17464,6 +17487,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensMutavaultToken,
   _tokensMyrToken,
   _tokensNecronWarriorToken,
+  _tokensNinjaToken,
   _tokensOctopusToken,
   _tokensOgreToken,
   _tokensOxToken,

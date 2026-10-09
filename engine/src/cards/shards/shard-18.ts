@@ -249,6 +249,7 @@ import _poolVampireSpawn from "../pool/vampire-spawn.js";
 import _poolVastwoodThicket from "../pool/vastwood-thicket.js";
 import _poolViashinoRunner from "../pool/viashino-runner.js";
 import _poolVoidRend from "../pool/void-rend.js";
+import _poolVraskaGolgariQueen from "../pool/vraska-golgari-queen.js";
 import _poolVulshokSorcerer from "../pool/vulshok-sorcerer.js";
 import _poolWallOfAir from "../pool/wall-of-air.js";
 import _poolWargate from "../pool/wargate.js";
@@ -535,6 +536,7 @@ const shard: CardShard = {
     _poolVastwoodThicket,
     _poolViashinoRunner,
     _poolVoidRend,
+    _poolVraskaGolgariQueen,
     _poolVulshokSorcerer,
     _poolWallOfAir,
     _poolWargate,

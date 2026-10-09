@@ -59,6 +59,7 @@ import {
   whyCannotBlock,
 } from "./combat/eligibility.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
+import { EMBLEM_CARD } from "./cards/emblem.js";
 import type {
   AdditionalCostOption,
   CardDefinition,
@@ -14399,6 +14400,9 @@ export class Game {
     // would otherwise rescan the battlefield for every permanent on it.
     const triggerGrantors = this.triggeredGrantSources();
     const candidates = new Set<ObjectId>(this.state.zones.shared.battlefield);
+    // An emblem's triggered abilities work from the command zone (rule
+    // 114.4): its object is scanned with the battlefield, every ability of it.
+    for (const emblem of this.state.emblems) if (emblem.object !== undefined) candidates.add(emblem.object);
     // Eminence (an ability word, rule 207.2c): a card in the command zone
     // whose triggered ability says it functions there (rule 113.6b). Added to
     // the same scan rather than given one of its own, so ordering, APNAP and
@@ -18658,9 +18662,16 @@ export class Game {
       addPlayerCounters: (player, counter, amount) =>
         this.changePlayerCounters(player, counter, amount),
       playerCountersOf: (player, counter) => this.state.players[player]?.counters[counter] ?? 0,
-      createEmblem: (text, staticAbility) => {
+      createEmblem: (text, staticAbility, triggered, owner) => {
         const from = this.state.objects[source];
-        this.createEmblem(controller, text, staticAbility ?? null, from === undefined ? undefined : nameOf(from));
+        this.createEmblem(
+          owner ?? controller,
+          text,
+          staticAbility ?? null,
+          from === undefined ? undefined : nameOf(from),
+          triggered ?? [],
+          controller,
+        );
       },
       preventAllCombatDamage: (by) => {
         if (by !== undefined) {
@@ -25588,13 +25599,39 @@ export class Game {
     this.emit({ type: "monarch-changed", player, via });
   }
 
-  /** Give `owner` an emblem (rule 114 — ROADMAP Phase 10). */
+  /**
+   * Give `owner` an emblem (rule 114 — ROADMAP Phase 10), made by an effect
+   * `createdBy` controlled. One with triggered abilities is also an object
+   * (`EmblemState.object`): kind `"emblem"`, in the command zone but in no
+   * zone list (it isn't a commander, can't be cast and never moves), owned
+   * and controlled by `owner` (rule 114.2), carrying its abilities on one
+   * permanent modifier the way a granted trigger rides one — so
+   * `detectTriggers` scans it with the battlefield, and its abilities
+   * trigger and resolve as any permanent's do (rule 114.4).
+   */
   private createEmblem(
     owner: PlayerId,
     text: string,
     staticAbility: StaticAbility | null,
     sourceName: string | undefined,
+    triggered: readonly TriggeredAbility[] = [],
+    createdBy: PlayerId = owner,
   ): void {
+    let object: ObjectId | undefined;
+    if (triggered.length > 0) {
+      object = this.makeCardObject(EMBLEM_CARD, owner, { zone: "command" });
+      const emblem = this.state.objects[object];
+      emblem.kind = "emblem";
+      emblem.timestamp = this.freshTimestamp();
+      emblem.modifiers.push({
+        timestamp: emblem.timestamp,
+        power: 0,
+        toughness: 0,
+        keywords: [],
+        grantsTriggered: [...triggered],
+        untilEndOfTurn: false,
+      });
+    }
     this.state.timestampSeq += 1;
     this.state.emblems.push({
       id: `emblem-${this.state.emblems.length + 1}`,
@@ -25603,6 +25640,8 @@ export class Game {
       ...(sourceName !== undefined ? { sourceName } : {}),
       timestamp: this.state.timestampSeq,
       static: staticAbility,
+      ...(object !== undefined ? { object } : {}),
+      ...(createdBy !== owner ? { createdBy } : {}),
     });
     this.emit({ type: "emblem-created", player: owner, text });
   }

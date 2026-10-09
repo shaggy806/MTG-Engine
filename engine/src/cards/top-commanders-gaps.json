@@ -217,7 +217,8 @@
   "bug:reveal-or-control-condition",
   "bug:return-transformed-non-dfc-stays-exiled",
   "static:suppress-creature-enter-triggers",
-  "effect:spell-or-permanent-target"
+  "effect:spell-or-permanent-target",
+  "effect:emblem-triggered-abilities"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

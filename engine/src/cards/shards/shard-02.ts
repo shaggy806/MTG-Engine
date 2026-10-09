@@ -149,6 +149,7 @@ import _poolMycosynthWellspring from "../pool/mycosynth-wellspring.js";
 import _poolNarsetsReversal from "../pool/narsets-reversal.js";
 import _poolNeckSnap from "../pool/neck-snap.js";
 import _poolNicolBolasTheArisen from "../pool/nicol-bolas-the-arisen.js";
+import _poolNissaVitalForce from "../pool/nissa-vital-force.js";
 import _poolNissasExpedition from "../pool/nissas-expedition.js";
 import _poolNoviceInspector from "../pool/novice-inspector.js";
 import _poolNurturingPeatland from "../pool/nurturing-peatland.js";
@@ -409,6 +410,7 @@ const shard: CardShard = {
     _poolNarsetsReversal,
     _poolNeckSnap,
     _poolNicolBolasTheArisen,
+    _poolNissaVitalForce,
     _poolNissasExpedition,
     _poolNoviceInspector,
     _poolNurturingPeatland,

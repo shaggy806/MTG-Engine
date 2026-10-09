@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3383 already implemented / 1617 missing (marks refreshed 2026-10-09)
+3391 already implemented / 1609 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1215,7 +1215,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1220  Midgar, City of Mako // Reactor Raid     {2}{B}           Land — Town // Sorcery — Adventure
 [x]  1221  Thriving Moor                            {0}              Land
 [x]  1222  Sterling Grove                           {G}{W}           Enchantment
-[ ]  1223  Tezzeret, Cruel Captain                  {3}              Legendary Planeswalker — Tezzeret
+[x]  1223  Tezzeret, Cruel Captain                  {3}              Legendary Planeswalker — Tezzeret
 [x]  1224  Requisition Raid                         {W}              Sorcery
 [ ]  1225  Primal Vigor                             {4}{G}           Enchantment
 [ ]  1226  Tekuthal, Inquiry Dominus                {2}{U}{U}        Legendary Creature — Phyrexian Horror
@@ -4119,7 +4119,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4126  Afterlife from the Loam                  {5}{B}{B}{B}     Sorcery
 [ ]  4127  The Cruelty of Gix                       {3}{B}{B}        Enchantment — Saga
 [ ]  4128  Pentad Prism                             {2}              Artifact
-[ ]  4129  Teferi, Hero of Dominaria                {3}{W}{U}        Legendary Planeswalker — Teferi
+[x]  4129  Teferi, Hero of Dominaria                {3}{W}{U}        Legendary Planeswalker — Teferi
 [ ]  4130  Mirror March                             {5}{R}           Enchantment
 [ ]  4131  Ob Nixilis, the Hate-Twisted             {3}{B}{B}        Legendary Planeswalker — Nixilis
 [ ]  4132  Crucible of the Spirit Dragon            {0}              Land
@@ -4177,7 +4177,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4184  Veinwitch Coven                          {2}{B}           Creature — Vampire Warlock
 [ ]  4185  Level Up                                 {1}{G}           Enchantment — Aura
 [x]  4186  Bygone Colossus                          {9}              Artifact Creature — Robot Giant
-[ ]  4187  Kaito, Cunning Infiltrator               {1}{U}{U}        Legendary Planeswalker — Kaito
+[x]  4187  Kaito, Cunning Infiltrator               {1}{U}{U}        Legendary Planeswalker — Kaito
 [x]  4188  Jace's Sanctum                           {3}{U}           Enchantment
 [ ]  4189  Overlord of the Mistmoors                {5}{W}{W}        Enchantment Creature — Avatar Horror
 [x]  4190  Shivan Devastator                        {X}{R}           Creature — Dragon Hydra
@@ -4195,11 +4195,11 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4202  Nahiri's Lithoforming                    {X}{R}{R}        Sorcery
 [x]  4203  Jenova, Ancient Calamity                 {2}{B}{G}        Legendary Creature — Alien
 [ ]  4204  Turnabout                                {2}{U}{U}        Instant
-[ ]  4205  Koth, Fire of Resistance                 {2}{R}{R}        Legendary Planeswalker — Koth
+[x]  4205  Koth, Fire of Resistance                 {2}{R}{R}        Legendary Planeswalker — Koth
 [x]  4206  Dismantling Wave                         {2}{W}           Sorcery
 [ ]  4207  Witch's Mark                             {1}{R}           Sorcery
 [x]  4208  Mass Calcify                             {5}{W}{W}        Sorcery
-[ ]  4209  Vraska, Golgari Queen                    {2}{B}{G}        Legendary Planeswalker — Vraska
+[x]  4209  Vraska, Golgari Queen                    {2}{B}{G}        Legendary Planeswalker — Vraska
 [x]  4210  Murderous Redcap                         {2}{B/R}{B/R}    Creature — Goblin Assassin
 [ ]  4211  Realmbreaker, the Invasion Tree          {3}              Legendary Artifact
 [x]  4212  Three Tree Mascot                        {2}              Artifact Creature — Shapeshifter
@@ -4373,8 +4373,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4380  Undying Evil                             {B}              Instant
 [x]  4381  Sapling Nursery                          {6}{G}{G}        Enchantment
 [x]  4382  Mox Tantalite                            {0}              Artifact
-[ ]  4383  Ob Nixilis Reignited                     {3}{B}{B}        Legendary Planeswalker — Nixilis
-[ ]  4384  Tezzeret, Artifice Master                {3}{U}{U}        Legendary Planeswalker — Tezzeret
+[x]  4383  Ob Nixilis Reignited                     {3}{B}{B}        Legendary Planeswalker — Nixilis
+[x]  4384  Tezzeret, Artifice Master                {3}{U}{U}        Legendary Planeswalker — Tezzeret
 [x]  4385  Moss Diamond                             {2}              Artifact
 [ ]  4386  Tidal Barracuda                          {3}{U}           Creature — Fish
 [ ]  4387  Tato Farmer                              {2}{G}           Creature — Zombie Mutant Peasant
@@ -4923,7 +4923,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4930  The Bath Song                            {3}{U}           Enchantment — Saga
 [ ]  4931  Black Sun's Twilight                     {X}{B}           Instant
 [x]  4932  Digsite Engineer                         {2}{W}           Creature — Dwarf Artificer
-[ ]  4933  Nissa, Vital Force                       {3}{G}{G}        Legendary Planeswalker — Nissa
+[x]  4933  Nissa, Vital Force                       {3}{G}{G}        Legendary Planeswalker — Nissa
 [ ]  4934  Toby, Beastie Befriender                 {2}{W}           Legendary Creature — Human Wizard
 [ ]  4935  Baneslayer Angel                         {3}{W}{W}        Creature — Angel
 [ ]  4936  Gilt-Leaf Palace                         {0}              Land

@@ -156,6 +156,7 @@ import _poolNantukoElder from "../pool/nantuko-elder.js";
 import _poolNarnamCobra from "../pool/narnam-cobra.js";
 import _poolNightMarket from "../pool/night-market.js";
 import _poolNyxLotus from "../pool/nyx-lotus.js";
+import _poolObNixilisReignited from "../pool/ob-nixilis-reignited.js";
 import _poolOhranFrostfang from "../pool/ohran-frostfang.js";
 import _poolOvergrownFarmland from "../pool/overgrown-farmland.js";
 import _poolPainfulQuandary from "../pool/painful-quandary.js";
@@ -427,6 +428,7 @@ const shard: CardShard = {
     _poolNarnamCobra,
     _poolNightMarket,
     _poolNyxLotus,
+    _poolObNixilisReignited,
     _poolOhranFrostfang,
     _poolOvergrownFarmland,
     _poolPainfulQuandary,

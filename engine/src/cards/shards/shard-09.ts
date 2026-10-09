@@ -227,6 +227,7 @@ import _poolSythisHarvestsHand from "../pool/sythis-harvests-hand.js";
 import _poolTaxiDriver from "../pool/taxi-driver.js";
 import _poolTemurBattleRage from "../pool/temur-battle-rage.js";
 import _poolTergridGodOfFright from "../pool/tergrid-god-of-fright.js";
+import _poolTezzeretArtificeMaster from "../pool/tezzeret-artifice-master.js";
 import _poolThaumatog from "../pool/thaumatog.js";
 import _poolThermalNavigator from "../pool/thermal-navigator.js";
 import _poolThoseWhoServe from "../pool/those-who-serve.js";
@@ -501,6 +502,7 @@ const shard: CardShard = {
     _poolTaxiDriver,
     _poolTemurBattleRage,
     _poolTergridGodOfFright,
+    _poolTezzeretArtificeMaster,
     _poolThaumatog,
     _poolThermalNavigator,
     _poolThoseWhoServe,

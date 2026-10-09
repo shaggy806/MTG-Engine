@@ -1158,7 +1158,9 @@ function playerFeaturesUncached(
     graveyardCastable,
     energy: p.energy,
     monarch: state.monarch === player ? 1 : 0,
-    emblems: state.emblems.filter((e) => e.owner === player).length,
+    // Only the emblems a player made for themselves: one an opponent gave
+    // them (Ob Nixilis Reignited's) punishes them, it's no asset.
+    emblems: state.emblems.filter((e) => e.owner === player && (e.createdBy ?? e.owner) === player).length,
     commanderTax: Object.values(p.commanderCastCounts).reduce((a, b) => a + b, 0),
     nonlandMana,
     drawEngines,

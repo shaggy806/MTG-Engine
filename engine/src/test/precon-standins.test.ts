@@ -12,6 +12,7 @@ import type { ObjectId } from "../primitives.js";
 import {
   A,
   B,
+  activate,
   attack,
   blockOffer,
   cast,
@@ -317,5 +318,47 @@ describe("God-Eternal Bontu", () => {
     enter(game, "God-Eternal Bontu");
     expect(zone(game, bears)).toBe("battlefield");
     expect(hand(game).length).toBe(before);
+  });
+});
+
+describe("Ob Nixilis Reignited", () => {
+  const ultimate = (game: Game): void => {
+    const ob = spawn(game, "Ob Nixilis Reignited");
+    game.state.objects[ob].counters.loyalty = 8;
+    activate(game, ob, 2, { targets: [ref(B)] });
+  };
+  const draw = (game: Game, player: typeof A): void => {
+    game.debugApplyEffect(player, { kind: "draw", amount: 1 });
+    settle(game);
+  };
+
+  it("−8 gives the target opponent an emblem: every card any player draws costs them 2 life", () => {
+    const { game } = table();
+    ultimate(game);
+    expect(game.state.emblems.map((e) => e.owner)).toEqual([B]);
+    draw(game, B);
+    expect(life(game, B)).toBe(18);
+    // Any player's draw, and never the emblem's "you" but its owner.
+    draw(game, A);
+    expect(life(game, B)).toBe(16);
+    expect(life(game, A)).toBe(20);
+  });
+
+  it("triggers once per card", () => {
+    const { game } = table();
+    ultimate(game);
+    game.debugApplyEffect(A, { kind: "draw", amount: 3 });
+    settle(game);
+    expect(life(game, B)).toBe(20 - 6);
+  });
+
+  it("+1: you draw a card and lose 1 life", () => {
+    const { game } = table();
+    const ob = spawn(game, "Ob Nixilis Reignited");
+    const before = hand(game).length;
+    activate(game, ob, 0);
+    expect(hand(game).length).toBe(before + 1);
+    expect(life(game, A)).toBe(19);
+    expect(counters(game, ob, "loyalty")).toBe(6);
   });
 });

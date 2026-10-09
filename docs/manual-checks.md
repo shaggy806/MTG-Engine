@@ -218,6 +218,7 @@ How to use it:
 | [Life from the Loam](#life-from-the-loam) | new decision | The TDC precons' last cards |
 | [Deadpool, Trading Card](#deadpool-trading-card) | new decision | Exchanging text boxes |
 | [Reality Shift](#reality-shift) | new decision | Face-down permanents |
+| [Ob Nixilis Reignited, Koth, Fire of Resistance](#ob-nixilis-reignited-koth-fire-of-resistance) | rules call | Emblems with triggered abilities |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4161,3 +4162,20 @@ stack count once per token)
   pay {1}{G}"; doing so makes it a 1/1 Elf with no card drawn, and the log names it from then on.
   Killed while face down, it's revealed as it goes to the graveyard. A face-down Forest or other
   noncreature card is never offered to turn face up.
+
+## Emblems with triggered abilities (2026-10-09)
+
+### Ob Nixilis Reignited, Koth, Fire of Resistance
+
+*Rules call* — an emblem's triggered ability (rule 114.4), and one given to an opponent
+
+- **Setup:** Your battlefield: Ob Nixilis Reignited with 8 loyalty, Koth, Fire of Resistance with 7
+  loyalty, and Swamps; a Mountain in your hand, land drop unused. Bob is a bot.
+- **Do:** Activate Ob Nixilis's −8 targeting bob. Activate Koth's −7. Play the Mountain; when asked
+  for a target, pick bob. Pass to bob's turn and watch his draw.
+- **Check:** Bob's emblem list shows "Whenever a player draws a card, you lose 2 life" (from Ob
+  Nixilis) and yours Koth's. Playing the Mountain puts "Emblem's ability" on the stack reading
+  "Whenever a Mountain you control enters, this emblem deals 4 damage to any target"; bob takes 4.
+  When bob draws for his turn the stack shows the Ob Nixilis emblem's ability, and it's bob who loses
+  2 life — and again for each card you draw.
+- **Known limits:** An emblem's static abilities are still anthems only (AUTHORING §15).

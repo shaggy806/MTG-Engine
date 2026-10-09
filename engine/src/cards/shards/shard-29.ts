@@ -220,6 +220,7 @@ import _poolSylvanCaryatid from "../pool/sylvan-caryatid.js";
 import _poolTaiga from "../pool/taiga.js";
 import _poolTakeUpTheShield from "../pool/take-up-the-shield.js";
 import _poolTectonicEdge from "../pool/tectonic-edge.js";
+import _poolTeferiHeroOfDominaria from "../pool/teferi-hero-of-dominaria.js";
 import _poolTempleAcolyte from "../pool/temple-acolyte.js";
 import _poolThaliasLieutenant from "../pool/thalias-lieutenant.js";
 import _poolTheFirstSliver from "../pool/the-first-sliver.js";
@@ -479,6 +480,7 @@ const shard: CardShard = {
     _poolTaiga,
     _poolTakeUpTheShield,
     _poolTectonicEdge,
+    _poolTeferiHeroOfDominaria,
     _poolTempleAcolyte,
     _poolThaliasLieutenant,
     _poolTheFirstSliver,

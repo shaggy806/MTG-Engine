@@ -2461,6 +2461,19 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Ob Nixilis Reignited, Koth, Fire of Resistance',
+    board({
+      you: {
+        bf: [
+          { name: 'Ob Nixilis Reignited', counters: { loyalty: 8 } },
+          { name: 'Koth, Fire of Resistance', counters: { loyalty: 7 } },
+          'Swamp*3',
+        ],
+        hand: ['Mountain'],
+      },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

@@ -2436,6 +2436,10 @@
    "family": "effect:emblem-triggered-abilities",
    "example": "Teferi, Temporal Archmage: -10 emblem lets loyalty abilities be activated at instant speed on any turn; no static for it"
   },
+  "effect:emblem-static-abilities": {
+   "family": "effect:emblem-triggered-abilities",
+   "example": "Tamiyo, the Moon Sage: an emblem's static other than a creatures-you-control anthem ('You have no maximum hand size') — read by its rule only off battlefield permanents (AUTHORING §15). The triggered half is built (2026-10-09)."
+  },
   "effect:emblem-no-max-hand-size": {
    "family": "effect:emblem-triggered-abilities",
    "example": "Wrenn and Seven: maxHandSizeOf reads only battlefield statics, so the −8 emblem's 'no maximum hand size' wouldn't apply"

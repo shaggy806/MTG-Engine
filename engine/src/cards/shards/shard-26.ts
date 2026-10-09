@@ -117,6 +117,7 @@ import _poolInspiredTinkering from "../pool/inspired-tinkering.js";
 import _poolInspiringCleric from "../pool/inspiring-cleric.js";
 import _poolInspiringUnicorn from "../pool/inspiring-unicorn.js";
 import _poolIronGiant from "../pool/iron-giant.js";
+import _poolJaceUnravelerOfSecrets from "../pool/jace-unraveler-of-secrets.js";
 import _poolJeditOjanen from "../pool/jedit-ojanen.js";
 import _poolJosuVessLichKnight from "../pool/josu-vess-lich-knight.js";
 import _poolKangeeSkyWarden from "../pool/kangee-sky-warden.js";
@@ -262,6 +263,7 @@ import _poolWolfCoveVillager from "../pool/wolf-cove-villager.js";
 import _poolWringFlesh from "../pool/wring-flesh.js";
 import _poolYokedOx from "../pool/yoked-ox.js";
 import _poolZagothTriome from "../pool/zagoth-triome.js";
+import _poolZarielArchdukeOfAvernus from "../pool/zariel-archduke-of-avernus.js";
 import _poolZealotOfTheGodPharaoh from "../pool/zealot-of-the-god-pharaoh.js";
 import _poolZombieApocalypse from "../pool/zombie-apocalypse.js";
 import _tokensDragonElementalToken from "../tokens/dragon-elemental-token.js";
@@ -387,6 +389,7 @@ const shard: CardShard = {
     _poolInspiringCleric,
     _poolInspiringUnicorn,
     _poolIronGiant,
+    _poolJaceUnravelerOfSecrets,
     _poolJeditOjanen,
     _poolJosuVessLichKnight,
     _poolKangeeSkyWarden,
@@ -532,6 +535,7 @@ const shard: CardShard = {
     _poolWringFlesh,
     _poolYokedOx,
     _poolZagothTriome,
+    _poolZarielArchdukeOfAvernus,
     _poolZealotOfTheGodPharaoh,
     _poolZombieApocalypse,
   ],

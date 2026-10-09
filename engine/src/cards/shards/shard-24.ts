@@ -263,6 +263,7 @@ import _poolZodiacGoat from "../pool/zodiac-goat.js";
 import _tokens32ShapeshifterToken from "../tokens/3-2-shapeshifter-token.js";
 import _tokensAngelToken44 from "../tokens/angel-token-4-4.js";
 import _tokensAngelVigilanceToken from "../tokens/angel-vigilance-token.js";
+import _tokensDevilToken from "../tokens/devil-token.js";
 import _tokensFrogLizardToken from "../tokens/frog-lizard-token.js";
 import _tokensHeroToken from "../tokens/hero-token.js";
 import _tokensPestToken from "../tokens/pest-token.js";
@@ -533,6 +534,7 @@ const shard: CardShard = {
     _tokens32ShapeshifterToken,
     _tokensAngelToken44,
     _tokensAngelVigilanceToken,
+    _tokensDevilToken,
     _tokensFrogLizardToken,
     _tokensHeroToken,
     _tokensPestToken,

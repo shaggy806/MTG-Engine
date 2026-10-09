@@ -33,6 +33,20 @@ lead when its cards land or turn out blocked on something else (record that in t
   Colossus, Flopsie and Vorrac Battlehorns (`blockedByAtMostOne`), the 712.14a transform returns
   and more — and 12 more with some blockers built. Recheck each with `card:brief`; the keys added
   to `built` that day are dated that day, so a few may have been buildable earlier still.
+- **Emblems with triggered abilities are built** (2026-10-09, `effect:emblem-triggered-abilities`):
+  Ob Nixilis Reignited, Teferi, Hero of Dominaria, Koth, Fire of Resistance, Vraska, Golgari
+  Queen, Nissa, Vital Force, Kaito, Cunning Infiltrator, Zariel, Archduke of Avernus, Jace,
+  Unraveler of Secrets and both Tezzerets (Artifice Master, Cruel Captain) landed with it. Still
+  blocked on something else: Chandra, Awakened Inferno (−X loyalty; "each opponent gets an
+  emblem"), Tezzeret, Betrayer of Flesh (first artifact ability each turn costs less), Lolth,
+  Spider Queen (the life-lost difference), Chandra, Spark Hunter (crew; sacrifice-or-discard),
+  Liliana, Waker of the Dead ("each opponent who can't"), Venser, the Sojourner (a turn-wide
+  "creatures can't be blocked"), Jace, Vryn's Prodigy (a graveyard cast that exiles it), Tyvar
+  Kell (a cast trigger giving the spell haste), Chandra, Torch of Defiance, Kaya the Inexorable
+  (casting during resolution), Sarkhan, the Dragonspeaker (a planeswalker becoming a creature);
+  and emblems whose ability is a static — `effect:emblem-static-abilities` and its narrower keys
+  (Wrenn and Seven, Tamiyo, Field Researcher, Tamiyo, the Moon Sage, Wrenn and Realmbreaker,
+  Serra the Benevolent, Teferi, Temporal Archmage, Liliana of the Dark Realms, Ral, Crackling Wit).
 - **The TDC precons are complete** (2026-10-09): Reality Shift landed with face-down permanents
   (manifest and cloak — `GameObject.faceDown`), the last of the five decks' stand-ins. The four
   before it landed 2026-10-07 (`engine/data/sweep-3/TDC8.json`): dredge (Life from the Loam),

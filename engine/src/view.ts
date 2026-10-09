@@ -187,7 +187,7 @@ export interface VisibleObject {
    * can show. Lets a board tile standing for several attacking tokens say
    * how many of them are blocked. */
   readonly blocked: boolean;
-  readonly kind: "card" | "ability";
+  readonly kind: "card" | "ability" | "emblem";
   readonly sourceObjectId: ObjectId | null;
   readonly abilityIndex: number | null;
   readonly targets: readonly TargetRef[] | null;
@@ -389,6 +389,15 @@ function visible(
   // Its text box, which an exchange (rule 612.5 — Deadpool) may have made
   // another card's.
   let text = lostAbilities ? "" : onBattlefield ? registry.get(rulesTextName(object)).text : def.text;
+  // An emblem's triggered ability on the stack (rule 114.4): its source, the
+  // emblem object, is in no zone a player sees, so the entry carries the
+  // ability's own text and no source to look up — it reads "Emblem's
+  // ability" with what it does. Who has the emblem is `PlayerView.emblems`.
+  const fromEmblem =
+    object.kind === "ability" &&
+    object.sourceObjectId !== null &&
+    state.objects[object.sourceObjectId]?.kind === "emblem";
+  if (fromEmblem && object.grantedAbility?.kind === "modifier") text = object.grantedAbility.ability.text;
   // Abilities an effect gave it read with its own: a copy exception's "and
   // it has '…'" (rule 707.9b — Brenard's Food Golems), a one-shot's
   // granted trigger. Only those it still has (rule 613.7).
@@ -478,7 +487,7 @@ function visible(
     blocking: object.blocking,
     blocked: object.attacking !== null && object.blocked,
     kind: object.kind,
-    sourceObjectId: object.sourceObjectId,
+    sourceObjectId: fromEmblem ? null : object.sourceObjectId,
     abilityIndex: object.abilityIndex,
     // A hole is a skipped optional slot; the view shows only real targets.
     targets:

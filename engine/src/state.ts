@@ -710,8 +710,10 @@ export interface GameObject {
   blockedBy: ObjectId[];
   /** True once this attacker has been blocked (even if the blockers later die). */
   blocked: boolean;
-  /** `"card"` for a real card/token; `"ability"` for an ability on the stack. */
-  kind: "card" | "ability";
+  /** `"card"` for a real card/token; `"ability"` for an ability on the stack;
+   * `"emblem"` for an emblem with triggered abilities (`EmblemState.object` —
+   * rule 114: in the command zone, in no zone list, never moving). */
+  kind: "card" | "ability" | "emblem";
   /** For an ability object: `"activated"` or `"triggered"`. */
   abilityKind: "activated" | "triggered" | "chapter" | null;
   /** For an ability object: the permanent whose ability this is. */
@@ -2925,6 +2927,13 @@ export interface EmblemState {
   /** Timestamp (rule 613.7) for ordering this emblem's anthem among others. */
   readonly timestamp: number;
   readonly static: StaticAbility | null;
+  /** The emblem's object, when it has triggered abilities — the source its
+   * triggers come from (kind `"emblem"`, abilities on its modifiers). */
+  readonly object?: ObjectId;
+  /** Who controlled the effect that made it, when that wasn't its owner —
+   * Ob Nixilis Reignited gives an opponent a punishing emblem, which is no
+   * asset of theirs. */
+  readonly createdBy?: PlayerId;
 }
 
 export interface GameState {

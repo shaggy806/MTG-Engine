@@ -3294,10 +3294,23 @@ export type EffectSpec =
   | {
       /** The effect's controller gets an emblem (rule 114 — ROADMAP Phase 10).
        * `static` is a `"creatures-you-control"` anthem, folded in by the layer
-       * system (the common planeswalker-ultimate emblem). */
+       * system (the common planeswalker-ultimate emblem).
+       *
+       * `triggered` are its triggered abilities (Ob Nixilis Reignited's
+       * "Whenever a player draws a card, you lose 2 life"): an emblem
+       * object in the command zone, owned and controlled by whoever gets it
+       * (rules 114.2, 114.4), whose abilities trigger and resolve as any
+       * permanent's do — "you" is its controller, and "this emblem deals 5
+       * damage" is damage from it (a colorless source with no types).
+       *
+       * `to` is a target slot holding the player who gets it — "target
+       * opponent gets an emblem with …" (Ob Nixilis Reignited's −8);
+       * the effect's controller when absent. */
       readonly kind: "create-emblem";
       readonly text: string;
       readonly static?: StaticAbility;
+      readonly triggered?: readonly TriggeredAbility[];
+      readonly to?: number;
     }
   | {
       /** Prevent all combat damage that would be dealt this turn (Fog). A
@@ -4994,8 +5007,14 @@ export interface EffectApi {
   /** How many counters of `counter` `player` has — see the `playerCounters`
    * {@link EffectAmount}. */
   playerCountersOf(player: PlayerId, counter: PlayerCounterKind): number;
-  /** The effect's controller gets an emblem (rule 114). */
-  createEmblem(text: string, staticAbility: StaticAbility | undefined): void;
+  /** `owner` (the effect's controller when absent) gets an emblem (rule
+   * 114) — see the `create-emblem` {@link EffectSpec}. */
+  createEmblem(
+    text: string,
+    staticAbility: StaticAbility | undefined,
+    triggered?: readonly TriggeredAbility[],
+    owner?: PlayerId,
+  ): void;
   /** Prevent all combat damage this turn (Fog) — or only what sources
    * matching `by` would deal. */
   preventAllCombatDamage(by?: CardFilter): void;
@@ -7454,9 +7473,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       return;
     }
-    case "create-emblem":
-      ctx.createEmblem(spec.text, spec.static);
+    case "create-emblem": {
+      if (spec.to === undefined) {
+        ctx.createEmblem(spec.text, spec.static, spec.triggered);
+        return;
+      }
+      // "Target opponent gets an emblem": nobody, once that target is gone.
+      const to = ctx.targets[spec.to];
+      if (to?.kind === "player") ctx.createEmblem(spec.text, spec.static, spec.triggered, to.player);
       return;
+    }
     case "prevent-all-combat-damage":
       ctx.preventAllCombatDamage(spec.by);
       return;

@@ -1099,7 +1099,12 @@ only a combat phase can be "this phase" — use it from a combat trigger.
 ("you get an experience counter"; Fynn, the Fangbearer's "that player gets two
 poison counters" is `who: "trigger-player"`; ten poison counters lose the game,
 rule 704.5c — energy keeps its own `get-energy`),
-`create-emblem { text, static? }`, `prevent-all-combat-damage` (Fog; `by: CardFilter` is only what
+`create-emblem { text, static?, triggered?, to? }` (`triggered`: the emblem's triggered
+abilities, rule 114.4 — an emblem object in the command zone whose abilities trigger and
+resolve as a permanent's, "you" its owner and "this emblem deals 4 damage" damage from a
+colorless source with no types: Koth, Fire of Resistance, Teferi, Hero of Dominaria; `to`: a
+target slot holding the player who gets it, "target opponent gets an emblem" — Ob Nixilis
+Reignited), `prevent-all-combat-damage` (Fog; `by: CardFilter` is only what
 sources matching it would deal — Arachnogenesis's "by non-Spider creatures", matched as
 each damage would be dealt, rule 615.1),
 `prevent-damage { target, amount, combatOnly? }` (Healing Salve).
@@ -3838,13 +3843,16 @@ Delete an entry in the same commit as the feature that retires it.
   like Command Tower): only the player's commanders' colours, never plain
   `"any-color"` — the two differ for a colourless commander, a player with
   none, and a spell stolen from outside the identity. `mana-provenance.test.ts`.
-- **An emblem can only carry a `StaticAbility`.** `create-emblem` takes
-  `static?`, and emblems live in `GameState.emblems` rather than as
-  `GameObject`s, so `detectTriggers` — which scans battlefield permanents —
-  can't see them. An emblem with a *triggered* ability (Sarkhan, the
-  Dragonspeaker's ultimate: "At the beginning of your draw step, draw two
-  additional cards") is therefore unauthorable. This is the common shape for
-  planeswalker ultimates, so it's a real gap rather than a one-card one.
+- **An emblem's static can only be a `"creatures-you-control"` anthem.**
+  `create-emblem`'s `static?` is folded in by the layer system as an anthem;
+  every other static an emblem might carry — "you have no maximum hand size",
+  "you may cast spells from your hand without paying their mana costs", "you
+  may play lands … from your graveyard", a life floor, instant-speed loyalty
+  abilities, a granted mana ability — is read by its rule only off
+  battlefield permanents, so it's unauthorable (Wrenn and Seven, Tamiyo,
+  Field Researcher, Wrenn and Realmbreaker, Serra the Benevolent, Teferi,
+  Temporal Archmage, Liliana of the Dark Realms). Triggered emblems are
+  built (§6, `create-emblem`'s `triggered`).
 - **The auto-payer never pays a mana ability whose activation cost contains a
   *coloured* pip** (it's activated by hand instead — see §8). `manaSources()`
   admits a "converter" — a mana ability whose
