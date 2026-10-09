@@ -5,7 +5,9 @@ import type { SeatStatus } from 'protocol'
 /**
  * A large, unambiguous "whose turn, what phase" readout — the compact
  * `PhaseTrack` pips stay for an at-a-glance map of the whole turn, but this
- * spells both out in full, in the active player's own color.
+ * spells both out in full, in the active player's own color. It leads with
+ * the round (`TurnState.round`): at a four-player table "turn 37" reads as a
+ * much longer game than round 10 does.
  */
 export function TurnBanner({
   view,
@@ -17,6 +19,19 @@ export function TurnBanner({
   const seatClass = seatClassOf(view.turnOrder, view.activePlayer)
   return (
     <div className={`turn-banner ${seatClass}`}>
+      {view.turn.round !== undefined ? (
+        <>
+          <span
+            className="turn-banner-round"
+            title={`Round ${view.turn.round}: each player's turn once is a round (turn ${view.turn.number} of the game)`}
+          >
+            <span className="turn-banner-round-long">Round </span>
+            <span className="turn-banner-round-short">R</span>
+            {view.turn.round}
+          </span>
+          <span className="turn-banner-sep">·</span>
+        </>
+      ) : null}
       <span className="turn-banner-player">
         {playerLabel(view.activePlayer, seats)}'s Turn{view.turn.isExtra ? ' (extra)' : ''}
       </span>

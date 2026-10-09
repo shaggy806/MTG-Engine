@@ -62,6 +62,7 @@ title; when one lands, delete it in both. The animation follow-ups are in
   granted (`grantedAbility` kind `modifier`, which has no signature).
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review). Moving bot
   speed into the Settings panel brought every step back at 1366x768, but at 1024 the track
-  (`PhaseTrack`) still stops at CD. "Player 1 to act" and the text buttons (Settings, History,
-  Capture, Seat) are what's left to shorten — icons, or the acting player folded into the turn
-  banner.
+  (`PhaseTrack`) still stops short: at EC on 2026-10-09, with the turn banner's round (added
+  that day) already shortened to "R3" below 75rem. "Player 1 to act" and the text buttons
+  (Settings, History, Capture, Seat) are what's left to shorten — icons, or the acting player
+  folded into the turn banner.

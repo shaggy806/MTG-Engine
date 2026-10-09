@@ -97,7 +97,7 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
     case 'game-started':
       return `${event.players.map(who).join(' vs ')} · ${who(event.startingPlayer)} first · seed ${event.seed}`
     case 'turn-began':
-      return `Turn ${event.turn} — ${who(event.activePlayer)}${event.extra ? ' (extra turn)' : ''}`
+      return `${event.round !== undefined ? `Round ${event.round}, turn ${event.turn}` : `Turn ${event.turn}`} — ${who(event.activePlayer)}${event.extra ? ' (extra turn)' : ''}`
     case 'extra-turn-queued':
       return `${who(event.player)} takes an extra turn after this one`
     case 'additional-combat-queued':

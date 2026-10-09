@@ -14,14 +14,18 @@ export interface PlayerStats {
   /** Cards drawn once the game was under way: not the opening hand, nor a
    * mulligan's redraw. */
   readonly cardsDrawn: number
-  /** The turn they lost on, and why ("conceded", "life total is 0 or
-   * less"); null for a player still in at the end. */
-  readonly out: { readonly turn: number; readonly reason: string } | null
+  /** The turn they lost on, its round (absent from a log before rounds were
+   * kept), and why ("conceded", "life total is 0 or less"); null for a
+   * player still in at the end. */
+  readonly out: { readonly turn: number; readonly round?: number; readonly reason: string } | null
 }
 
 export interface GameStats {
   /** How many turns were taken. */
   readonly turns: number
+  /** The round the game ended in (`TurnState.round`), absent from a log
+   * before rounds were kept. */
+  readonly rounds?: number
   /** Every player: the winner first, then whoever lasted longest. */
   readonly players: readonly PlayerStats[]
 }
@@ -36,11 +40,14 @@ export interface GameStats {
 export function gameStats(view: PlayerView): GameStats {
   const tally = new Map<PlayerId, { dealt: number; taken: number; gained: number; cast: number; drawn: number }>()
   for (const pid of view.turnOrder) tally.set(pid, { dealt: 0, taken: 0, gained: 0, cast: 0, drawn: 0 })
-  const out = new Map<PlayerId, { turn: number; reason: string; seq: number }>()
+  const out = new Map<PlayerId, { turn: number; round: number | undefined; reason: string; seq: number }>()
   let turn = 0
+  let round: number | undefined
   for (const ev of view.events) {
-    if (ev.type === 'turn-began') turn = ev.turn
-    else if (ev.type === 'damage-dealt' && ev.target.kind === 'player') {
+    if (ev.type === 'turn-began') {
+      turn = ev.turn
+      round = ev.round
+    } else if (ev.type === 'damage-dealt' && ev.target.kind === 'player') {
       const taken = tally.get(ev.target.player)
       if (taken) taken.taken += ev.amount
       if (ev.by !== undefined && ev.by !== ev.target.player) {
@@ -57,7 +64,7 @@ export function gameStats(view: PlayerView): GameStats {
       const t = tally.get(ev.player)
       if (t) t.drawn += 1
     } else if (ev.type === 'player-lost' && !out.has(ev.player)) {
-      out.set(ev.player, { turn, reason: ev.reason, seq: ev.seq })
+      out.set(ev.player, { turn, round, reason: ev.reason, seq: ev.seq })
     }
   }
   const winner = view.result.winner
@@ -72,7 +79,10 @@ export function gameStats(view: PlayerView): GameStats {
       lifeGained: t.gained,
       spellsCast: t.cast,
       cardsDrawn: t.drawn,
-      out: lost === undefined ? null : { turn: lost.turn, reason: lost.reason },
+      out:
+        lost === undefined
+          ? null
+          : { turn: lost.turn, ...(lost.round !== undefined ? { round: lost.round } : {}), reason: lost.reason },
     }
   })
   const rank = (p: PlayerStats): [number, number] => {
@@ -86,5 +96,5 @@ export function gameStats(view: PlayerView): GameStats {
     const [rb, sb] = rank(b)
     return ra - rb || sa - sb
   })
-  return { turns: turn, players }
+  return { turns: turn, ...(round !== undefined ? { rounds: round } : {}), players }
 }

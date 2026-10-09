@@ -4788,6 +4788,19 @@ export class Game {
         turn.activePlayerIndex = index;
       }
     }
+    // The round (`TurnState.round`): a turn in the normal rotation that
+    // reaches or passes the starting player's seat again begins the next one.
+    // Seats are compared by their distance after the starting seat, so a seat
+    // that has left the game is passed over like any other.
+    if (turn.number === 1) {
+      turn.round = 1;
+    } else if (!turn.isExtra) {
+      const seats = this.state.turnOrder.length;
+      const start = Math.max(0, this.state.turnOrder.indexOf(this.state.startingPlayer));
+      const after = (index: number): number => (index - start + seats) % seats;
+      const round = turn.round ?? Math.ceil((turn.number - 1) / Math.max(1, seats));
+      turn.round = after(turn.activePlayerIndex) <= after(rotation) ? round + 1 : round;
+    }
     for (const player of this.state.turnOrder) {
       this.state.players[player].landsPlayedThisTurn = 0;
       this.state.players[player].extraLandsThisTurn = 0;
@@ -4864,6 +4877,7 @@ export class Game {
     this.emit({
       type: "turn-began",
       turn: this.state.turn.number,
+      ...(this.state.turn.round !== undefined ? { round: this.state.turn.round } : {}),
       activePlayer: this.activePlayer,
       ...(this.state.turn.isExtra ? { extra: true } : {}),
     });

@@ -300,6 +300,23 @@
   color: var(--gold);
   letter-spacing: 0.02em;
 }
+.turn-banner-round {
+  color: var(--muted);
+  font-weight: 500;
+}
+/* "R3" where the strip is short of room: the full word cost the phase track
+   two steps at 1024 wide. Its title still spells it out. */
+.turn-banner-round-short {
+  display: none;
+}
+@media (max-width: 75rem) {
+  .turn-banner-round-long {
+    display: none;
+  }
+  .turn-banner-round-short {
+    display: inline;
+  }
+}
 .turn-banner-sep {
   margin: 0 8px;
   color: var(--muted-dim);

@@ -1684,6 +1684,13 @@ export type AddedPhase =
 
 export interface TurnState {
   number: number;
+  /** The round under way: each player's turn once, from the starting
+   * player's seat round to it again, is one round — so at a four-player
+   * table turn 37 is round 10. No rule defines it; it's how the client says
+   * how far a game has gone. An extra turn belongs to the round it's taken
+   * in, and a seat that has left the game is passed over without ending one.
+   * Absent before the first turn (and on a state saved before it existed). */
+  round?: number;
   activePlayerIndex: number;
   step: Step;
   /** The `"upkeep"` step under way is the only step of an additional

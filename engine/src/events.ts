@@ -43,6 +43,8 @@ export type GameEvent =
   | (Base & {
       readonly type: "turn-began";
       readonly turn: number;
+      /** The round it begins in (`TurnState.round`). */
+      readonly round?: number;
       readonly activePlayer: PlayerId;
       /** True when this is an extra turn (Time Warp — ROADMAP Phase 7). */
       readonly extra?: boolean;

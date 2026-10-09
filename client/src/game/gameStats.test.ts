@@ -60,4 +60,18 @@ describe('gameStats', () => {
     expect(of('bob').out).toEqual({ turn: 3, reason: 'life total is 0 or less' })
     expect(of('carol').out).toEqual({ turn: 4, reason: 'conceded' })
   })
+
+  it('says the round, where the log keeps rounds', () => {
+    const rounds = gameStats({
+      ...view,
+      events: [
+        ev({ type: 'turn-began', turn: 4, round: 2, activePlayer: 'alice' }),
+        ev({ type: 'player-lost', player: 'bob', reason: 'conceded' }),
+        ev({ type: 'turn-began', turn: 7, round: 3, activePlayer: 'alice' }),
+      ],
+    } as unknown as PlayerView)
+    expect(rounds).toMatchObject({ turns: 7, rounds: 3 })
+    expect(rounds.players.find((s) => s.player === 'bob')!.out).toEqual({ turn: 4, round: 2, reason: 'conceded' })
+    expect(stats.rounds).toBeUndefined()
+  })
 })

@@ -717,6 +717,7 @@ function GameResultPanel({
         <h2 className={`result-headline ${seatClass}`}>{headline}</h2>
         <p className="muted">
           {reason ? `${reason[0].toUpperCase()}${reason.slice(1)} · ` : ''}
+          {stats.rounds !== undefined ? `${stats.rounds} round${stats.rounds === 1 ? '' : 's'}, ` : ''}
           {stats.turns} turn{stats.turns === 1 ? '' : 's'}
         </p>
         {/* Each player's game, winner first (game/gameStats.ts). */}
@@ -740,8 +741,14 @@ function GameResultPanel({
                   {playerLabel(p.player, seats)}
                   {p.player === seat ? <span className="muted"> (you)</span> : null}
                 </th>
-                <td title={p.out?.reason}>
-                  {p.player === winner ? 'Winner' : p.out ? `Out, turn ${p.out.turn}` : '—'}
+                <td title={p.out ? `${p.out.reason} (turn ${p.out.turn})` : undefined}>
+                  {p.player === winner
+                    ? 'Winner'
+                    : p.out
+                      ? p.out.round !== undefined
+                        ? `Out, round ${p.out.round}`
+                        : `Out, turn ${p.out.turn}`
+                      : '—'}
                 </td>
                 <td>{p.life}</td>
                 <td>{p.damageDealt}</td>

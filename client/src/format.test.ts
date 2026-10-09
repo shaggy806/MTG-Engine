@@ -18,6 +18,9 @@ describe('describeEvent', () => {
     expect(describeEvent(event({ type: 'turn-began', turn: 3, activePlayer: p1 }), nameOf, seats)).toBe(
       'Turn 3 — Toby',
     )
+    expect(describeEvent(event({ type: 'turn-began', turn: 37, round: 10, activePlayer: p1 }), nameOf, seats)).toBe(
+      'Round 10, turn 37 — Toby',
+    )
     expect(describeEvent(event({ type: 'life-changed', player: p1, delta: -3, life: 37 }), nameOf, seats)).toBe(
       'Toby -3 life (now 37)',
     )
