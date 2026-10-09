@@ -56,20 +56,36 @@ function newId(): string {
 function readDecks(): SavedDeck[] {
   try {
     const raw = window.localStorage.getItem(DECKS_KEY)
-    return raw ? (JSON.parse(raw) as StoredDeck[]).map(fromStorage).map(renameCards) : []
+    if (!raw) return []
+    const stored = JSON.parse(raw) as StoredDeck[]
+    const decks = stored.map((deck) => renameCards(fromStorage(deck)))
+    // Each migration hands back the deck it was given when it has nothing to
+    // do, so an unchanged list is the same objects. Anything migrated is
+    // written back once, here, rather than waiting for the deck to be edited:
+    // the next read finds today's shape and has nothing to do.
+    if (decks.some((deck, i) => deck !== stored[i])) writeDecks(decks)
+    return decks
   } catch {
     return []
   }
 }
 
 /** A deck as some version of this file wrote it: before Partner pairs, a
- * lone optional `commander` rather than a `commanders` list. */
+ * lone optional `commander` rather than a `commanders` list.
+ *
+ * `fromStorage` and `renameCards` are the two migrations. Since 2026-10-09
+ * `readDecks` saves what they produce, so each old deck needs them on just
+ * one read in the browser holding it. They can go once that's had time to
+ * happen for decks in use (a few months, say from 2027); a deck first read
+ * after that would lose its lone commander and keep a flavor name the server
+ * refuses. */
 type StoredDeck = Omit<SavedDeck, 'commanders'> & {
   readonly commanders?: readonly string[]
   readonly commander?: string
 }
 
 function fromStorage(stored: StoredDeck): SavedDeck {
+  if (stored.commanders !== undefined && !('commander' in stored)) return stored as SavedDeck
   const { commander: legacy, ...rest } = stored
   return { ...rest, commanders: stored.commanders ?? (legacy === undefined ? [] : [legacy]) }
 }
