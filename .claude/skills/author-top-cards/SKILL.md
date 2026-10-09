@@ -5,11 +5,31 @@ description: Author the next batch of missing cards — while the starter precon
 
 # Author the next card batch
 
-The current authoring priority (BACKLOG, "Card backlog"): **the missing cards
-of the Tarkir: Dragonstorm precons** — the five `SAMPLE_DECKS` every bot plays,
-whose `substitutions` tables list what the engine can't run yet — and after
-them the top 5000 cards by EDHREC rank, worked down in rank order. One run =
-one batch, shipped.
+The current authoring priority (BACKLOG, "Card backlog"): **the stand-ins
+left in the `SAMPLE_DECKS` precons** (`npm run decks:stand-ins -w engine`
+lists them with their blockers; the five Tarkir: Dragonstorm decks have none
+left) — and after them the top 5000 cards by EDHREC rank, worked down in rank
+order. One run = one batch, shipped.
+
+**The tools, in the order a card uses them** (each prints what you'd
+otherwise grep for — reach for them first):
+
+- `npm run card:brief -w engine -- "A" "B" …` — Oracle text and rulings, the
+  card's triage records (each need flagged if built since), and per Oracle
+  line the pool's closest authored abilities with their files. `--test`
+  adds a test outline. Reads `dist/`: build first.
+- `npm run card:vocab -w engine -- <term>` — whether the vocabulary can say
+  something: usage with small example cards, declarations with docs, the
+  guide's lines.
+- `npm run cards:needs -w engine -- --stale | --rank | --feature <key>` —
+  what's been built since triage, what blocks the most cards, one need's cards.
+- `engine/src/test/harness.ts` — the shared test table.
+- `npm run verify` — every check, the fuzzer with the batch's new cards in.
+- `npm run decks:stand-ins -w engine -- --implemented` — drops the authored
+  cards' stand-ins and fixes BACKLOG's count.
+
+Edit files with the Edit tool (`game.ts` included — it keeps its CRLF and
+NUL), not with scripts that rewrite text.
 
 **Rule zero governs everything here** (`engine/src/cards/AUTHORING.md` §0):
 never author a card the engine can't run *exactly* — no dropped clause, no
@@ -32,29 +52,36 @@ broken build), do that first or tell the user.
 
 ## 1. Pick the batch
 
+**First, `npm run cards:needs -w engine -- --stale`**: cards whose recorded
+blockers have all been built since are the cheapest cards there are — recheck
+them before anything new.
+
 **While any `SAMPLE_DECKS` deck has substitutions**, the batch is precon
-cards: the `original`s of one or two decks' `substitutions` tables in
-`engine/src/sample-decks.ts` (the deck with the fewest left first, so a deck
-gets fully real soonest), skipping any a `engine/data/sweep-3/TDC*.json`
-already records as blocked. Otherwise, the top-5000 list:
+cards: `npm run decks:stand-ins -w engine` lists them with their blockers.
+**Group them by shared blocker** — a feature several stand-ins need, or one
+that `cards:needs -- --feature <key>` shows blocking many other cards, is
+built once for all of them — and take the cheapest groups first. Otherwise,
+the top-5000 list:
 
 The next ~60 unmarked `[ ]` entries of `engine/src/cards/top-commander-cards.txt`
 in rank order. Skip the ones `engine/data/sweep-2/K*.json` or a
 `engine/data/sweep-3/*.json` already records as blocked — unless a feature
 they need has since landed (its key in `top-commanders-gaps.json`'s `built`).
 
-For each: `npm run card:lookup -w engine -- "Name" --rulings` (the Oracle
-snapshot; works offline; several names per call). Sort into:
+For each: `npm run card:brief -w engine -- "Name" …` (several names per
+call). Sort into:
 
 - **Authorable now** — every clause expressible with the existing
-  vocabulary. Check before assuming a mechanic is missing: grep `cards/pool/`
-  for a card with the same clause (several "missing" mechanics have turned out
-  to exist, unused). `npm run card:scaffold -w engine -- --next 60 --cards`
-  writes skeletons for the lot into `cards/scaffold/`; a card the parser
-  reads whole goes to `cards/review/`.
-- **Blocked** — name the missing feature, using a key from
-  `top-commanders-gaps.json`'s `features` where one fits, `new:<slug>`
-  otherwise, with one line of why.
+  vocabulary. The brief's analogs show how the pool already says each line;
+  `card:vocab <term>` answers the rest (several "missing" mechanics have
+  turned out to exist, unused). `npm run card:scaffold -w engine -- --next 60
+  --cards` writes skeletons for the lot into `cards/scaffold/`; a card the
+  parser reads whole goes to `cards/review/`.
+- **Blocked** — name the missing feature with a key from the need vocabulary
+  (`top-commanders-gaps.json`'s `features` or `engine/data/needs-vocabulary.json`'s;
+  add a new one there, with its `family`, when none fits —
+  `test/needs-vocabulary.test.ts` fails on an unknown key), with one line of
+  why.
 
 ## 2. Build a feature, if one leads
 
@@ -83,29 +110,29 @@ Target 30-50 cards. For each:
 ## 4. Test
 
 - `engine/src/test/top5000-batch-<N>.test.ts` (next N after the existing
-  ones; `precon-tdc-batch-<N>.test.ts` for precon cards): one focused test per card whose behaviour is more than a stat line
-  or a copy of a tested pattern — the clause most likely to be wrong. For a
-  test that could pass by accident, break the card and watch it fail.
-- `npm run card:verify -w engine` (stat blocks against Scryfall) and `npm run
-  card:text -w engine` (no new MISSING/EXTRA lines from this batch). Where
-  Scryfall is unreachable (a cloud session), add `-- --offline` to both: they
-  answer from the Oracle snapshot instead.
+  ones; precon stand-ins go in `precon-standins.test.ts`), written on
+  `src/test/harness.ts` — `card:brief -- "Name" --test` prints an outline:
+  one focused test per card whose behaviour is more than a stat line or a
+  copy of a tested pattern — the clause most likely to be wrong. For a test
+  that could pass by accident, break the card and watch it fail.
+- `npm run card:text -w engine -- --offline` (no new MISSING/EXTRA lines from
+  this batch).
 - While authoring, run only the touched tests (`npx vitest run
-  top5000-batch-<N> pool.test` from `engine/`); the full suite once at the end.
-- The fuzzer with the new cards forced in:
-  `npm run build -w engine` then
-  `node engine/scripts/random-demo.mjs --games 60 --with "Card A" --with "Card B" …`
-  for the non-trivial ones, and a plain `--games 40 --players 4`.
+  top5000-batch-<N> pool.test` from `engine/`).
+- Then **`npm run verify`** (in the background): the build, every suite, the
+  new test files type-checked, card:verify, both fuzzer table sizes, the
+  fuzzer with every card the batch adds forced in, and the bot gate.
 
 ## 5. Record
 
-- Precon cards: delete each authored card's entry from its deck's
-  `substitutions` table in `sample-decks.ts` and its row in
-  `docs/plans/precon-decks.md` (the section's count too), and update the
-  missing counts on BACKLOG's **Now** line. `sample-decks.test.ts` fails
-  until every implemented card's substitution is gone. Blocked precon cards
-  go in `engine/data/sweep-3/TDC<N>.json`.
-- `npm run cards:mark -w engine` — re-marks `top-commander-cards.txt`.
+- Precon cards: `npm run decks:stand-ins -w engine -- --implemented` deletes
+  each authored card's stand-in and rewrites BACKLOG's count
+  (`sample-decks.test.ts` fails until every implemented card's substitution
+  is gone). A TDC deck's card also has a row in `docs/plans/precon-decks.md`.
+  Blocked precon cards' records are in `engine/data/sweep-3/PC-*.json`.
+- A feature that landed: add its key to `top-commanders-gaps.json`'s `built`
+  array (`cards:needs -- --stale` then flags every card that waited on it).
+- `verify` re-marks `top-commander-cards.txt` and `top-commanders.txt`.
 - The blocked cards: `engine/data/sweep-3/<batch>.json`, same shape as
   `sweep-2`'s files (`batch`, `status`, `authored: [{name, files, tested}]`,
   `blocked: [{name, needs, why}]`), so the next run skips them.
@@ -113,7 +140,7 @@ Target 30-50 cards. For each:
   of blockers changed; the batch's summary (authored headliners, what blocks
   the rest) goes in `docs/card-blockers.md`, not BACKLOG; `neededCards-features.md` if a feature landed or a new
   one now leads.
-- Any commander this batch happened to implement: `npm run cmdrs:mark -w engine`.
+- Any commander this batch happened to implement is re-marked by `verify` too.
 
 ## 6. Ship
 

@@ -77,7 +77,10 @@ Read a file's entry before changing that file; you don't need the rest.
 In `src/test/*.test.ts`, one level below the source (so relative imports need an extra `../`),
 except `cards/pool.test.ts`. Each major mechanic has its own test file; read it for a runnable
 example. `vitest.config.ts` turns off `isolate` (one card-barrel import per worker), which is
-safe only while **no engine test mocks, spies, stubs a global or fakes timers**. **While
+safe only while **no engine test mocks, spies, stubs a global or fakes timers**. **A card's
+test starts from `src/test/harness.ts`** (`table`, `spawn`/`enter`, `cast` that throws the
+engine's refusal, `pick*` answers, reads); vitest doesn't type-check tests, so `npm run verify`
+type-checks the ones you add. **While
 authoring, run just the files you touched** (`npx vitest run cmdr-sokka pool.test` from
 `engine/`, ~15s), and the whole suite once per batch before committing.
 
@@ -94,6 +97,8 @@ authoring, run just the files you touched** (`npx vitest run cmdr-sokka pool.tes
   with small example cards, the engine declarations with their docs, the guide's lines.
 - `cards:needs -- --rank | --stale | --feature <key>`: the triage records through one need
   vocabulary (`data/needs-vocabulary.json`): what blocks the most cards, what's been built since.
+- `decks:stand-ins`: the sample decks' stand-ins left, deck by deck, with each one's blockers;
+  `-- --implemented` deletes those whose original is now in the pool (and fixes BACKLOG's count).
 - `card:scaffold -- "Name"`: writes a draft card file into `cards/scaffold/`.
 - `gen:cards`: regenerates the card barrel after adding a card.
 - `card:verify` / `card:text`: checks the pool against Scryfall (structure / rules text). `-- --offline`

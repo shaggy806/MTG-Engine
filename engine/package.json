@@ -38,6 +38,7 @@
     "cmdrs:mark": "npm run build && node scripts/top-commanders.mjs --refresh",
     "cmdrs:gaps": "node scripts/commander-gaps.mjs",
     "cards:needs": "node scripts/needs-vocabulary.mjs",
+    "decks:stand-ins": "node scripts/stand-ins.mjs",
     "prebuild": "node scripts/gen-cards.mjs",
     "build": "tsc && node scripts/bundle-shards.mjs",
     "pretypecheck": "node scripts/gen-cards.mjs",

@@ -4067,11 +4067,19 @@ is invisible to it.
   from the whole pool, so it's already in the rotation without this; `--with`
   just makes sure it's drawn). If `legalActions` ever offers something
   `dispatch` refuses, this crashes.
-- **Write a focused test** if the card exercises new-ish behaviour — one
-  `engine/src/test/<card-or-feature>.test.ts` that builds a `Game`, dispatches
-  through the interaction, and asserts the outcome. See
-  `engine/src/test/clone.test.ts` for the white-box `spawn` pattern.
-- **Run the suite:** `npm run test -w engine`.
+- **Write a focused test** if the card exercises new-ish behaviour, on the
+  shared table in `engine/src/test/harness.ts`: `table()` (alice's turn 1,
+  main phase, her priority), `spawn` (silent) and `enter` (fires its enters
+  triggers), `cast`/`activate` (which throw the engine's refusal instead of
+  doing nothing), `pickTargets`/`watchTargets`/`pickModes`/`pickPermanents`/
+  `pickFromZone` for the seats' answers, `attack`/`blockOffer`/`toStep`, and
+  reads (`pt`, `keywords`, `supertypes`, `counters`, `life`, `named`, …).
+  `engine/src/test/precon-standins.test.ts` is written on it. `npm run
+  card:brief -w engine -- "Name" --test` prints a `describe` with an
+  `it.todo` per ability and per ruling to start from. Vitest doesn't
+  type-check tests; `npm run verify` type-checks the test files you add.
+- **Run the suite:** `npm run test -w engine` — or everything a change must
+  pass, the fuzzer with the new cards forced in included: `npm run verify`.
 - **Eyeball it:** in a dev room (§14).
 
 Periodically re-verify the *whole* pool, not just new cards — `npm run card:verify -w

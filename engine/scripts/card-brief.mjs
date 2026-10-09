@@ -28,6 +28,8 @@
 //   --width N     characters of each analog's authored shape to print
 //                 (default 500; 0 prints it whole)
 //   --no-rulings  leave the rulings out
+//   --test        end with a test outline on src/test/harness.ts: one
+//                 it.todo per ability and per ruling, to fill in
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
@@ -98,7 +100,8 @@ function abilitiesOf(def) {
     }
   };
   walk(def, "card");
-  if (def.effect !== undefined || def.castModal !== undefined) {
+  // `!= null`: a permanent's definition can carry `castModal: null`.
+  if (def.effect != null || def.castModal != null) {
     const shape = {};
     for (const key of ["targets", "effect", "castModal", "additionalCost", "alternativeCost", "kicker", "x"]) {
       if (def[key] !== undefined) shape[key] = def[key];
@@ -245,6 +248,7 @@ async function main() {
   const k = opt("--analogs", 3);
   const width = opt("--width", 500);
   const showRulings = !args.includes("--no-rulings");
+  const outline = args.includes("--test");
 
   const vocab = loadVocabulary();
   const records = loadRecords();
@@ -330,8 +334,27 @@ async function main() {
         }
       }
     }
+    if (outline) printOutline(card);
     console.log("");
   }
+}
+
+/** A describe block for the card on the shared harness: an `it.todo` per
+ * Oracle line that does something, and per ruling — each ruling is usually
+ * a test case. Fill in, delete what a sibling test already covers. */
+function printOutline(card) {
+  const q = (s) => JSON.stringify(s.length > 150 ? `${s.slice(0, 150)}…` : s);
+  console.log(`\nTest outline (src/test/harness.ts — table, spawn, enter, cast, pick*, reads):`);
+  console.log(`describe(${JSON.stringify(card.name)}, () => {`);
+  for (const { line } of oracleLines(card)) {
+    if (normalise(line, card.name).filter((g) => !g.includes("_")).length <= 2) continue;
+    console.log(`  it.todo(${q(line.replace(/\s*\([^)]*\)/g, ""))});`);
+  }
+  for (const r of card.rulings ?? []) {
+    const text = typeof r === "string" ? r : (r.text ?? "");
+    if (text) console.log(`  it.todo(${q(`ruling: ${text}`)});`);
+  }
+  console.log("});");
 }
 
 await main();
