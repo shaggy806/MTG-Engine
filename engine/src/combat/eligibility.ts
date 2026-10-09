@@ -396,7 +396,11 @@ function blockFilterSources(
       const source = state.objects[id];
       if (hasLostAbilities(source) || state.players[source.controller]?.hasLost === true) continue;
       for (const ability of registry.get(rulesTextName(source)).static) {
-        if (ability.cantBeBlockedBy !== undefined || ability.canBlockOnly !== undefined) {
+        if (
+          ability.cantBeBlockedBy !== undefined ||
+          ability.canBlockOnly !== undefined ||
+          ability.blockedByAtMostOne === true
+        ) {
           out.push({ source, ability });
         }
       }
@@ -432,6 +436,23 @@ function blockFilters(
     out.push({ filter, you: source.controller, amount: sourceAmount(state, registry, source) });
   }
   return out;
+}
+
+/**
+ * Whether `attacker` "can't be blocked by more than one creature" right now
+ * (rule 509.1b — Challenger Troll's `blockedByAtMostOne`): read as blocks are
+ * declared, like {@link blockFilters}, so a scope reading power sees it now.
+ */
+export function blockedByAtMostOne(state: GameState, registry: CardRegistry, attacker: ObjectId): boolean {
+  const object = state.objects[attacker];
+  if (object === undefined) return false;
+  for (const { source, ability } of blockFilterSources(state, registry)) {
+    if (ability.blockedByAtMostOne !== true) continue;
+    if (!staticReaches(state, registry, source, ability, object)) continue;
+    if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) continue;
+    return true;
+  }
+  return false;
 }
 
 /** One of {@link blockFilters}: the filter, whose side it's read from, and

@@ -196,6 +196,7 @@ import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
 import _poolRoilingDragonstorm from "../pool/roiling-dragonstorm.js";
 import _poolRomanticRendezvous from "../pool/romantic-rendezvous.js";
+import _poolRowdyResearch from "../pool/rowdy-research.js";
 import _poolRoyalAssassin from "../pool/royal-assassin.js";
 import _poolRuinousIntrusion from "../pool/ruinous-intrusion.js";
 import _poolRumblingBaloth from "../pool/rumbling-baloth.js";
@@ -475,6 +476,7 @@ const shard: CardShard = {
     _poolRograkhSonOfRohgahh,
     _poolRoilingDragonstorm,
     _poolRomanticRendezvous,
+    _poolRowdyResearch,
     _poolRoyalAssassin,
     _poolRuinousIntrusion,
     _poolRumblingBaloth,

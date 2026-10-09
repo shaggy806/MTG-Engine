@@ -16,8 +16,9 @@
  */
 
 import type { Action, BlockerDeclaration, LegalAction } from "../actions.js";
-import { blockingViolations, obeyingLure } from "../combat/blocking.js";
+import { blockingViolations, obeyingLure, withinSingleBlockers } from "../combat/blocking.js";
 import {
+  blockedByAtMostOne,
   creatureDef,
   currentAttackers,
   defendingPlayerOf,
@@ -54,15 +55,21 @@ function blockersOffer(
   const menaceAttackers = attacking.filter((id) =>
     objHasKeyword(ctx.state, ctx.registry, id, "menace"),
   );
+  // Attackers that can't be blocked by more than one creature (Challenger
+  // Troll — rule 509.1b).
+  const singleBlockerAttackers = attacking.filter((id) => blockedByAtMostOne(ctx.state, ctx.registry, id));
   // Attackers this defender's creatures are *forced* to block (Lure — rule
   // 509.1c). One with menace too is forced only in pairs; `blockingViolations`
-  // works out how many blocks that comes to.
-  const mustBlock = attacking.filter((id) =>
-    restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked"),
-  );
+  // works out how many blocks that comes to. One that can be blocked by only
+  // one creature can have only one obey (509.1c: as many requirements as can
+  // be without breaking a restriction), so it's "blocked if able" instead.
+  const lured = attacking.filter((id) => restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked"));
+  const mustBlock = lured.filter((id) => !singleBlockerAttackers.includes(id));
   // Attackers that need only *one* blocker if one can manage (Anzrag).
-  const mustBeBlockedIfAble = attacking.filter((id) =>
-    restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked-if-able"),
+  const mustBeBlockedIfAble = attacking.filter(
+    (id) =>
+      restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked-if-able") ||
+      (lured.includes(id) && singleBlockerAttackers.includes(id)),
   );
   // Token stacks attacking as one counted object (`Game.attackingStackPart`).
   const attackerTokens: Record<ObjectId, number> = {};
@@ -74,6 +81,7 @@ function blockersOffer(
     kind: "declare-blockers",
     eligible,
     menaceAttackers,
+    ...(singleBlockerAttackers.length > 0 ? { singleBlockerAttackers } : {}),
     mustBlock,
     ...(mustBeBlockedIfAble.length > 0 ? { mustBeBlockedIfAble } : {}),
     ...(Object.keys(attackerTokens).length > 0 ? { attackerTokens } : {}),
@@ -123,6 +131,8 @@ export const blockers = defineDecision({
     if (violation === undefined) return null;
     return violation.kind === "menace"
       ? `${name(violation.attacker)} has menace and must be blocked by two or more creatures`
+      : violation.kind === "single-blocker"
+        ? `${name(violation.attacker)} can't be blocked by more than one creature`
       : violation.kind === "must-be-blocked"
         ? `${name(violation.blocker)} must block (a "must be blocked" attacker)`
         : `${name(violation.attacker)} must be blocked if able`;
@@ -175,6 +185,8 @@ export const blockers = defineDecision({
         !legal.menaceAttackers.includes(b.attacker) ||
         blocks.filter((x) => x.attacker === b.attacker).length >= 2,
     );
+    // And one that can't be blocked by more than one keeps its first.
+    blocks = withinSingleBlockers(blocks, legal);
     return { type: "declare-blockers", player, blocks: obeyingLure(blocks, legal) };
   },
 });

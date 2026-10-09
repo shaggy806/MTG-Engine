@@ -73,6 +73,7 @@ import _poolFinalVengeance from "../pool/final-vengeance.js";
 import _poolFlamebraider from "../pool/flamebraider.js";
 import _poolFlayerOfLoyalties from "../pool/flayer-of-loyalties.js";
 import _poolFlightOfFancy from "../pool/flight-of-fancy.js";
+import _poolFoeRazerRegent from "../pool/foe-razer-regent.js";
 import _poolForbiddenAlchemy from "../pool/forbidden-alchemy.js";
 import _poolFracturedSanity from "../pool/fractured-sanity.js";
 import _poolFrogTongue from "../pool/frog-tongue.js";
@@ -331,6 +332,7 @@ const shard: CardShard = {
     _poolFlamebraider,
     _poolFlayerOfLoyalties,
     _poolFlightOfFancy,
+    _poolFoeRazerRegent,
     _poolForbiddenAlchemy,
     _poolFracturedSanity,
     _poolFrogTongue,

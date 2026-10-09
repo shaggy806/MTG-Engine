@@ -1029,6 +1029,12 @@ export interface StaticAbility {
    * creatures with flying" (`{ keyword: "flying" }`). The attacker is
    * matched from this permanent's controller's side. */
   readonly canBlockOnly?: CardFilter;
+  /** The affected creatures "can't be blocked by more than one creature"
+   * (Challenger Troll — a blocking restriction, rule 509.1b): a declaration
+   * may put at most one creature on each. Checked as a block is declared,
+   * like `cantBeBlockedBy`, so a scope reading power ("with power 4 or
+   * greater") sees the creature as it is. */
+  readonly blockedByAtMostOne?: boolean;
   /**
    * A prohibition on casting and activating ("can't" beats "can" — rule
    * 101.2): `who` — `"opponents"`, `"you"` or `"each-player"`, from this

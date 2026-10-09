@@ -1155,6 +1155,15 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /** A creature fought (rule 701.14) — Foe-Razer Regent's "whenever a
+       * creature you control fights": each creature in a fight is one that
+       * fights, so a fight between two of yours fires twice. Its trigger
+       * object is the creature that fought. */
+      readonly on: "fights";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
+  | {
       /** A permanent became untapped (rule 701.26b) — Key to the City's
        * "whenever this artifact becomes untapped": in an untap step or by
        * any effect. Not a shock land whose life was paid as it entered: that

@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3377 already implemented / 1623 missing (marks refreshed 2026-10-09)
+3381 already implemented / 1619 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1093,7 +1093,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1097  Ethereal Armor                           {W}              Enchantment — Aura
 [x]  1098  Muldrotha, the Gravetide                 {3}{B}{G}{U}     Legendary Creature — Elemental Avatar
 [x]  1099  Tranquil Cove                            {0}              Land
-[ ]  1100  Ram Through                              {1}{G}           Instant
+[x]  1100  Ram Through                              {1}{G}           Instant
 [ ]  1101  Not Dead After All                       {B}              Instant
 [ ]  1102  Restoration Magic                        {W}              Instant
 [ ]  1103  Ocelot Pride                             {W}              Creature — Cat
@@ -1223,7 +1223,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1228  Shrine of the Forsaken Gods              {0}              Land
 [x]  1229  Magda, Brazen Outlaw                     {1}{R}           Legendary Creature — Dwarf Berserker
 [ ]  1230  Amphibian Downpour                       {2}{U}           Enchantment — Aura
-[ ]  1231  Skyclave Apparition                      {1}{W}{W}        Creature — Kor Spirit
+[x]  1231  Skyclave Apparition                      {1}{W}{W}        Creature — Kor Spirit
 [ ]  1232  Light Up the Stage                       {2}{R}           Sorcery
 [x]  1233  Agate Instigator                         {1}{R}           Creature — Lizard Rogue
 [x]  1234  Junji, the Midnight Sky                  {3}{B}{B}        Legendary Creature — Dragon Spirit
@@ -1638,7 +1638,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1645  Grenzo, Havoc Raiser                     {R}{R}           Legendary Creature — Goblin Rogue
 [x]  1646  Loyal Warhound                           {1}{W}           Creature — Dog
 [ ]  1647  Galadriel's Dismissal                    {W}              Instant
-[ ]  1648  Tetsuko Umezawa, Fugitive                {1}{U}           Legendary Creature — Human Rogue
+[x]  1648  Tetsuko Umezawa, Fugitive                {1}{U}           Legendary Creature — Human Rogue
 [x]  1649  Zetalpa, Primal Dawn                     {6}{W}{W}        Legendary Creature — Elder Dinosaur
 [x]  1650  Silent Clearing                          {0}              Land
 [x]  1651  The Gaffer                               {2}{W}           Legendary Creature — Halfling Peasant
@@ -2203,7 +2203,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2210  Arabella, Abandoned Doll                 {R}{W}           Legendary Artifact Creature — Toy
 [x]  2211  Shock                                    {R}              Instant
 [x]  2212  Contentious Plan                         {1}{U}           Sorcery
-[ ]  2213  Carnelian Orb of Dragonkind              {2}{R}           Artifact
+[x]  2213  Carnelian Orb of Dragonkind              {2}{R}           Artifact
 [x]  2214  Final Showdown                           {W}              Instant
 [x]  2215  Quirion Ranger                           {G}              Creature — Elf Ranger
 [ ]  2216  Pact of the Serpent                      {1}{B}{B}        Sorcery

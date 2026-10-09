@@ -44,6 +44,9 @@ export type BlockOffer = Extract<LegalAction, { kind: "declare-blockers" }>;
 export type BlockingViolation =
   /** `attacker` has menace and exactly one creature was assigned to it. */
   | { readonly kind: "menace"; readonly attacker: ObjectId }
+  /** `attacker` can't be blocked by more than one creature and more were
+   * assigned to it. */
+  | { readonly kind: "single-blocker"; readonly attacker: ObjectId }
   /** `blocker` could have blocked a must-be-blocked attacker and didn't. */
   | { readonly kind: "must-be-blocked"; readonly blocker: ObjectId }
   /** `attacker` must be blocked if able, could have been, and wasn't. */
@@ -239,6 +242,16 @@ export function blockingViolations(
       out.push({ kind: "menace", attacker });
     }
   }
+  // "Can't be blocked by more than one creature": every creature on it,
+  // whichever token of an attacking stack it blocks.
+  const single = offer.singleBlockerAttackers ?? [];
+  if (single.length > 0) {
+    const onEach = new Map<ObjectId, number>();
+    for (const { attacker, count } of perAttacker.values()) onEach.set(attacker, (onEach.get(attacker) ?? 0) + count);
+    for (const attacker of single) {
+      if ((onEach.get(attacker) ?? 0) > 1) out.push({ kind: "single-blocker", attacker });
+    }
+  }
 
   // Lure: as many creatures blocking must-be-blocked attackers as there can
   // be (`lurePlan`). Short of that, the creatures named are the ones the
@@ -377,5 +390,36 @@ export function obeyingLure(
   for (const { blocker, attacker, count } of moved) {
     load.set(attacker, (load.get(attacker) ?? 0) + (count ?? copies.get(blocker) ?? 1));
   }
-  return moved.filter((b) => !offer.menaceAttackers.includes(b.attacker) || (load.get(b.attacker) ?? 0) >= 2);
+  return withinSingleBlockers(
+    moved.filter((b) => !offer.menaceAttackers.includes(b.attacker) || (load.get(b.attacker) ?? 0) >= 2),
+    offer,
+  );
+}
+
+/**
+ * `blocks` with at most one creature on each attacker that "can't be blocked
+ * by more than one creature" (`offer.singleBlockerAttackers`): the first
+ * declaration on it stays, as one creature (a stack sends one token), and the
+ * rest go. For a policy that builds its own declaration. Unchanged when
+ * there are none.
+ */
+export function withinSingleBlockers(
+  blocks: readonly BlockerDeclaration[],
+  offer: BlockOffer,
+): BlockerDeclaration[] {
+  const single = new Set(offer.singleBlockerAttackers ?? []);
+  if (single.size === 0) return [...blocks];
+  const copies = new Map(offer.eligible.map((e) => [e.blocker, e.copies ?? 1]));
+  const taken = new Set<ObjectId>();
+  const out: BlockerDeclaration[] = [];
+  for (const b of blocks) {
+    if (!single.has(b.attacker)) {
+      out.push(b);
+      continue;
+    }
+    if (taken.has(b.attacker)) continue;
+    taken.add(b.attacker);
+    out.push((b.count ?? copies.get(b.blocker) ?? 1) > 1 ? { ...b, count: 1 } : b);
+  }
+  return out;
 }

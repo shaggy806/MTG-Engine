@@ -64,7 +64,8 @@ reprints are folded) by how many cards the pool already had: the five 2022 Start
 Decks (Draconic Destruction 3 stand-ins, Token Triumph 1, First Flight 3, Grave Danger 5, Chaos
 Incarnate 14 — their old stand-ins, from when they were the defaults, less what has landed
 since) and the four nearest complete after them (Tramplesaurus Rex 7, Family Matters 9, Reign of
-Dragons 9, World Shaper 12). The new decks' stand-ins were chosen by role, card type and mana value from cards a precon
+Dragons 9, World Shaper 12). Their stand-ins are the card priority since the TDC decks were
+completed (2026-10-09), and are counted in `BACKLOG.md`. The new decks' stand-ins were chosen by role, card type and mana value from cards a precon
 would run, not the format's top staples (a Demonic Tutor or Rhystic Study would make a deck
 stronger than it is), so a deck's win rate under identical bots says something about the
 printed deck. The substitution tables are in `sample-decks.ts` itself; what blocks each

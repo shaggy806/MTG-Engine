@@ -12896,6 +12896,28 @@ export class Game {
       const spell = this.state.objects[purpose.card];
       if (spell !== undefined) spell.uncounterable = true;
     }
+    // "If that mana is spent on a Dragon creature spell, it gains haste until
+    // end of turn" (rule 106.6): the spell gains it, and the permanent it
+    // becomes keeps it (a `castRider`, as Thundermane Dragon's haste is).
+    if (purpose !== null && purpose.kind === "cast") {
+      const spell = this.state.objects[purpose.card];
+      for (const unit of spent) {
+        const gains = unit.spellGains;
+        if (spell === undefined || gains === undefined) continue;
+        if (gains.spell !== undefined && !matchesFilter(this.state, this.registry, purpose.card, gains.spell, { you: player })) {
+          continue;
+        }
+        spell.modifiers.push({
+          timestamp: this.freshTimestamp(),
+          power: 0,
+          toughness: 0,
+          keywords: [...gains.keywords],
+          untilEndOfTurn: true,
+          castRider: true,
+        });
+        invalidateComputedCache();
+      }
+    }
     // Where the mana that cast it came from ("if mana from an artifact was
     // spent to cast it"). Paid for only once, so this is all of it.
     if (purpose !== null && purpose.kind === "cast") {
@@ -12931,10 +12953,11 @@ export class Game {
     object: GameObject,
     effect: Extract<EffectSpec, { kind: "add-mana" }>,
   ): Omit<ManaUnit, "type"> | undefined {
-    const { spendOnly, whenSpent, persists, untilEndOfCombat } = effect;
+    const { spendOnly, whenSpent, persists, untilEndOfCombat, spellGains } = effect;
     if (
       spendOnly === undefined &&
       whenSpent === undefined &&
+      spellGains === undefined &&
       persists !== true &&
       untilEndOfCombat !== true
     ) {
@@ -12944,6 +12967,7 @@ export class Game {
     const tag: {
       restriction?: ManaRestriction;
       onSpend?: ManaSpendRider;
+      spellGains?: Extract<EffectSpec, { kind: "add-mana" }>["spellGains"];
       persists?: boolean;
       untilEndOfCombat?: boolean;
       uncounterable?: boolean;
@@ -12985,6 +13009,7 @@ export class Game {
       };
     }
 
+    if (spellGains !== undefined) tag.spellGains = spellGains;
     if (persists === true) tag.persists = true;
     if (untilEndOfCombat === true) tag.untilEndOfCombat = true;
     return tag;
@@ -14604,7 +14629,7 @@ export class Game {
                         ? event.object
                         : // The permanent that untapped: "that permanent's
                           // controller" (Mesmeric Orb).
-                          event.type === "permanent-untapped"
+                          event.type === "permanent-untapped" || event.type === "creature-fought"
                           ? event.object
                           : undefined;
           const powerOfId =
@@ -15702,6 +15727,12 @@ export class Game {
         });
         return counted.length >= spec.atLeast;
       }
+      case "fights":
+        return (
+          event.type === "creature-fought" &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
+        );
       case "becomes-tapped":
         return (
           event.type === "permanent-tapped" &&
@@ -16993,6 +17024,16 @@ export class Game {
         const by = damageSource(from);
         if (by === undefined) return;
         this.dealDamage(by.id, this.splitTargetRef(target), amount, false, by.lastKnown);
+      },
+      lethalDamageTo: (target, from) => {
+        const by = damageSource(from);
+        const object = this.state.objects[target];
+        if (by === undefined || object === undefined) return 0;
+        return this.lethalDamageTo(object, by.id, by.lastKnown);
+      },
+      damageSourceHas: (keyword, from) => {
+        const by = damageSource(from);
+        return by !== undefined && this.sourceHasKeyword(by.id, keyword, by.lastKnown);
       },
       dealDamageToEach: (targets, amount) =>
         this.withDamageBatch(() => {
@@ -24428,6 +24469,12 @@ export class Game {
 
     if (aLive && bLive && aPower > 0) this.dealDamage(a.object, b, aPower);
     if (!oneSided && aLive && bLive && bPower > 0) this.dealDamage(b.object, a, bPower);
+    // Each fought (rule 701.14a) — whatever the damage came to — and one
+    // that fought itself fought once (701.14c).
+    if (!oneSided && aLive && bLive) {
+      this.emit({ type: "creature-fought", object: a.object, opponent: b.object });
+      if (b.object !== a.object) this.emit({ type: "creature-fought", object: b.object, opponent: a.object });
+    }
   }
 
   private millByEffect(target: TargetRef, amount: number): void {
@@ -24988,14 +25035,7 @@ export class Game {
     if (c.types.includes("planeswalker")) {
       excess = amount > (object.counters.loyalty ?? 0);
     } else if (c.types.includes("creature")) {
-      const needed = Math.max(0, c.toughness - object.damageMarked);
-      const lethal =
-        needed === 0 || object.markedByDeathtouch
-          ? 0
-          : this.sourceHasKeyword(source, "deathtouch", sourceLastKnown)
-            ? 1
-            : needed;
-      excess = amount > lethal;
+      excess = amount > this.lethalDamageTo(object, source, sourceLastKnown);
     }
     const live = this.state.objects[source];
     const from =
@@ -25273,6 +25313,19 @@ export class Game {
   /** True if `source` is a battlefield creature whose current keywords
    * include `keyword` — or, given its last-known information, was one as it
    * left (rule 608.2h: a lifelinker's dies trigger still gains the life). */
+  /** The damage from `source` that's lethal to the creature `object` right
+   * now (rules 120.4a, 120.6, 702.2c): its toughness less the damage marked
+   * on it, or 1 from a deathtouch source — none at all once it has lethal
+   * damage, or deathtouch damage since state-based actions were last
+   * checked. Prevention, replacement and indestructible don't enter into it
+   * (Ram Through's ruling). */
+  private lethalDamageTo(object: GameObject, source: ObjectId, sourceLastKnown?: LastKnownInfo): number {
+    const c = computeCharacteristics(this.state, this.registry, object.id);
+    const needed = Math.max(0, c.toughness - object.damageMarked);
+    if (needed === 0 || object.markedByDeathtouch) return 0;
+    return this.sourceHasKeyword(source, "deathtouch", sourceLastKnown) ? 1 : needed;
+  }
+
   private sourceHasKeyword(
     source: ObjectId,
     keyword: Keyword,

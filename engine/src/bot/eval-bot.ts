@@ -1665,15 +1665,21 @@ export class EvalBotController extends HeuristicBotController {
       const out: { next: BlockerDeclaration[]; estimate: number }[] = [];
       const used = new Set(current.map((b) => b.blocker));
       const free = legal.eligible.filter((e) => !used.has(e.blocker));
+      // "Can't be blocked by more than one creature": one blocker, never a
+      // second (Challenger Troll).
+      const single = new Set(legal.singleBlockerAttackers ?? []);
+      const blockedNow = new Set(current.map((b) => b.attacker));
       for (const entry of free) {
         for (const attacker of entry.canBlock) {
           if (legal.menaceAttackers.includes(attacker)) continue;
+          if (single.has(attacker) && blockedNow.has(attacker)) continue;
           // One token of a stack per move (see v1's `declareBlockers`).
           const move = [{ blocker: entry.blocker, attacker, ...((entry.copies ?? 1) > 1 ? { count: 1 } : {}) }];
           out.push({ next: [...current, ...move], estimate: estimate(move) });
         }
       }
       for (const attacker of legal.menaceAttackers) {
+        if (single.has(attacker)) continue;
         const able = free.filter((e) => e.canBlock.includes(attacker));
         let pairs = 0;
         for (let i = 0; i < able.length && pairs < MAX_MENACE_PAIRS; i += 1) {
@@ -1693,7 +1699,7 @@ export class EvalBotController extends HeuristicBotController {
       const blocked = new Set(current.map((b) => b.attacker));
       const attackersHere = new Set(free.flatMap((e) => e.canBlock));
       for (const attacker of attackersHere) {
-        if (blocked.has(attacker) || legal.menaceAttackers.includes(attacker)) continue;
+        if (blocked.has(attacker) || legal.menaceAttackers.includes(attacker) || single.has(attacker)) continue;
         const target = creatures.get(attacker);
         if (target === undefined) continue;
         const able = free.filter((e) => {

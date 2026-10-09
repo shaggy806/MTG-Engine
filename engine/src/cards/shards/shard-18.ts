@@ -196,6 +196,7 @@ import _poolSivitriScarzam from "../pool/sivitri-scarzam.js";
 import _poolSkeletalCrocodile from "../pool/skeletal-crocodile.js";
 import _poolSkitteringHeartstopper from "../pool/skittering-heartstopper.js";
 import _poolSkullCatapult from "../pool/skull-catapult.js";
+import _poolSkyclaveApparition from "../pool/skyclave-apparition.js";
 import _poolSkystrikeOfficer from "../pool/skystrike-officer.js";
 import _poolSnakeskinVeil from "../pool/snakeskin-veil.js";
 import _poolSongsOfTheDamned from "../pool/songs-of-the-damned.js";
@@ -481,6 +482,7 @@ const shard: CardShard = {
     _poolSkeletalCrocodile,
     _poolSkitteringHeartstopper,
     _poolSkullCatapult,
+    _poolSkyclaveApparition,
     _poolSkystrikeOfficer,
     _poolSnakeskinVeil,
     _poolSongsOfTheDamned,

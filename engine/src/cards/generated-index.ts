@@ -130,6 +130,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Hydra Token",
   "Illusion Token (Flying)",
   "Illusion Token (Minn)",
+  "Illusion Token (Skyclave Apparition)",
   "Imp Token (Judith)",
   "Inkling Token",
   "Insect Token",

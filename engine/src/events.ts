@@ -627,6 +627,16 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** `object` fought `opponent` (rule 701.14a) — one event for each of
+       * the two creatures, as the fight happens (both still creatures on the
+       * battlefield, 701.14b). A creature that fights itself (701.14c) is one.
+       * Not for a one-sided "deals damage equal to its power" — that's no
+       * fight. */
+      readonly type: "creature-fought";
+      readonly object: ObjectId;
+      readonly opponent: ObjectId;
+    })
+  | (Base & {
       /** Two permanents exchanged text boxes (rule 612.5 — Deadpool, Trading
        * Card): `object` now has `withObject`'s rules text, and the other way
        * round. */

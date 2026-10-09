@@ -671,7 +671,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Verix Bladewing", 1],
     ],
     substitutions: [
-      sub("Foe-Razer Regent", "Old Gnawbone", "Seven-mana green flying Dragon."),
       sub("Loaming Shaman", "Scavenging Ooze", "Cheap green creature that interacts with graveyards."),
       sub("Sarkhan, the Dragonspeaker", "Garruk Wildspeaker", "Green planeswalker that makes creatures and has an overrun finisher."),
     ],
@@ -1094,11 +1093,9 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Yeva, Nature's Herald", 1],
     ],
     substitutions: [
-      sub("Challenger Troll", "Thragtusk", "Five-mana green creature with a big body."),
       sub("Ezuri's Predation", "Hornet Queen", "Seven-mana green answer to a wide board."),
       sub("Kenrith's Transformation", "Bridgeworks Battle", "Green removal: a creature fights."),
       sub("Monstrous Onslaught", "Primal Might", "Green removal that uses a creature's power."),
-      sub("Ram Through", "Rabid Bite", "Cheap one-sided fight."),
     ],
   }),
   precon({
@@ -1202,10 +1199,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Dusk // Dawn", "Wrath of God", "Four-mana white sweeper."),
       sub("Fortune Teller's Talent", "Ophidian Eye", "Blue enchantment that draws cards."),
       sub("Helm of the Host", "The Fire Crystal", "Red artifact that gives the team haste."),
-      sub("Rowdy Research", "Concentrate", "Blue: draw three cards."),
       sub("Shield Broker", "Act of Treason", "Takes an opponent's creature."),
-      sub("Skyclave Apparition", "Resculpt", "Two-mana removal for an artifact or creature."),
-      sub("Tetsuko Umezawa, Fugitive", "Thieving Magpie", "Blue flier that draws cards."),
     ],
   }),
   precon({
@@ -1285,7 +1279,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Warstorm Surge", 1],
     ],
     substitutions: [
-      sub("Carnelian Orb of Dragonkind", "Ruby Medallion", "Red artifact that makes the deck's spells cheaper."),
       sub("Dragonhawk, Fate's Tempest", "Demanding Dragon", "Five-mana red flying Dragon."),
       sub("Minion of the Mighty", "Dragonkin Berserker", "Cheap red creature that pays off Dragons."),
       sub("Sarkhan, Dragon Ascendant", "Reckless Fireweaver", "Two-mana red creature."),

@@ -299,6 +299,12 @@ export type EffectAmount =
    * casts. 0 for a player with no commander.
    */
   | { readonly commanderCasts: "you" }
+  /** The total mana value of the cards in exile linked to this effect's
+   * source (rule 607.2a — `exile`'s `linked`), in the stint the resolving
+   * ability refers to: Skyclave Apparition's "where X is the mana value of
+   * the exiled card" (its ruling: several exiled cards add up). Printed
+   * costs, an {X} counting 0. 0 when there are none. */
+  | { readonly exiledWithSourceManaValue: true }
   /** A current life total: the effect controller's (`"you"` — Ajani, Caller
    * of the Pride's ultimate: "create X 2/2 white Cat creature tokens, where X
    * is your life total"), or `"each"`, the life of **each player the effect
@@ -1093,6 +1099,15 @@ export type EffectSpec =
        * is exactly the order every card printed this way resolves in.
        */
       readonly toControllerOfTarget?: number;
+      /**
+       * "Excess damage is dealt to that creature's controller instead" (Ram
+       * Through — rule 120.4a): of the damage to a target creature, what's
+       * beyond lethal (`lethalDamageTo`: toughness less damage marked, 1 from
+       * deathtouch) goes to its controller, both dealt at once. `ifSourceHas`
+       * makes it conditional on the source's keyword ("if the creature you
+       * control has trample").
+       */
+      readonly excessToController?: { readonly ifSourceHas?: Keyword };
     }
   | {
       /** `mana: "any-color"` — one mana of any of the five colours, the
@@ -1164,6 +1179,13 @@ export type EffectSpec =
        * enters rather than printed.
        */
       readonly spendOnly?: ManaSpendOnly;
+      /** "If that mana is spent on a Dragon creature spell, it gains haste
+       * until end of turn" (Carnelian Orb of Dragonkind): an additional effect
+       * on the spell the mana is spent on (rule 106.6) — not a trigger, so it
+       * can't be responded to and happens with its source gone. The spell
+       * (matched by `spell`, as it is on the stack) gains `keywords` until end
+       * of turn, and so does the permanent it becomes (a `castRider`). */
+      readonly spellGains?: { readonly spell?: CardFilter; readonly keywords: readonly Keyword[] };
       /** "When that mana is spent to cast …, [effect]" — Path of Ancestry's
        * scry. Rides on each unit produced and fires as it is spent. */
       readonly whenSpent?: {
@@ -3109,7 +3131,10 @@ export type EffectSpec =
        * this effect's controller doing it, about each of them.
        */
       readonly kind: "for-each-player";
-      readonly who: PlayerScope;
+      /** `"owners-of-exiled-with-source"`: each owner of a card in exile
+       * linked to this source (rule 607.2a), in turn order — Skyclave
+       * Apparition's "the exiled card's owner creates …". Nobody, with none. */
+      readonly who: PlayerScope | "owners-of-exiled-with-source";
       readonly effect: EffectSpec;
       /** Set by the engine on the copy it parks when one player's `effect`
        * stops to ask something (myriad's "you may"): the players still to
@@ -4436,6 +4461,13 @@ export interface EffectApi {
    * enter (rule 603.6a). See the `sequence` {@link EffectSpec}'s
    * `simultaneous`. */
   simultaneously(fn: () => void): void;
+  /** How much damage from the effect's damage source (`from`) is lethal to
+   * the creature `target` now — see the `damage` effect's
+   * `excessToController`. */
+  lethalDamageTo(target: ObjectId, from: DamageFrom | undefined): number;
+  /** Whether the effect's damage source (`from`) has `keyword` — as it last
+   * existed, if it has left. */
+  damageSourceHas(keyword: Keyword, from: DamageFrom | undefined): boolean;
   /** Whether something the resolution has done so far is still waiting on a
    * player — a decision on `awaiting`, or a queued discard, sacrifice,
    * destruction or 903.9a choice not yet asked. */
@@ -5595,6 +5627,9 @@ function signedAmountValue(
     return ref === undefined ? 0 : ctx.colorsSpentOf(ref);
   }
   if ("commanderCasts" in amount) return ctx.commanderCastsBy(ctx.controller);
+  if ("exiledWithSourceManaValue" in amount) {
+    return ctx.cardsExiledWithSource().reduce((n, id) => n + ctx.manaValueOf({ kind: "object", object: id }), 0);
+  }
   if ("commanderCastsOf" in amount) {
     const ref = resolveAmountRef(amount.commanderCastsOf, ctx);
     return ref === undefined ? 0 : ctx.commanderCastsOf(ref);
@@ -6213,7 +6248,25 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
             : undefined;
       if (target !== undefined) {
         const each = target.kind === "player" ? target.player : undefined;
-        ctx.dealDamage(target, amountValue(spec.amount, ctx, each), spec.from);
+        const amount = amountValue(spec.amount, ctx, each);
+        const excess = spec.excessToController;
+        const controller = target.kind === "object" ? ctx.controllerOf(target) : undefined;
+        if (
+          excess !== undefined &&
+          target.kind === "object" &&
+          controller !== undefined &&
+          (excess.ifSourceHas === undefined || ctx.damageSourceHas(excess.ifSourceHas, spec.from))
+        ) {
+          const lethal = Math.min(amount, ctx.lethalDamageTo(target.object, spec.from));
+          if (amount > lethal) {
+            ctx.simultaneously(() => {
+              if (lethal > 0) ctx.dealDamage(target, lethal, spec.from);
+              ctx.dealDamage({ kind: "player", player: controller }, amount - lethal, spec.from);
+            });
+            return;
+          }
+        }
+        ctx.dealDamage(target, amount, spec.from);
       }
       return;
     }
@@ -7283,7 +7336,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // Player by player, as a `sequence`'s steps: one whose effect stops to
       // ask something is answered before the next player's happens, the rest
       // parked with the players fixed as they were when this began.
-      const players = spec.remaining ?? ctx.playersInScope(spec.who);
+      const players =
+        spec.remaining ??
+        (spec.who === "owners-of-exiled-with-source"
+          ? ((owners) => ctx.playersInScope("each-player").filter((p) => owners.has(p)))(
+              new Set(ctx.cardsExiledWithSource().map((id) => ctx.ownerOf({ kind: "object", object: id }))),
+            )
+          : ctx.playersInScope(spec.who));
       const pendingBefore = ctx.decisionPending();
       for (let i = 0; i < players.length; i += 1) {
         const parked = ctx.parkedCount();

@@ -2,7 +2,7 @@
 
 // Type-only, so nothing here participates in a runtime cycle — `filter.ts`
 // and `effects.ts` both import this module for real.
-import type { CardType, Supertype } from "./cards/define.js";
+import type { CardType, Keyword, Supertype } from "./cards/define.js";
 import type { EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { ObjectId } from "./primitives.js";
@@ -103,6 +103,10 @@ export interface ManaUnit {
    * Halfling) — a property the *spell* gains by being paid for with this
    * mana, so it can't live on the land's own card definition. */
   readonly uncounterable?: boolean;
+  /** "If that mana is spent on a [filter] spell, it gains [keywords] until
+   * end of turn" (Carnelian Orb of Dragonkind — rule 106.6): what the spell
+   * this unit pays for gets, as `add-mana`'s `spellGains` says. */
+  readonly spellGains?: { readonly spell?: CardFilter; readonly keywords: readonly Keyword[] };
   /** Fires when this unit is spent — Path of Ancestry's "When that mana is
    * spent to cast a creature spell that shares a creature type with your
    * commander, scry 1". Carried as plain data so it survives a snapshot. */

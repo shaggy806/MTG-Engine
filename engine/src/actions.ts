@@ -970,6 +970,13 @@ export type LegalAction =
       }[];
       /** Attackers with menace: block them with 0 or 2+ creatures, never 1. */
       readonly menaceAttackers: readonly ObjectId[];
+      /** Attackers that "can't be blocked by more than one creature"
+       * (Challenger Troll — rule 509.1b): 0 or 1 creature on each. One
+       * that must also be blocked (Lure) is listed under
+       * `mustBeBlockedIfAble` instead of `mustBlock`: only one creature can
+       * obey, so it's blocked by one if one can (509.1c). Absent when there
+       * are none. */
+      readonly singleBlockerAttackers?: readonly ObjectId[];
       /** Attacking token stacks among the attackers, and how many tokens
        * each is: it attacks as one object, and each creature blocking it
        * blocks a token of its own unless a declaration's `attackerMember`

@@ -30,9 +30,11 @@ import _poolBrimstoneDragon from "../pool/brimstone-dragon.js";
 import _poolBuoyancy from "../pool/buoyancy.js";
 import _poolCaelornaCoralTyrant from "../pool/caelorna-coral-tyrant.js";
 import _poolCaptainHowlerSeaScourge from "../pool/captain-howler-sea-scourge.js";
+import _poolCarnelianOrbOfDragonkind from "../pool/carnelian-orb-of-dragonkind.js";
 import _poolCartographer from "../pool/cartographer.js";
 import _poolCatharsCrusade from "../pool/cathars-crusade.js";
 import _poolCausticRain from "../pool/caustic-rain.js";
+import _poolChallengerTroll from "../pool/challenger-troll.js";
 import _poolChandrasIgnition from "../pool/chandras-ignition.js";
 import _poolChargingMonstrosaur from "../pool/charging-monstrosaur.js";
 import _poolChromeMox from "../pool/chrome-mox.js";
@@ -314,9 +316,11 @@ const shard: CardShard = {
     _poolBuoyancy,
     _poolCaelornaCoralTyrant,
     _poolCaptainHowlerSeaScourge,
+    _poolCarnelianOrbOfDragonkind,
     _poolCartographer,
     _poolCatharsCrusade,
     _poolCausticRain,
+    _poolChallengerTroll,
     _poolChandrasIgnition,
     _poolChargingMonstrosaur,
     _poolChromeMox,

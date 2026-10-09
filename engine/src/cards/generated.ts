@@ -1121,6 +1121,7 @@ import _poolCarefulStudy from "./pool/careful-study.js";
 import _poolCarmenCruelSkymarcher from "./pool/carmen-cruel-skymarcher.js";
 import _poolCarnageAltar from "./pool/carnage-altar.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
+import _poolCarnelianOrbOfDragonkind from "./pool/carnelian-orb-of-dragonkind.js";
 import _poolCarnifexDemon from "./pool/carnifex-demon.js";
 import _poolCarnivorousMossBeast from "./pool/carnivorous-moss-beast.js";
 import _poolCarnivorousPlant from "./pool/carnivorous-plant.js";
@@ -1201,6 +1202,7 @@ import _poolChainersEdict from "./pool/chainers-edict.js";
 import _poolChainsOfCustody from "./pool/chains-of-custody.js";
 import _poolChakramRetriever from "./pool/chakram-retriever.js";
 import _poolChakramSlinger from "./pool/chakram-slinger.js";
+import _poolChallengerTroll from "./pool/challenger-troll.js";
 import _poolChamberedNautilus from "./pool/chambered-nautilus.js";
 import _poolChameleonColossus from "./pool/chameleon-colossus.js";
 import _poolChampionOfArashin from "./pool/champion-of-arashin.js";
@@ -2623,6 +2625,7 @@ import _poolFlyingDolphinFish from "./pool/flying-dolphin-fish.js";
 import _poolFlyingMen from "./pool/flying-men.js";
 import _poolFlyingOctobot from "./pool/flying-octobot.js";
 import _poolFodderCannon from "./pool/fodder-cannon.js";
+import _poolFoeRazerRegent from "./pool/foe-razer-regent.js";
 import _poolFogBank from "./pool/fog-bank.js";
 import _poolFog from "./pool/fog.js";
 import _poolFoggyBottomSwamp from "./pool/foggy-bottom-swamp.js";
@@ -5544,6 +5547,7 @@ import _poolRalStormConduit from "./pool/ral-storm-conduit.js";
 import _poolRallyOfWings from "./pool/rally-of-wings.js";
 import _poolRallyThePeasants from "./pool/rally-the-peasants.js";
 import _poolRallyTheRanks from "./pool/rally-the-ranks.js";
+import _poolRamThrough from "./pool/ram-through.js";
 import _poolRamirezDepietroPillager from "./pool/ramirez-depietro-pillager.js";
 import _poolRamirezDepietro from "./pool/ramirez-depietro.js";
 import _poolRammasEchorAncientShield from "./pool/rammas-echor-ancient-shield.js";
@@ -5893,6 +5897,7 @@ import _poolRousingRead from "./pool/rousing-read.js";
 import _poolRovingHarper from "./pool/roving-harper.js";
 import _poolRowanScionOfWar from "./pool/rowan-scion-of-war.js";
 import _poolRowanTreefolk from "./pool/rowan-treefolk.js";
+import _poolRowdyResearch from "./pool/rowdy-research.js";
 import _poolRoxanneStarfallSavant from "./pool/roxanne-starfall-savant.js";
 import _poolRoyalAssassin from "./pool/royal-assassin.js";
 import _poolRoyalFalcon from "./pool/royal-falcon.js";
@@ -6488,6 +6493,7 @@ import _poolSkyTheaterStrix from "./pool/sky-theater-strix.js";
 import _poolSkybladeOfTheLegion from "./pool/skyblade-of-the-legion.js";
 import _poolSkybridgeTowers from "./pool/skybridge-towers.js";
 import _poolSkycatSovereign from "./pool/skycat-sovereign.js";
+import _poolSkyclaveApparition from "./pool/skyclave-apparition.js";
 import _poolSkyclaveBasilica from "./pool/skyclave-basilica.js";
 import _poolSkyclaveCleric from "./pool/skyclave-cleric.js";
 import _poolSkyclaveGeopede from "./pool/skyclave-geopede.js";
@@ -7254,6 +7260,7 @@ import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolTervigon from "./pool/tervigon.js";
 import _poolTesharAncestorsApostle from "./pool/teshar-ancestors-apostle.js";
 import _poolTestOfEndurance from "./pool/test-of-endurance.js";
+import _poolTetsukoUmezawaFugitive from "./pool/tetsuko-umezawa-fugitive.js";
 import _poolTevalArbiterOfVirtue from "./pool/teval-arbiter-of-virtue.js";
 import _poolTevalTheBalancedScale from "./pool/teval-the-balanced-scale.js";
 import _poolTevalsJudgment from "./pool/tevals-judgment.js";
@@ -8636,6 +8643,7 @@ import _tokensHumanToken from "./tokens/human-token.js";
 import _tokensHumanWarriorToken from "./tokens/human-warrior-token.js";
 import _tokensHydraToken from "./tokens/hydra-token.js";
 import _tokensIllusionTokenMinn from "./tokens/illusion-token-minn.js";
+import _tokensIllusionTokenSkyclave from "./tokens/illusion-token-skyclave.js";
 import _tokensIllusionToken from "./tokens/illusion-token.js";
 import _tokensImpTokenJudith from "./tokens/imp-token-judith.js";
 import _tokensInklingToken from "./tokens/inkling-token.js";
@@ -9890,6 +9898,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCarmenCruelSkymarcher,
   _poolCarnageAltar,
   _poolCarnageTyrant,
+  _poolCarnelianOrbOfDragonkind,
   _poolCarnifexDemon,
   _poolCarnivorousMossBeast,
   _poolCarnivorousPlant,
@@ -9970,6 +9979,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolChainsOfCustody,
   _poolChakramRetriever,
   _poolChakramSlinger,
+  _poolChallengerTroll,
   _poolChamberedNautilus,
   _poolChameleonColossus,
   _poolChampionOfArashin,
@@ -11392,6 +11402,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFlyingMen,
   _poolFlyingOctobot,
   _poolFodderCannon,
+  _poolFoeRazerRegent,
   _poolFogBank,
   _poolFog,
   _poolFoggyBottomSwamp,
@@ -14313,6 +14324,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRallyOfWings,
   _poolRallyThePeasants,
   _poolRallyTheRanks,
+  _poolRamThrough,
   _poolRamirezDepietroPillager,
   _poolRamirezDepietro,
   _poolRammasEchorAncientShield,
@@ -14662,6 +14674,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRovingHarper,
   _poolRowanScionOfWar,
   _poolRowanTreefolk,
+  _poolRowdyResearch,
   _poolRoxanneStarfallSavant,
   _poolRoyalAssassin,
   _poolRoyalFalcon,
@@ -15257,6 +15270,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSkybladeOfTheLegion,
   _poolSkybridgeTowers,
   _poolSkycatSovereign,
+  _poolSkyclaveApparition,
   _poolSkyclaveBasilica,
   _poolSkyclaveCleric,
   _poolSkyclaveGeopede,
@@ -16023,6 +16037,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTervigon,
   _poolTesharAncestorsApostle,
   _poolTestOfEndurance,
+  _poolTetsukoUmezawaFugitive,
   _poolTevalArbiterOfVirtue,
   _poolTevalTheBalancedScale,
   _poolTevalsJudgment,
@@ -17411,6 +17426,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensHumanWarriorToken,
   _tokensHydraToken,
   _tokensIllusionTokenMinn,
+  _tokensIllusionTokenSkyclave,
   _tokensIllusionToken,
   _tokensImpTokenJudith,
   _tokensInklingToken,
