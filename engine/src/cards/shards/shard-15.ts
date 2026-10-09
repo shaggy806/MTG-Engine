@@ -12,6 +12,7 @@ import _poolAkoumHellhound from "../pool/akoum-hellhound.js";
 import _poolAlabasterKirin from "../pool/alabaster-kirin.js";
 import _poolAnglerDrake from "../pool/angler-drake.js";
 import _poolArgivianFind from "../pool/argivian-find.js";
+import _poolArtisanOfKozilek from "../pool/artisan-of-kozilek.js";
 import _poolAtsushiTheBlazingSky from "../pool/atsushi-the-blazing-sky.js";
 import _poolAzimaetDrake from "../pool/azimaet-drake.js";
 import _poolBayou from "../pool/bayou.js";
@@ -277,6 +278,7 @@ const shard: CardShard = {
     _poolAlabasterKirin,
     _poolAnglerDrake,
     _poolArgivianFind,
+    _poolArtisanOfKozilek,
     _poolAtsushiTheBlazingSky,
     _poolAzimaetDrake,
     _poolBayou,

@@ -135,7 +135,7 @@
   "new:blocking-subtype-condition": "static:blocking-subtype-condition",
   "new:blocks-creature-trigger": "trigger:blocks-creature-trigger",
   "new:boast": "keyword:boast",
-  "new:boast-extra-activations": "keyword:boast",
+  "new:boast-extra-activations": "static:boast-twice",
   "new:bolster": "keyword:bolster",
   "new:bounce-all-controlled-by-target-player": "effect:bounce-all-controlled-by-target-player",
   "new:buyback": "keyword:buyback",
@@ -481,7 +481,7 @@
   "new:equipment-attached-count-condition": "condition:equipment-attached-count-condition",
   "new:equipped-creature-damage-doubling": "replacement:equipped-creature-damage-doubling",
   "new:escalate": "keyword:escalate",
-  "new:escalate-nonmana-cost": "keyword:escalate",
+  "new:escalate-nonmana-cost": "cost:escalate-nonmana",
   "new:every-nonbasic-land-type": "static:every-nonbasic-land-type",
   "new:evoke-alternative-non-mana-cost": "keyword:evoke-alternative-non-mana-cost",
   "new:evoke-exile-card-cost": "keyword:evoke-alternative-non-mana-cost",
@@ -494,7 +494,7 @@
   "new:exchange-control-all-with-target-opponent": "effect:exchange-control-all-with-target-opponent",
   "new:exchange-life-toughness": "effect:exchange-life-toughness",
   "new:exert": "keyword:exert",
-  "new:exert-as-cost": "keyword:exert",
+  "new:exert-as-cost": "cost:exert",
   "new:exile-all-linked": "effect:exile-all-linked",
   "new:exile-all-play-permission": "zone:exile-all-play-permission",
   "new:exile-all-target-player-scope": "effect:exile-all-target-player-scope",
@@ -4788,6 +4788,66 @@
   "zone:play-if-attacked-with-commander": {
    "family": "zone:impulse-permission-options",
    "example": "Neriv, Crackling Vanguard: Exile a card per differently named token, playable during a turn you attacked with a commander."
+  },
+  "cost:sacrifice-self-and-another": {
+   "family": "cost:sacrifice-multiple",
+   "example": "Mount Doom: 'Sacrifice Mount Doom and a legendary artifact' — a sacrifice cost's `each` has no 'this permanent' part."
+  },
+  "static:equip-at-instant-speed": {
+   "family": "cost:cost-modification-extensions",
+   "example": "Forge Anew: 'During your turn, you may activate equip abilities any time you could cast an instant.'"
+  },
+  "condition:combat-damage-by-filter-this-turn": {
+   "family": "condition:player-state-thresholds",
+   "example": "Lost Monarch of Ifnir: 'if a player was dealt combat damage by a Zombie this turn'."
+  },
+  "effect:unless-discard-hand": {
+   "family": "effect:choices-by-other-players",
+   "example": "Perplex: 'Counter target spell unless its controller discards their hand' — no discard-hand unless option."
+  },
+  "filter:has-toxic": {
+   "family": "condition:filter-card-property-clauses",
+   "example": "Skrelv's Hive: 'creatures you control with toxic have lifelink' — no filter for having toxic."
+  },
+  "trigger:counters-put-first-time-each-turn": {
+   "family": "trigger:counters-put",
+   "example": "Danny Pink: 'Whenever one or more counters are put on this creature for the first time each turn'."
+  },
+  "condition:during-your-combat-phase": {
+   "family": "condition:turn-structure",
+   "example": "Great Train Heist: 'If it's your combat phase, there is an additional combat phase after this phase.'"
+  },
+  "effect:delayed-trigger-for-chosen-player": {
+   "family": "effect:delayed-trigger-extensions",
+   "example": "Great Train Heist: 'Choose target opponent. Whenever a creature you control deals combat damage to that player this turn, create a tapped Treasure token.'"
+  },
+  "cost:escalate-nonmana": {
+   "family": "cost:may-cost-non-mana",
+   "example": "Collective Effort: 'Escalate—Tap an untapped creature you control' — costPerExtraMode is mana only."
+  },
+  "cost:exert": {
+   "family": "cost:may-cost-non-mana",
+   "example": "Pride Sovereign: '{W}, {T}, Exert this creature:' — exert as an activation cost."
+  },
+  "effect:multiply-pt": {
+   "family": "effect:amount-new-variants",
+   "example": "Tifa's Limit Break: 'Double/Triple target creature's power and toughness' — no signed multiple of a creature's own P/T."
+  },
+  "static:type-while-counter": {
+   "family": "static:self-type-changes",
+   "example": "Minas Morgul, Dark Fortress: 'For as long as that creature has a shadow counter on it, it's a Wraith in addition to its other types.'"
+  },
+  "static:boast-twice": {
+   "family": "keyword:boast",
+   "example": "Birgi, God of Storytelling: 'Creatures you control can boast twice during each of your turns rather than once.'"
+  },
+  "static:token-protection-from-own-triggers": {
+   "family": "static:cant-be-sacrificed",
+   "example": "The Master, Multiplied: 'Triggered abilities you control can't cause you to sacrifice or exile creature tokens you control.'"
+  },
+  "replacement:shuffle-into-library-instead": {
+   "family": "effect:shuffle-into-library",
+   "example": "Blightsteel Colossus: 'If it would be put into a graveyard from anywhere, reveal it and shuffle it into its owner's library instead.'"
   }
  }
 }

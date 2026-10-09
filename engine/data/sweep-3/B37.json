@@ -1,0 +1,309 @@
+{
+ "batch": "B37",
+ "status": "complete",
+ "ranks": "stale records + untriaged 1187-1210",
+ "authored": [
+  {
+   "name": "Muddle the Mixture",
+   "files": [
+    "engine/src/cards/pool/muddle-the-mixture.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Drift of Phantasms",
+   "files": [
+    "engine/src/cards/pool/drift-of-phantasms.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Tolaria West",
+   "files": [
+    "engine/src/cards/pool/tolaria-west.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Dimir Infiltrator",
+   "files": [
+    "engine/src/cards/pool/dimir-infiltrator.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Dimir House Guard",
+   "files": [
+    "engine/src/cards/pool/dimir-house-guard.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Wasteland",
+   "files": [
+    "engine/src/cards/pool/wasteland.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Homeward Path",
+   "files": [
+    "engine/src/cards/pool/homeward-path.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Starfield Mystic",
+   "files": [
+    "engine/src/cards/pool/starfield-mystic.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Flopsie, Bumi's Buddy",
+   "files": [
+    "engine/src/cards/pool/flopsie-bumis-buddy.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Vorrac Battlehorns",
+   "files": [
+    "engine/src/cards/pool/vorrac-battlehorns.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Fire Magic",
+   "files": [
+    "engine/src/cards/pool/fire-magic.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Restoration Magic",
+   "files": [
+    "engine/src/cards/pool/restoration-magic.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Moonshaker Cavalry",
+   "files": [
+    "engine/src/cards/pool/moonshaker-cavalry.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Artisan of Kozilek",
+   "files": [
+    "engine/src/cards/pool/artisan-of-kozilek.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Neheb, the Eternal",
+   "files": [
+    "engine/src/cards/pool/neheb-the-eternal.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Badgermole Cub",
+   "files": [
+    "engine/src/cards/pool/badgermole-cub.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Unstoppable Slasher",
+   "files": [
+    "engine/src/cards/pool/unstoppable-slasher.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Cyberman Patrol",
+   "files": [
+    "engine/src/cards/pool/cyberman-patrol.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Torpor Orb",
+   "files": [
+    "engine/src/cards/pool/torpor-orb.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Power Depot",
+   "files": [
+    "engine/src/cards/pool/power-depot.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Scapeshift",
+   "files": [
+    "engine/src/cards/pool/scapeshift.ts"
+   ],
+   "tested": true
+  }
+ ],
+ "blocked": [
+  {
+   "name": "Siren Stormtamer",
+   "needs": [
+    "effect:target-spell-or-ability"
+   ],
+   "why": "'Counter target spell or ability that targets you or a creature you control': no target that is a spell or an ability, filtered on what it targets."
+  },
+  {
+   "name": "The Darkness Crystal",
+   "needs": [
+    "replacement:exile-instead",
+    "effect:put-exiled-with-source-onto-battlefield"
+   ],
+   "why": "The death replacement also gains 2 life, and its cards are 'exiled with' the Crystal for the last ability; the exile-instead replacement has neither."
+  },
+  {
+   "name": "Wheel of Misfortune",
+   "needs": [
+    "decision:choose-number"
+   ],
+   "why": "Each player secretly chooses a number, revealed together."
+  },
+  {
+   "name": "Mount Doom",
+   "needs": [
+    "cost:sacrifice-self-and-another",
+    "effect:each-player-chooses-destroy-rest"
+   ],
+   "why": "'Sacrifice Mount Doom and a legendary artifact' and 'choose up to two creatures, then destroy the rest'."
+  },
+  {
+   "name": "Forge Anew",
+   "needs": [
+    "static:equip-at-instant-speed",
+    "cost:equip-alternative-costs"
+   ],
+   "why": "Equip at instant speed on your turn, and the first equip each turn for {0}."
+  },
+  {
+   "name": "Turntimber Symbiosis // Turntimber, Serpentine Wood",
+   "needs": [
+    "effect:look-and-choose-enters-with-counters"
+   ],
+   "why": "The chosen creature enters with three more +1/+1 counters if its mana value is 3 or less: counters as it enters, not after."
+  },
+  {
+   "name": "Dreamtide Whale",
+   "needs": [
+    "keyword:vanishing"
+   ],
+   "why": "Vanishing needs a 'when the last time counter is removed' trigger."
+  },
+  {
+   "name": "Lost Monarch of Ifnir",
+   "needs": [
+    "condition:combat-damage-by-filter-this-turn"
+   ],
+   "why": "Afflict now exists (helpers.afflict); the second-main trigger's 'if a player was dealt combat damage by a Zombie this turn' doesn't."
+  },
+  {
+   "name": "Perplex",
+   "needs": [
+    "effect:unless-discard-hand"
+   ],
+   "why": "Transmute exists (helpers.transmute); 'unless its controller discards their hand' is no unless option."
+  },
+  {
+   "name": "Skrelv's Hive",
+   "needs": [
+    "filter:has-toxic"
+   ],
+   "why": "Corrupted and the Mite token exist; 'creatures you control with toxic' has no filter."
+  },
+  {
+   "name": "Danny Pink",
+   "needs": [
+    "trigger:counters-put-first-time-each-turn"
+   ],
+   "why": "Mentor exists; the granted 'for the first time each turn' counters trigger doesn't (once per turn isn't the same: it counts events from before the ability was there)."
+  },
+  {
+   "name": "Blightsteel Colossus",
+   "needs": [
+    "replacement:shuffle-into-library-instead"
+   ],
+   "why": "Infect exists; 'if it would be put into a graveyard from anywhere, shuffle it into its owner's library instead' doesn't."
+  },
+  {
+   "name": "Great Train Heist",
+   "needs": [
+    "condition:during-your-combat-phase",
+    "effect:delayed-trigger-for-chosen-player"
+   ],
+   "why": "Spree exists; 'if it's your combat phase' and a this-turn trigger keyed to the chosen opponent don't."
+  },
+  {
+   "name": "Lively Dirge",
+   "needs": [
+    "effect:look-and-choose-total-mana-value"
+   ],
+   "why": "Spree exists; 'up to two creature cards with total mana value 4 or less' doesn't."
+  },
+  {
+   "name": "Collective Effort",
+   "needs": [
+    "cost:escalate-nonmana"
+   ],
+   "why": "Escalate is mana only; this one taps an untapped creature."
+  },
+  {
+   "name": "Pride Sovereign",
+   "needs": [
+    "cost:exert"
+   ],
+   "why": "Exert exists as an effect and an as-it-attacks choice, not as an activation cost."
+  },
+  {
+   "name": "Cloud's Limit Break",
+   "needs": [
+    "effect:target-different-controllers"
+   ],
+   "why": "Tiered exists; 'any number of target tapped creatures with different controllers' doesn't."
+  },
+  {
+   "name": "Tifa's Limit Break",
+   "needs": [
+    "effect:multiply-pt"
+   ],
+   "why": "Tiered exists; doubling and tripling a creature's P/T (signed, negative power included) doesn't."
+  },
+  {
+   "name": "Minas Morgul, Dark Fortress",
+   "needs": [
+    "static:type-while-counter"
+   ],
+   "why": "Shadow is a keyword counter (rule 122.1b); 'a Wraith for as long as it has a shadow counter' isn't expressible."
+  },
+  {
+   "name": "The Master, Multiplied",
+   "needs": [
+    "static:token-protection-from-own-triggers",
+    "static:legend-rule-exemptions"
+   ],
+   "why": "Myriad exists; 'triggered abilities you control can't cause you to sacrifice or exile creature tokens' and the tokens' legend-rule exemption don't."
+  },
+  {
+   "name": "Birgi, God of Storytelling // Harnfel, Horn of Bounty",
+   "needs": [
+    "static:boast-twice",
+    "replacement:mana-pool-emptying"
+   ],
+   "why": "Boast exists; 'can boast twice' and mana that stays until end of turn don't."
+  }
+ ]
+}

@@ -95,6 +95,7 @@ import _poolExecutionersHood from "../pool/executioners-hood.js";
 import _poolFangOfShigeki from "../pool/fang-of-shigeki.js";
 import _poolFencingAce from "../pool/fencing-ace.js";
 import _poolFeralKrushok from "../pool/feral-krushok.js";
+import _poolFireMagic from "../pool/fire-magic.js";
 import _poolFirefly from "../pool/firefly.js";
 import _poolFloodfarmVerge from "../pool/floodfarm-verge.js";
 import _poolFortuitousFind from "../pool/fortuitous-find.js";
@@ -164,6 +165,7 @@ import _poolMirrex from "../pool/mirrex.js";
 import _poolMoaningWall from "../pool/moaning-wall.js";
 import _poolMockingSprite from "../pool/mocking-sprite.js";
 import _poolMoggRaider from "../pool/mogg-raider.js";
+import _poolMoonshakerCavalry from "../pool/moonshaker-cavalry.js";
 import _poolMoorishCavalry from "../pool/moorish-cavalry.js";
 import _poolMoriokScavenger from "../pool/moriok-scavenger.js";
 import _poolMurasaBrute from "../pool/murasa-brute.js";
@@ -367,6 +369,7 @@ const shard: CardShard = {
     _poolFangOfShigeki,
     _poolFencingAce,
     _poolFeralKrushok,
+    _poolFireMagic,
     _poolFirefly,
     _poolFloodfarmVerge,
     _poolFortuitousFind,
@@ -436,6 +439,7 @@ const shard: CardShard = {
     _poolMoaningWall,
     _poolMockingSprite,
     _poolMoggRaider,
+    _poolMoonshakerCavalry,
     _poolMoorishCavalry,
     _poolMoriokScavenger,
     _poolMurasaBrute,

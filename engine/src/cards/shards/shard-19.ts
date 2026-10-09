@@ -160,8 +160,10 @@ import _poolMiresGrasp from "../pool/mires-grasp.js";
 import _poolMoldervineReclamation from "../pool/moldervine-reclamation.js";
 import _poolMorophonTheBoundless from "../pool/morophon-the-boundless.js";
 import _poolMuckRats from "../pool/muck-rats.js";
+import _poolMuddleTheMixture from "../pool/muddle-the-mixture.js";
 import _poolNaturalReclamation from "../pool/natural-reclamation.js";
 import _poolNecrogenCommunion from "../pool/necrogen-communion.js";
+import _poolNehebTheEternal from "../pool/neheb-the-eternal.js";
 import _poolNekusarTheMindrazer from "../pool/nekusar-the-mindrazer.js";
 import _poolNephaliaSeakite from "../pool/nephalia-seakite.js";
 import _poolNewBenalia from "../pool/new-benalia.js";
@@ -446,8 +448,10 @@ const shard: CardShard = {
     _poolMoldervineReclamation,
     _poolMorophonTheBoundless,
     _poolMuckRats,
+    _poolMuddleTheMixture,
     _poolNaturalReclamation,
     _poolNecrogenCommunion,
+    _poolNehebTheEternal,
     _poolNekusarTheMindrazer,
     _poolNephaliaSeakite,
     _poolNewBenalia,

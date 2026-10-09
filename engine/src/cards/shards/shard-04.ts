@@ -182,6 +182,7 @@ import _poolRangersLongbow from "../pool/rangers-longbow.js";
 import _poolReckonersBargain from "../pool/reckoners-bargain.js";
 import _poolResearchAssistant from "../pool/research-assistant.js";
 import _poolRestInPeace from "../pool/rest-in-peace.js";
+import _poolRestorationMagic from "../pool/restoration-magic.js";
 import _poolRetreatToCoralhelm from "../pool/retreat-to-coralhelm.js";
 import _poolRetreatToHagra from "../pool/retreat-to-hagra.js";
 import _poolRetrofitterFoundry from "../pool/retrofitter-foundry.js";
@@ -463,6 +464,7 @@ const shard: CardShard = {
     _poolReckonersBargain,
     _poolResearchAssistant,
     _poolRestInPeace,
+    _poolRestorationMagic,
     _poolRetreatToCoralhelm,
     _poolRetreatToHagra,
     _poolRetrofitterFoundry,

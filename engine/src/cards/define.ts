@@ -1718,11 +1718,17 @@ export interface StaticAbility {
   };
   /**
    * "Permanents entering don't cause abilities of permanents your opponents
-   * control to trigger" (Elesh Norn, Mother of Machines; Torpor Orb is the
-   * `"everyone"` version). Suppresses every trigger an entering permanent
-   * would cause for the named permanents' controllers.
+   * control to trigger" (Elesh Norn, Mother of Machines; `"everyone"` for
+   * every controller). Suppresses every trigger an entering permanent would
+   * cause for the named permanents' controllers. The object form narrows
+   * what is entering — Torpor Orb's "**creatures** entering don't cause
+   * abilities to trigger" is `{ who: "everyone", entering: { type:
+   * "creature" } }`, matched against the permanent as it entered.
    */
-  readonly suppressEntryTriggers?: "opponents" | "everyone";
+  readonly suppressEntryTriggers?:
+    | "opponents"
+    | "everyone"
+    | { readonly who: "opponents" | "everyone"; readonly entering: CardFilter };
   readonly text: string;
 }
 

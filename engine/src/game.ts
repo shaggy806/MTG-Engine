@@ -8288,16 +8288,23 @@ export class Game {
     return count;
   }
 
-  /** Whether an entering permanent is barred from causing `controller`'s
-   * triggers (Elesh Norn, Mother of Machines; Torpor Orb). */
-  private entryTriggersSuppressed(controller: PlayerId): boolean {
+  /** Whether `entering` is barred from causing `controller`'s triggers
+   * (Elesh Norn, Mother of Machines; Torpor Orb's creatures only). */
+  private entryTriggersSuppressed(controller: PlayerId, entering: ObjectId): boolean {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (hasLostAbilities(source)) continue;
       for (const ability of this.registry.get(rulesTextName(source)).static) {
         const s = ability.suppressEntryTriggers;
         if (s === undefined || !this.staticActive(source, ability)) continue;
-        if (s === "everyone" || source.controller !== controller) return true;
+        const who = typeof s === "string" ? s : s.who;
+        if (
+          typeof s !== "string" &&
+          !matchesFilter(this.state, this.registry, entering, s.entering, { you: source.controller })
+        ) {
+          continue;
+        }
+        if (who === "everyone" || source.controller !== controller) return true;
       }
     }
     return false;
@@ -14549,7 +14556,7 @@ export class Game {
           // permanent causes none of this controller's triggers.
           !(
             event.type === "permanent-entered-battlefield" &&
-            this.entryTriggersSuppressed(object.controller)
+            this.entryTriggersSuppressed(object.controller, event.object)
           )
         ) {
           // "… deals 3 damage to that player" — the player whose spell or

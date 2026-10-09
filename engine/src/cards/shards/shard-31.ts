@@ -60,6 +60,7 @@ import _poolDesertOfTheGlorified from "../pool/desert-of-the-glorified.js";
 import _poolDesertSandstorm from "../pool/desert-sandstorm.js";
 import _poolDesolateMire from "../pool/desolate-mire.js";
 import _poolDiffusionSliver from "../pool/diffusion-sliver.js";
+import _poolDimirHouseGuard from "../pool/dimir-house-guard.js";
 import _poolDinotomaton from "../pool/dinotomaton.js";
 import _poolDiplomaticImmunity from "../pool/diplomatic-immunity.js";
 import _poolDivineArrow from "../pool/divine-arrow.js";
@@ -325,6 +326,7 @@ const shard: CardShard = {
     _poolDesertSandstorm,
     _poolDesolateMire,
     _poolDiffusionSliver,
+    _poolDimirHouseGuard,
     _poolDinotomaton,
     _poolDiplomaticImmunity,
     _poolDivineArrow,

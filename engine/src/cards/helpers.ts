@@ -204,6 +204,47 @@ export const flanking = (): TriggeredAbility => ({
 });
 
 /**
+ * Afflict N (rule 702.130a): "Whenever this creature becomes blocked,
+ * defending player loses N life" — once however many creatures block it,
+ * the defending player being the one who blocked (`becomes-blocked`'s
+ * trigger player). Each instance triggers on its own (702.130b). Put the
+ * printed line in the card's `text` as well.
+ */
+export const afflict = (n: number): TriggeredAbility => ({
+  trigger: { on: "becomes-blocked", who: "self" },
+  targets: [],
+  effect: { kind: "lose-life", amount: n, who: "trigger-player" },
+  resolve: null,
+  text: `Afflict ${n}`,
+});
+
+/**
+ * Transmute (rule 702.53a): "[Cost], Discard this card: Search your library
+ * for a card with the same mana value as the discarded card, reveal that
+ * card, and put it into your hand. Then shuffle. Activate only as a
+ * sorcery." An activated ability from the hand, which discards the card as
+ * its cost (channel's `zone: "hand"` shape). `manaValue` is the card's own:
+ * in the hand, nothing changes it. `text` is the printed line, reminder
+ * included.
+ */
+export const transmute = (cost: string, manaValue: number, text: string): ActivatedAbility => ({
+  cost: { mana: cost, tap: false },
+  targets: [],
+  effect: {
+    kind: "search-library",
+    filter: { manaValue: { op: "eq", n: manaValue } },
+    destination: "hand",
+    min: 0,
+    max: 1,
+    reveal: true,
+  },
+  resolve: null,
+  zone: "hand",
+  sorcerySpeed: true,
+  text,
+});
+
+/**
  * Annihilator N (rule 702.86): "Whenever this creature attacks, defending
  * player sacrifices N permanents." The defending player is the one it
  * attacks, or the controller of the planeswalker it attacks. A triggered

@@ -218,7 +218,8 @@
   "bug:return-transformed-non-dfc-stays-exiled",
   "static:suppress-creature-enter-triggers",
   "effect:spell-or-permanent-target",
-  "effect:emblem-triggered-abilities"
+  "effect:emblem-triggered-abilities",
+  "keyword:afflict"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

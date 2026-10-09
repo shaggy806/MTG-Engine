@@ -227,6 +227,7 @@ import _poolSoulherder from "../pool/soulherder.js";
 import _poolSpectacleSummit from "../pool/spectacle-summit.js";
 import _poolSpellStutter from "../pool/spell-stutter.js";
 import _poolSpinedMegalodon from "../pool/spined-megalodon.js";
+import _poolStarfieldMystic from "../pool/starfield-mystic.js";
 import _poolStarkIndustries from "../pool/stark-industries.js";
 import _poolStitchInTime from "../pool/stitch-in-time.js";
 import _poolStoneworkPuma from "../pool/stonework-puma.js";
@@ -260,6 +261,7 @@ import _poolTrenoDarkCity from "../pool/treno-dark-city.js";
 import _poolTwistedLandscape from "../pool/twisted-landscape.js";
 import _poolUnspeakableSymbol from "../pool/unspeakable-symbol.js";
 import _poolUnstableObelisk from "../pool/unstable-obelisk.js";
+import _poolUnstoppableSlasher from "../pool/unstoppable-slasher.js";
 import _poolUreniOfTheUnwritten from "../pool/ureni-of-the-unwritten.js";
 import _poolUurgSpawnOfTurg from "../pool/uurg-spawn-of-turg.js";
 import _poolValorInAkros from "../pool/valor-in-akros.js";
@@ -516,6 +518,7 @@ const shard: CardShard = {
     _poolSpectacleSummit,
     _poolSpellStutter,
     _poolSpinedMegalodon,
+    _poolStarfieldMystic,
     _poolStarkIndustries,
     _poolStitchInTime,
     _poolStoneworkPuma,
@@ -549,6 +552,7 @@ const shard: CardShard = {
     _poolTwistedLandscape,
     _poolUnspeakableSymbol,
     _poolUnstableObelisk,
+    _poolUnstoppableSlasher,
     _poolUreniOfTheUnwritten,
     _poolUurgSpawnOfTurg,
     _poolValorInAkros,

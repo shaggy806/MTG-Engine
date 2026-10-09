@@ -5617,8 +5617,11 @@ function signedAmountValue(
       const ref = ctx.targets[amount.target];
       return ref?.kind === "player" ? ctx.turnStatOf(ref.player, amount.turnStat) : 0;
     }
+    // What happened this turn stays so after a player leaves: "life your
+    // opponents have lost this turn" counts one who has since lost the game
+    // (Neheb, the Eternal's ruling).
     return ctx
-      .playersInScope(amount.who ?? "you")
+      .playersCountedInScope(amount.who ?? "you")
       .reduce((n, p) => n + ctx.turnStatOf(p, amount.turnStat), 0);
   }
   if ("castThisTurn" in amount) {

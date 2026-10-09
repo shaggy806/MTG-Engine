@@ -54,14 +54,15 @@ the per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`). Card lists 
 section keeps only what to do next.
 
 - **Now: more cards, in EDHREC rank order** (the `author-top-cards` skill). `npm run cards:needs
-  -w engine -- --next 60` lists the next untriaged cards by rank: 14 top-5000 cards (ranks
-  1187–2312, never triaged) and then rank 6672 on. The nine other starter precons' 32 stand-ins
+  -w engine -- --next 60` lists the next untriaged cards by rank: Turntimber Symbiosis (rank
+  2312) is triaged since batch 37, so rank 6672 on. The nine other starter precons' 32 stand-ins
   (`engine/data/sweep-3/PC-*.json`) go as their originals land.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
-- **29 cards whose recorded blockers have all been built since** — recheck each with
-  `card:brief` (`npm run cards:needs -w engine -- --stale`; `docs/card-blockers.md`, "Open leads").
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,377 of 5,000
+- **3 cards whose recorded blockers have all been built since** (The Legend of Kyoshi, The
+  Restoration of Eiganjo, Jill, Shiva's Dominant — each a Saga or creature that returns
+  transformed) — recheck each with `card:brief` (`npm run cards:needs -w engine -- --stale`).
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,408 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers

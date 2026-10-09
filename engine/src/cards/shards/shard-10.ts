@@ -66,6 +66,7 @@ import _poolDelete from "../pool/delete.js";
 import _poolDenOfTheBugbear from "../pool/den-of-the-bugbear.js";
 import _poolDictateOfErebos from "../pool/dictate-of-erebos.js";
 import _poolDimirGuildgate from "../pool/dimir-guildgate.js";
+import _poolDimirInfiltrator from "../pool/dimir-infiltrator.js";
 import _poolDimirSpybug from "../pool/dimir-spybug.js";
 import _poolDisorient from "../pool/disorient.js";
 import _poolDissolve from "../pool/dissolve.js";
@@ -361,6 +362,7 @@ const shard: CardShard = {
     _poolDenOfTheBugbear,
     _poolDictateOfErebos,
     _poolDimirGuildgate,
+    _poolDimirInfiltrator,
     _poolDimirSpybug,
     _poolDisorient,
     _poolDissolve,

@@ -106,6 +106,7 @@ import _poolHiddenBlade from "../pool/hidden-blade.js";
 import _poolHighbornGhoul from "../pool/highborn-ghoul.js";
 import _poolHiredBlade from "../pool/hired-blade.js";
 import _poolHobgoblinDragoon from "../pool/hobgoblin-dragoon.js";
+import _poolHomewardPath from "../pool/homeward-path.js";
 import _poolHorizonSeeker from "../pool/horizon-seeker.js";
 import _poolHornetQueen from "../pool/hornet-queen.js";
 import _poolHulkingRaptor from "../pool/hulking-raptor.js";
@@ -186,6 +187,7 @@ import _poolRimefurReindeer from "../pool/rimefur-reindeer.js";
 import _poolRottedHulk from "../pool/rotted-hulk.js";
 import _poolRuneScarredDemon from "../pool/rune-scarred-demon.js";
 import _poolSarkhanFireblood from "../pool/sarkhan-fireblood.js";
+import _poolScapeshift from "../pool/scapeshift.js";
 import _poolScorchedGeyser from "../pool/scorched-geyser.js";
 import _poolSelesnyaSignet from "../pool/selesnya-signet.js";
 import _poolServoExhibition from "../pool/servo-exhibition.js";
@@ -378,6 +380,7 @@ const shard: CardShard = {
     _poolHighbornGhoul,
     _poolHiredBlade,
     _poolHobgoblinDragoon,
+    _poolHomewardPath,
     _poolHorizonSeeker,
     _poolHornetQueen,
     _poolHulkingRaptor,
@@ -458,6 +461,7 @@ const shard: CardShard = {
     _poolRottedHulk,
     _poolRuneScarredDemon,
     _poolSarkhanFireblood,
+    _poolScapeshift,
     _poolScorchedGeyser,
     _poolSelesnyaSignet,
     _poolServoExhibition,

@@ -955,6 +955,8 @@ Neither goes on the stack yet (§15, "Partial").
 | melee | `melee()` from `helpers.ts` — rule 702.121, "Whenever this creature attacks, it gets +1/+1 until end of turn for each opponent you attacked with a creature this combat", as the attack trigger it is, reading the `{ opponentsAttacked: true }` amount (a planeswalker attacked isn't its controller). |
 | demonstrate | `demonstrate()` from `helpers.ts` — rule 702.144a, "When you cast this spell, you may copy it and you may choose new targets for the copy. If you copy the spell, choose an opponent. That player copies the spell and may choose new targets for that copy": a `this-cast` trigger, a `may` over your `copy-spell` of `"trigger-spell"` then a `choose-opponent` whose `copy-spell` has `controller: "that-player"`. Their copy goes on top and resolves first; declined, nobody copies; a spell countered in response is still copied, as it last was on the stack (as storm's are). Put the reminder text in `text` (Transforming Flourish, the Strixhaven Techniques). |
 | annihilator | `annihilator(n)` from `helpers.ts` — rule 702.86, "Whenever this creature attacks, defending player sacrifices N permanents", as the attack trigger it is (a `sacrifice` of `"trigger-player"`, who is the player attacked or the attacked planeswalker's controller). Put it in `triggered` or grant it with `grantsTriggered`, and the printed line in `text`. |
+| afflict | `afflict(n)` from `helpers.ts` — rule 702.130a, "Whenever this creature becomes blocked, defending player loses N life": a `becomes-blocked` trigger (once however many block) with a `lose-life` of `"trigger-player"`, the player who blocked. Put it in `triggered` or grant it with `grantsTriggered` (Cyberman Patrol's "artifact creatures you control have afflict 3"), and the printed line in `text`. |
+| transmute | `transmute(cost, manaValue, text)` from `helpers.ts` — rule 702.53a, "[cost], Discard this card: search your library for a card with the same mana value, reveal it, put it into your hand, then shuffle; only as a sorcery": a hand activated ability (`zone: "hand"`, the discard being the cost) with `sorcerySpeed`. `manaValue` is the card's own printed one (Tolaria West's is 0). `text` is the printed line, reminder included (Muddle the Mixture). |
 | extort | `extort()` from `helpers.ts` — rule 702.101a, "Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life", as the cast trigger it is (Sorin of House Markov). "That much" is one per opponent. Each instance triggers on its own. |
 | myriad | `myriad()` in `triggered` (or a static's `grantsTriggered` — Legion Loyalty, Blade of Selves) — rule 702.116a: for each opponent other than the defending player, "you may" (asked per opponent, naming them) create a tapped, attacking token copy, exiled at end of combat. |
 | mobilize | `mobilize(n)` in `triggered` — rule 702.181a: `n` (an `EffectAmount`: Avenger of the Fallen's `{ countInGraveyard: … }`, Infantry Shield's granted `{ powerOf: "source" }`) 1/1 red Warriors (`Red Warrior Token`), tapped and attacking, sacrificed at the next end step. |
@@ -3101,6 +3103,12 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   of this permanent's controller to trigger, it triggers an additional time.
   `filter`, when present, narrows which *entering* permanent counts. `affects`
   is ignored — this only ever doubles its own controller's triggers.
+- `suppressEntryTriggers` — "permanents entering don't cause abilities of
+  permanents your opponents control to trigger" (`"opponents"`, Elesh Norn,
+  Mother of Machines) or anyone's (`"everyone"`). The object form `{ who,
+  entering: CardFilter }` narrows what is entering: Torpor Orb's "creatures
+  entering don't cause abilities to trigger" is `{ who: "everyone",
+  entering: { type: "creature" } }` — a land's landfall still triggers.
 - `doubleTriggers: { cause, filter? }` — "if [something] causes a triggered
   ability of a permanent you control to trigger, that ability triggers an
   additional time", for **any** trigger that event causes. `cause` is

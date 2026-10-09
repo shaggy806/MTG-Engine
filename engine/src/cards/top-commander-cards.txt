@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3391 already implemented / 1609 missing (marks refreshed 2026-10-09)
+3408 already implemented / 1592 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -692,7 +692,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   693  Vernal Fen                               {0}              Land — Swamp Forest
 [x]   694  Aggravated Assault                       {2}{R}           Enchantment
 [x]   695  Mortuary Mire                            {0}              Land
-[ ]   696  Muddle the Mixture                       {U}{U}           Instant
+[x]   696  Muddle the Mixture                       {U}{U}           Instant
 [ ]   697  Snuff Out                                {3}{B}           Instant
 [x]   698  Charcoal Diamond                         {2}              Artifact
 [x]   699  Curse of Opulence                        {R}              Enchantment — Aura Curse
@@ -1095,7 +1095,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1099  Tranquil Cove                            {0}              Land
 [x]  1100  Ram Through                              {1}{G}           Instant
 [ ]  1101  Not Dead After All                       {B}              Instant
-[ ]  1102  Restoration Magic                        {W}              Instant
+[x]  1102  Restoration Magic                        {W}              Instant
 [ ]  1103  Ocelot Pride                             {W}              Creature — Cat
 [x]  1104  Cathartic Reunion                        {1}{R}           Sorcery
 [x]  1105  Wall of Omens                            {1}{W}           Creature — Wall
@@ -1182,25 +1182,25 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1187  Zopandrel, Hunger Dominus                {5}{G}{G}        Legendary Creature — Phyrexian Horror
 [ ]  1188  The Darkness Crystal                     {2}{B}{B}        Legendary Artifact
 [ ]  1189  Siren Stormtamer                         {U}              Creature — Siren Pirate Wizard
-[ ]  1190  Badgermole Cub                           {1}{G}           Creature — Badger Mole
+[x]  1190  Badgermole Cub                           {1}{G}           Creature — Badger Mole
 [x]  1191  Fire-Lit Thicket                         {0}              Land
-[ ]  1192  Neheb, the Eternal                       {3}{R}{R}        Legendary Creature — Zombie Minotaur Warrior
-[ ]  1193  Starfield Mystic                         {1}{W}           Creature — Human Cleric
+[x]  1192  Neheb, the Eternal                       {3}{R}{R}        Legendary Creature — Zombie Minotaur Warrior
+[x]  1193  Starfield Mystic                         {1}{W}           Creature — Human Cleric
 [x]  1194  Insatiable Avarice                       {B}              Sorcery
 [x]  1195  Marwyn, the Nurturer                     {2}{G}           Legendary Creature — Elf Druid
-[ ]  1196  Homeward Path                            {0}              Land
+[x]  1196  Homeward Path                            {0}              Land
 [ ]  1197  Ezuri's Predation                        {5}{G}{G}{G}     Sorcery
 [x]  1198  Dragon's Hoard                           {3}              Artifact
 [ ]  1199  Dreamtide Whale                          {2}{U}           Creature — Whale
 [x]  1200  Notion Thief                             {2}{U}{B}        Creature — Human Rogue
-[ ]  1201  Moonshaker Cavalry                       {5}{W}{W}{W}     Creature — Spirit Knight
+[x]  1201  Moonshaker Cavalry                       {5}{W}{W}{W}     Creature — Spirit Knight
 [ ]  1202  Wheel of Misfortune                      {2}{R}           Sorcery
 [x]  1203  Thriving Bluff                           {0}              Land
 [ ]  1204  Mount Doom                               {0}              Legendary Land
 [x]  1205  Expedite                                 {R}              Instant
-[ ]  1206  Artisan of Kozilek                       {9}              Creature — Eldrazi
+[x]  1206  Artisan of Kozilek                       {9}              Creature — Eldrazi
 [x]  1207  Millikin                                 {2}              Artifact Creature — Construct
-[ ]  1208  Wasteland                                {0}              Land
+[x]  1208  Wasteland                                {0}              Land
 [ ]  1209  Xenagos, God of Revels                   {3}{R}{G}        Legendary Enchantment Creature — God
 [ ]  1210  Forge Anew                               {2}{W}           Enchantment
 [x]  1211  Akroma's Memorial                        {7}              Legendary Artifact
@@ -1275,7 +1275,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1281  Maestros Theater                         {0}              Land
 [x]  1282  Stump Stomp // Burnwillow Clearing       {2}              Sorcery // Land
 [x]  1283  Duelist's Heritage                       {2}{W}           Enchantment
-[ ]  1284  Scapeshift                               {2}{G}{G}        Sorcery
+[x]  1284  Scapeshift                               {2}{G}{G}        Sorcery
 [x]  1285  Scourge of the Throne                    {4}{R}{R}        Creature — Dragon
 [x]  1286  Ruin Crab                                {U}              Creature — Crab
 [ ]  1287  Carpet of Flowers                        {G}              Enchantment
@@ -1542,7 +1542,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1549  Chandra, Torch of Defiance               {2}{R}{R}        Legendary Planeswalker — Chandra
 [x]  1550  Ganax, Astral Hunter                     {4}{R}           Legendary Creature — Dragon
 [x]  1551  Aether Channeler                         {2}{U}           Creature — Human Wizard
-[ ]  1552  Unstoppable Slasher                      {2}{B}           Creature — Zombie Assassin
+[x]  1552  Unstoppable Slasher                      {2}{B}           Creature — Zombie Assassin
 [x]  1553  It That Betrays                          {12}             Creature — Eldrazi
 [x]  1554  Uro, Titan of Nature's Wrath             {1}{G}{U}        Legendary Creature — Elder Giant
 [x]  1555  Simic Guildgate                          {0}              Land — Gate
@@ -1978,7 +1978,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1985  Orzhov Guildgate                         {0}              Land — Gate
 [x]  1986  Crystal Skull, Isu Spyglass              {2}{U}{U}        Legendary Artifact
 [ ]  1987  Quartzwood Crasher                       {2}{R}{R}{G}     Creature — Dinosaur Beast
-[ ]  1988  Power Depot                              {0}              Artifact Land
+[x]  1988  Power Depot                              {0}              Artifact Land
 [x]  1989  Ogre Slumlord                            {3}{B}{B}        Creature — Ogre Rogue
 [ ]  1990  Thassa, God of the Sea                   {2}{U}           Legendary Enchantment Creature — God
 [x]  1991  Strength of the Harvest // Haven of the Harvest {3}              Enchantment — Aura // Land
@@ -2788,7 +2788,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2795  Blightbelly Rat                          {1}{B}           Creature — Phyrexian Rat
 [ ]  2796  Wrenn and Realmbreaker                   {1}{G}{G}        Legendary Planeswalker — Wrenn
 [ ]  2797  Gwenom, Remorseless                      {3}{B}{B}        Legendary Creature — Symbiote Spider Hero
-[ ]  2798  Cyberman Patrol                          {2}              Artifact Creature — Cyberman
+[x]  2798  Cyberman Patrol                          {2}              Artifact Creature — Cyberman
 [x]  2799  Sulfuric Vortex                          {1}{R}{R}        Enchantment
 [x]  2800  Emeria's Call // Emeria, Shattered Skyclave {7}              Sorcery // Land
 [x]  2801  Peerless Recycling                       {1}{G}           Instant
@@ -2852,7 +2852,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2859  Sunspine Lynx                            {2}{R}{R}        Creature — Elemental Cat
 [ ]  2860  Hell to Pay                              {X}{R}           Sorcery
 [ ]  2861  Ichormoon Gauntlet                       {2}{U}           Artifact
-[ ]  2862  Drift of Phantasms                       {2}{U}           Creature — Spirit
+[x]  2862  Drift of Phantasms                       {2}{U}           Creature — Spirit
 [x]  2863  Sacrifice                                {B}              Instant
 [x]  2864  Gingerbread Cabin                        {0}              Land — Forest
 [x]  2865  Revenge of Ravens                        {3}{B}           Enchantment
@@ -3227,7 +3227,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3234  Court of Vantress                        {2}{U}{U}        Enchantment
 [x]  3235  Gathering Stone                          {4}              Artifact
 [ ]  3236  Exalted Flamer of Tzeentch               {2}{U}{R}        Creature — Demon
-[ ]  3237  Tolaria West                             {0}              Land
+[x]  3237  Tolaria West                             {0}              Land
 [x]  3238  Rain-Slicked Copse                       {0}              Land — Forest Island
 [x]  3239  Redoubled Stormsinger                    {2}{R}           Creature — Orc Wizard
 [ ]  3240  Nautiloid Ship                           {4}              Artifact — Vehicle
@@ -3474,7 +3474,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3481  Scion of Oona                            {2}{U}           Creature — Faerie Soldier
 [ ]  3482  Rona, Herald of Invasion // Rona, Tolarian Obliterator {2}              Legendary Creature — Human Wizard // Legendary Creature — Phyrexian Wizard
 [x]  3483  Wirewood Channeler                       {3}{G}           Creature — Elf Druid
-[ ]  3484  Torpor Orb                               {2}              Artifact
+[x]  3484  Torpor Orb                               {2}              Artifact
 [ ]  3485  Jace, the Mind Sculptor                  {2}{U}{U}        Legendary Planeswalker — Jace
 [x]  3486  Wirewood Symbiote                        {G}              Creature — Insect
 [ ]  3487  Tempting Contract                        {4}              Artifact
@@ -3783,7 +3783,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3790  Goldnight Commander                      {3}{W}           Creature — Human Cleric Soldier
 [x]  3791  White Auracite                           {2}{W}{W}        Artifact
 [x]  3792  Tempered Steel                           {1}{W}{W}        Enchantment
-[ ]  3793  Fire Magic                               {R}              Instant
+[x]  3793  Fire Magic                               {R}              Instant
 [ ]  3794  Divine Reckoning                         {2}{W}{W}        Sorcery
 [x]  3795  Sanctum of Stone Fangs                   {1}{B}           Legendary Enchantment — Shrine
 [x]  3796  Garruk, Cursed Huntsman                  {4}{B}{G}        Legendary Planeswalker — Garruk

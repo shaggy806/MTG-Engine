@@ -77,6 +77,7 @@ import _poolFinishingBlow from "../pool/finishing-blow.js";
 import _poolFiresOfYavimaya from "../pool/fires-of-yavimaya.js";
 import _poolFlagstonesOfTrokair from "../pool/flagstones-of-trokair.js";
 import _poolFleetfootDancer from "../pool/fleetfoot-dancer.js";
+import _poolFlopsieBumisBuddy from "../pool/flopsie-bumis-buddy.js";
 import _poolFlowstoneMauler from "../pool/flowstone-mauler.js";
 import _poolFluxChanneler from "../pool/flux-channeler.js";
 import _poolFlyingMen from "../pool/flying-men.js";
@@ -253,6 +254,7 @@ import _poolVirtueOfPersistence from "../pool/virtue-of-persistence.js";
 import _poolVivisurgeonsInsight from "../pool/vivisurgeons-insight.js";
 import _poolVolatileFjord from "../pool/volatile-fjord.js";
 import _poolVoltaicKey from "../pool/voltaic-key.js";
+import _poolVorracBattlehorns from "../pool/vorrac-battlehorns.js";
 import _poolWanderersTwig from "../pool/wanderers-twig.js";
 import _poolWarpingWail from "../pool/warping-wail.js";
 import _poolWarriorsOfWakanda from "../pool/warriors-of-wakanda.js";
@@ -349,6 +351,7 @@ const shard: CardShard = {
     _poolFiresOfYavimaya,
     _poolFlagstonesOfTrokair,
     _poolFleetfootDancer,
+    _poolFlopsieBumisBuddy,
     _poolFlowstoneMauler,
     _poolFluxChanneler,
     _poolFlyingMen,
@@ -525,6 +528,7 @@ const shard: CardShard = {
     _poolVivisurgeonsInsight,
     _poolVolatileFjord,
     _poolVoltaicKey,
+    _poolVorracBattlehorns,
     _poolWanderersTwig,
     _poolWarpingWail,
     _poolWarriorsOfWakanda,

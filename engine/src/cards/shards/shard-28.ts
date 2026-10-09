@@ -62,6 +62,7 @@ import _poolDismantlingWave from "../pool/dismantling-wave.js";
 import _poolDispersalTechnician from "../pool/dispersal-technician.js";
 import _poolDreamPillager from "../pool/dream-pillager.js";
 import _poolDregRecycler from "../pool/dreg-recycler.js";
+import _poolDriftOfPhantasms from "../pool/drift-of-phantasms.js";
 import _poolDrossRipper from "../pool/dross-ripper.js";
 import _poolDrownInDreams from "../pool/drown-in-dreams.js";
 import _poolElvishPiper from "../pool/elvish-piper.js";
@@ -168,6 +169,7 @@ import _poolPoisonDartFrog from "../pool/poison-dart-frog.js";
 import _poolPoisonTheBlade from "../pool/poison-the-blade.js";
 import _poolPondProphet from "../pool/pond-prophet.js";
 import _poolPortOfKarfell from "../pool/port-of-karfell.js";
+import _poolPowerDepot from "../pool/power-depot.js";
 import _poolProfaneInsight from "../pool/profane-insight.js";
 import _poolPropaganda from "../pool/propaganda.js";
 import _poolProtectorOfTheWastes from "../pool/protector-of-the-wastes.js";
@@ -332,6 +334,7 @@ const shard: CardShard = {
     _poolDispersalTechnician,
     _poolDreamPillager,
     _poolDregRecycler,
+    _poolDriftOfPhantasms,
     _poolDrossRipper,
     _poolDrownInDreams,
     _poolElvishPiper,
@@ -438,6 +441,7 @@ const shard: CardShard = {
     _poolPoisonTheBlade,
     _poolPondProphet,
     _poolPortOfKarfell,
+    _poolPowerDepot,
     _poolProfaneInsight,
     _poolPropaganda,
     _poolProtectorOfTheWastes,
