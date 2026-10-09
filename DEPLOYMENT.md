@@ -177,7 +177,7 @@ from outside (`check-live.mjs`: the page, and the game socket opening through th
 compression). The `ubuntu` user's passwordless sudo is what lets `deploy.sh`'s `systemctl`
 commands run unattended.
 
-`deploy.sh` (repo root): `git pull --ff-only` → `npm install` → rebuild engine/server/client with
+`deploy.sh` (repo root): `git pull --ff-only` → `npm ci` (the lockfile as committed, never rewritten — the box's npm 10 used to drop npm 11's `libc` fields on every `npm install`, leaving the checkout dirty) → rebuild engine/server/client with
 `VITE_SERVER_URL=wss://ws.deckblitz.net` baked into the client → `sudo systemctl daemon-reload` →
 `sudo systemctl restart mtg-server`. The `daemon-reload` is there so a hand-edited unit file is
 never silently stale after a deploy — cheap and harmless even when the unit file didn't change.
