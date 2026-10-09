@@ -796,7 +796,7 @@ export class EvalBotController extends HeuristicBotController {
     const payoff = payoffFirst(view, this.cards, candidates);
     if (payoff !== null) {
       this.lastDecision = audit("priority", null, "payoff first");
-      return payoff;
+      return this.acted(view, payoff);
     }
     // A cost reducer goes first when it lets a second spell fit in the turn
     // (`reducerFirst`): the rollouts pass our own seat, so Urza's Incubator
@@ -805,7 +805,7 @@ export class EvalBotController extends HeuristicBotController {
     const reducer = this.reducerFirst(view, candidates);
     if (reducer !== null) {
       this.lastDecision = audit("priority", null, "reducer first");
-      return reducer;
+      return this.acted(view, reducer);
     }
     const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
     const fetches = candidates.filter(
@@ -829,7 +829,7 @@ export class EvalBotController extends HeuristicBotController {
       );
       if (landfall !== undefined) {
         this.lastDecision = audit("priority", null, "landfall first");
-        return landfall;
+        return this.acted(view, landfall);
       }
     }
     // **Nor is cracking a fetch** (`isFreeFetch`): it makes no mana, so
@@ -1107,6 +1107,21 @@ export class EvalBotController extends HeuristicBotController {
     const offer = view.legalActions().find((l) => l.kind === "cast-spell" && l.card === plan.cast);
     if (offer === undefined) return null;
     return candidateActions(aimOffer(state, this.cards, player, offer), player)[0] ?? null;
+  }
+
+  /**
+   * `action`, recorded as the searched actions are (`actedOn`): a spell of
+   * ours one of `act`'s shortcuts casts — a payoff, a reducer, a landfall
+   * permanent — is passed on while it resolves (`holdPass`), as a searched
+   * cast is. Without it the window after was searched afresh, and an
+   * instant there was cast in response to our own Archmage Emeritus or
+   * Guttersnipe, missing its trigger (live misplays, 2026-10-06 and -08).
+   */
+  private acted(view: ControllerView, action: Action): Action {
+    if (view.state.awaiting === null) {
+      this.actedOn = { turn: view.state.turn.number, stack: [...view.state.zones.shared.stack] };
+    }
+    return action;
   }
 
   /** After passing with something on the stack, what that stack was — see
@@ -2077,14 +2092,20 @@ function heldOnOffer(board: GameState, cards: CardRegistry, me: PlayerId, held: 
 /**
  * Whether `player` has a payoff for casting spells — a "whenever you cast"
  * trigger (Shiko and Narset's Flurry, prowess, Young Pyromancer) — on the
- * battlefield, or in hand or the command zone to be cast this turn: Shiko cast
- * from the command zone is the turn's first spell herself, so the next one is
- * the second.
+ * battlefield, on the stack about to be, or in hand or the command zone to be
+ * cast this turn: Shiko cast from the command zone is the turn's first spell
+ * herself, so the next one is the second. On the stack too, or a window
+ * searched with Guttersnipe there rolled our seat out passive, the Bolt in
+ * hand never cast after it, and casting it in response won (a live misplay,
+ * 2026-10-08).
  */
 function castPayoff(state: GameState, cards: CardRegistry, player: PlayerId): boolean {
   const own = state.zones.perPlayer[player];
   const ids = [
     ...state.zones.shared.battlefield.filter((id) => state.objects[id]?.controller === player),
+    ...state.zones.shared.stack.filter(
+      (id) => state.objects[id]?.kind === "card" && state.objects[id]?.controller === player,
+    ),
     ...own.hand,
     ...state.zones.shared.command.filter((id) => state.objects[id]?.owner === player),
   ];

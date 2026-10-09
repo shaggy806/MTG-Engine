@@ -1581,6 +1581,52 @@ export function isCastPayoff(registry: CardRegistry, name: string): boolean {
 }
 
 /**
+ * Which of the turn's spells `name`'s "whenever you cast your Nth spell each
+ * turn" trigger pays off (Shiko and Narset's Flurry: 2), or null when it has
+ * none. Such a payoff has to come before the spell it counts to, where a
+ * plain cast payoff (Young Pyromancer) only has to come before the spells it
+ * sees — so with both castable, it goes first (a live misplay, 2026-10-08:
+ * Pyromancer first made Shiko the second spell and Swords to Plowshares the
+ * third, and nothing was copied).
+ */
+export function spellCountPayoff(registry: CardRegistry, name: string): number | null {
+  if (!registry.has(name)) return null;
+  for (const ability of registry.get(name).triggered) {
+    const trigger = ability.trigger as { readonly on?: unknown; readonly who?: unknown; readonly nthEachTurn?: unknown };
+    if (trigger.on === "cast-spell" && trigger.who === "you" && typeof trigger.nthEachTurn === "number") {
+      return trigger.nthEachTurn;
+    }
+  }
+  return null;
+}
+
+/**
+ * Whether a spell-count payoff `player` controls on the battlefield is
+ * waiting for their next spell: they have cast one fewer this turn than the
+ * one it counts to. That spell is the one Flurry copies, so it shouldn't go to
+ * whatever comes first.
+ */
+function spellCountPayoffWaiting(state: GameState, registry: CardRegistry, player: PlayerId): boolean {
+  const cast = state.players[player]?.spellsCastThisTurn ?? 0;
+  return state.zones.shared.battlefield.some((id) => {
+    const object = state.objects[id];
+    if (object === undefined || object.controller !== player) return false;
+    return spellCountPayoff(registry, object.cardName) === cast + 1;
+  });
+}
+
+/** Whether `action` is a spell aimed at a permanent or a player — what Flurry
+ * copies (anything else draws a card instead). */
+function aimsAtPermanentOrPlayer(state: GameState, action: Action): boolean {
+  if (action.type !== "cast-spell") return false;
+  return (action.targets ?? []).some(
+    (target) =>
+      target !== null &&
+      (target.kind === "player" || state.objects[target.object]?.zone === "battlefield"),
+  );
+}
+
+/**
  * The filters of `name`'s "whenever a [permanent] you control enters"
  * triggers, when it's a permanent spell — Dragon Tempest's flyers and
  * Dragons: cast before the creature it pays off, it sees that creature enter
@@ -1607,14 +1653,30 @@ export function entersPayoffFilters(registry: CardRegistry, name: string): reado
  * resolved after which a spell it would see enter (`entersPayoffFilters`)
  * still can be. Null
  * when there's none, or nothing could follow.
+ *
+ * A spell-count payoff (`spellCountPayoff`, Flurry) is tried before the
+ * others. And while one of ours waits for its spell (`spellCountPayoffWaiting`),
+ * that spell isn't handed to a payoff that targets nothing when a spell Flurry
+ * would copy is castable: the search chooses it, and its rollout sees the copy.
  */
 export function payoffFirst<T extends Action>(
   view: ControllerView,
   registry: CardRegistry,
   offers: readonly T[],
 ): T | null {
-  for (const offer of offers) {
+  const counts = (offer: T): boolean =>
+    offer.type === "cast-spell" &&
+    spellCountPayoff(registry, view.state.objects[offer.card]?.cardName ?? "") !== null;
+  const ordered = [...offers.filter(counts), ...offers.filter((offer) => !counts(offer))];
+  for (const offer of ordered) {
     if (offer.type !== "cast-spell" || offer.face !== undefined) continue;
+    if (
+      spellCountPayoffWaiting(view.state, registry, offer.player) &&
+      !aimsAtPermanentOrPlayer(view.state, offer) &&
+      offers.some((other) => other !== offer && aimsAtPermanentOrPlayer(view.state, other))
+    ) {
+      continue;
+    }
     const name = view.state.objects[offer.card]?.cardName ?? "";
     if (isCastPayoff(registry, name)) {
       const after = view.legalActionsAfter?.(offer);

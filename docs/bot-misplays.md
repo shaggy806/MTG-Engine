@@ -30,7 +30,13 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   resolve. Might break: a hand where the plain payoff first is better (Pyromancer before a pile
   of instants, with Flurry worth only a card) — the search would still weigh that once the
   shortcut stops deciding.
-- **Status:** open.
+- **Status:** fixed as outlined (the user asked, 2026-10-08): `payoffFirst` tries a spell-count payoff
+  (`spellCountPayoff`, read off the trigger's `nthEachTurn`) before the others, and while one of ours
+  waits for its spell (`spellCountPayoffWaiting`) doesn't hand that spell to a payoff that targets
+  nothing when a spell Flurry would copy is castable. With the Guttersnipe fix below, the scenario —
+  now the whole turn: Shiko, Swords (copied, both creatures exiled), Pyromancer — gates. v1 shares
+  `payoffFirst` but has no search for the held slot, so it falls to v1's usual order (bot:diff, 40
+  games: seed 25 cast Lier there, not Monastery Mentor; Flurry draws either way).
 
 ## 2026-10-08 — a kill through Towering Titan's trample passed up
 
@@ -113,7 +119,9 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   spell was never a searched choice). The second turns on `"acting"` in more windows — those
   rollouts cost more, and the tie in `act` goes to acting, so a window with a payoff on the
   stack could still cast in response on a tie; the scenario would show it.
-- **Status:** open.
+- **Status:** fixed, both parts: `payoffFirst`, `reducerFirst` and landfall-first record `actedOn`
+  (`EvalBotController.acted`), so the window after passes while the spell resolves; and `castPayoff`
+  counts a payoff of ours on the stack. The scenario gates.
 
 ## 2026-10-07 — a fetch land not counted as this turn's mana
 
@@ -343,7 +351,8 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   own spell — the landfall-first one), so the next window passes while it resolves. Might break:
   nothing that was deliberate — a response to our own spell was never a searched choice; an
   opponent's response still gets searched.
-- **Status:** open.
+- **Status:** fixed with the Guttersnipe entry (2026-10-08): the shortcuts record `actedOn`. The
+  scenario gates.
 
 ## 2026-10-05 — an untapped land over Glacial Fortress on turn one
 

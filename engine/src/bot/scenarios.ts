@@ -3420,7 +3420,6 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "lets Archmage Emeritus resolve before casting Abrade",
     rule: "A spell cast while our own cast payoff is still on the stack misses its trigger: let the payoff resolve first.",
-    kind: "training",
     run(weights, registry, makeBot) {
       // Reported from a live game (2026-10-06, no capture): Narset cast
       // Archmage Emeritus, then Abrade at Weathered Sentinels with the
@@ -3454,7 +3453,6 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "lets Guttersnipe resolve before casting Lightning Bolt",
     rule: "An instant cast while our own Guttersnipe is still on the stack misses its 2 damage to each opponent: let it resolve first.",
-    kind: "training",
     run(weights, registry, makeBot) {
       // Reported from a live game (2026-10-08, no capture): the bot cast
       // Guttersnipe, then an instant in response to it — losing the 2 damage
@@ -4077,11 +4075,10 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
-  asked({
+  {
     name: "casts Shiko before Young Pyromancer so Swords to Plowshares is copied",
     rule: "Flurry copies only the turn's second spell: Shiko goes first, so the removal after her is the second — not after another payoff.",
-    kind: "training",
-    position(registry) {
+    run(weights, registry, makeBot) {
       // Reported from a live game (2026-10-08, no capture): Kykar cast
       // Young Pyromancer, then Shiko and Narset from the command zone, then
       // Swords to Plowshares at Adeline in response to her — the third spell,
@@ -4111,21 +4108,21 @@ const SCENARIOS: readonly BotScenario[] = [
       lands(game, "Plains", A, 3);
       game.debugSpawn("Young Pyromancer", A, "hand");
       game.debugSpawn("Swords to Plowshares", A, "hand");
-      onBoard(game, "Adeline, Resplendent Cathar", B);
-      onBoard(game, "Serra Angel", C);
+      const adeline = onBoard(game, "Adeline, Resplendent Cathar", B);
+      const angel = onBoard(game, "Serra Angel", C);
+      // The whole turn, played by the bot: the order it casts in, and
+      // whether Flurry's copy took the second creature.
+      const casts = playOutTurn(game, makeBot(A, registry, weights), A, () => false)
+        .filter((action) => action.type === "cast-spell")
+        .map((action) => printedCardName(game.state.objects[action.card]));
+      const exiled = [adeline, angel].filter((id) => game.state.objects[id]?.zone !== "battlefield").length;
       return {
-        game,
-        player: A,
-        judge: (action) => {
-          const card = action.type === "cast-spell" ? game.state.objects[action.card]?.cardName : undefined;
-          return {
-            passed: card === "Shiko and Narset, Unified",
-            detail: `chose ${describeAction(action)}${card !== undefined ? ` (${card})` : ""}`,
-          };
-        },
+        passed:
+          casts[0] === "Shiko and Narset, Unified" && casts[1] === "Swords to Plowshares" && exiled === 2,
+        detail: `cast ${casts.join(", ") || "nothing"}; ${exiled} of 2 creatures gone`,
       };
     },
-  }),
+  },
   asked({
     name: "destroys an early Sol Ring over a Warhammer",
     rule: "In the opening rounds, a mana rock is the artifact to destroy.",
