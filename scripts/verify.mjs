@@ -5,6 +5,7 @@
 //
 //   1. gen:cards (the card barrel and shards)
 //   2. build (every workspace), then the backlog lists re-marked against it
+//      and any sample-deck stand-in for a card now in the pool dropped
 //   3. typecheck + lint, side by side
 //   4. the engine suite (8 workers), then server + client side by side
 //   5. new test files type-checked (vitest never type-checks a test, so a
@@ -146,6 +147,10 @@ if (!skip.has("marks")) {
     run("cmdrs:mark", "node", ["scripts/top-commanders.mjs", "--refresh"], ENGINE),
   ]);
   for (const m of marks) report(m, grab(m.out, /implemented/));
+  // A sample deck's stand-in for a card that's now in the pool goes (and
+  // BACKLOG's count with it) — `sample-decks.test.ts` would fail on it.
+  const subs = await run("stand-ins", "node", ["scripts/stand-ins.mjs", "--implemented"], ENGINE);
+  report(subs, grab(subs.out, /Removed|No stand-in/));
 }
 await stopOnFailure(
   ...(await Promise.all([

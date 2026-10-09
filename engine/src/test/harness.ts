@@ -255,10 +255,12 @@ export function pickTargets(seat: ScriptedController, ...ids: readonly (PlayerId
  */
 export function watchTargets(
   seat: ScriptedController,
-  answer: (offered: readonly (readonly string[])[], specs: readonly TargetSpec[]) => readonly (PlayerId | ObjectId | null)[] = (o) =>
-    o.map(() => null),
-): { offered: (readonly string[])[]; asked: number } {
-  const seen = { offered: [] as (readonly string[])[], asked: 0 };
+  answer: (
+    offered: readonly (readonly (ObjectId | PlayerId)[])[],
+    specs: readonly TargetSpec[],
+  ) => readonly (PlayerId | ObjectId | null)[] = (o) => o.map(() => null),
+): { offered: (readonly (ObjectId | PlayerId)[])[]; asked: number } {
+  const seen = { offered: [] as (readonly (ObjectId | PlayerId)[])[], asked: 0 };
   seat.chooseTargetsFn = (_view, _sourceName, specs, legalOptions) => {
     seen.asked += 1;
     seen.offered = legalOptions.map((slot) => slot.map((t) => (t.kind === "object" ? t.object : t.player)));
