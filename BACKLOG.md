@@ -59,7 +59,7 @@ section keeps only what to do next.
   Delete a card's substitution in `sample-decks.ts` as it lands.
 - **The nine other starter precons' 45 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
   TDC decks.
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,368 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,373 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
@@ -103,17 +103,13 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **Two opponents' Notion Thieves aren't ordered by the drawing player.**
 - **Toxic's last two shapes** (Skrelv, Defector Mite; Skrelv's Hive).
 - **Revealing a card "of a type" from hand reads printed subtypes** (changeling, 702.73a).
-- **Disturb's "exile it instead" is the cast path's, not the card's** (707.2).
-- **An additional-cost option is offered without checking its mana** (Eaten Alive, pulled).
-- **A milled card is looked for only in the graveyard** (701.17c).
 - **"Return it transformed" brings back a card that can't transform** (712.14a).
 - **A sacrifice trigger misses its own sacrifice** (603.10a): "whenever you sacrifice this or
   another …", and Korvold sacrificing himself.
 - **A tapped-for-mana trigger adds only a fixed amount**: "an additional {G} for each Elf" adds
   nothing.
 - **Damage modifiers apply in a fixed order** (616.1).
-- **"You sacrifice it" at end step is done by its controller** (701.21a).
-- **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape** — Ayara, Bloomvine Regent, Will of the Jeskai, Kwain, Forced Fruition, Ruric Thar, Spellshock, Magebane Lizard, Black Mage's Rod.
+- **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape** — Will of the Jeskai, Kwain, Forced Fruition, Ruric Thar, Spellshock, Magebane Lizard, Black Mage's Rod.
 - **Static-effect dependency ordering** (613.8) beyond layer 4's type grants.
 - **The rest of leaving the game** (800.4c, 800.4g–h).
 - **Dividing among targets: what's left** — an X total, distributing counters.
@@ -121,9 +117,6 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **`sacrifice-all-but` always keeps the most it may.**
 - **Proliferate over a token stack** gives every member a counter.
 - **Distinct targets in one token stack** can't take two tokens of one stack.
-- **A commander put into a library from a graveyard, exile or the stack isn't offered the command zone** (903.9b).
-- **A token stack tapping fires `becomes-tapped` once.**
-- **Creatures leave combat as the end of combat step begins, not as it ends** (511.3).
 - **"Its controller may search" always searches** (Path to Exile, Assassin's Trophy, Ghost Quarter, …): a `may` asks the effect's controller, not that player.
 - **A source's chosen colour or number isn't read from last-known information** (latent).
 - **A "trigger-object" that blinks is still found** (400.7): Atarka's double strike lands on a Dragon Cloudshifted in response.
@@ -133,6 +126,8 @@ when a card that needs it is authored.
 
 - **Counters put as a cost skip counter replacements and prohibitions.**
 - **Convoke with a target-dependent cost.**
+- **A `{T}` ability granted to a token stack taps the whole stack** without splitting one off.
+- **Convoke with a choice of additional costs** (`castableAt` passes no `costOption`).
 
 ## Bots
 

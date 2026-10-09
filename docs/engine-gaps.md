@@ -111,19 +111,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
   (`tappedUnlessRevealFromHand`) checks each card's printed `subtypes`, so a changeling card in
   hand isn't offered as a Treefolk or Dragon to reveal (rule 702.73a: it has every creature type
   in every zone). Temple of the Dragon Queen has it today; Murmuring Bosk waits on it.
-- **Disturb's "exile it instead" is the cast path's, not the card's.** A back face's "if this
-  would be put into a graveyard from anywhere, exile it instead" is applied only to a card cast
-  with disturb (`castVia === "disturb"` in `game.ts`), so a copy of it (Clone) goes to the
-  graveyard and a disturbed one that lost its abilities (Humility) is still exiled (rule 707.2).
-  Hook-Haunt Drifter has it today; Lunarch Veteran waits on it.
-- **An additional-cost option is offered without checking its mana.** "As an additional cost,
-  sacrifice a creature or pay {3}{B}" (`additionalCost.options` with a mana branch) is listed as
-  castable when the total can't be paid, and taking it throws in `castSpell` — the fuzzer's
-  random players found it (Eaten Alive, pulled from the pool for it).
-- **A milled card is looked for only in the graveyard.** An effect that finds "the milled cards"
-  (`look-and-choose` over `zone: "graveyard"`) misses those a replacement sent to exile (Rest in
-  Peace, Dauthi Voidwalker), though rule 701.17c says it finds them in whatever public zone they
-  went to. Smuggler's Surprise and Ripples of Undeath have it today; Bramble Familiar waits on it.
 - **"Return it transformed" brings back a card that can't transform.** Rule 712.14a: a card
   that isn't double-faced, told to enter transformed, stays where it is; `flicker` with
   `transformed` returns it normally. Clive, Ifrit's Dominant has it today; Dion, Bahamut's
@@ -143,15 +130,8 @@ per gap under the same bold title; when a gap closes, delete it in both.
   controller of the affected object) chooses the order (rule 616.1); the engine fixes it. The
   pool's doublers have it today; Furnace of Rath, Collective Inferno and Mechanized Warfare wait
   on it.
-- **"You sacrifice it" at end step is done by its controller.** `sacrifice-target` makes the
-  current controller sacrifice the permanent; if control changed, a card that says *you* sacrifice
-  it should do nothing (rule 701.21a). Sneak Attack has it today; Come Back Wrong and Apprentice
-  Necromancer wait on it.
 - **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape.** Each reviewer
   flagged these while blocking a new card for the same reason; none was re-run, so check each:
-  - "This or another X" as one trigger, which misses its own entry when it isn't an X (a copy,
-    Conspiracy): Ayara, First of Locthwain and Bloomvine Regent (Théoden and Pashalik Mons are
-    split now).
   - `each-player-may` asks one player at a time where the ruling has every player choose first,
     then all act at once: Will of the Jeskai's wheel mode, Kwain, Itinerant Meddler. Perforating
     Artist (batch 36) is blocked on it.
@@ -186,20 +166,6 @@ per gap under the same bold title; when a gap closes, delete it in both.
   two tokens of one stack (five Treasures in one stack are one target). Needs the relation checks
   to allow a repeat up to `stackCount` and a client control for picking a stack more than once.
   See `docs/plans/token-stack-choices.md`.
-- **A commander put into a library from a graveyard, exile or the stack isn't offered the
-  command zone** (rule 903.9b: "from anywhere"). `moveObject`'s 903.9b deferral covers a move
-  to a hand from elsewhere and a move off the battlefield; a `choose-from-zone` putting one
-  from a hand into a library asks first (`finishZoneChoice` — Brainstorm, Valakut Awakening,
-  Teferi's Puzzle Box). Noxious Revival on a commander left in a graveyard puts it on top of
-  the library without asking.
-- **A token stack tapping fires `becomes-tapped` once.** `permanent-untapped` scales a
-  trigger by the stack's `stackCount` (Mesmeric Orb); `permanent-tapped` doesn't, so a tap-all
-  over a stack of Dwarf tokens makes one Treasure under Magda, not one per token.
-- **Creatures leave combat as the end of combat step begins, not as it ends** (rule 511.3: "As
-  soon as the end of combat step ends, all creatures … are removed from combat"). `enterStep`
-  runs `endCombatStep` as that step's turn-based action, so in its priority window nothing is
-  attacking or blocking any more: an "at end of combat" trigger (511.2) that asks whether its
-  creature is attacking finds it isn't (`token-stacking.test.ts`).
 
 ## Latent
 
@@ -233,3 +199,11 @@ that needs it is authored.
   (Devoted Druid's rulings).
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range.
+
+- **A `{T}` ability granted to a token stack taps the whole stack.** Activating a granted
+  activated `{T}` ability on a compacted stack (`stackCount`) taps every token rather than
+  splitting one off first. Ordinary token stacks have no activated abilities; it needs a static
+  that grants one, and no pool card is known to (found 2026-10-09 with the becomes-tapped fix).
+- **Convoke with a choice of additional costs.** `legalActions`' convoke re-check (`castableAt`)
+  passes `costOption: undefined`, so a convoke spell with a choice of additional costs couldn't be
+  convoked. No pool card has both (found 2026-10-09, fixing Eaten Alive's priced option).

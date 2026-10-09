@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3368 already implemented / 1632 missing (marks refreshed 2026-10-09)
+3373 already implemented / 1627 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -3141,7 +3141,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3148  Chitterspitter                           {2}{G}           Artifact
 [ ]  3149  Lost Monarch of Ifnir                    {3}{B}           Creature — Zombie Noble
 [x]  3150  Heap Gate                                {0}              Land — Gate
-[ ]  3151  Eaten Alive                              {B}              Sorcery
+[x]  3151  Eaten Alive                              {B}              Sorcery
 [x]  3152  Ramos, Dragon Engine                     {6}              Legendary Artifact Creature — Dragon
 [ ]  3153  Ajani, Strength of the Pride             {2}{W}{W}        Legendary Planeswalker — Ajani
 [x]  3154  Basim Ibn Ishaq                          {U}{B}           Legendary Creature — Human Assassin
@@ -3330,7 +3330,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3337  Rapacious Guest                          {2}{B}           Creature — Halfling Citizen
 [ ]  3338  Counterbalance                           {U}{U}           Enchantment
 [x]  3339  Skittering Cicada                        {3}              Creature — Insect
-[ ]  3340  Lunarch Veteran // Luminous Phantom      {1}              Creature — Human Cleric // Creature — Spirit Cleric
+[x]  3340  Lunarch Veteran // Luminous Phantom      {1}              Creature — Human Cleric // Creature — Spirit Cleric
 [x]  3341  Peter Parker's Camera                    {1}              Artifact
 [x]  3342  Nephalia Drownyard                       {0}              Land
 [ ]  3343  Magus of the Moon                        {2}{R}           Creature — Human Wizard
@@ -3542,7 +3542,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3549  Jeweled Amulet                           {0}              Artifact
 [ ]  3550  Selective Obliteration                   {3}{C}{C}        Sorcery
 [ ]  3551  Florian, Voldaren Scion                  {1}{B}{R}        Legendary Creature — Vampire Noble
-[ ]  3552  Come Back Wrong                          {2}{B}           Sorcery
+[x]  3552  Come Back Wrong                          {2}{B}           Sorcery
 [x]  3553  Fiendish Duo                             {4}{R}{R}        Creature — Devil
 [x]  3554  Omnath, Locus of the Roil                {1}{G}{U}{R}     Legendary Creature — Elemental
 [x]  3555  Malakir Bloodwitch                       {3}{B}{B}        Creature — Vampire Shaman
@@ -3598,7 +3598,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3605  Wildsear, Scouring Maw                   {3}{R}{G}        Legendary Creature — Elemental Wolf
 [x]  3606  Rapacious Dragon                         {4}{R}           Creature — Dragon
 [ ]  3607  Spider-Punk                              {1}{R}           Legendary Creature — Spider Human Hero
-[ ]  3608  Bramble Familiar // Fetch Quest          {1}{G} // {5}{G}{G} Creature — Elemental Raccoon // Sorcery — Adventure
+[x]  3608  Bramble Familiar // Fetch Quest          {1}{G} // {5}{G}{G} Creature — Elemental Raccoon // Sorcery — Adventure
 [x]  3609  Parapet Thrasher                         {2}{R}{R}        Creature — Dragon
 [x]  3610  Reveillark                               {4}{W}           Creature — Elemental
 [ ]  3611  Rootcast Apprenticeship                  {3}{G}           Sorcery
@@ -4685,7 +4685,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4692  Back in Town                             {X}{2}{B}        Sorcery
 [x]  4693  Angelic Skirmisher                       {4}{W}{W}        Creature — Angel
 [ ]  4694  Preacher of the Schism                   {2}{B}           Creature — Vampire Cleric
-[ ]  4695  Apprentice Necromancer                   {1}{B}           Creature — Zombie Wizard
+[x]  4695  Apprentice Necromancer                   {1}{B}           Creature — Zombie Wizard
 [x]  4696  Cartographer's Hawk                      {1}{W}           Creature — Bird
 [x]  4697  Filth                                    {3}{B}           Creature — Incarnation
 [x]  4698  Restless Fortress                        {0}              Land
