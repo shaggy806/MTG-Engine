@@ -5086,6 +5086,8 @@ export class Game {
       this.prepareForPriority(this.state.awaiting?.player ?? this.activePlayer);
       return;
     }
+    // The combat phase is over: nothing is in combat any more (rule 511.3).
+    if (this.state.turn.step === "end-combat") this.removeAllFromCombat();
     // Phases added after the combat phase that just ended (rule 500.8), or
     // after the additional beginning phase that did, which came after it: the
     // next one owed. "After this phase, there is an additional combat phase"
@@ -6783,9 +6785,21 @@ export class Game {
     }
   }
 
+  /** The end of combat step has no turn-based actions (rule 511.1): the
+   * combat's bookkeeping is done with, but every creature is still in
+   * combat through its priority window — an "at end of combat" trigger
+   * (511.2) still sees its attacker attacking. They leave combat as the
+   * step ends (`removeAllFromCombat`). */
   private endCombatStep(): void {
     this.state.pendingBlockerDeclarations = [];
     this.state.combatDamage = null;
+  }
+
+  /** "As soon as the end of combat step ends, all creatures, battles, and
+   * planeswalkers are removed from combat" (rule 511.3) — run by `endStep`
+   * as that step ends, before the next phase (or an additional combat)
+   * begins. */
+  private removeAllFromCombat(): void {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       object.attacking = null;
