@@ -402,66 +402,61 @@ Since measured: mana provenance and the plays-a-land trigger are built.
 
 ## Built ahead: vocabulary no card uses yet
 
-Measured on 2026-09-25 by walking all 5,522 definitions. Each piece below was
-built ahead of a card that is still in the backlog (most of them in the
-2026-09-24 gap wave), so nothing in the pool runs it and the fuzzer never
-reaches it. Keep it, and give the first card that uses one a close rules
-review. The pieces marked **untested** have no unit test either, so nothing
-has ever run them.
+Measured on 2026-10-09 by grepping the 8,490 card files in `cards/pool` and
+the 249 in `cards/tokens` (the first count, 2026-09-25, listed about twice as
+many pieces). Each piece below was built ahead of a card that is still in the
+backlog (most of them in the 2026-09-24 gap wave), so nothing in the pool runs
+it and the fuzzer never reaches it. Keep it, and give the first card that uses
+one a close rules review. The pieces marked **untested** have no unit test
+either, so nothing has ever run them.
 
-- **Effect kinds:** `day-night` ("it becomes night"; **untested**) and
-  `gain-control-all` (for Dihada, Binder of Wills and Tevesh Szat).
 - **Trigger kinds:** the `predicate` escape hatch (**untested**).
-- **Static conditions:** `source-greatest`, `player-counters`.
-- **Static-ability fields:** `canBlockOnly`.
-
-(Rechecked 2026-09-28: `prohibit`, `cant-be-sacrificed`, `attacks-player` —
-Soaring Lightbringer — and `castAsThoughFlash` now have cards using them.)
-- **Filter clauses:** `notColors`, `notName`, `sharesCardTypeWith`, and five
-  of the card-property clauses built beside Raggadragga's and Duskana's:
-  `hasAbilities` (Jasmine Boreal of the Seven), `xInManaCost` (Zaxara,
-  Zimone, Helga, Magus Lucea Kane), `coloredManaSymbols` (Omnath, Locus of
-  All), `cardTypeCount` (Rendmaw, Creaking Nest) and `nameDiffersFromEach`
+- **Static conditions:** `source-greatest`.
+- **Filter clauses:** three of the card-property clauses built beside
+  Raggadragga's and Duskana's: `hasAbilities` (Jasmine Boreal of the Seven),
+  `coloredManaSymbols` (Omnath, Locus of All) and `nameDiffersFromEach`
   (Light-Paws, Emperor's Voice) — each unit-tested in
   `card-property-clauses.test.ts`, none yet in a card.
-- **Subtype marker:** `EVERY_LAND_TYPE` (Omo, Queen of Vesuva's "every land
-  type"), tested in `changeling.test.ts`. A land that has it is a Forest to
-  every filter, but taps only for what its own abilities say
-  (`static:basic-land-type-mana` is still open).
-- **Amounts:** `{ sum }`, `{ damageDealtThisTurn }`.
+- **Amounts:** `{ damageDealtThisTurn }`.
 - **Target spec:** `creature-or-player` (**untested**). One real card still
   prints "target creature or player": Firesong and Sunspeaker.
-- **Replacement fields:** `transformed` on enters-battlefield, `from` on
-  would-be-put-into-graveyard, `plus` on would-deal-damage. Also
-  `painIfUntapped` (**untested**), the one piece no real card can use: it was
-  written for a Rockfall Vale text that isn't the card's, and no card in the
-  Oracle snapshot deals damage for entering untapped.
-- **Layer hook:** `PtModifier.addColors` (**untested**). The colour step reads
-  it, but no effect sets it.
+- **Replacement fields:** `transformed` on enters-battlefield (the cards that
+  return transformed use `flicker`'s or `put-onto-battlefield`'s
+  `transformed` instead). Also `painIfUntapped` (**untested**), the one piece
+  no real card can use: it was written for a Rockfall Vale text that isn't the
+  card's, and no card in the Oracle snapshot deals damage for entering
+  untapped.
 - **Goad and suspect** (2026-09-25, `goad-extensions.test.ts`,
-  `suspect.test.ts`): `goad.forGame` (for Jon Irenicus), `create-token`'s
-  `goadedForGame` (for Rendmaw, Creaking Nest), the `unsuspect` effect,
-  `suspect` of `"source"` / `"trigger-object"`, and `attack-requirement`'s
+  `suspect.test.ts`): the `unsuspect` effect, and `attack-requirement`'s
   `otherThanYou: false`.
 - **Optional fields no card sets yet:**
-  - Effects: `add-mana.persists`, `exile-from-library.amount`,
-    `return-from-graveyard.withCounters`, `reveal-until.tapped`,
-    `additional-combat.withMain`, `animate-all.keywords`,
-    `create-token-copy.gainUntilEndOfTurn`, `become-monarch.who`,
-    `add-player-counters.target`, `get-energy.who`,
-    `prevent-damage.combatOnly`, `modal.notChosenThisTurn`, `may.costEnergy`,
-    `may.else`, `put-onto-battlefield.under` (for The Beamtown Bullies).
-  - Triggers: `attacks.defender` and `.aloneAgainstDefender`,
-    `transforms.filter`, `chapter-resolves.filter`,
-    `deals-combat-damage-to-player.otherOnly`, `blocks.filter` and
-    `.otherOnly`, `becomes-blocked.filter` and `.otherOnly`,
-    `put-into-exile.filter`, `dealt-damage.combat`, `deals-damage.toFilter`
-    and `.toItsTarget`, `becomes-tapped.filter`, `cast-spell.copyOnly` and
-    `.notFrom`.
-  - Conditions: `hand-size.atLeast`, `life-total.who` and `.atMost`,
-    `cards-in-exile.filter`, `turn-structure.steps`,
-    `damage-dealt-this-turn.who`, `turn-history.who` and `.atLeast`,
-    `this-way.atLeast`.
+  - Effects: `return-from-graveyard.withCounters`,
+    `additional-combat.withMain`, `become-monarch.who`, `get-energy.who`,
+    `prevent-damage.combatOnly`.
+  - Triggers: `transforms.filter`, `chapter-resolves.filter`,
+    `deals-combat-damage-to-player.otherOnly`, `blocks.otherOnly`,
+    `becomes-blocked.otherOnly`, `put-into-exile.filter`,
+    `dealt-damage.combat`.
+  - Conditions: `cards-in-exile.filter`, `damage-dealt-this-turn.who`.
+
+Since used by a card, so off the list: the `day-night` effect (Tovolar, Dire
+Overlord), `gain-control-all` (Dihada, Binder of Wills and three more), the
+`player-counters` condition, `canBlockOnly`, `notColors`, `notName`,
+`sharesCardTypeWith`, `xInManaCost`, `cardTypeCount`, `EVERY_LAND_TYPE` (Omo,
+Queen of Vesuva), `{ sum }`, `from` on would-be-put-into-graveyard, `plus` on
+would-deal-damage, `PtModifier.addColors` (set by an `enterAs` or copy
+exception's `addColors`), `goad.forGame`, `create-token`'s `goadedForGame`,
+`suspect` of `"source"`, and the optional fields `add-mana.persists`,
+`exile-from-library.amount`, `reveal-until.tapped`, `animate-all.keywords`,
+`create-token-copy.gainUntilEndOfTurn`, `add-player-counters.target`,
+`modal.notChosenThisTurn`, `may.costEnergy`, `may.else`,
+`put-onto-battlefield.under`, `attacks.defender` and
+`.aloneAgainstDefender`, `blocks.filter`, `becomes-blocked.filter`,
+`deals-damage.toFilter` and `.toItsTarget`, `becomes-tapped.filter`,
+`cast-spell.copyOnly` and `.notFrom`, `hand-size.atLeast`, `life-total.who`
+and `.atMost`, `turn-structure.steps`, `turn-history.who` and `.atLeast`, and
+`this-way.atLeast`. (Rechecked 2026-09-28: `prohibit`, `cant-be-sacrificed`,
+`attacks-player` and `castAsThoughFlash` had cards by then.)
 
 Engine-internal pieces aren't listed: the `return-flickered` effect, and the
 `progress` field on `reveal-until` and `each-player-may`, are made by the
