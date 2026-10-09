@@ -2269,6 +2269,7 @@ import _poolEscapeTunnel from "./pool/escape-tunnel.js";
 import _poolEshkiDragonclaw from "./pool/eshki-dragonclaw.js";
 import _poolEshkiTemursRoar from "./pool/eshki-temurs-roar.js";
 import _poolEsikaGodOfTheTree from "./pool/esika-god-of-the-tree.js";
+import _poolEsotericDuplicator from "./pool/esoteric-duplicator.js";
 import _poolEsperCharm from "./pool/esper-charm.js";
 import _poolEsperCormorants from "./pool/esper-cormorants.js";
 import _poolEsperPanorama from "./pool/esper-panorama.js";
@@ -11029,6 +11030,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEshkiDragonclaw,
   _poolEshkiTemursRoar,
   _poolEsikaGodOfTheTree,
+  _poolEsotericDuplicator,
   _poolEsperCharm,
   _poolEsperCormorants,
   _poolEsperPanorama,

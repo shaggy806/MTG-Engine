@@ -14369,6 +14369,11 @@ export class Game {
     const subject =
       event.type === "permanent-destroyed" ||
       event.type === "permanent-left-battlefield" ||
+      // A sacrifice trigger looks back in time too (rule 603.10a), so it
+      // sees its own source sacrificed: Korvold sacrificing himself still
+      // draws, and "whenever you sacrifice this artifact or another
+      // artifact" (Esoteric Duplicator) fires for itself.
+      event.type === "permanent-sacrificed" ||
       // A spell's own `this-cast` trigger (cascade, storm) lives on the card
       // on the stack, not a permanent; a cycled card's `this-cycled` one on
       // the card wherever cycling put it (rule 702.29c).
@@ -23115,7 +23120,22 @@ export class Game {
     const object = this.state.objects[source];
     const carried =
       creator.triggerObject === undefined ? undefined : this.state.objects[creator.triggerObject];
+    // A token trigger object that has ceased to exist is still "that
+    // artifact" to copy, as it last existed (rule 608.2h) — it just can't
+    // be acted on (`triggerObjectLost` at resolution, since it has no stint).
+    const ceased =
+      creator.triggerObject !== undefined && carried === undefined
+        ? this.state.ceasedTokens?.[creator.triggerObject]
+        : undefined;
     this.state.delayedTriggers.push({
+      ...(ceased !== undefined && creator.triggerObject !== undefined
+        ? {
+            triggerObject: creator.triggerObject,
+            triggerObjectStint: ceased.zoneChangeCount,
+            triggerObjectRefs: { triggerObject: ceased.zoneChangeCount },
+            triggerObjectCeased: ceased,
+          }
+        : {}),
       // "That card": the creating ability's trigger object, as the object it
       // is now — it has to still be that object when this resolves.
       ...(carried !== undefined
@@ -23228,6 +23248,11 @@ export class Game {
     for (const trigger of [...firing].sort(
       (a, b) => order.indexOf(a.controller) - order.indexOf(b.controller),
     )) {
+      // A ceased token is read from `ceasedTokens` (rule 608.2h), which a
+      // new turn has emptied if this was set up on an earlier one.
+      if (trigger.triggerObject !== undefined && trigger.triggerObjectCeased !== undefined) {
+        (this.state.ceasedTokens ??= {})[trigger.triggerObject] ??= trigger.triggerObjectCeased;
+      }
       const id = this.mintAbilityObject(
         trigger.source,
         trigger.sourceName,

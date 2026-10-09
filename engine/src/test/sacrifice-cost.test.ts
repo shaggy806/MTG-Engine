@@ -123,6 +123,29 @@ describe("Korvold, Fae-Cursed King — the sacrifice trigger", () => {
     expect(game.handOf(A).length).toBe(hand + 1);
   });
 
+  // Rule 603.10a: a sacrifice trigger looks back in time, so Korvold sees
+  // his own sacrifice — the counter has nowhere to go, but he still draws.
+  it("triggers on his own sacrifice", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const korvold = game.debugSpawn("Korvold, Fae-Cursed King", A, "battlefield");
+    game.debugSpawn("Viscera Seer", A, "battlefield");
+    const hand = game.handOf(A).length;
+
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: named(game, game.battlefield, "Viscera Seer"),
+      abilityIndex: 0,
+      targets: [],
+      sacrifice: korvold,
+    });
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[korvold].zone).toBe("graveyard");
+    expect(game.handOf(A).length).toBe(hand + 1);
+  });
+
   it("sacrifices another permanent when it enters, then grows off that sac", () => {
     const { game } = mkGame(["Korvold, Fae-Cursed King"], "Swamp");
     game.advanceUntil(toPrecombat);
@@ -150,5 +173,101 @@ describe("Korvold, Fae-Cursed King — the sacrifice trigger", () => {
         game.characteristics(id).types.includes("land"),
     ).length;
     expect(nowLands).toBe(landCount - 1); // one land sacrificed to the ETB
+  });
+});
+
+describe("Esoteric Duplicator — copies a sacrificed artifact at the next end step", () => {
+  const tokenCopies = (game: Game, name: string): ObjectId[] =>
+    game.battlefield.filter(
+      (id) => game.state.objects[id].isToken && game.state.objects[id].cardName === name,
+    );
+  const toEndStep = (s: GameState): boolean => s.turn.number === 1 && s.turn.step === "end";
+
+  it("copies itself when it's the one sacrificed (rule 603.10a)", () => {
+    const { game, a } = mkGame([], "Island");
+    a.chooseModesFn = () => [0];
+    game.advanceUntil(toPrecombat);
+    const duplicator = game.debugSpawn("Esoteric Duplicator", A, "battlefield");
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Island", A, "battlefield");
+    const hand = game.handOf(A).length;
+
+    game.dispatch({ type: "activate-ability", player: A, source: duplicator, abilityIndex: 0, targets: [] });
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[duplicator].zone).toBe("graveyard");
+    expect(game.handOf(A).length).toBe(hand + 1);
+    expect(tokenCopies(game, "Esoteric Duplicator")).toHaveLength(0);
+    game.advanceUntil(toEndStep);
+    game.advanceUntil(quiet);
+    expect(tokenCopies(game, "Esoteric Duplicator")).toHaveLength(1);
+  });
+
+  it("copies another artifact sacrificed, and nothing when the {2} isn't paid", () => {
+    for (const pay of [true, false]) {
+      const { game, a } = mkGame([], "Island");
+      a.chooseModesFn = () => (pay ? [0] : []);
+      game.advanceUntil(toPrecombat);
+      game.debugSpawn("Esoteric Duplicator", A, "battlefield");
+      game.debugSpawn("Viscera Seer", A, "battlefield");
+      const memnite = game.debugSpawn("Memnite", A, "battlefield");
+      for (let i = 0; i < 2; i += 1) game.debugSpawn("Island", A, "battlefield");
+
+      game.dispatch({
+        type: "activate-ability",
+        player: A,
+        source: named(game, game.battlefield, "Viscera Seer"),
+        abilityIndex: 0,
+        targets: [],
+        sacrifice: memnite,
+      });
+      game.advanceUntil(quiet);
+      expect(game.state.objects[memnite].zone).toBe("graveyard");
+      game.advanceUntil(toEndStep);
+      game.advanceUntil(quiet);
+      expect(tokenCopies(game, "Memnite")).toHaveLength(pay ? 1 : 0);
+      expect(tokenCopies(game, "Esoteric Duplicator")).toHaveLength(0);
+    }
+  });
+
+  // A token sacrificed has ceased to exist by the end step; it's copied as it
+  // last existed (rule 608.2h, the ruling).
+  it("copies a sacrificed token", () => {
+    const { game, a } = mkGame([], "Island");
+    a.chooseModesFn = () => [0];
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Esoteric Duplicator", A, "battlefield");
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Island", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Clue Token", count: 1 });
+    const clue = tokenCopies(game, "Clue Token")[0];
+
+    game.dispatch({ type: "activate-ability", player: A, source: clue, abilityIndex: 0, targets: [] });
+    game.advanceUntil(quiet);
+    expect(tokenCopies(game, "Clue Token")).toHaveLength(0);
+    game.advanceUntil(toEndStep);
+    game.advanceUntil(quiet);
+    expect(tokenCopies(game, "Clue Token")).toHaveLength(1);
+  });
+
+  // Sacrificed during an end step, it's copied at the next turn's — after
+  // the new turn has let go of the turn's ceased tokens.
+  it("copies a token sacrificed in an end step at the next turn's end step", () => {
+    const { game, a } = mkGame([], "Island");
+    a.chooseModesFn = () => [0];
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Esoteric Duplicator", A, "battlefield");
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Island", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Clue Token", count: 1 });
+    const clue = tokenCopies(game, "Clue Token")[0];
+    game.advanceUntil((s) => toEndStep(s) && s.priority.holder === A);
+
+    game.dispatch({ type: "activate-ability", player: A, source: clue, abilityIndex: 0, targets: [] });
+    game.advanceUntil(quiet);
+    expect(tokenCopies(game, "Clue Token")).toHaveLength(0);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+    expect(tokenCopies(game, "Clue Token")).toHaveLength(0);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "end");
+    game.advanceUntil(quiet);
+    expect(tokenCopies(game, "Clue Token")).toHaveLength(1);
+    expect(game.state.objects[tokenCopies(game, "Clue Token")[0]].controller).toBe(A);
   });
 });

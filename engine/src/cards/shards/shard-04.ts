@@ -74,6 +74,7 @@ import _poolElderfangDisciple from "../pool/elderfang-disciple.js";
 import _poolElvishWarrior from "../pool/elvish-warrior.js";
 import _poolEmergeFromTheCocoon from "../pool/emerge-from-the-cocoon.js";
 import _poolEngineRat from "../pool/engine-rat.js";
+import _poolEsotericDuplicator from "../pool/esoteric-duplicator.js";
 import _poolExcaliburSwordOfEden from "../pool/excalibur-sword-of-eden.js";
 import _poolFabricate from "../pool/fabricate.js";
 import _poolFaerieBladecrafter from "../pool/faerie-bladecrafter.js";
@@ -353,6 +354,7 @@ const shard: CardShard = {
     _poolElvishWarrior,
     _poolEmergeFromTheCocoon,
     _poolEngineRat,
+    _poolEsotericDuplicator,
     _poolExcaliburSwordOfEden,
     _poolFabricate,
     _poolFaerieBladecrafter,

@@ -2534,6 +2534,12 @@ export interface DelayedTrigger {
   readonly triggerObject?: ObjectId;
   readonly triggerObjectStint?: number;
   readonly triggerObjectRefs?: LastKnownRefs;
+  /** A trigger object that was a token and has ceased to exist (rule 111.7),
+   * as it last existed on the battlefield — "create a token that's a copy
+   * of that artifact" of a sacrificed Treasure (Esoteric Duplicator). Kept
+   * here because `GameState.ceasedTokens` lasts only the turn, and "the
+   * next end step" may be the next turn's. */
+  readonly triggerObjectCeased?: LastKnownInfo;
   /** The turn it was created on, so "the next end step" can't mean one the
    * game is already in. */
   readonly createdOnTurn: number;
