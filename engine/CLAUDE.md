@@ -41,6 +41,11 @@ Read a file's entry before changing that file; you don't need the rest.
 - **Every P/T, type or keyword read goes through `computeCharacteristics`** (the layer fold) or
   its cheaper layer-4 reads (`effectiveTypes`/`effectiveSubtypes`). Subtype questions use
   `subtypes.ts`'s `hasSubtype`, never `includes` (changeling).
+- **An object's definition is looked up by one of two names** (`state.ts`): `printedCardName`
+  for its name, cost, colors, types and P/T (a copy's, layer 1), and `rulesTextName` for
+  anything its *text* says — abilities, keywords, statics, `copyOnEnter` and the rest — which
+  is another card's after an exchange of text boxes (layer 3, rule 612.5 — Deadpool). An
+  ability read through `printedCardName` is a bug that only an exchanged permanent shows.
 - **`"sideEffects": false`** holds only because no engine module does anything at import time
   but define things. Keep it so, or every page ships the whole card pool.
 - **The client imports `engine/client`** (`src/client.ts`), never the barrel. It must not start

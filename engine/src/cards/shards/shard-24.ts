@@ -65,6 +65,7 @@ import _poolDarkRitual from "../pool/dark-ritual.js";
 import _poolDarksteelJuggernaut from "../pool/darksteel-juggernaut.js";
 import _poolDarksteelPlate from "../pool/darksteel-plate.js";
 import _poolDawnsLightArcher from "../pool/dawns-light-archer.js";
+import _poolDeadpoolTradingCard from "../pool/deadpool-trading-card.js";
 import _poolDeathgazeCockatrice from "../pool/deathgaze-cockatrice.js";
 import _poolDesertOfTheFervent from "../pool/desert-of-the-fervent.js";
 import _poolDestructiveForce from "../pool/destructive-force.js";
@@ -332,6 +333,7 @@ const shard: CardShard = {
     _poolDarksteelJuggernaut,
     _poolDarksteelPlate,
     _poolDawnsLightArcher,
+    _poolDeadpoolTradingCard,
     _poolDeathgazeCockatrice,
     _poolDesertOfTheFervent,
     _poolDestructiveForce,

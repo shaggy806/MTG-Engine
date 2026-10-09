@@ -9,18 +9,11 @@ When something lands, delete its line. When you find something new, add one.
 Each waits on a decision only the user can make. Once one is answered, move the work it
 decides into its section below.
 
-- **Which text changing to build first?** The user (2026-10-09): build it, tested on a card
-  like Deadpool. Layer 3 (rule 612) has two kinds that matter here. Replacing words (612.2):
-  every instance of one color word, basic land type or creature type in a card's text becomes
-  another — Artificial Evolution, Mind Bend, Magical Hack, New Blood (12 cards; New Blood is
-  the most played, EDHREC 4447). The pool's `change-text` / `choose-text` were a partial
-  version of this, with no card since Artificial Evolution was pulled (2026-09-28). Exchanging
-  text boxes (612.5, 701.12h): each permanent's rules text becomes the other's — Deadpool,
-  Trading Card (EDHREC 2727) and Exchange of Words. Which kind, or both, and in what order?
+None open.
 
 ## Commander gap (the current priority)
 
-**392 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**393 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -66,7 +59,7 @@ section keeps only what to do next.
   Delete a card's substitution in `sample-decks.ts` as it lands.
 - **The nine other starter precons' 45 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
   TDC decks.
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,353 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,359 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
@@ -112,7 +105,7 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **No state-based actions after a mana ability activated by hand** (117.3c, 117.5).
 - **Delve and convoke together on an {X} spell** (Chord of Calling under Teval).
 - **The least X a top-of-library cast allows is searched only up to the mana a player can make.**
-- **Not modeled**: battles, phasing, dungeons/Initiative/the Ring, banding, Companion, snow sources, face-down permanents, full text-change.
+- **Not modeled**: battles, phasing, dungeons/Initiative/the Ring, banding, Companion, snow sources, face-down permanents, word-replacing text change (612.2).
 - **"Whenever you activate an ability"** (Rings of Brighthearth).
 - **An O-Ring's return is a triggered ability, not rule 610.3's one-shot effect.**
 - **End-step token removal resolves without the stack** (603.7, 701.21a).

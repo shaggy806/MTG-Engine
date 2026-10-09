@@ -2037,6 +2037,14 @@ export interface CardDefinition {
    * chooses (Clone — rule 707.9) — see {@link CopyOnEnter}. `null` for a
    * normal card. */
   readonly copyOnEnter: CopyOnEnter | null;
+  /** "As this enters, you may exchange its text box and another creature's"
+   * (Deadpool, Trading Card — rule 612.5, a layer-3 text-changing effect):
+   * what it may exchange with, a permanent already on the battlefield
+   * matching this from its controller's side, never itself. Each then has
+   * the other's rules text as it was — every ability, keyword and static —
+   * for as long as it stays on the battlefield (`GameObject.textFrom`).
+   * `null` for a normal card. */
+  readonly exchangeTextOnEnter: CardFilter | null;
   /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
    * P14). The permanent's `chosenCreatureType` is set once its controller
    * answers; a `costModification.matchesChosenCreatureType` reads it back. */
@@ -2328,6 +2336,7 @@ const PRINTED_ABILITY: {
   castOnlyIf: (def) => def.castOnlyIf !== null,
   splitSecond: (def) => def.splitSecond,
   copyOnEnter: (def) => def.copyOnEnter !== null,
+  exchangeTextOnEnter: (def) => def.exchangeTextOnEnter !== null,
   chooseCreatureTypeOnEnter: (def) => def.chooseCreatureTypeOnEnter,
   chooseOnEnter: (def) => def.chooseOnEnter !== null,
   loyalty: false,
@@ -2475,6 +2484,7 @@ interface CardDraft {
   castOnlyIf?: StaticCondition;
   splitSecond?: boolean;
   copyOnEnter?: CopyOnEnter;
+  exchangeTextOnEnter?: CardFilter;
   chooseCreatureTypeOnEnter?: boolean;
   chooseOnEnter?: readonly string[];
   loyalty?: number;
@@ -2571,6 +2581,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     castOnlyIf: draft.castOnlyIf ?? null,
     splitSecond: draft.splitSecond ?? false,
     copyOnEnter: draft.copyOnEnter ?? null,
+    exchangeTextOnEnter: draft.exchangeTextOnEnter ?? null,
     chooseCreatureTypeOnEnter: draft.chooseCreatureTypeOnEnter ?? false,
     chooseOnEnter: draft.chooseOnEnter ?? null,
     loyalty,

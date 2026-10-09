@@ -611,6 +611,14 @@ export type GameEvent =
       readonly copyOf: string | null;
     })
   | (Base & {
+      /** Two permanents exchanged text boxes (rule 612.5 — Deadpool, Trading
+       * Card): `object` now has `withObject`'s rules text, and the other way
+       * round. */
+      readonly type: "text-boxes-exchanged";
+      readonly object: ObjectId;
+      readonly withObject: ObjectId;
+    })
+  | (Base & {
       /** "As this enters, choose a creature type" was answered (Urza's
        * Incubator — needed-cards P14). */
       readonly type: "creature-type-chosen";

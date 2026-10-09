@@ -46,7 +46,7 @@ import { entersToCounter } from "../effect-worth.js";
 import type { EffectSpec } from "../effects.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
-import { POISON_LETHAL, printedCardName, settledTally } from "../state.js";
+import { POISON_LETHAL, printedCardName, rulesTextName, settledTally } from "../state.js";
 import { playersAttackableNextTurn } from "../combat/eligibility.js";
 import { canBlock, combatCreatures } from "./combat-math.js";
 import type { CombatCreature } from "./combat-math.js";
@@ -343,7 +343,7 @@ function manaValueOf(registry: CardRegistry, name: string): number {
 }
 
 function hasTapManaAbility(registry: CardRegistry, object: GameObject): boolean {
-  const name = printedCardName(object);
+  const name = rulesTextName(object);
   if (!registry.has(name)) return false;
   return (registry.get(name).activated ?? []).some((a) => a.cost.tap && isManaAbility(a));
 }
@@ -382,7 +382,7 @@ function waitsToReturn(state: GameState, registry: CardRegistry, player: PlayerI
     source.zone === "battlefield" &&
     source.controller === player &&
     (source.zoneChangeCount ?? 0) === link.zoneChangeCount &&
-    returnsExiledCards(registry, printedCardName(source))
+    returnsExiledCards(registry, rulesTextName(source))
   );
 }
 
@@ -753,7 +753,7 @@ export function trackRecordOf(
   const tally = settledTally(object, now);
   // Rounds of the table it has been here for, at least one.
   const rounds = Math.max(1, turns / Math.max(1, opponents + 1));
-  const name = printedCardName(object);
+  const name = rulesTextName(object);
   const printed = registry.has(name) ? drawRate(registry.get(name), opponents) : 0;
   const extraDraws = Math.max(0, tally.cardsDrawn - printed * rounds);
   const life = tally.lifeTaken / LIFE_PER_CARD;
@@ -776,7 +776,7 @@ export function engineScore(state: GameState, registry: CardRegistry, id: Object
   const object = state.objects[id];
   if (object === undefined || object.zone !== "battlefield") return 0;
   const opponents = state.turnOrder.filter((p) => p !== object.controller && !state.players[p].hasLost).length;
-  const name = printedCardName(object);
+  const name = rulesTextName(object);
   if (!registry.has(name)) return 0;
   const def = registry.get(name);
   return (
@@ -983,7 +983,7 @@ function playerFeaturesUncached(
         otherPermanents += n;
       }
     }
-    const name = printedCardName(object);
+    const name = rulesTextName(object);
     if (!isLand && registry.has(name)) {
       const def = registry.get(name);
       nonlandMana += manaPerTurn(def) * n;

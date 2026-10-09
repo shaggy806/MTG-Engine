@@ -33,7 +33,7 @@ import type { EffectAmount } from "./effects.js";
 import { printedManaCost } from "./filter.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { printedCardName } from "./state.js";
+import { rulesTextName } from "./state.js";
 import type { GameObject, GameState } from "./state.js";
 
 /** One battlefield static that goads whatever it reaches. */
@@ -56,7 +56,7 @@ function goadingStatics(state: GameState, registry: CardRegistry): readonly Goad
       const source = state.objects[id];
       if (source === undefined || hasLostAbilities(source)) continue;
       if (state.players[source.controller]?.hasLost === true) continue;
-      for (const ability of registry.get(printedCardName(source)).static) {
+      for (const ability of registry.get(rulesTextName(source)).static) {
         if (ability.goads === true) out.push({ source, ability });
       }
     }

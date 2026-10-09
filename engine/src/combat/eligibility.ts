@@ -32,7 +32,7 @@ import type { CardFilter } from "../filter.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { matchesFilter } from "../filter.js";
 import { goadersOf, sourceAmount } from "../goad.js";
-import { printedCardName } from "../state.js";
+import { printedCardName, rulesTextName } from "../state.js";
 import type { AttackRequirementRule, GameObject, GameState } from "../state.js";
 import { permanentSource, protectionBlocks } from "../targeting.js";
 
@@ -215,7 +215,7 @@ export function whyCannotAttack(
   for (const id of state.zones.shared.battlefield) {
     const source = state.objects[id];
     if (source.controller !== defendingPlayer || hasLostAbilities(source)) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       if (ability.cantAttackController !== true) continue;
       if (!staticReaches(state, registry, source, ability, object)) continue;
       if (
@@ -360,7 +360,7 @@ export function nearestOpponentRule(
     // No direction chosen (it entered some way that didn't ask): no effect.
     if (source.chosenOnEnter !== "left" && source.chosenOnEnter !== "right") continue;
     const governs = registry
-      .get(printedCardName(source))
+      .get(rulesTextName(source))
       .static.some(
         (ability) =>
           ability.attackOnlyNearestOpponent === true &&
@@ -395,7 +395,7 @@ function blockFilterSources(
     for (const id of state.zones.shared.battlefield) {
       const source = state.objects[id];
       if (hasLostAbilities(source) || state.players[source.controller]?.hasLost === true) continue;
-      for (const ability of registry.get(printedCardName(source)).static) {
+      for (const ability of registry.get(rulesTextName(source)).static) {
         if (ability.cantBeBlockedBy !== undefined || ability.canBlockOnly !== undefined) {
           out.push({ source, ability });
         }

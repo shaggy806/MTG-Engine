@@ -104,12 +104,13 @@ export const choosePermanents = defineDecision({
   },
 
   /**
-   * A few answers rather than every subset: as many of your own as allowed
-   * (what "untap up to two lands" nearly always wants), as few as allowed,
-   * and as many as allowed from the whole list — so the search can tell
-   * whether reaching past your own permanents is ever worth it.
+   * A few answers rather than every subset (a choice of at most one aside):
+   * as many of your own as allowed (what "untap up to two lands" nearly
+   * always wants), as few as allowed, and as many as allowed from the whole
+   * list — so the search can tell whether reaching past your own permanents
+   * is ever worth it.
    */
-  candidates: (legal, player, _limit, helpers): Action[] => {
+  candidates: (legal, player, limit, helpers): Action[] => {
     if (legal.kind !== "choose-permanents") return [];
     // Kept under a power cap (Slaughter the Strong): the most power that
     // fits, the most valuable first while it fits, and keeping nothing (for
@@ -130,6 +131,17 @@ export const choosePermanents = defineDecision({
           return true;
         })
         .map((permanents) => ({ type: "choose-permanents", player, permanents }));
+    }
+    // "You may choose one" (a casualty, Deadpool's exchange): which one is
+    // the whole question, so each is a candidate — the most valuable first,
+    // as many as the search allows — beside choosing none.
+    if (legal.min === 0 && legal.max === 1) {
+      const each = helpers.order(legal.eligible).slice(0, Math.max(1, limit - 1));
+      return [[], ...each.map((id) => [id])].map((permanents) => ({
+        type: "choose-permanents",
+        player,
+        permanents,
+      }));
     }
     const mine = legal.eligible.filter((id) => helpers.controllerOf(id) === player);
     const theirs = legal.eligible.filter((id) => helpers.controllerOf(id) !== player);

@@ -249,6 +249,7 @@ import {
   manaCostOverride,
   permanentCount,
   printedCardName,
+  rulesTextName,
   nameOf,
   tokenFoldKey,
 } from "./state.js";
@@ -3870,7 +3871,7 @@ export class Game {
     // through; `moveObject` makes it the copy as it enters.
     const clone = this.state.objects[awaiting.source];
     const copied = copy === null ? undefined : this.state.objects[copy];
-    const spec = this.registry.get(printedCardName(clone)).copyOnEnter;
+    const spec = this.registry.get(rulesTextName(clone)).copyOnEnter;
     clone.enterChoice = {
       ...clone.enterChoice,
       copyOf: copied === undefined ? null : printedCardName(copied),
@@ -5272,7 +5273,7 @@ export class Game {
   private hasOwnStatic(object: GameObject, test: (ability: StaticAbility) => boolean): boolean {
     if (hasLostAbilities(object)) return false;
     return this.registry
-      .get(printedCardName(object))
+      .get(rulesTextName(object))
       .static.some((ability) => test(ability) && this.staticActive(object, ability));
   }
 
@@ -5285,7 +5286,7 @@ export class Game {
       const granter = this.state.objects[id];
       if (granter === undefined || granter.controller !== object.controller) return false;
       if (hasLostAbilities(granter)) return false;
-      return this.registry.get(printedCardName(granter)).static.some((ability) => {
+      return this.registry.get(rulesTextName(granter)).static.some((ability) => {
         const filter = ability.untapsDuringOthersUntap;
         return (
           filter !== undefined &&
@@ -5325,7 +5326,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source === undefined || source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         if (ability.keepsUnspentMana === undefined || !this.staticActive(source, ability)) continue;
         for (const type of ability.keepsUnspentMana) out.add(type);
       }
@@ -5340,7 +5341,7 @@ export class Game {
       if (source === undefined || hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) {
         continue;
       }
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         if (ability.noMaxHandSize === true && source.controller === player && this.staticActive(source, ability)) {
           changes.push({ timestamp: source.timestamp, apply: () => Infinity });
         }
@@ -6942,7 +6943,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const permission = ability.castFromLibraryTop;
         if (permission === undefined || !this.staticActive(source, ability)) continue;
         const fits = this.withFace(cardId, face, () =>
@@ -6962,7 +6963,7 @@ export class Game {
       return (
         source.controller === player &&
         !hasLostAbilities(source) &&
-        this.registry.get(printedCardName(source)).static.some((ability) => ability.castFromLibraryTop !== undefined)
+        this.registry.get(rulesTextName(source)).static.some((ability) => ability.castFromLibraryTop !== undefined)
       );
     });
   }
@@ -7001,7 +7002,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const permission = ability.playFromExile;
         if (permission === undefined || !this.staticActive(source, ability)) continue;
         if (permission.yourTurnOnly === true && this.activePlayer !== player) continue;
@@ -7028,7 +7029,7 @@ export class Game {
       return (
         source.controller === player &&
         !hasLostAbilities(source) &&
-        this.registry.get(printedCardName(source)).static.some((ability) => ability.playFromExile !== undefined)
+        this.registry.get(rulesTextName(source)).static.some((ability) => ability.playFromExile !== undefined)
       );
     });
   }
@@ -7058,7 +7059,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const filter = filterOf(ability);
         if (filter === undefined || !this.staticActive(source, ability)) continue;
         if (
@@ -7087,7 +7088,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         if (source.controller !== player && ability.extraLandsForEachPlayer !== true) continue;
         if (ability.extraLandsPerTurn !== undefined && this.staticActive(source, ability)) {
           extra += ability.extraLandsPerTurn;
@@ -7204,6 +7205,7 @@ export class Game {
     | { readonly kind: "enchant"; readonly as: CardDefinition }
     | { readonly kind: "reveal"; readonly subtypes: readonly string[] }
     | { readonly kind: "riot" }
+    | { readonly kind: "exchange-text"; readonly filter: CardFilter }
     | null {
     const object = this.state.objects[id];
     const answered = object.enterChoice;
@@ -7214,6 +7216,11 @@ export class Game {
     if (answered?.chosen === undefined) {
       if (becoming.chooseCreatureTypeOnEnter) return { kind: "choose" };
       if (becoming.chooseOnEnter !== null) return { kind: "choose", options: becoming.chooseOnEnter };
+    }
+    // Deadpool's "you may exchange his text box and another creature's" —
+    // printed, or a copy's.
+    if (answered?.exchangeText === undefined && becoming.exchangeTextOnEnter !== null) {
+      return { kind: "exchange-text", filter: becoming.exchangeTextOnEnter };
     }
     // Riot (rule 702.136a): "you may have this permanent enter with an
     // additional +1/+1 counter on it" — a printed (or copied) riot. One
@@ -7253,6 +7260,35 @@ export class Game {
       if (next.kind === "choose") {
         this.beginCreatureTypeChoice(id, chooser, next.options);
         return true;
+      }
+      if (next.kind === "exchange-text") {
+        // What it may exchange with: another permanent already on the
+        // battlefield, chosen as it enters (not targeted), from its
+        // controller's side. None, and there is nothing to ask.
+        const eligible = this.state.zones.shared.battlefield.filter(
+          (other) =>
+            other !== id &&
+            this.enterBatch?.has(other) !== true &&
+            this.inGame(this.state.objects[other]) &&
+            matchesFilter(this.state, this.registry, other, next.filter, { you: chooser, source: id }),
+        );
+        if (eligible.length > 0) {
+          this.state.awaiting = {
+            kind: "choose-permanents",
+            player: chooser,
+            eligible,
+            min: 0,
+            max: 1,
+            prompt: `You may exchange ${nameOf(object)}'s text box and another creature's`,
+            then: { kind: "sequence", effects: [] },
+            source: id,
+            x: 0,
+            exchangeText: true,
+          };
+          return true;
+        }
+        object.enterChoice = { ...object.enterChoice, exchangeText: null };
+        continue;
       }
       if (next.kind === "riot") {
         this.state.awaiting = {
@@ -7374,7 +7410,7 @@ export class Game {
    * rulings). */
   private copyOptions(cloneId: ObjectId, chooser: PlayerId): ObjectId[] {
     const clone = this.state.objects[cloneId];
-    const spec = this.registry.get(printedCardName(clone)).copyOnEnter;
+    const spec = this.registry.get(rulesTextName(clone)).copyOnEnter;
     if (spec === null) return [];
     const ctx = this.makeResolutionContext(cloneId, chooser, [], clone.xValue ?? 0, 0);
     return this.state.zones.shared.battlefield.filter((id) => {
@@ -7556,7 +7592,7 @@ export class Game {
       const object = this.state.objects[id];
       if (
         object.controller !== active ||
-        this.registry.get(printedCardName(object)).chapters === null
+        this.registry.get(rulesTextName(object)).chapters === null
       ) {
         continue;
       }
@@ -7572,7 +7608,7 @@ export class Game {
   private addLoreCounter(sagaId: ObjectId, amount = 1): void {
     const object = this.state.objects[sagaId];
     if (object === undefined || amount <= 0) return;
-    if (this.registry.get(printedCardName(object)).chapters === null) return;
+    if (this.registry.get(rulesTextName(object)).chapters === null) return;
     const before = object.counters.lore ?? 0;
     object.counters.lore = before + amount;
     this.emit({ type: "lore-counter-added", object: sagaId, lore: before + amount });
@@ -7593,7 +7629,7 @@ export class Game {
    */
   private triggerChapters(sagaId: ObjectId, before: number, after: number): void {
     const object = this.state.objects[sagaId];
-    const chapters = this.registry.get(printedCardName(object)).chapters;
+    const chapters = this.registry.get(rulesTextName(object)).chapters;
     if (chapters === null) return;
     const reached = chapters
       .flatMap((chapter, index) =>
@@ -7628,7 +7664,7 @@ export class Game {
       const object = this.state.objects[target.object];
       if (object === undefined || object.zone !== "battlefield" || object.controller === caster) continue;
       if (hasLostAbilities(object)) continue;
-      for (const ability of this.registry.get(printedCardName(object)).static) {
+      for (const ability of this.registry.get(rulesTextName(object)).static) {
         if (ability.targetedBySpellsCost !== undefined && this.staticActive(object, ability)) {
           total += ability.targetedBySpellsCost.payLife;
         }
@@ -7829,7 +7865,7 @@ export class Game {
         const source = this.state.objects[id];
         return (
           source !== undefined &&
-          this.registry.get(printedCardName(source)).static.some((a) => a.costModification?.perTarget === true)
+          this.registry.get(rulesTextName(source)).static.some((a) => a.costModification?.perTarget === true)
         );
       },
     );
@@ -8016,7 +8052,7 @@ export class Game {
       const source = this.state.objects[id];
       if (source === undefined || hasLostAbilities(source)) continue;
       const onlyEminence = source.zone === "command";
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const mod = ability.costModification;
         if (mod === undefined) continue;
         if (onlyEminence && ability.fromCommandZone !== true) continue;
@@ -8146,7 +8182,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== controller || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const d = ability.doubleTriggers;
         if (d === undefined || !this.staticActive(source, ability)) continue;
         if (doubles(d)) count += 1;
@@ -8164,7 +8200,7 @@ export class Game {
         const last = was?.lastKnown;
         if (was === undefined || was.zone === "battlefield" || last === undefined) continue;
         if (last.controller !== controller || last.lostAbilities) continue;
-        for (const ability of this.registry.get(last.name).static) {
+        for (const ability of this.registry.get(last.textName ?? last.name).static) {
           const d = ability.doubleTriggers;
           if (d !== undefined && ability.condition === undefined && doubles(d)) count += 1;
         }
@@ -8187,7 +8223,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const doubler = this.state.objects[id];
       if (doubler.controller !== controller || hasLostAbilities(doubler)) continue;
-      for (const ability of this.registry.get(printedCardName(doubler)).static) {
+      for (const ability of this.registry.get(rulesTextName(doubler)).static) {
         const d = ability.doubleTriggersOf;
         if (d === undefined || !this.staticActive(doubler, ability)) continue;
         const ofSelfOrEquipment =
@@ -8214,7 +8250,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const s = ability.suppressEntryTriggers;
         if (s === undefined || !this.staticActive(source, ability)) continue;
         if (s === "everyone" || source.controller !== controller) return true;
@@ -8228,7 +8264,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== controller || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const d = ability.doubleEntryTriggers;
         if (d === undefined) continue;
         if (!this.staticActive(source, ability)) continue;
@@ -9919,12 +9955,12 @@ export class Game {
     const spell = this.state.objects[spellId];
     if (spell === undefined || spell.zone !== "stack" || spell.kind !== "card") return;
     const amounts: number[] = [];
-    const printed = this.registry.get(printedCardName(spell)).casualty;
+    const printed = this.registry.get(rulesTextName(spell)).casualty;
     if (printed !== null) amounts.push(printed);
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source === undefined) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const n = ability.grantsToSpells?.casualty;
         if (n !== undefined && spellGrantReaches(this.state, this.registry, source, ability, spell)) amounts.push(n);
       }
@@ -10397,7 +10433,7 @@ export class Game {
       // A source that lost its abilities grants nothing, but for a static
       // with a layer-4 part (rule 613.6 — see `activatedGrantSources`).
       const lost = hasLostAbilities(source);
-      this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
+      this.registry.get(rulesTextName(source)).static.forEach((ability, staticIndex) => {
         if (lost && !hasLayerFourPart(ability)) return;
         if (ability.grantsTriggered !== undefined) {
           out.push({ source, ability, staticIndex, abilities: ability.grantsTriggered });
@@ -10452,7 +10488,7 @@ export class Game {
   ): readonly TriggeredEntry[] {
     const target = this.state.objects[objectId];
     if (target === undefined) return EMPTY_TRIGGERED_ENTRIES;
-    const printedAbilities = this.registry.get(printedCardName(target)).triggered;
+    const printedAbilities = this.registry.get(rulesTextName(target)).triggered;
     // The common case — a land, a vanilla creature — has nothing printed, no
     // modifiers and no grantors to consult: skip the allocations below. This
     // runs for every battlefield permanent on every emitted event.
@@ -10509,7 +10545,7 @@ export class Game {
       for (const id of this.state.zones.shared.battlefield) {
         const source = this.state.objects[id];
         if (source === undefined) continue;
-        this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
+        this.registry.get(rulesTextName(source)).static.forEach((ability, staticIndex) => {
           if (ability.grantsToSpells?.triggered === undefined) return;
           const amount = this.filterAmounts({ source: source.id, controller: source.controller });
           if (spellGrantReaches(this.state, this.registry, source, ability, target, amount)) {
@@ -10550,7 +10586,7 @@ export class Game {
       // applying in the later layers (rule 613.6), its grants going against
       // the loss in timestamp order (Goddric, Cloaked Reveler's ruling).
       const lost = hasLostAbilities(source);
-      this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
+      this.registry.get(rulesTextName(source)).static.forEach((ability, staticIndex) => {
         if (lost && !hasLayerFourPart(ability)) return;
         if (ability.grantsActivated !== undefined) {
           out.push({ source, ability, staticIndex, abilities: ability.grantsActivated });
@@ -10640,8 +10676,12 @@ export class Game {
    * move the source and end the grant. */
   private activatedRefFor(sourceId: ObjectId, abilityIndex: number): GrantedAbilityRef | undefined {
     const object = this.state.objects[sourceId];
-    const printed = this.registry.get(printedCardName(object)).activated.length;
-    if (abilityIndex < printed) return undefined;
+    const printed = this.registry.get(rulesTextName(object)).activated.length;
+    // One its text box came with (rule 612.5) is that card's ability, which
+    // it stays whatever becomes of this permanent's text.
+    if (abilityIndex < printed) {
+      return object.textFrom === undefined ? undefined : { kind: "card-activated", cardName: object.textFrom, index: abilityIndex };
+    }
     const intrinsic = this.intrinsicExtras(object);
     if (abilityIndex < printed + intrinsic.length) return { kind: "intrinsic", color: intrinsic[abilityIndex - printed] };
     return this.grantedActivatedEntries(sourceId)[abilityIndex - printed - intrinsic.length]?.ref;
@@ -10657,6 +10697,9 @@ export class Game {
     if (ref.kind === "cycling") return this.cyclingAbilityOf(ref.cardName);
     if (ref.kind === "card-activated") {
       return this.registry.has(ref.cardName) ? this.registry.get(ref.cardName).activated[ref.index] : undefined;
+    }
+    if (ref.kind === "card-triggered") {
+      return this.registry.has(ref.cardName) ? this.registry.get(ref.cardName).triggered[ref.index] : undefined;
     }
     if (!this.registry.has(ref.cardName)) return undefined;
     const granting = this.registry.get(ref.cardName).static[ref.staticIndex];
@@ -10675,7 +10718,7 @@ export class Game {
     grantors?: readonly GrantSource[],
   ): readonly ActivatedAbility[] {
     const object = this.state.objects[objectId];
-    const printed = this.registry.get(printedCardName(object)).activated;
+    const printed = this.registry.get(rulesTextName(object)).activated;
     const intrinsic = this.intrinsicExtras(object);
     const granted = this.grantedActivated(objectId, grantors);
     return granted.length === 0 && intrinsic.length === 0
@@ -10812,7 +10855,7 @@ export class Game {
       for (const id of this.state.zones.shared.battlefield) {
         const source = this.state.objects[id];
         if (source === undefined || hasLostAbilities(source)) continue;
-        for (const ability of this.registry.get(printedCardName(source)).static) {
+        for (const ability of this.registry.get(rulesTextName(source)).static) {
           const mod = ability.abilityCostModification;
           if (mod !== undefined && this.staticActive(source, ability)) out.push({ controller: source.controller, mod });
         }
@@ -10858,7 +10901,7 @@ export class Game {
       }
       // What was granted it after it lost them, it has (rule 613.7) — those
       // are left out of `effectiveActivated` when they came before.
-      if (abilityIndex < def.activated.length && hasLostAbilities(source)) {
+      if (abilityIndex < this.registry.get(rulesTextName(source)).activated.length && hasLostAbilities(source)) {
         return `${def.name} has lost its abilities`;
       }
       if (inactiveStandIn(this.state, this.registry, source, abilityIndex)) {
@@ -11710,10 +11753,9 @@ export class Game {
       // an untapped one (Vivi Ornitier's "{0}: Add …") needs neither.
       const canTap = !object.tapped && !this.tapAbilityBlockedBySickness(object);
 
-      const def = this.registry.get(printedCardName(object));
       // Layer 6: one that has lost its abilities has no printed mana ability,
       // only one granted it since (rule 613.7).
-      const printedLost = hasLostAbilities(object) ? def.activated.length : 0;
+      const printedLost = hasLostAbilities(object) ? this.registry.get(rulesTextName(object)).activated.length : 0;
       const options: ManaOption[] = [];
       // `sacrificeSelf` is tracked per source, not per option: no real card
       // mixes a tap-only and a sacrifice mana ability on one permanent.
@@ -11971,7 +12013,7 @@ export class Game {
       if (options.length === 0) continue;
       out.push({
         id,
-        isLand: def.types.includes("land"),
+        isLand: this.registry.get(printedCardName(object)).types.includes("land"),
         // Its current types (an animated land, a Mishra's Factory, is one).
         isCreature: effectiveTypes(this.state, this.registry, object).includes("creature"),
         options,
@@ -12194,7 +12236,7 @@ export class Game {
       for (const id of this.state.zones.shared.battlefield) {
         const source = this.state.objects[id];
         if (source.controller !== player || hasLostAbilities(source)) continue;
-        for (const ability of this.registry.get(printedCardName(source)).static) {
+        for (const ability of this.registry.get(rulesTextName(source)).static) {
           if (ability.spendManaAs !== undefined && this.staticActive(source, ability)) found.push(ability.spendManaAs);
         }
       }
@@ -12595,7 +12637,7 @@ export class Game {
         const object = this.state.objects[id];
         return (
           object !== undefined &&
-          this.registry.get(printedCardName(object)).triggered.some((t) => t.trigger.on === "tapped-for-mana")
+          this.registry.get(rulesTextName(object)).triggered.some((t) => t.trigger.on === "tapped-for-mana")
         );
       }),
     );
@@ -12603,7 +12645,7 @@ export class Game {
       const holder = this.state.objects[id];
       if (holder === undefined || hasLostAbilities(holder)) continue;
       if (this.state.players[holder.controller]?.hasLost === true) continue;
-      for (const ability of this.registry.get(printedCardName(holder)).triggered) {
+      for (const ability of this.registry.get(rulesTextName(holder)).triggered) {
         const trigger = ability.trigger;
         if (trigger.on !== "tapped-for-mana") continue;
         const effect = ability.effect;
@@ -13852,7 +13894,7 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return [];
     const printedLost = hasLostAbilities(object)
-      ? this.registry.get(printedCardName(object)).activated.length
+      ? this.registry.get(rulesTextName(object)).activated.length
       : 0;
     const abilities = this.effectiveActivated(id).filter(
       (_, index) => index >= printedLost && !inactiveStandIn(this.state, this.registry, object, index),
@@ -14116,7 +14158,7 @@ export class Game {
       this.resolvingTrigger = outerTrigger;
     }
     if (object.abilityKind === "chapter") {
-      const chapters = this.registry.get(printedCardName(object)).chapters ?? [];
+      const chapters = this.registry.get(rulesTextName(object)).chapters ?? [];
       const last = Math.max(0, ...chapters.flatMap((chapter) => chapter.at));
       const final = chapters[object.abilityIndex ?? 0]?.at.includes(last) === true;
       this.emit({ type: "chapter-resolved", saga: source, final });
@@ -14137,11 +14179,13 @@ export class Game {
     if (object.kind !== "ability" || object.abilityKind !== "triggered") return null;
     if (object.delayedTrigger !== undefined || object.reflexiveTrigger !== undefined) return null;
     const granted = object.grantedAbility;
-    if (granted !== undefined && granted.kind !== "static") return null;
+    if (granted !== undefined && granted.kind !== "static" && granted.kind !== "card-triggered") return null;
     const which =
       granted === undefined
         ? `${printedCardName(object)}:${object.abilityIndex ?? 0}`
-        : `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`;
+        : granted.kind === "card-triggered"
+          ? `${granted.cardName}:${granted.index}`
+          : `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`;
     return `${object.controller}|${which}`;
   }
 
@@ -14595,6 +14639,9 @@ export class Game {
                     })),
                   }
                 : atTrigger;
+          // A printed ability its text box came with (rule 612.5) is that
+          // card's, which it stays however this permanent changes.
+          const textName = lastSeen !== undefined ? lastSeen.textName : object.textFrom;
           const base = {
             sourceObjectId: id,
             cardName: lastSeen !== undefined ? lastSeen.name : printedCardName(object),
@@ -14614,7 +14661,11 @@ export class Game {
                 }
               : {}),
             ...(castX !== undefined ? { x: castX } : {}),
-            ...(ref !== undefined ? { grantedAbility: ref } : {}),
+            ...(ref !== undefined
+              ? { grantedAbility: ref }
+              : textName !== undefined
+                ? { grantedAbility: { kind: "card-triggered" as const, cardName: textName, index } }
+                : {}),
             ...(lastKnownRefs !== undefined ? { lastKnownRefs } : {}),
             ...(ability.stackFirst === true ? { stackFirst: true } : {}),
           };
@@ -14925,7 +14976,7 @@ export class Game {
    */
   private departedTriggeredEntries(departed: LastKnownInfo): readonly TriggeredEntry[] {
     const printed: readonly TriggeredEntry[] = this.registry
-      .get(departed.name)
+      .get(departed.textName ?? departed.name)
       .triggered.map((ability) => (departed.lostAbilities ? { ability, lost: true } : { ability }));
     const refs = departed.grantedTriggers ?? [];
     if (refs.length === 0) return printed;
@@ -15944,7 +15995,7 @@ export class Game {
    * — a `castModal` card, on the face that was cast). */
   private isModalSpell(id: ObjectId): boolean {
     const object = this.state.objects[id];
-    return object !== undefined && this.registry.get(printedCardName(object)).castModal !== null;
+    return object !== undefined && this.registry.get(rulesTextName(object)).castModal !== null;
   }
 
   /** Whether the spell `id` shares a creature type with a creature `player`
@@ -19372,7 +19423,7 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || hasLostAbilities(object)) return [];
     const out: NonNullable<StaticAbility["castFromGraveyard"]>[] = [];
-    for (const ability of this.registry.get(printedCardName(object)).static) {
+    for (const ability of this.registry.get(rulesTextName(object)).static) {
       if (ability.castFromGraveyard !== undefined) out.push(ability.castFromGraveyard);
     }
     return out;
@@ -19410,7 +19461,7 @@ export class Game {
     const own = object.graveyardCastPermission;
     // The card's own "you may cast this card from your graveyard as long as
     // …" (Gravecrawler — rule 113.6f), asked of its owner as it's cast.
-    const ownIf = this.registry.get(printedCardName(object)).castFromGraveyardIf;
+    const ownIf = this.registry.get(rulesTextName(object)).castFromGraveyardIf;
     if (
       !isLand &&
       ((own !== undefined && own.player === player && own.turn === this.state.turn.number) ||
@@ -19832,7 +19883,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         if (ability.spellsHaveDelve === true && this.staticActive(source, ability)) return true;
       }
     }
@@ -21113,7 +21164,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const prohibits = ability.prohibits;
         if (prohibits === undefined) continue;
         const binds =
@@ -21195,7 +21246,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const flash = ability.castAsThoughFlash;
         if (flash === undefined) continue;
         if (ability.condition !== undefined && !this.staticActive(source, ability)) continue;
@@ -21975,6 +22026,16 @@ export class Game {
     }
     if (awaiting.casualty !== undefined) {
       this.applyCasualty(player, chosen, awaiting.casualty);
+      return;
+    }
+    // An entering Deadpool's exchange: asked before it moved
+    // (`askEnterChoice`), so the answer waits on it, its entry carries on once
+    // priority is next looked at, and `moveObject` exchanges as it enters.
+    if (awaiting.exchangeText === true) {
+      const entering = this.state.objects[awaiting.source];
+      entering.enterChoice = { ...entering.enterChoice, exchangeText: chosen[0] ?? null };
+      this.state.awaiting = null;
+      this.prepareForPriority(this.activePlayer);
       return;
     }
     // Slaughter the Strong's choice: what's kept is collected for the
@@ -23523,7 +23584,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source === undefined || source.controller !== controller || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         if (pick(ability) && this.staticActive(source, ability)) out.push({ source, ability });
       }
     }
@@ -23689,7 +23750,7 @@ export class Game {
       return (
         o.controller !== o.owner ||
         o.controlEffects !== undefined ||
-        this.registry.get(printedCardName(o)).controlEnchanted
+        this.registry.get(rulesTextName(o)).controlEnchanted
       );
     });
     if (!anyControlEffect) return false;
@@ -23720,7 +23781,7 @@ export class Game {
         const aura = this.state.objects[auraId];
         if (
           aura.attachedTo === id &&
-          this.registry.get(printedCardName(aura)).controlEnchanted &&
+          this.registry.get(rulesTextName(aura)).controlEnchanted &&
           !left(aura.controller) &&
           aura.timestamp >= bestTimestamp
         ) {
@@ -24588,7 +24649,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object === undefined || hasLostAbilities(object)) continue;
-      for (const ability of this.registry.get(printedCardName(object)).static) {
+      for (const ability of this.registry.get(rulesTextName(object)).static) {
         const r = ability.replacement;
         if (r === undefined || r.event !== "would-deal-damage") continue;
         if (!this.staticActive(object, ability)) continue;
@@ -25583,7 +25644,7 @@ export class Game {
         const aura = this.state.objects[auraId];
         if (
           aura?.attachedTo !== id ||
-          !this.registry.get(printedCardName(aura)).controlEnchanted ||
+          !this.registry.get(rulesTextName(aura)).controlEnchanted ||
           aura.controller === player ||
           aura.owner === player ||
           gone(aura.controller)
@@ -25829,7 +25890,7 @@ export class Game {
     // stack or waiting to be placed, is sacrificed.
     for (const id of battlefield) {
       const object = this.state.objects[id];
-      const chapters = this.registry.get(printedCardName(object)).chapters;
+      const chapters = this.registry.get(rulesTextName(object)).chapters;
       if (chapters === null) continue;
       const finalChapter = Math.max(...chapters.flatMap((c) => c.at));
       if ((object.counters.lore ?? 0) < finalChapter) continue;
@@ -25994,7 +26055,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (hasLostAbilities(source) || source.controller !== player) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const r = ability.replacement;
         if (r?.event !== "would-draw" || r.who !== "you" || typeof r.instead !== "object") continue;
         if (!this.staticActive(source, ability)) continue;
@@ -26013,7 +26074,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const r = ability.replacement;
         if (r === undefined || (r.event !== "would-mill" && r.event !== "would-gain-life")) continue;
         const reaches =
@@ -26034,7 +26095,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source === undefined || source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const r = ability.replacement;
         if (r?.event !== "would-draw" || r.instead !== "win-game" || r.who !== "you") continue;
         if (r.whileLibraryEmpty === true && this.staticActive(source, ability)) return source;
@@ -26084,7 +26145,7 @@ export class Game {
       const source = this.state.objects[id];
       if (hasLostAbilities(source) || source.controller === player) continue;
       if ((applied.get(id) ?? 0) >= (source.stackCount ?? 1)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const r = ability.replacement;
         if (r?.event !== "would-draw" || r.who !== "opponent" || r.instead !== "you-draw") continue;
         if (r.exceptFirstInDrawStep === true && firstInDrawStep) continue;
@@ -26252,7 +26313,7 @@ export class Game {
       // An eliminated player's permanents stop affecting the game (see
       // `matchesFilter`).
       if (this.state.players[source.controller]?.hasLost === true) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      for (const ability of this.registry.get(rulesTextName(source)).static) {
         const r = ability.replacement;
         if (r?.event !== "others-enter-battlefield") continue;
         if (!this.staticActive(source, ability)) continue;
@@ -26336,7 +26397,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== player || hasLostAbilities(object)) continue;
-      for (const ability of this.registry.get(printedCardName(object)).static) {
+      for (const ability of this.registry.get(rulesTextName(object)).static) {
         const r = ability.replacement;
         if (r?.event === "tap-for-mana" && this.staticActive(object, ability)) mult *= r.multiplier;
       }
@@ -26352,7 +26413,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== controller || hasLostAbilities(object)) continue;
-      for (const ability of this.registry.get(printedCardName(object)).static) {
+      for (const ability of this.registry.get(rulesTextName(object)).static) {
         const r = ability.replacement;
         if (r?.event === "would-create-token" && r.multiplier !== undefined && this.staticActive(object, ability)) {
           mult *= r.multiplier;
@@ -26374,7 +26435,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== controller || hasLostAbilities(object)) continue;
-      for (const ability of this.registry.get(printedCardName(object)).static) {
+      for (const ability of this.registry.get(rulesTextName(object)).static) {
         const r = ability.replacement;
         if (
           r?.event === "would-create-token" &&
@@ -26402,7 +26463,7 @@ export class Game {
       if (object.controller !== targetObject.controller || hasLostAbilities(object)) {
         continue;
       }
-      for (const ability of this.registry.get(printedCardName(object)).static) {
+      for (const ability of this.registry.get(rulesTextName(object)).static) {
         const r = ability.replacement;
         if (
           r?.event === "would-add-counter" &&
@@ -26440,7 +26501,7 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (hasLostAbilities(object)) continue;
-      for (const ability of this.registry.get(printedCardName(object)).static) {
+      for (const ability of this.registry.get(rulesTextName(object)).static) {
         const r = ability.replacement;
         if (
           r?.event !== "would-be-put-into-graveyard" ||
@@ -26473,7 +26534,7 @@ export class Game {
         const was = this.state.objects[id];
         const last = was?.lastKnown;
         if (was === undefined || was.zone === "battlefield" || last === undefined || last.lostAbilities) continue;
-        for (const ability of this.registry.get(last.name).static) {
+        for (const ability of this.registry.get(last.textName ?? last.name).static) {
           const r = ability.replacement;
           if (r?.event !== "would-be-put-into-graveyard" || r.instead !== "exile") continue;
           if (ability.condition !== undefined) continue;
@@ -26589,6 +26650,7 @@ export class Game {
       ...(object.suspectedAt !== undefined ? { suspected: true } : {}),
       lostAbilities,
       ...(renamed !== name ? { renamed } : {}),
+      ...(object.textFrom !== undefined ? { textName: object.textFrom } : {}),
       ...(object.modifiers.some((m) => m.copiable === true)
         ? { copiable: object.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m })) }
         : {}),
@@ -27002,7 +27064,7 @@ export class Game {
     const keepCounters =
       to !== "hand" &&
       to !== "library" &&
-      this.registry.get(printedCardName(object)).countersPersistAcrossZones &&
+      this.registry.get(rulesTextName(object)).countersPersistAcrossZones &&
       !(object.zone === "battlefield" && hasLostAbilities(object));
     // A card leaving a graveyard, as it was there — what a "whenever one or
     // more artifact cards leave your graveyard" trigger asks about, since
@@ -27110,6 +27172,9 @@ export class Game {
     object.copyOf = null;
     delete object.copyEndsAtCleanup;
     delete object.copyRestore;
+    // So does an exchange of text boxes (rule 612.5): a new object has its
+    // own text again (400.7).
+    delete object.textFrom;
     // An ETB "choose a creature type" choice ends when the object changes
     // zones — a fresh entry chooses again (Urza's Incubator — P14). So does
     // any other "as this enters" choice (a Heraldic Banner that comes back
@@ -27138,6 +27203,24 @@ export class Game {
       if (enterChoice.chosen !== undefined) {
         object.chosenCreatureType = enterChoice.chosen;
         object.chosenOnEnter = enterChoice.chosen;
+      }
+      // Deadpool's exchange (rule 612.5): it enters with the other's rules
+      // text as that then is, and the other has its own — the copy's, for a
+      // Clone that entered as Deadpool. An exchange that can't be completed
+      // doesn't happen at all (701.12a): the other has to still be there.
+      const partner = enterChoice.exchangeText ?? null;
+      if (partner !== null && partner !== id && this.state.objects[partner]?.zone === "battlefield") {
+        const other = this.state.objects[this.splitOneFromStack(partner)];
+        const mine = rulesTextName(object);
+        const theirs = rulesTextName(other);
+        const setText = (o: GameObject, name: string): void => {
+          if (name === printedCardName(o)) delete o.textFrom;
+          else o.textFrom = name;
+        };
+        setText(object, theirs);
+        setText(other, mine);
+        invalidateComputedCache();
+        this.emit({ type: "text-boxes-exchanged", object: id, withObject: other.id });
       }
       // An Aura enters attached to what it enchants (rule 303.4) — if that is
       // still on the battlefield; if not, it's attached to nothing, and the
@@ -27316,7 +27399,7 @@ export class Game {
       }
       // A Saga enters with a lore counter (rule 714.3a), firing its chapter I
       // ability — two under Doubling Season, firing chapter II as well.
-      if (this.registry.get(printedCardName(object)).chapters !== null) {
+      if (this.registry.get(rulesTextName(object)).chapters !== null) {
         this.addLoreCounter(id, this.counterMultiplier(id, "lore"));
       }
       // Counters it entered with were *put* on it (rule 122.6), so a

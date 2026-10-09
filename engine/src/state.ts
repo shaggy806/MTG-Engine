@@ -448,6 +448,13 @@ export interface GameObject {
    * `printedCardName`, which returns this when set. Cleared on any zone change
    * (a Clone that dies and returns is a Clone again). */
   copyOf: string | null;
+  /** The card whose rules text this permanent has (layer 3, rule 612.5): an
+   * exchange of text boxes (Deadpool, Trading Card) gave it another
+   * permanent's text as it then was — every ability, keyword and static —
+   * while its name, mana cost, colors, types and P/T stay its own. Its
+   * abilities are read through {@link rulesTextName}. Cleared on any zone
+   * change, with `copyOf`. */
+  textFrom?: string;
   /** Its copy effect lasts until end of turn (Cursed Mirror — rule 514.2):
    * the cleanup step clears `copyOf` along with the copy's exceptions, which
    * were made until-end-of-turn modifiers. Cleared on any zone change. */
@@ -510,6 +517,10 @@ export interface GameObject {
     readonly reveal?: ObjectId | null;
     /** Riot's choice (rule 702.136a): an additional +1/+1 counter, or haste. */
     readonly riot?: "counter" | "haste";
+    /** The permanent it exchanges text boxes with as it enters
+     * (`CardDefinition.exchangeTextOnEnter` — Deadpool), or `null` when its
+     * controller declined or there was none. */
+    readonly exchangeText?: ObjectId | null;
   };
   /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
    * front first — copied from `CardDefinition.faces` when the object is
@@ -1072,7 +1083,11 @@ export type GrantedAbilityRef =
   /** Another card's own printed activated ability, at `index` — granted by
    * a `grantsActivatedOfLinkedExile` static (Steward of the Harvest gives a
    * creature an exiled land card's abilities). */
-  | { readonly kind: "card-activated"; readonly cardName: string; readonly index: number };
+  | { readonly kind: "card-activated"; readonly cardName: string; readonly index: number }
+  /** Another card's own printed triggered ability, at `index`: a permanent
+   * whose text box came from that card (`GameObject.textFrom`, rule 612.5),
+   * so the trigger resolves as that text however its source changes. */
+  | { readonly kind: "card-triggered"; readonly cardName: string; readonly index: number };
 
 /**
  * A permanent as it last existed on the battlefield (rules 603.10a, 608.2h):
@@ -1095,8 +1110,13 @@ export interface LastKnownInfo {
    * snapshot. */
   readonly zoneChangeCount: number;
   /** The name its characteristics came from (`printedCardName`): the card it
-   * was a copy of, or the face that was up. Its abilities are read off this. */
+   * was a copy of, or the face that was up. Its abilities are read off this,
+   * unless `textName` says otherwise. */
   readonly name: string;
+  /** The card whose rules text it had (`GameObject.textFrom`, rule 612.5),
+   * when an exchange of text boxes gave it another's: its abilities are read
+   * off this. Absent when they're `name`'s. */
+  readonly textName?: string;
   readonly owner: PlayerId;
   readonly controller: PlayerId;
   readonly power: number;
@@ -2133,6 +2153,12 @@ export type AwaitingDecision =
        * (the ruling) — may be at most this. `then` is unused; the picks are
        * collected in `GameState.keptByChoice`. */
       readonly maxTotalPower?: number;
+      /** Set when the choice is an entering permanent's "you may exchange its
+       * text box and another creature's" (`CardDefinition
+       * .exchangeTextOnEnter`): `source` is the permanent about to enter,
+       * and what's picked (or nothing) is what it exchanges with as it
+       * enters. `then` is unused. */
+      readonly exchangeText?: true;
     }
   | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"
@@ -3484,10 +3510,20 @@ export const faceName = (object: GameObject): string => {
 
 /** The card name whose printed characteristics this object currently has — the
  * one it's a copy of (rule 707 / layer 1), else its up face (rule 712), else
- * its own. Every `registry.get` for an object's characteristics/abilities
- * should go through this. */
+ * its own. Every `registry.get` for an object's name, cost, colors, types or
+ * P/T goes through this; one for its abilities goes through
+ * {@link rulesTextName}. */
 export const printedCardName = (object: GameObject): string =>
   object.copyOf ?? faceName(object);
+
+/** The card whose rules text this object has (layer 3): another's, once an
+ * exchange of text boxes gave it that (`GameObject.textFrom`, rule 612.5),
+ * else its {@link printedCardName}. Every read of an object's *abilities* —
+ * keywords, statics, triggered and activated abilities, anything else its
+ * text says — goes through this; its name, mana cost, colors, types and P/T
+ * still come from `printedCardName`. */
+export const rulesTextName = (object: GameObject): string =>
+  object.textFrom ?? printedCardName(object);
 
 /** The name `object` has (rule 201.2): one a copy exception gave it
  * ("except its name is Mishra's Warform" — a copiable `setName`, the latest

@@ -3860,11 +3860,15 @@ Delete an entry in the same commit as the feature that retires it.
   "perhaps because the delayed triggered ability is countered" can't happen)
   or copy it (Strionic Resonator). `exileAtEndOfCombat` is a real delayed
   trigger already.
-- **Text-change** (rule 612): no word replacement (612.2 — "change the text of
-  target permanent by replacing all instances of one creature type with
-  another": Artificial Evolution, Mind Bend, Magical Hack, New Blood). The
-  partial `change-text` effect, which only ever changed the type line from a
-  fixed menu, was removed on 2026-10-09.
+- **Text-change** (rule 612): exchanging text boxes is built (612.5 —
+  `exchangeTextOnEnter`, Deadpool, Trading Card; `GameObject.textFrom`, and
+  every ability read goes through `rulesTextName`). Word replacement isn't
+  (612.2 — "change the text of target permanent by replacing all instances of
+  one creature type with another": Artificial Evolution, Mind Bend, Magical
+  Hack, New Blood); the partial `change-text` effect, which only ever changed
+  the type line from a fixed menu, was removed on 2026-10-09. Exchange of
+  Words (its "for as long as this enchantment remains on the battlefield"
+  duration) isn't built.
 - **Protection** is `{ colors, types }` only — not "protection from
   [full filter]" (e.g. "from Dragons", "from everything").
 - **Conditional statics / intervening-ifs** are limited to the

@@ -1714,6 +1714,7 @@ import _poolDeadlyRecluse from "./pool/deadly-recluse.js";
 import _poolDeadlyRollick from "./pool/deadly-rollick.js";
 import _poolDeadlyTempest from "./pool/deadly-tempest.js";
 import _poolDeadlyVisit from "./pool/deadly-visit.js";
+import _poolDeadpoolTradingCard from "./pool/deadpool-trading-card.js";
 import _poolDeafeningClarion from "./pool/deafening-clarion.js";
 import _poolDealGoneBad from "./pool/deal-gone-bad.js";
 import _poolDeathBaron from "./pool/death-baron.js";
@@ -10455,6 +10456,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDeadlyRollick,
   _poolDeadlyTempest,
   _poolDeadlyVisit,
+  _poolDeadpoolTradingCard,
   _poolDeafeningClarion,
   _poolDealGoneBad,
   _poolDeathBaron,

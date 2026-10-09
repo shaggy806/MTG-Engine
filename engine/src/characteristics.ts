@@ -4,8 +4,9 @@
  *
  * Implemented: **layer 1** (copy — every read resolves through
  * `printedCardName`, so a Clone has the copied card's P/T / types / abilities),
- * **layer 3** (text-change — a `PtModifier.textSubstitution` rewrites a
- * creature-type word in a permanent's subtypes and its lord clause), **layer
+ * **layer 3** (text-change — an exchange of text boxes, rule 612.5: its
+ * abilities, keywords, statics and CDAs are read off `rulesTextName`, another
+ * card's once `GameObject.textFrom` is set), **layer
  * 4** (type-change — `PtModifier.addTypes`/`setSubtypes`/`addSubtypes` from a
  * man-land or Turn to Frog, and statics' `addTypes`/`addSubtypes` granted to
  * other permanents; see `layerFour`), **layer 5** (colour-change —
@@ -48,7 +49,7 @@ import type { CardFilter } from "./filter.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { activePlayerOf, attackedYouDuringTheirLastTurn, permanentCount, printedCardName } from "./state.js";
+import { activePlayerOf, attackedYouDuringTheirLastTurn, permanentCount, printedCardName, rulesTextName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
 import {
   BASIC_LAND_TYPE_COLORS,
@@ -1057,11 +1058,11 @@ export function spellGrantReaches(
  * given by a `grantsToSpells` static on the battlefield. */
 export function spellHasSplitSecond(state: GameState, registry: CardRegistry, spell: GameObject): boolean {
   if (spell.kind !== "card") return false;
-  if (registry.get(printedCardName(spell)).splitSecond) return true;
+  if (registry.get(rulesTextName(spell)).splitSecond) return true;
   for (const id of state.zones.shared.battlefield) {
     const source = state.objects[id];
     if (source === undefined) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       if (ability.grantsToSpells?.splitSecond === true && spellGrantReaches(state, registry, source, ability, spell)) {
         return true;
       }
@@ -1077,11 +1078,11 @@ export function spellHasSplitSecond(state: GameState, registry: CardRegistry, sp
  * alongside this. */
 export function spellCantBeCountered(state: GameState, registry: CardRegistry, spell: GameObject): boolean {
   if (spell.kind !== "card") return false;
-  if (registry.get(printedCardName(spell)).cantBeCountered) return true;
+  if (registry.get(rulesTextName(spell)).cantBeCountered) return true;
   for (const id of state.zones.shared.battlefield) {
     const source = state.objects[id];
     if (source === undefined) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       if (ability.grantsToSpells?.cantBeCountered === true && spellGrantReaches(state, registry, source, ability, spell)) {
         return true;
       }
@@ -1099,7 +1100,7 @@ export function playerHasHexproof(state: GameState, registry: CardRegistry, play
   for (const id of state.zones.shared.battlefield) {
     const source = state.objects[id];
     if (source === undefined || source.controller !== player || hasLostAbilities(source)) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       if (
         ability.playerHexproof === true &&
         (ability.condition === undefined || staticConditionMet(state, registry, source, ability.condition))
@@ -1123,7 +1124,7 @@ function playerStaticHolds(
     const source = state.objects[id];
     if (source === undefined || hasLostAbilities(source)) continue;
     if (state.players[source.controller]?.hasLost !== false) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       if (
         test(ability, source.controller) &&
         (ability.condition === undefined || staticConditionMet(state, registry, source, ability.condition))
@@ -1169,7 +1170,7 @@ function spellGrantedKeywords(state: GameState, registry: CardRegistry, spell: G
   for (const id of state.zones.shared.battlefield) {
     const source = state.objects[id];
     if (source === undefined) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       const keywords = ability.grantsToSpells?.keywords;
       if (keywords !== undefined && spellGrantReaches(state, registry, source, ability, spell)) {
         out.push(...keywords);
@@ -1242,7 +1243,7 @@ export function suspectedGrantsApply(object: GameObject): boolean {
  * subtypes layer 4 starts from. */
 function printedSubtypes(registry: CardRegistry, object: GameObject): readonly string[] {
   const def = registry.get(printedCardName(object));
-  return withChangeling(def, def.subtypes);
+  return withChangeling(def, def.subtypes, registry.get(rulesTextName(object)));
 }
 
 /**
@@ -1254,8 +1255,14 @@ function printedSubtypes(registry: CardRegistry, object: GameObject): readonly s
  * changeling rulings). Only a creature takes it: a noncreature object can't
  * have creature types (rule 205.3d; the engine has no kindred type).
  */
-export function withChangeling(def: CardDefinition, subtypes: readonly string[]): readonly string[] {
-  return def.keywords.includes("changeling") && def.types.includes("creature")
+export function withChangeling(
+  def: CardDefinition,
+  subtypes: readonly string[],
+  /** Where its changeling would be printed: another card, when an exchange
+   * of text boxes gave it that card's text (rule 612.5). */
+  text: CardDefinition = def,
+): readonly string[] {
+  return text.keywords.includes("changeling") && def.types.includes("creature")
     ? union(subtypes, [EVERY_CREATURE_TYPE])
     : subtypes;
 }
@@ -1503,7 +1510,7 @@ function typeGrantSources(
   let out: ContributingStatic[] | null = null;
   for (const sourceId of state.zones.shared.battlefield) {
     const source = state.objects[sourceId];
-    const statics = registry.get(printedCardName(source)).static;
+    const statics = registry.get(rulesTextName(source)).static;
     if (statics.length === 0) continue;
     for (const ability of statics) {
       if (!hasLayerFourPart(ability)) continue;
@@ -1766,7 +1773,7 @@ export function staticAffects(
     targetKeywords !== undefined
       ? targetKeywords().has(keyword)
       : !(target.zone === "battlefield" && hasLostAbilities(target)) &&
-        registry.get(printedCardName(target)).keywords.includes(keyword);
+        registry.get(rulesTextName(target)).keywords.includes(keyword);
   // Current types, not printed (rule 613.1d puts type changes before every
   // layer a static works in): an animated land or an artifact that became a
   // creature is reached like a printed creature, and a creature that stopped
@@ -1885,7 +1892,7 @@ function abilityGrantSources(
     // (rule 613.6 — see `typeGrantSources`); its grants then go against that
     // loss in timestamp order, like any (`grantOutlastsLoss`).
     const lost = hasLostAbilities(source);
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       if (ability.grantsActivated === undefined && ability.grantsTriggered === undefined) continue;
       if (lost && !hasLayerFourPart(ability)) continue;
       (out ??= []).push({ source, ability });
@@ -2006,6 +2013,7 @@ export function intrinsicStandIns(def: CardDefinition): readonly (readonly Color
  * holds every typed land to that) — the case nearly every land is in, and
  * the one `Game.effectiveActivated` asks about for every permanent. */
 function printedLandTypesHold(state: GameState, registry: CardRegistry, object: GameObject): boolean {
+  if (object.textFrom !== undefined) return false;
   if (object.zone === "battlefield" && typeGrantSources(state, registry).length > 0) return false;
   return !object.modifiers.some(
     (m) =>
@@ -2020,15 +2028,19 @@ function printedLandTypesHold(state: GameState, registry: CardRegistry, object: 
 
 /** Whether `object`'s printed activated ability at `index` stands in for an
  * intrinsic mana ability of a basic land type it no longer has (rule 305.7 —
- * a Tropical Island that's a Mountain has lost "{T}: Add {G} or {U}"). */
+ * a Tropical Island that's a Mountain has lost "{T}: Add {G} or {U}"). One
+ * that came with another permanent's text box (rule 612.5) is that land's
+ * reminder text, never an ability: the intrinsic one belongs to a type
+ * (305.6), and stays with whatever has the type. */
 export function inactiveStandIn(
   state: GameState,
   registry: CardRegistry,
   object: GameObject,
   index: number,
 ): boolean {
-  const colors = intrinsicStandIns(registry.get(printedCardName(object)))[index];
+  const colors = intrinsicStandIns(registry.get(rulesTextName(object)))[index];
   if (colors === null || colors === undefined) return false;
+  if (object.textFrom !== undefined) return true;
   if (printedLandTypesHold(state, registry, object)) return false;
   const has = intrinsicManaColors(state, registry, object);
   return colors.some((c) => !has.includes(c));
@@ -2045,6 +2057,9 @@ export function extraIntrinsicManaColors(
   if (printedLandTypesHold(state, registry, object)) return [];
   const has = intrinsicManaColors(state, registry, object);
   if (has.length === 0) return has;
+  // Its own stand-ins went with its text box (rule 612.5): every type's
+  // intrinsic ability is an extra.
+  if (object.textFrom !== undefined) return has;
   const covered = new Set<Color>();
   for (const colors of intrinsicStandIns(registry.get(printedCardName(object)))) {
     if (colors !== null && colors.every((c) => has.includes(c))) for (const c of colors) covered.add(c);
@@ -2085,7 +2100,7 @@ export function hasManaAbility(
 ): boolean {
   const onBattlefield = object.zone === "battlefield";
   const lostAt = onBattlefield ? abilitiesLostAt(object) : null;
-  const def = registry.get(printedCardName(object));
+  const def = registry.get(rulesTextName(object));
   if (
     lostAt === null &&
     (def.activated.some((a, i) => isManaAbilityByRule(a) && !inactiveStandIn(state, registry, object, i)) ||
@@ -2147,7 +2162,7 @@ export function hasAnyAbility(
 ): boolean {
   const onBattlefield = object.zone === "battlefield";
   const lostAt = onBattlefield ? abilitiesLostAt(object) : null;
-  const def = registry.get(printedCardName(object));
+  const def = registry.get(rulesTextName(object));
   if (lostAt === null && printedHasAbility(def)) return true;
   if (intrinsicManaColors(state, registry, object).length > 0) return true;
   if (object.hastyUntilItLeaves === true) return true;
@@ -2180,7 +2195,7 @@ export function hasAnyAbility(
     for (const id of state.zones.shared.battlefield) {
       const source = state.objects[id];
       if (source === undefined) continue;
-      for (const ability of registry.get(printedCardName(source)).static) {
+      for (const ability of registry.get(rulesTextName(source)).static) {
         const grant = ability.grantsToSpells;
         if (grant === undefined) continue;
         if ((grant.triggered?.length ?? 0) === 0 && grant.splitSecond !== true) continue;
@@ -2211,7 +2226,7 @@ function graveyardGrantReaches(
   for (const id of state.zones.shared.battlefield) {
     const source = state.objects[id];
     if (source === undefined || source.controller !== owner || hasLostAbilities(source)) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       const grant = ability.grantsToGraveyard;
       if (grant === undefined) continue;
       const costs = [grant.flashback?.cost, grant.escape?.cost].filter((c) => c !== undefined);
@@ -2303,7 +2318,7 @@ function contributingStaticSources(
     // See the note in `matchesFilter`: they leave play, not view — rule
     // 800.4a would have removed them from the game entirely.
     if (state.players[source.controller]?.hasLost === true) continue;
-    for (const ability of registry.get(printedCardName(source)).static) {
+    for (const ability of registry.get(rulesTextName(source)).static) {
       if (lost && !hasLayerFourPart(ability)) continue;
       // "As long as this card is in your graveyard": not from here.
       if (ability.fromGraveyard === true) continue;
@@ -2324,7 +2339,7 @@ function contributingStaticSources(
     for (const sourceId of state.zones.perPlayer[player]?.graveyard ?? []) {
       const source = state.objects[sourceId];
       if (source === undefined || !registry.has(printedCardName(source))) continue;
-      for (const ability of registry.get(printedCardName(source)).static) {
+      for (const ability of registry.get(rulesTextName(source)).static) {
         if (ability.fromGraveyard !== true || !contributesToCharacteristics(ability)) continue;
         out.push({ source, ability });
       }
@@ -2512,7 +2527,7 @@ function collectStaticEffects(
     const targetKeywords = (): ReadonlySet<Keyword> => {
       if (keywords === null) {
         keywords = new Set(
-          hasLostAbilities(target) ? [] : registry.get(printedCardName(target)).keywords,
+          hasLostAbilities(target) ? [] : registry.get(rulesTextName(target)).keywords,
         );
         const lostAt = target.zone === "battlefield" ? abilitiesLostAt(target) : null;
         for (const effect of out) {
@@ -2615,6 +2630,9 @@ function computeCharacteristicsUncached(
 ): Characteristics {
   const object = state.objects[id];
   const def = registry.get(printedCardName(object));
+  // Its abilities are its text's: another card's, after an exchange of text
+  // boxes (layer 3, rule 612.5).
+  const text = registry.get(rulesTextName(object));
 
   const onBattlefield = object.zone === "battlefield";
   const lostAbilities = onBattlefield && hasLostAbilities(object);
@@ -2628,8 +2646,8 @@ function computeCharacteristicsUncached(
   let toughness = printedPt ? (def.toughness ?? 0) : 0;
   // Layer 6 — a permanent that lost its abilities keeps no printed keywords,
   // nor its printed toxic.
-  const keywords = new Set<Keyword>(lostAbilities ? [] : def.keywords);
-  let toxic = lostAbilities ? 0 : def.toxic;
+  const keywords = new Set<Keyword>(lostAbilities ? [] : text.keywords);
+  let toxic = lostAbilities ? 0 : text.toxic;
   // Layers 3 + 4 — text substitution, then every type-changing effect in
   // timestamp order: the object's own modifiers (a man-land's animation adds
   // `creature`) and type-granting statics.
@@ -2637,7 +2655,7 @@ function computeCharacteristicsUncached(
   const types: readonly CardType[] = layer4?.types ?? def.types;
   // Off the battlefield, changeling still applies (rule 604.3): a changeling
   // card in a library is a Goblin card to a tutor.
-  const subtypes: readonly string[] = layer4?.subtypes ?? withChangeling(def, def.subtypes);
+  const subtypes: readonly string[] = layer4?.subtypes ?? withChangeling(def, def.subtypes, text);
   // Layer 5 — colour-changing effects.
   // Off the battlefield only copiable values change them: a prototyped
   // spell's colors on the stack (rule 718.3b).
@@ -2720,7 +2738,7 @@ function computeCharacteristicsUncached(
   // its owner's hand, which a "creature card with power 2 or less" search
   // has to see.
   if (!lostAbilities) {
-    for (const ability of def.static) {
+    for (const ability of text.static) {
       if (ability.setBasePtFromCount === undefined) continue;
       if (cdaInProgress.has(object.id)) continue;
       if (
@@ -2866,7 +2884,7 @@ export function exemptFromLegendRule(state: GameState, registry: CardRegistry, i
     if (source === undefined || state.players[source.controller]?.hasLost === true) continue;
     const lostAt = abilitiesLostAt(source);
     if (lostAt === null) {
-      for (const ability of registry.get(printedCardName(source)).static) {
+      for (const ability of registry.get(rulesTextName(source)).static) {
         if (ability.legendRuleOff !== true) continue;
         if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) {
           continue;

@@ -224,6 +224,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
       return `${who(event.controller)} gains control of ${name(event.object)}${
         event.untilEndOfTurn ? ' until EOT' : ''
       }`
+    case 'text-boxes-exchanged':
+      return `${name(event.object)} and ${name(event.withObject)} exchange text boxes`
     case 'permanent-copied':
       return event.copyOf
         ? `${name(event.object)} enters as a copy of ${event.copyOf}`

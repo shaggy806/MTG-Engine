@@ -31,7 +31,7 @@ import { COLORS, manaValue, parseManaCost } from "./mana.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameState } from "./state.js";
-import { printedCardName } from "./state.js";
+import { rulesTextName } from "./state.js";
 import { isManaAbility } from "./abilities.js";
 
 /** Lands a Commander deck wants before more of them are flood. */
@@ -94,7 +94,7 @@ export function scryAway(
       lands += state.objects[id].stackCount ?? 1;
       continue;
     }
-    const name = printedCardName(state.objects[id]);
+    const name = rulesTextName(state.objects[id]);
     if (registry.has(name) && (registry.get(name).activated ?? []).some(isManaAbility)) manaRocks += 1;
   }
   // Lands in hand count as made: toward the lands wanted, and for the

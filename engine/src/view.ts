@@ -41,7 +41,7 @@ import type {
 } from "./state.js";
 import { decisionHasSource } from "./decisions/registry.js";
 import { goadersOf } from "./goad.js";
-import { activePlayerOf, faceName, manaCostOverride, nameOf, printedCardName } from "./state.js";
+import { activePlayerOf, faceName, manaCostOverride, nameOf, printedCardName, rulesTextName } from "./state.js";
 import { withoutTypeMarkers } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 
@@ -377,7 +377,9 @@ function visible(
   const onBattlefield = object.zone === "battlefield";
   const lostAbilities =
     onBattlefield && object.modifiers.some((m) => m.loseAbilities === true);
-  let text = lostAbilities ? "" : def.text;
+  // Its text box, which an exchange (rule 612.5 — Deadpool) may have made
+  // another card's.
+  let text = lostAbilities ? "" : onBattlefield ? registry.get(rulesTextName(object)).text : def.text;
   // Abilities an effect gave it read with its own: a copy exception's "and
   // it has '…'" (rule 707.9b — Brenard's Food Golems), a one-shot's
   // granted trigger. Only those it still has (rule 613.7).
@@ -668,7 +670,7 @@ function viewForUncached(
 
     const revealsTop = state.zones.shared.battlefield.some((id) => {
       const object = state.objects[id];
-      return object.controller === player && registry.get(printedCardName(object)).revealsOwnLibraryTop;
+      return object.controller === player && registry.get(rulesTextName(object)).revealsOwnLibraryTop;
     });
     // "You may look at the top card of your library any time" (Glarb,
     // Calamity's Augur — rule 401.5): shown in its owner's own view only.
@@ -679,7 +681,7 @@ function viewForUncached(
         return (
           object.controller === player &&
           !hasLostAbilities(object) &&
-          registry.get(printedCardName(object)).looksAtOwnLibraryTop
+          registry.get(rulesTextName(object)).looksAtOwnLibraryTop
         );
       });
     const topCard = revealsTop || looksAtTop ? (zones.library[0] ?? null) : null;

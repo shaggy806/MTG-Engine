@@ -213,6 +213,8 @@ export const makeFormatter = (game) => {
         return `${e.controller} gains control of ${name(e.object)}${
           e.untilEndOfTurn ? " until EOT" : ""
         }`;
+      case "text-boxes-exchanged":
+        return `${name(e.object)} and ${name(e.withObject)} exchange text boxes`;
       case "permanent-copied":
         return e.copyOf
           ? `${name(e.object)} enters as a copy of ${e.copyOf}`

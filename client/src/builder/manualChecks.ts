@@ -2453,4 +2453,11 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
       you: { bf: ['Island*3'], hand: ['Divination'], gy: ['Life from the Loam'] },
     }),
   ),
+  preset(
+    'Deadpool, Trading Card',
+    board({
+      you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },
+      opp: { bf: ['Serra Angel', 'Grizzly Bears', 'Island*3'] },
+    }),
+  ),
 ]

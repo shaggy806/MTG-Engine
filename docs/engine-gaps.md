@@ -87,8 +87,10 @@ per gap under the same bold title; when a gap closes, delete it in both.
 - **Not modeled.** Battles, phasing, dungeons/Initiative/the Ring (Lord of the Nazgûl's
   "protection from Ring-bearers" is authored as inert on the strength of this: revisit it when
   the Ring lands), banding, Companion, snow *sources* (snow mana is generic), face-down
-  permanents (morph, manifest, cloak; face-down exile is built), and full text-change beyond
-  one creature-type word. ROADMAP's Phase 10 deferred these as large or niche. None of them
+  permanents (morph, manifest, cloak; face-down exile is built), and text change that
+  replaces words (612.2: Artificial Evolution, Mind Bend, Magical Hack, New Blood — a rework
+  of the card format the user ruled not worth one cycle of cards, 2026-10-09; exchanging text
+  boxes, 612.5, is built). ROADMAP's Phase 10 deferred these as large or niche. None of them
   blocks ordinary Commander play. The alt-cast long tail left by Phase 6 (retrace, Warp,
   Bestow, Prototype, …) is in AUTHORING §15 and the limitation ledger.
 - **"Whenever you activate an ability" (Rings of Brighthearth).** `activates-ability` offers

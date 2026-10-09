@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-392 already implemented / 108 missing
+393 already implemented / 107 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -115,7 +115,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  109  Kraum, Ludevic's Opus                          17741 decks  {3}{U}{R}        Legendary Creature — Zombie Horror
 [x]  110  Marneus Calgar                                 17703 decks  {2}{W}{U}{B}     Legendary Creature — Astartes Warrior
 [ ]  111  Atraxa, Grand Unifier                          17614 decks  {3}{G}{W}{U}{B}  Legendary Creature — Phyrexian Angel
-[ ]  112  Deadpool, Trading Card                         17208 decks  {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero
+[x]  112  Deadpool, Trading Card                         17208 decks  {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero
 [ ]  113  Aminatou, Veil Piercer                         17186 decks  {1}{W}{U}{B}     Legendary Creature — Human Wizard
 [ ]  114  Etali, Primal Conqueror                        17174 decks  {5}{R}{R}        Legendary Creature — Elder Dinosaur // Legendary Creature — Phyrexian Elder Dinosaur
 [x]  115  Aesi, Tyrant of Gyre Strait                    17143 decks  {4}{G}{U}        Legendary Creature — Serpent

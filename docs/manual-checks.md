@@ -216,6 +216,7 @@ How to use it:
 | [Shadrix Silverquill](#shadrix-silverquill) | new decision | The TDC precons' last cards |
 | [Leyline Tyrant](#leyline-tyrant) | new decision | The TDC precons' last cards |
 | [Life from the Loam](#life-from-the-loam) | new decision | The TDC precons' last cards |
+| [Deadpool, Trading Card](#deadpool-trading-card) | new decision | Exchanging text boxes |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4125,3 +4126,19 @@ stack count once per token)
   Life from the Loam to your hand" — the second question after the first is answered. Dredging
   mills three and puts the Loam in your hand instead of drawing; with fewer than three cards in
   your library it isn't offered. Your turn's draw step asks the same.
+
+## Exchanging text boxes (2026-10-09)
+
+### Deadpool, Trading Card
+
+*New decision* — "you may exchange his text box and another creature's", asked as he enters
+
+- **Setup:** Deadpool, Trading Card in your hand with two Swamps and two Mountains; your Soul
+  Warden, and bob's Serra Angel and Grizzly Bears.
+- **Do:** Cast Deadpool. When asked, pick bob's Serra Angel (then, on a reload, decline).
+- **Check:** The prompt comes before Deadpool is on the battlefield, offers every other creature
+  and lets you choose none. After the exchange Deadpool is still a 5/3 Mutant Mercenary Hero but
+  has flying and vigilance and no text of his own; the Angel is a 4/4 Angel with no keywords whose
+  card reads "As Deadpool enters …", and the log says the two exchanged text boxes. At bob's
+  upkeep *bob* loses 3 life, and he can pay {3} and sacrifice the Angel to make you draw a card.
+  Declined, nothing changes.
