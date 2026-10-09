@@ -15,15 +15,11 @@ export default defineCard({
     {
       // needed-cards P11 — the "attacks" TriggerSpec's new `filter` narrows
       // this to a Dragon; the keyword is granted to the *attacking* creature
-      // (ctx.triggerObject), not necessarily Atarka itself.
+      // (the trigger object), not necessarily Atarka itself.
       trigger: { on: "attacks", who: "you-control", filter: { subtype: "Dragon" } },
       targets: [],
-      effect: null,
-      resolve: (ctx) => {
-        if (ctx.triggerObject !== undefined) {
-          ctx.grantKeyword({ kind: "object", object: ctx.triggerObject }, "double-strike", "end-of-turn");
-        }
-      },
+      effect: { kind: "grant-keyword", target: "trigger-object", keyword: "double-strike", duration: "end-of-turn" },
+      resolve: null,
       text: "Whenever a Dragon you control attacks, it gains double strike until end of turn.",
     },
   ],

@@ -3476,7 +3476,9 @@ the full `EffectApi`.
 
 Prefer `effect` — the declarative form is what the fuzzer, the layer system,
 and future features understand. Reach for `resolve` only for genuine one-offs.
-Grep the pool for `resolve:` — there are very few.
+No pool card uses one: the last four (Atarka, World Render; Gaze of Granite;
+Green Sun's Zenith; Toxic Deluge) went declarative on 2026-10-09. Grow the
+vocabulary before adding one back.
 
 ---
 
