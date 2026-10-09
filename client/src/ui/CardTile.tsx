@@ -7,6 +7,7 @@ import { TargetedMark } from './TargetedMark.tsx'
 import { stripReminders } from './textKeywords.ts'
 import { CardFlags } from './CardFlags.tsx'
 import type { Goader } from './CardFlags.tsx'
+import { faceDownLabel } from './faceDown.ts'
 import {
   isArtBlocked,
   isArtPending,
@@ -163,10 +164,12 @@ export function CardTile({
   // place — see `isArtPending`'s comment in art.ts for why that matters.
   // `queueArtLookup` is idempotent, so a React Strict Mode double-render (or
   // an unrelated re-render) costs nothing extra.
-  if (!obj.art) queueArtLookup(face)
+  // A face-down permanent shows a card back, never art (rule 708.2a).
+  const faceDown = faceDownLabel(obj)
+  if (!obj.art && faceDown === null) queueArtLookup(face)
   // While the batched lookup for this name is still in flight (or retrying
   // a transient failure), hold off on the eager by-name <img> entirely.
-  const pending = !obj.art && isArtPending(face)
+  const pending = faceDown === null && !obj.art && isArtPending(face)
   // `faceIsBack` comes from the engine: a chosen printing is named by
   // card id, which serves the front image unless asked otherwise, and
   // only the registry knows a two-entry `faces` list is a real back face
@@ -249,7 +252,7 @@ export function CardTile({
   }, [artFirst, obj.name, face])
   const nameNode = (
     <span className="ct-name" ref={artFirst ? nameRef : undefined}>
-      {obj.name ?? face}
+      {faceDown ?? obj.name ?? face}
       {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
       {obj.faces && obj.faces.length > 1 ? (
         <span className="ct-copy" title={obj.faces.join(' // ')}> ⇄</span>
@@ -314,8 +317,8 @@ export function CardTile({
         </span>
       )}
 
-      <span className={`ct-art tint-${tint}`}>
-        {!pending && !artFailed ? (
+      <span className={faceDown !== null ? 'ct-art face-down-art' : `ct-art tint-${tint}`}>
+        {faceDown === null && !pending && !artFailed ? (
           <img
             src={artSrc}
             alt=""

@@ -21,6 +21,13 @@ describe('describeEvent', () => {
     expect(describeEvent(event({ type: 'turn-began', turn: 37, round: 10, activePlayer: p1 }), nameOf, seats)).toBe(
       'Round 10, turn 37 — Toby',
     )
+    // A face-down permanent's events never name the card (rule 708.5).
+    expect(describeEvent(event({ type: 'card-manifested', player: p1, object: 'o1', kind: 'manifest' }), nameOf, seats)).toBe(
+      'Toby manifests the top card of their library',
+    )
+    expect(describeEvent(event({ type: 'cards-revealed', player: p1, objects: ['o1'], from: 'battlefield' }), nameOf, seats)).toBe(
+      'Toby reveals face-down card:o1',
+    )
     expect(describeEvent(event({ type: 'life-changed', player: p1, delta: -3, life: 37 }), nameOf, seats)).toBe(
       'Toby -3 life (now 37)',
     )

@@ -1715,6 +1715,13 @@
   max-height: calc(var(--card-w) * 1.4);
 }
 /* face-down library placeholder — CSS-only, no image, so it can never 404 */
+/* A face-down permanent's art box (rule 708): the card back's leather, in a
+   tile otherwise drawn as any creature — its P/T, counters and flags. */
+.face-down-art {
+  background:
+    radial-gradient(circle closest-side at center, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 70%, transparent 73%),
+    var(--card-back-leather);
+}
 .card-back {
   width: var(--card-w);
   min-height: calc(var(--card-w) * 1.4);

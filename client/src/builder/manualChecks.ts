@@ -2454,6 +2454,13 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Reality Shift',
+    board({
+      you: { bf: ['Island*2', 'Forest*2', 'Grizzly Bears'], hand: ['Reality Shift'], lib: ['Serra Angel'] },
+      opp: { human: true, bf: ['Grizzly Bears', 'Forest*2'], lib: ['Elvish Visionary'] },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

@@ -165,7 +165,14 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
     case 'cards-discarded':
       return `${who(event.player)} discards ${event.objects.map(name).join(', ')}`
     case 'cards-revealed':
-      return `${who(event.player)} reveals ${event.objects.map(name).join(', ')} from their ${event.from}`
+      // A face-down permanent shown to everyone (rule 708.9).
+      return event.from === 'battlefield'
+        ? `${who(event.player)} reveals face-down ${event.objects.map(name).join(', ')}`
+        : `${who(event.player)} reveals ${event.objects.map(name).join(', ')} from their ${event.from}`
+    case 'card-manifested':
+      return `${who(event.player)} ${event.kind === 'cloak' ? 'cloaks' : 'manifests'} the top card of their library`
+    case 'permanent-turned-face-up':
+      return `${who(event.player)} turns ${name(event.object)} face up`
     case 'cards-chosen-from-zone':
       return event.objects.length > 0
         ? `${who(event.player)} takes ${event.objects.map(name).join(', ')}`

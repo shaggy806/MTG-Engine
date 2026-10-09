@@ -217,6 +217,7 @@ How to use it:
 | [Leyline Tyrant](#leyline-tyrant) | new decision | The TDC precons' last cards |
 | [Life from the Loam](#life-from-the-loam) | new decision | The TDC precons' last cards |
 | [Deadpool, Trading Card](#deadpool-trading-card) | new decision | Exchanging text boxes |
+| [Reality Shift](#reality-shift) | new decision | Face-down permanents |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4142,3 +4143,21 @@ stack count once per token)
   card reads "As Deadpool enters …", and the log says the two exchanged text boxes. At bob's
   upkeep *bob* loses 3 life, and he can pay {3} and sacrifice the Angel to make you draw a card.
   Declined, nothing changes.
+
+## Face-down permanents (2026-10-09)
+
+### Reality Shift
+
+*New decision* — manifest, and turning a face-down permanent face up (a special action)
+
+- **Setup:** Reality Shift in your hand with two Islands; bob's Grizzly Bears, and Elvish Visionary on
+  top of bob's library. You also have Forests and a Serra Angel on top of your own library.
+- **Do:** Cast Reality Shift on the Grizzly Bears. Then, with a seat of your own manifested (Sit at
+  bob, or cast it on your own creature), open the face-down creature's ability menu.
+- **Check:** The Bears are exiled and bob gets a face-down 2/2: a card-back tile reading
+  "Face-down (manifested)" from your seat and "Manifested: Elvish Visionary" from bob's; the
+  hover card shows no name, text or cost, and the log never names it. Bob doesn't draw (its enters
+  ability never happens). Its controller's ability menu offers "Turn face up — Elvish Visionary,
+  pay {1}{G}"; doing so makes it a 1/1 Elf with no card drawn, and the log names it from then on.
+  Killed while face down, it's revealed as it goes to the graveyard. A face-down Forest or other
+  noncreature card is never offered to turn face up.

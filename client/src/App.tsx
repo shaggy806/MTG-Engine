@@ -1434,6 +1434,13 @@ function Table({
     for (const a of actions) if (a.kind === 'foretell') m.set(a.card, a)
     return m
   }, [actions])
+  // A face-down permanent that can be turned face up (rule 701.40b): the
+  // offer sits in the permanent's own ability menu, as its abilities do.
+  const faceUpBySource = useMemo(() => {
+    const m = new Map<ObjectId, Extract<LegalAction, { kind: 'turn-face-up' }>>()
+    for (const a of actions) if (a.kind === 'turn-face-up') m.set(a.permanent, a)
+    return m
+  }, [actions])
   const abilitiesBySource = useMemo(() => {
     const m = new Map<ObjectId, AbilityAction[]>()
     for (const a of actions) {
@@ -2575,12 +2582,13 @@ function Table({
         if (stack !== undefined) setBlockSplit((cur) => (cur === stack ? null : stack))
         return
       }
-      if (mode === 'priority' && abilitiesBySource.has(id)) {
+      if (mode === 'priority' && (abilitiesBySource.has(id) || faceUpBySource.has(id))) {
         setSelectedSource((cur) => (cur === id ? null : id))
       }
     },
     [
       abilitiesBySource,
+      faceUpBySource,
       assignDamageAction,
       attackAction,
       attackAssignments,
@@ -2919,7 +2927,7 @@ function Table({
       highlight = eligibleToProliferate(proliferateAction, id) && !picked
       selected = picked
     } else if (mode === 'priority' && ownerSeat === seat) {
-      activatable = ids.some((i) => abilitiesBySource.has(i))
+      activatable = ids.some((i) => abilitiesBySource.has(i) || faceUpBySource.has(i))
       selected = selectedSource !== null && ids.includes(selectedSource)
     }
 
@@ -4620,6 +4628,7 @@ function Table({
   const selectedAbilities = selectedSource
     ? (abilitiesBySource.get(selectedSource) ?? [])
     : []
+  const selectedFaceUp = selectedSource ? faceUpBySource.get(selectedSource) : undefined
 
   const renderPlayerPanel = (pid: PlayerId) => (
     <PlayerPanel
@@ -5191,11 +5200,24 @@ function Table({
           itself rather than in a bar at the bottom of the screen. Picking
           one hands off to `clickAbility` (targeting, an {X} prompt, a
           sacrifice choice), so the menu closes either way. */}
-      {selectedSource !== null && selectedAbilities.length > 0 ? (
+      {selectedSource !== null && (selectedAbilities.length > 0 || selectedFaceUp !== undefined) ? (
         <AbilityMenu
           source={selectedSource}
           title={game.nameOf(selectedSource)}
-          items={selectedAbilities.map((ab) => ({
+          items={[
+            ...(selectedFaceUp !== undefined
+              ? [
+                  {
+                    key: 'turn-face-up',
+                    label: `Turn face up — ${selectedFaceUp.cardName}, pay ${selectedFaceUp.cost}`,
+                    onSelect: () => {
+                      setSelectedSource(null)
+                      game.dispatch({ type: 'turn-face-up', player: seat, permanent: selectedFaceUp.permanent })
+                    },
+                  },
+                ]
+              : []),
+            ...selectedAbilities.map((ab) => ({
             // An "add one mana of any color" ability is listed once per
             // colour, all sharing an index -- the colours are what tell them
             // apart, so they belong in the key too.
@@ -5205,7 +5227,8 @@ function Table({
               setSelectedSource(null)
               clickAbility(ab)
             },
-          }))}
+          })),
+          ]}
           onClose={() => setSelectedSource(null)}
         />
       ) : null}

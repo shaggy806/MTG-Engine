@@ -13,6 +13,7 @@ import { TargetedMark } from './TargetedMark.tsx'
 import { CardFlags } from './CardFlags.tsx'
 import { CounterChips } from './CounterChips.tsx'
 import type { Goader } from './CardFlags.tsx'
+import { faceDownLabel } from './faceDown.ts'
 import {
   isArtBlocked,
   isArtPending,
@@ -94,10 +95,12 @@ export function MiniTile({
   onClick,
 }: MiniTileProps) {
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
+  // A face-down permanent shows a card back, never art (rule 708.2a).
+  const faceDown = faceDownLabel(obj)
   useSyncExternalStore(subscribeArtCache, getArtCacheVersion, getArtCacheVersion)
   // Queued synchronously during render — see the comment in CardTile.tsx.
-  if (!obj.art) queueArtLookup(face)
-  const pending = !obj.art && isArtPending(face)
+  if (!obj.art && faceDown === null) queueArtLookup(face)
+  const pending = faceDown === null && !obj.art && isArtPending(face)
   // `faceIsBack` comes from the engine: a chosen printing is named by
   // card id, which serves the front image unless asked otherwise, and
   // only the registry knows a two-entry `faces` list is a real back face
@@ -148,12 +151,12 @@ export function MiniTile({
             .mt-body — which is what carries the 4:3 aspect ratio (and is
             the positioning context for those overlays) now that the tile
             itself is banner + art, not art alone. */}
-        <span className="mt-banner" title={obj.name ?? face}>
-          {obj.name ?? face}
+        <span className="mt-banner" title={faceDown ?? obj.name ?? face}>
+          {faceDown ?? obj.name ?? face}
         </span>
         <span className="mt-body">
-          <span className={`mt-art tint-${tint}`}>
-            {!pending && !artFailed ? (
+          <span className={faceDown !== null ? 'mt-art face-down-art' : `mt-art tint-${tint}`}>
+            {faceDown === null && !pending && !artFailed ? (
               <img
                 src={artSrc}
                 alt=""

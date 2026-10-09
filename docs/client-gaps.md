@@ -16,11 +16,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   "Edit from here" leaves all of those behind. A commander placed in a library goes to its
   bottom, whatever its place in the list. Each is a field on `ScenarioCard`/`ScenarioSpec` and a
   step in `server/src/builder.ts`'s `buildScenario` and `snapshotScenario`.
-- **Face-down permanents should sit on their controller's board, and turning one face up should
-  work like any other activated ability** (the user's ask): a click on the card opens the same
-  little menu another permanent's activated abilities use, with "turn face up" in it when the
-  card can be turned face up. Blocked on the engine: there are no face-down permanents yet
-  (morph, manifest and cloak are "Not modeled").
 - **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
   eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
   art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),
