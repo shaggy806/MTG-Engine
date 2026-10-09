@@ -4,6 +4,34 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-08 — Young Pyromancer cast before Shiko and Narset, so Swords to Plowshares wasn't copied
+
+- **Seen:** Kykar cast Young Pyromancer, then Shiko and Narset, Unified from the command zone,
+  then Swords to Plowshares at Adeline with Shiko still on the stack. Swords was the turn's third
+  spell, so Flurry ("whenever you cast your second spell each turn") had nothing to copy, even had
+  Shiko resolved first.
+- **Right:** Shiko first, Swords second — Flurry copies it and a second creature is exiled — then
+  Pyromancer.
+- **Scenario:** "casts Shiko before Young Pyromancer so Swords to Plowshares is copied" (training)
+  — Shiko in the command zone, Young Pyromancer and Swords in hand, eight lands, Adeline and a Serra
+  Angel across: casts Young Pyromancer first. Beside the gate's "casts Shiko first so the Lightning
+  Bolt after her is copied", which passes: there's no second payoff in that hand.
+- **Why:** no search at all (`via: "payoff first"`, 0 simulations). `payoffFirst`
+  (`controller.ts`, both bots) returns the first cast payoff in the offer list that leaves another
+  spell castable after it, and Young Pyromancer and Shiko are both cast payoffs (`isCastPayoff`).
+  Pyromancer came first. Then Shiko went second through the same return, which doesn't record
+  `actedOn` — the Guttersnipe entry's miss — so Swords was searched afresh and cast in response.
+- **Fix (outline):** in `payoffFirst`, with several cast payoffs on offer, put one whose trigger
+  counts the turn's spells (`nthEachTurn`, Flurry) first, since its window is the turn's first
+  spells; and while such a payoff is ours with its spell still to come (spells cast this turn one
+  short of its `nthEachTurn`), don't hand that spell to another payoff through `payoffFirst` when
+  a spell it would copy (one that targets) is castable — leave the choice to the search, whose
+  `"acting"` rollout sees the copy. Plus the Guttersnipe fix, so Swords waits for Shiko to
+  resolve. Might break: a hand where the plain payoff first is better (Pyromancer before a pile
+  of instants, with Flurry worth only a card) — the search would still weigh that once the
+  shortcut stops deciding.
+- **Status:** open.
+
 ## 2026-10-08 — a kill through Towering Titan's trample passed up
 
 - **Seen:** found while chasing the Titan report below, not in a live game. Twice the bot could

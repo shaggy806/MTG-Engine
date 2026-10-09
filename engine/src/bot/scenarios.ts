@@ -4078,6 +4078,55 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "casts Shiko before Young Pyromancer so Swords to Plowshares is copied",
+    rule: "Flurry copies only the turn's second spell: Shiko goes first, so the removal after her is the second — not after another payoff.",
+    kind: "training",
+    position(registry) {
+      // Reported from a live game (2026-10-08, no capture): Kykar cast
+      // Young Pyromancer, then Shiko and Narset from the command zone, then
+      // Swords to Plowshares at Adeline in response to her — the third spell,
+      // with Shiko not yet on the battlefield either way, so nothing copied.
+      // Shiko, then Swords as the second spell (copied: a second creature
+      // exiled), then Pyromancer. Both are cast payoffs, and `payoffFirst`
+      // takes the first payoff in the offer list that leaves a spell to cast
+      // after it.
+      const game = Game.create({
+        seed: 3,
+        registry,
+        decks: [
+          { player: A, cards: Array<string>(40).fill("Island"), commanders: ["Shiko and Narset, Unified"] },
+          ...[B, C, D].map(forestDeck),
+        ],
+      });
+      game.advanceUntil(
+        (s) => s.turnOrder[s.turn.activePlayerIndex] === A && s.priority.holder === A && s.turn.step === "precombat-main",
+      );
+      midGame(game);
+      for (const player of [A, B, C, D]) {
+        game.state.zones.perPlayer[player].hand = [];
+        game.state.players[player].life = 40;
+      }
+      lands(game, "Island", A, 2);
+      lands(game, "Mountain", A, 3);
+      lands(game, "Plains", A, 3);
+      game.debugSpawn("Young Pyromancer", A, "hand");
+      game.debugSpawn("Swords to Plowshares", A, "hand");
+      onBoard(game, "Adeline, Resplendent Cathar", B);
+      onBoard(game, "Serra Angel", C);
+      return {
+        game,
+        player: A,
+        judge: (action) => {
+          const card = action.type === "cast-spell" ? game.state.objects[action.card]?.cardName : undefined;
+          return {
+            passed: card === "Shiko and Narset, Unified",
+            detail: `chose ${describeAction(action)}${card !== undefined ? ` (${card})` : ""}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
     name: "destroys an early Sol Ring over a Warhammer",
     rule: "In the opening rounds, a mana rock is the artifact to destroy.",
     position(registry) {
