@@ -334,12 +334,11 @@ describe("Wall of Roots", () => {
     game.state.objects[wall].counters["-0/-1"] = 4;
     activate(game, wall);
     expect(pool(game)).toEqual(["G"]);
-    expect(game.characteristics(wall).toughness).toBe(0);
-    // Spending the {G} on a spell, its controller gets priority again, and
-    // the state-based actions put it into the graveyard.
+    // Its controller gets priority again (117.3c), so the state-based actions
+    // put the 0/0 into the graveyard at once (117.5); the {G} still floats.
+    expect(game.state.objects[wall].zone).toBe("graveyard");
     const elves = cast(game, "Llanowar Elves");
     expect(game.state.objects[elves].zone).toBe("stack");
-    expect(game.state.objects[wall].zone).toBe("graveyard");
   });
 
   it("pays a cost through the auto-payer, last of all", () => {

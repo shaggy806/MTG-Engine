@@ -78,3 +78,47 @@ describe("deathtouch damage and the state-based check (704.5h)", () => {
     expect(game.state.objects[bears].zone).toBe("graveyard");
   });
 });
+
+describe("a mana ability activated by hand (117.3c, 117.5)", () => {
+  const activate = (game: Game, source: ObjectId): void => {
+    game.dispatch({ type: "activate-ability", player: A, source, abilityIndex: 0, targets: [], manaColors: ["G"] });
+  };
+
+  it("checks state-based actions before its player gets priority again", () => {
+    const game = setUp();
+    const wall = ready(game, "Wall of Roots");
+    game.state.objects[wall].counters["-0/-1"] = 4;
+    activate(game, wall);
+    // The {G} stays floating; the Wall, now 0/0, is already gone.
+    expect(game.state.players[A].manaPool.map((unit) => unit.type)).toEqual(["G"]);
+    expect(game.state.objects[wall].zone).toBe("graveyard");
+    expect(game.state.priority.holder).toBe(A);
+  });
+
+  it("puts a trigger it caused on the stack before its player gets priority again", () => {
+    const game = setUp();
+    const infiltrator = ready(game, "Gixian Infiltrator");
+    const treasure = ready(game, "Treasure Token");
+    activate(game, treasure);
+    expect(game.state.objects[treasure].zone).not.toBe("battlefield");
+    expect(game.state.pendingTriggers).toHaveLength(0);
+    const stack = game.state.zones.shared.stack;
+    expect(stack).toHaveLength(1);
+    expect(game.state.objects[stack[0]].sourceObjectId).toBe(infiltrator);
+    expect(game.state.priority.holder).toBe(A);
+  });
+
+  it("paying a cost, gives no priority until the spell is cast (601.2g-h)", () => {
+    const game = setUp();
+    for (const id of game.state.zones.shared.battlefield) {
+      if (game.state.objects[id].cardName === "Forest") game.state.objects[id].tapped = true;
+    }
+    const wall = ready(game, "Wall of Roots");
+    game.state.objects[wall].counters["-0/-1"] = 4;
+    // The auto-payer activates the Wall's mana ability inside the cast: the
+    // Elves are on the stack, and only then does the 0/0 Wall die.
+    const elves = cast(game, "Llanowar Elves");
+    expect(game.state.objects[elves].zone).toBe("stack");
+    expect(game.state.objects[wall].zone).toBe("graveyard");
+  });
+});

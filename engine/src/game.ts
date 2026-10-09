@@ -11432,6 +11432,15 @@ export class Game {
         player,
         onStack: false,
       });
+      // Activated by hand, its player holding priority (`whyCannotAct`) —
+      // one activated while paying a cost is `executePayment`'s, inside the
+      // cast or activation, and gives no priority until that's done (601.2g-h,
+      // 605.3a). This player receives priority again (117.3c), so the
+      // state-based actions are checked and triggers put on the stack first
+      // (117.5): Wall of Roots at 0 toughness dies now, and a sacrificed
+      // Treasure's "whenever you sacrifice" trigger goes on the stack. Being
+      // an action, it also ends any run of passes (117.4).
+      this.afterPlayerAction(player);
       return;
     }
 
