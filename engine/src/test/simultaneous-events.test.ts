@@ -208,6 +208,20 @@ describe("leaving together — every one of them sees every other one leave (rul
     expect(life(game, B)).toBe(20 - 3);
   });
 
+  it("Vela sees only creatures leave, not lands", () => {
+    const { game } = setUp();
+    game.debugSpawn("Vela the Night-Clad", A);
+    spawnMany(game, "Swamp", A, 2);
+
+    game.debugApplyEffect(A, {
+      kind: "return-to-hand-all",
+      filter: { type: "land", controlledBy: "you" },
+    });
+    game.advanceUntil(toPostcombat);
+
+    expect(life(game, B)).toBe(20);
+  });
+
   it("Grave Pact destroyed alongside the creatures still triggers for each of them", () => {
     const { game } = setUp();
     const pact = game.debugSpawn("Grave Pact", A);

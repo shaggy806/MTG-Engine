@@ -23,8 +23,9 @@ export default defineCard({
   ],
   triggered: [
     {
-      // "Vela **or another** creature you control" — so no `otherOnly`.
-      trigger: { on: "leaves-battlefield", who: "you-control" },
+      // "Vela **or another** creature you control" — so no `otherOnly`; a
+      // land or an artifact leaving drains nobody.
+      trigger: { on: "leaves-battlefield", who: "you-control", filter: { type: "creature" } },
       targets: [],
       effect: { kind: "lose-life", amount: 1, who: "each-opponent" },
       resolve: null,
