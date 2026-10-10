@@ -171,6 +171,7 @@ item lands.
 - **A forced look-and-choose still asks**: Yuriko's and Dark Confidant's "reveal the top card and put it into your hand" open a one-card picker with nothing to choose (`look-and-choose` with `count`, `min` and `max` 1); it could take the card unasked.
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review): with bot speed moved into Settings every step shows at 1366, but at 1024 the track stops at EC.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
+- **The lobby's seat box changes scale as people ready up** (the user, 2026-10-10): it should hold its size whoever is ready (`client/src/lobby/SeatBoard.tsx`).
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards (manifested ones), damage, turn-long effects, the stack, the turn number.
 - **One art-crop primitive** — the art lookup is repeated in six components.
 - **Large live mana amounts by hand** — a count picker past 22 splits; choosing what floats.
