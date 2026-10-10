@@ -1362,6 +1362,13 @@ function runPulse(source: ObjectId, delay: number): void {
   }
 }
 
+/** A creature arriving on the battlefield lands with a thud (`enter`), `at`
+ * ms from now: as its card is put down on its tile, or as its tile grows in.
+ * Anything else arrives quietly (a land played sounded as it was played). */
+function enterSound(obj: VisibleObject | undefined, at: number): void {
+  if (obj?.types.includes('creature')) playSound('enter', at)
+}
+
 /** The sound an event makes, if any (and if the viewer has sound on), on
  * the screen of `seat`. */
 function soundFor(ev: GameEvent, seat: PlayerId): void {
@@ -2522,6 +2529,8 @@ export function AnimationLayer({
             const object = cue.event.object
             const duration = cue.flightMs ?? measureFlight(cue)
             putDownOnTile(object, cue.view.objects[object]?.isToken ?? false, cue.delay, duration)
+            // The thud as the card lands on its tile, not as it sets off.
+            enterSound(cue.view.objects[object], cue.delay + duration)
           } else if (cue.event.type === 'spell-cast' && cue.putDown) {
             const object = cue.event.object
             const duration = cue.flightMs ?? measureFlight(cue)
@@ -2536,6 +2545,7 @@ export function AnimationLayer({
             const folded = tile !== null && enters.some((e) => boardTileOf(e.object) === tile)
             enters.push({ object, isToken: cue.view.objects[object]?.isToken ?? false, delay: cue.delay })
             if (folded) continue
+            enterSound(cue.view.objects[object], cue.delay)
           } else if (
             cue.event.type === 'counter-added' ||
             cue.event.type === 'pt-modified' ||
