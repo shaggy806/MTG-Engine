@@ -222,6 +222,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
     v.child(n.else);
   },
   earthbend: (n, v) => v.touch(n.target, "help", MAJOR),
+  ninjutsu: none,
   "reflexive-trigger": none,
   "put-on-library": (n, v) => v.touch(n.target, "help", MINOR),
   discard: (n, v) => v.touch(n.target, "harm", MAJOR),
@@ -706,7 +707,11 @@ export function specSide(spec: TargetSpec): SpecSide {
         return spec.whose === "you" ? "you" : spec.whose === "opponent" ? "opponent" : "any";
       case "card-in-graveyard":
         if (typeof spec.whose === "object") return spec.whose.seat === 0 ? "you" : "opponent";
-        return spec.whose === "you" ? "you" : spec.whose === "opponent" || spec.whose === "defending-player" ? "opponent" : "any";
+        return spec.whose === "you"
+          ? "you"
+          : spec.whose === "opponent" || spec.whose === "defending-player" || spec.whose === "trigger-player"
+            ? "opponent"
+            : "any";
     }
   }
   switch (spec) {

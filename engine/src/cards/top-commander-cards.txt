@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3450 already implemented / 1550 missing (marks refreshed 2026-10-10)
+3463 already implemented / 1537 missing (marks refreshed 2026-10-10)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2067,7 +2067,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2074  Gonti, Lord of Luxury                    {2}{B}{B}        Legendary Creature — Aetherborn Rogue
 [x]  2075  Everybody Lives!                         {1}{W}           Instant
 [x]  2076  Selesnya Guildgate                       {0}              Land — Gate
-[ ]  2077  Fallen Shinobi                           {3}{U}{B}        Creature — Zombie Ninja
+[x]  2077  Fallen Shinobi                           {3}{U}{B}        Creature — Zombie Ninja
 [ ]  2078  Winding Constrictor                      {B}{G}           Creature — Snake
 [x]  2079  Pearl-Ear, Imperial Advisor              {1}{W}{W}        Legendary Creature — Fox Advisor
 [x]  2080  Grim Backwoods                           {0}              Land
@@ -2486,7 +2486,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2493  Powerbalance                             {R}{R}           Enchantment
 [x]  2494  Envoy of the Ancestors                   {2}{W}           Creature — Human Cleric
 [x]  2495  Voldaren Estate                          {0}              Land
-[ ]  2496  Yuriko, the Tiger's Shadow               {1}{U}{B}        Legendary Creature — Human Ninja
+[x]  2496  Yuriko, the Tiger's Shadow               {1}{U}{B}        Legendary Creature — Human Ninja
 [x]  2497  Unquestioned Authority                   {2}{W}           Enchantment — Aura
 [ ]  2498  Endless Atlas                            {2}              Artifact
 [ ]  2499  Selfless Squire                          {3}{W}           Creature — Human Soldier
@@ -2521,7 +2521,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2528  Diresight                                {2}{B}           Sorcery
 [x]  2529  Giant Adephage                           {5}{G}{G}        Creature — Insect
 [x]  2530  Mox Jasper                               {0}              Legendary Artifact
-[ ]  2531  Prosperous Thief                         {2}{U}           Creature — Human Ninja
+[x]  2531  Prosperous Thief                         {2}{U}           Creature — Human Ninja
 [ ]  2532  Kogla and Yidaro                         {2}{R}{R}{G}{G}  Legendary Creature — Ape Dinosaur Turtle
 [ ]  2533  Doc Aurlock, Grizzled Genius             {G}{U}           Legendary Creature — Bear Druid
 [ ]  2534  Armored Skyhunter                        {3}{W}           Creature — Cat Knight
@@ -2876,7 +2876,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2883  Jodah, the Unifier                       {W}{U}{B}{R}{G}  Legendary Creature — Human Wizard
 [x]  2884  Glistening Sphere                        {3}              Artifact
 [x]  2885  One with the Machine                     {3}{U}           Sorcery
-[ ]  2886  Silver-Fur Master                        {U}{B}           Creature — Rat Ninja
+[x]  2886  Silver-Fur Master                        {U}{B}           Creature — Rat Ninja
 [ ]  2887  Unholy Annex // Ritual Chamber           {2}{B} // {3}{B}{B} Enchantment — Room // Enchantment — Room
 [ ]  2888  Renata, Called to the Hunt               {2}{G}{G}        Legendary Enchantment Creature — Demigod
 [ ]  2889  Outcaster Trailblazer                    {2}{G}           Creature — Human Druid
@@ -2916,7 +2916,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2923  Glasswing Grace // Age-Graced Chapel     {5}              Enchantment — Aura // Land
 [x]  2924  Unholy Grotto                            {0}              Land
 [x]  2925  Farmer Cotton                            {X}{G}{W}        Legendary Creature — Halfling Peasant
-[ ]  2926  Ink-Eyes, Servant of Oni                 {4}{B}{B}        Legendary Creature — Rat Ninja
+[x]  2926  Ink-Eyes, Servant of Oni                 {4}{B}{B}        Legendary Creature — Rat Ninja
 [ ]  2927  Nykthos Paragon                          {4}{W}{W}        Enchantment Creature — Human Soldier
 [x]  2928  Crystalline Crawler                      {4}              Artifact Creature — Construct
 [x]  2929  Derevi, Empyrial Tactician               {G}{W}{U}        Legendary Creature — Bird Wizard
@@ -3063,7 +3063,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3070  Blinkmoth Nexus                          {0}              Land
 [x]  3071  Selfless Savior                          {W}              Creature — Dog
 [ ]  3072  Appa, Steadfast Guardian                 {2}{W}{W}        Legendary Creature — Bison Ally
-[ ]  3073  The Legend of Kyoshi // Avatar Kyoshi    {6}              Enchantment — Saga // Legendary Creature — Avatar
+[x]  3073  The Legend of Kyoshi // Avatar Kyoshi    {6}              Enchantment — Saga // Legendary Creature — Avatar
 [x]  3074  Ravenous Squirrel                        {B/G}            Creature — Squirrel
 [ ]  3075  Abyssal Harvester                        {1}{B}{B}        Creature — Demon Warlock
 [x]  3076  Blowfly Infestation                      {2}{B}           Enchantment
@@ -3153,7 +3153,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3160  Kilo, Apogee Mind                        {U}{R}{W}        Legendary Artifact Creature — Robot Artificer
 [x]  3161  Darkstar Augur                           {2}{B}           Creature — Bat Warlock
 [ ]  3162  Etchings of the Chosen                   {1}{W}{B}        Enchantment
-[ ]  3163  Ingenious Infiltrator                    {2}{U}{B}        Creature — Vedalken Ninja
+[x]  3163  Ingenious Infiltrator                    {2}{U}{B}        Creature — Vedalken Ninja
 [x]  3164  Spectacular Spider-Man                   {1}{W}           Legendary Creature — Spider Human Hero
 [x]  3165  Lurking Predators                        {4}{G}{G}        Enchantment
 [x]  3166  Songs of the Damned                      {B}              Instant
@@ -3261,7 +3261,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3268  Jin-Gitaxias // The Great Synthesis      {5}              Legendary Creature — Phyrexian Praetor // Enchantment — Saga
 [ ]  3269  World at War                             {3}{R}{R}        Sorcery
 [x]  3270  Keeper of Secrets                        {5}{R}           Creature — Demon
-[ ]  3271  Mistblade Shinobi                        {2}{U}           Creature — Human Ninja
+[x]  3271  Mistblade Shinobi                        {2}{U}           Creature — Human Ninja
 [ ]  3272  Firdoch Core                             {3}              Kindred Artifact — Shapeshifter
 [ ]  3273  Grievous Wound                           {3}{B}{B}        Enchantment — Aura
 [ ]  3274  Ezuri, Stalker of Spheres                {2}{G}{U}        Legendary Creature — Phyrexian Elf Warrior
@@ -3574,7 +3574,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3581  Champion of Dusk                         {3}{B}{B}        Creature — Vampire Knight
 [ ]  3582  Retether                                 {3}{W}           Sorcery
 [ ]  3583  Rashmi, Eternities Crafter               {2}{G}{U}        Legendary Creature — Elf Druid
-[ ]  3584  Ninja of the Deep Hours                  {3}{U}           Creature — Human Ninja
+[x]  3584  Ninja of the Deep Hours                  {3}{U}           Creature — Human Ninja
 [x]  3585  War of the Last Alliance                 {3}{W}           Enchantment — Saga
 [x]  3586  Nesting Dragon                           {3}{R}{R}        Creature — Dragon
 [x]  3587  Invigorating Surge                       {2}{G}           Instant
@@ -3611,7 +3611,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3618  Bureau Headmaster                        {R}{W}           Creature — Human Assassin
 [x]  3619  Spellstutter Sprite                      {1}{U}           Creature — Faerie Wizard
 [ ]  3620  Flamekin Village                         {0}              Land
-[ ]  3621  Moon-Circuit Hacker                      {1}{U}           Enchantment Creature — Human Ninja
+[x]  3621  Moon-Circuit Hacker                      {1}{U}           Enchantment Creature — Human Ninja
 [x]  3622  Edgar, Charmed Groom // Edgar Markov's Coffin {4}              Legendary Creature — Vampire Noble // Legendary Artifact
 [x]  3623  Squall, SeeD Mercenary                   {2}{W}{B}        Legendary Creature — Human Knight Mercenary
 [ ]  3624  Planetarium of Wan Shi Tong              {6}              Legendary Artifact
@@ -3652,7 +3652,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3659  Maelstrom Pulse                          {1}{B}{G}        Sorcery
 [x]  3660  Saruman, the White Hand                  {1}{U}{B}{R}     Legendary Creature — Avatar Wizard
 [ ]  3661  Markov Baron                             {2}{B}           Creature — Vampire Noble
-[ ]  3662  Sakashima's Student                      {2}{U}{U}        Creature — Human Ninja
+[x]  3662  Sakashima's Student                      {2}{U}{U}        Creature — Human Ninja
 [ ]  3663  Hobgoblin Bandit Lord                    {1}{R}{R}        Creature — Goblin Rogue
 [x]  3664  Prizefight                               {1}{G}           Instant
 [x]  3665  Hidden Nursery                           {0}              Land — Cave
@@ -4257,7 +4257,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4264  Heartbeat of Spring                      {2}{G}           Enchantment
 [x]  4265  Mysidian Elder                           {2}{R}           Creature — Human Wizard
 [ ]  4266  Foil                                     {2}{U}{U}        Instant
-[ ]  4267  Throat Slitter                           {4}{B}           Creature — Rat Ninja
+[x]  4267  Throat Slitter                           {4}{B}           Creature — Rat Ninja
 [x]  4268  Polluted Mire                            {0}              Land
 [x]  4269  Gargos, Vicious Watcher                  {3}{G}{G}{G}     Legendary Creature — Hydra
 [x]  4270  Sandstone Oracle                         {7}              Artifact Creature — Sphinx
@@ -4354,7 +4354,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4361  Merry, Esquire of Rohan                  {R}{W}           Legendary Creature — Halfling Knight
 [x]  4362  Barkform Harvester                       {3}              Artifact Creature — Shapeshifter
 [x]  4363  Teysa, Orzhov Scion                      {1}{W}{B}        Legendary Creature — Human Advisor
-[ ]  4364  The Restoration of Eiganjo // Architect of Restoration {3}              Enchantment — Saga // Enchantment Creature — Fox Monk
+[x]  4364  The Restoration of Eiganjo // Architect of Restoration {3}              Enchantment — Saga // Enchantment Creature — Fox Monk
 [ ]  4365  Moseo, Vein's New Dean                   {2}{B}           Legendary Creature — Bird Skeleton Warlock
 [x]  4366  Goblin Ringleader                        {3}{R}           Creature — Goblin
 [ ]  4367  Bayek of Siwa                            {3}{R}{W}        Legendary Creature — Human Assassin

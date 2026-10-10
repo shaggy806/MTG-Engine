@@ -956,6 +956,7 @@ Neither goes on the stack yet (§15, "Partial").
 | demonstrate | `demonstrate()` from `helpers.ts` — rule 702.144a, "When you cast this spell, you may copy it and you may choose new targets for the copy. If you copy the spell, choose an opponent. That player copies the spell and may choose new targets for that copy": a `this-cast` trigger, a `may` over your `copy-spell` of `"trigger-spell"` then a `choose-opponent` whose `copy-spell` has `controller: "that-player"`. Their copy goes on top and resolves first; declined, nobody copies; a spell countered in response is still copied, as it last was on the stack (as storm's are). Put the reminder text in `text` (Transforming Flourish, the Strixhaven Techniques). |
 | annihilator | `annihilator(n)` from `helpers.ts` — rule 702.86, "Whenever this creature attacks, defending player sacrifices N permanents", as the attack trigger it is (a `sacrifice` of `"trigger-player"`, who is the player attacked or the attacked planeswalker's controller). Put it in `triggered` or grant it with `grantsTriggered`, and the printed line in `text`. |
 | crew | `crew(n, text?)` and `crewText(n)` from `helpers.ts` — rule 702.122a, "Tap any number of other untapped creatures you control with total power N or greater: this becomes an artifact creature until end of turn": a `tapOthers.totalPower` cost (summoning-sick creatures may pay, never the Vehicle itself) and an `add-types` of the source. A Vehicle is an `artifact` with subtype `Vehicle` and its printed `power`/`toughness`, which it has once it's a creature (rule 301.7). Grant it with `grantsActivated` (Kotori, Pilot Prodigy's "Vehicles you control have crew 2"). `crewText(n)` is the line with its reminder; Smuggler's Copter, Cultivator's Caravan. "Whenever this Vehicle becomes crewed" and "crews as though its power were greater" aren't built. |
+| ninjutsu | `ninjutsu(cost, text?)` and `ninjutsuText(cost)` from `helpers.ts` — rule 702.49a, "[Cost], Reveal this card from your hand, Return an unblocked attacking creature you control to its owner's hand: Put this card onto the battlefield from your hand tapped and attacking": an ability of the card in the hand (`zone: "hand"`, `staysInZone` — it isn't discarded, and is revealed as it's activated, 702.49b; `ninjutsu: true` names it), at instant speed, whose `returnToHand` cost takes an `unblocked` creature you control, chosen as the cost is paid. Its `ninjutsu` effect puts the card onto the battlefield tapped and attacking what the returned creature was attacking (702.49c — recorded on the ability as the cost is paid, `LastKnownRefs.returnedAttacking`), unblocked (508.4d); not attacking at all if that player or planeswalker is gone (508.4a), and nothing if the card left the hand in response (400.7). An "as this enters" choice is still asked (Sakashima's Student enters as a copy, attacking). `commanderNinjutsu(cost)` (rule 702.49d) is two entries, hand and command zone — spread it into `activated`; no commander tax, as nothing is cast. Ninja of the Deep Hours, Yuriko, the Tiger's Shadow; `ninjutsu.test.ts`. Not built: a static granting ninjutsu to cards in a hand (Satoru Umezawa) and "whenever you activate a ninjutsu ability". |
 | afflict | `afflict(n)` from `helpers.ts` — rule 702.130a, "Whenever this creature becomes blocked, defending player loses N life": a `becomes-blocked` trigger (once however many block) with a `lose-life` of `"trigger-player"`, the player who blocked. Put it in `triggered` or grant it with `grantsTriggered` (Cyberman Patrol's "artifact creatures you control have afflict 3"), and the printed line in `text`. |
 | transmute | `transmute(cost, manaValue, text)` from `helpers.ts` — rule 702.53a, "[cost], Discard this card: search your library for a card with the same mana value, reveal it, put it into your hand, then shuffle; only as a sorcery": a hand activated ability (`zone: "hand"`, the discard being the cost) with `sorcerySpeed`. `manaValue` is the card's own printed one (Tolaria West's is 0). `text` is the printed line, reminder included (Muddle the Mixture). |
 | extort | `extort()` from `helpers.ts` — rule 702.101a, "Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life", as the cast trigger it is (Sorin of House Markov). "That much" is one per opponent. Each instance triggers on its own. |
@@ -1628,7 +1629,10 @@ matches nothing. `notThisWay` is its opposite — everything *but* what was done
 that to: Martial Coup's "create X Soldier tokens … destroy all other
 creatures" is `{ type: "creature", notThisWay: "created" }` (with the tokens
 made `separate`). `attacking` asks whether the permanent is currently attacking
-(Kangee's Lieutenant). `subtypes`/`typesAnyOf` are an OR
+(Kangee's Lieutenant); `unblocked` whether it's an unblocked attacker (rule
+509.1h: attacking, with blockers declared and none for it, or put onto the
+battlefield attacking since — 508.4d) — from the declare blockers step on,
+never before. `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). A changeling matches
 every creature-type clause, `notSubtypes` included (it *is* a Zombie).
@@ -1972,7 +1976,8 @@ stopped covering:
   object it was as the ability went on the stack, else as it last existed on
   the battlefield (rule 113.7a); an enchantment card's channel ability counts
   (Weaver's ruling). `copy-ability` copies one (§6).
-- `{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent" | "defending-player", filter?: CardFilter }`
+- `{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent" | "defending-player" | "trigger-player", filter?: CardFilter }`
+  (`"trigger-player"`: "that player's graveyard" of a trigger naming a player — Skullsnatcher, Ink-Eyes)
   — a card in a graveyard (Withered Wretch, Cemetery Reaper, Return to
   Nature's third mode). Graveyard targeting varies on both *whose* graveyard
   and an arbitrary card filter, which wouldn't converge as literals. `whose:
@@ -3044,7 +3049,9 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   half of twobrid pips (`{2/W}`), but only the ones actually paid with
   generic mana — the Spectral Procession ruling. Reaper King under Foundry
   Inspector is `{W}{U}{B}{R}` plus one mana without a Forest.
-- `abilityCostModification: { applies: CardFilter, reduceGeneric?, increaseGeneric?, leavesOneMana?, exceptManaAbilities? }`
+- `abilityCostModification: { applies: CardFilter, reduceGeneric?, increaseGeneric?, leavesOneMana?, exceptManaAbilities?, ninjutsu? }`
+  (`ninjutsu: true`: only ninjutsu abilities its controller activates, the
+  card in a hand or the command zone — Silver-Fur Master, `applies: {}`)
   — the same for *activation* costs (rule 602.2b): "Activated abilities of
   Foods you control cost {1} less to activate" (Sam, Loyal Attendant) is
   `{ applies: { subtype: "Food", controlledBy: "you" }, reduceGeneric: 1 }`,

@@ -224,6 +224,7 @@ How to use it:
 | [Claim the Precious, Call of the Ring, Birthday Escape](#claim-the-precious-call-of-the-ring-birthday-escape) | new decision | The Ring tempts you |
 | [Clown Car, Hoarding Ogre, Ancient Copper Dragon, Brazen Dwarf](#clown-car-hoarding-ogre-ancient-copper-dragon-brazen-dwarf) | rules call | Rolling dice |
 | [Isochron Scepter, Mnemonic Deluge, Narset, Enlightened Exile](#isochron-scepter-mnemonic-deluge-narset-enlightened-exile) | rules call | Casting copies of cards |
+| [Ninja of the Deep Hours, Yuriko, the Tiger's Shadow](#ninja-of-the-deep-hours-yuriko-the-tigers-shadow) | new decision | Ninjutsu |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4276,3 +4277,22 @@ stack count once per token)
   exile — only the original — and Mnemonic Deluge itself is in exile. Narset's copy of Sol Ring
   resolves as a Sol Ring token under your control; the card stays in exile.
 - **Known limits:** Bots cast every copy offered.
+
+## Ninjutsu (2026-10-09)
+
+### Ninja of the Deep Hours, Yuriko, the Tiger's Shadow
+
+*New decision* — ninjutsu (rule 702.49) from the hand and, as commander ninjutsu, from the command zone
+
+- **Setup:** Your precombat main. Your battlefield: Grizzly Bears, Llanowar Elves, three Islands and
+  two Swamps. Your hand: Ninja of the Deep Hours. Your command zone: Yuriko, the Tiger's Shadow. Hill
+  Giant on top of your library. Bob: Drift of Phantasms (0/5).
+- **Do:** Attack Bob with the Bears and the Elves. Once Bob blocks one, open Ninja of the Deep Hours'
+  menu in your hand and use its ninjutsu; then use Yuriko's commander ninjutsu from the command zone.
+- **Check:** Neither ninjutsu is offered before blockers are declared, and only the unblocked attacker
+  can be returned (with two unblocked, you choose on the board). The ninja is revealed, the attacker
+  goes back to your hand, and the ninja comes in tapped and attacking Bob, unblocked. Yuriko comes from
+  the command zone without commander tax. Combat damage: the Ninja asks to draw a card; Yuriko's trigger
+  reveals the Hill Giant, puts it into your hand and Bob loses 4 more.
+- **Known limits:** Satoru Umezawa's granted ninjutsu and "whenever you activate a ninjutsu ability"
+  aren't built.

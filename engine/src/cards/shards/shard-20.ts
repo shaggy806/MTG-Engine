@@ -164,6 +164,7 @@ import _poolMysticSnake from "../pool/mystic-snake.js";
 import _poolNaturesRhythm from "../pool/natures-rhythm.js";
 import _poolNecroskitter from "../pool/necroskitter.js";
 import _poolNemesisOfReason from "../pool/nemesis-of-reason.js";
+import _poolNinjaOfTheDeepHours from "../pool/ninja-of-the-deep-hours.js";
 import _poolNoDachi from "../pool/no-dachi.js";
 import _poolNulldrifter from "../pool/nulldrifter.js";
 import _poolOboroPalaceInTheClouds from "../pool/oboro-palace-in-the-clouds.js";
@@ -445,6 +446,7 @@ const shard: CardShard = {
     _poolNaturesRhythm,
     _poolNecroskitter,
     _poolNemesisOfReason,
+    _poolNinjaOfTheDeepHours,
     _poolNoDachi,
     _poolNulldrifter,
     _poolOboroPalaceInTheClouds,

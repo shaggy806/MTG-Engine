@@ -1273,6 +1273,11 @@ export interface CastSpellRecord {
 export interface LastKnownRefs {
   readonly source?: number;
   readonly triggerObject?: number;
+  /** For an activated ability whose cost returned an attacking creature to
+   * its owner's hand (`AbilityCost.returnToHand`): what that creature was
+   * attacking as the cost was paid — the player, planeswalker or battle a
+   * ninja put onto the battlefield attacks (rule 702.49c). */
+  readonly returnedAttacking?: PlayerId | ObjectId;
   /** For a trigger fired by a spell — its casting (Baral and Kari Zev's
    * "your first instant or sorcery spell each turn"): the spell's
    * `zoneChangeCount` on the stack. Once it has left the stack (countered in
@@ -2197,6 +2202,10 @@ export type AwaitingDecision =
        * and what's picked (or nothing) is what it exchanges with as it
        * enters. `then` is unused. */
       readonly exchangeText?: true;
+      /** Set when the choice pays an activated ability's `returnToHand`
+       * cost: that ability on the stack, which records what the returned
+       * creature was attacking (`LastKnownRefs.returnedAttacking`). */
+      readonly costOf?: ObjectId;
     }
   | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"

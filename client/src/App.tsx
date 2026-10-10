@@ -521,6 +521,12 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'enter-attacking': 'choose what their creatures attack',
   scry: 'scry',
 }
+/** A hand ability's button: its text up to its reminder or its effect —
+ * "Ninjutsu {1}{U}", "Channel — {1}{G}, Discard this card". */
+function handAbilityLabel(text: string): string {
+  return text.split(' (')[0].split(':')[0].trim()
+}
+
 
 export default function App() {
   const game = useNetworkGame()
@@ -3108,15 +3114,18 @@ function Table({
    * — see `CommanderTile`. */
   const commandZoneTile = (obj: VisibleObject, paired = false) => {
     const castable = mode === 'priority' && castByCard.has(obj.id)
+    // An ability that works from the command zone (commander ninjutsu): the
+    // tile opens its ability menu, with the cast in it when there is one.
+    const usable = mode === 'priority' && (abilitiesBySource.get(obj.id)?.length ?? 0) > 0
     const commanderTax =
       2 * (view.players[obj.owner]?.commanderCastCounts?.[obj.cardName] ?? 0)
     return (
       <CommanderTile
         key={obj.id}
         obj={obj}
-        highlight={castable}
+        highlight={castable || usable}
         extraGenericCost={commanderTax}
-        onClick={castable ? () => clickHandCard(obj.id) : undefined}
+        onClick={usable ? () => setSelectedSource(obj.id) : castable ? () => clickHandCard(obj.id) : undefined}
         paired={paired}
       />
     )
@@ -4650,6 +4659,10 @@ function Table({
     ? (abilitiesBySource.get(selectedSource) ?? [])
     : []
   const selectedFaceUp = selectedSource ? faceUpBySource.get(selectedSource) : undefined
+  // A commander whose tile opened the menu (it has an ability that works from
+  // the command zone) is still cast from it.
+  const selectedCast =
+    selectedSource !== null && view.objects[selectedSource]?.zone === 'command' && castByCard.has(selectedSource)
 
   const renderPlayerPanel = (pid: PlayerId) => (
     <PlayerPanel
@@ -5041,6 +5054,9 @@ function Table({
           const suspend = mode === 'priority' ? suspendByCard.get(id) : undefined
           const foretell = mode === 'priority' ? foretellByCard.get(id) : undefined
           const cycle = mode === 'priority' ? cycleByCard.get(id) : undefined
+          // Abilities that work from the hand (ninjutsu, channel): a button
+          // each, as cycling's.
+          const handAbilities = mode === 'priority' ? (abilitiesBySource.get(id) ?? []) : []
           const faceOpts =
             mode === 'priority' ? (playFacesByCard.get(id) ?? []) : []
           // More than one way to play this card: a multi-face card's sides,
@@ -5050,7 +5066,7 @@ function Table({
             <div key={id} className="hand-card" data-obj-id={id} style={slotStyle}>
               <CardTile
                 obj={obj}
-                highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}
+                highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle) || handAbilities.length > 0}
                 selected={selected}
                 layout="art-first"
                 onClick={() => clickHandCard(id)}
@@ -5122,6 +5138,11 @@ function Table({
                   Cycle <Symbols text={cycle.cost} />
                 </button>
               ) : null}
+              {handAbilities.map((ab) => (
+                <button key={`ab-${ab.abilityIndex}`} type="button" onClick={() => clickAbility(ab)}>
+                  <Symbols text={handAbilityLabel(ab.text)} />
+                </button>
+              ))}
             </div>
           )
         })}
@@ -5230,6 +5251,18 @@ function Table({
           source={selectedSource}
           title={game.nameOf(selectedSource)}
           items={[
+            ...(selectedCast
+              ? [
+                  {
+                    key: 'cast',
+                    label: `Cast ${game.nameOf(selectedSource)}`,
+                    onSelect: () => {
+                      setSelectedSource(null)
+                      clickHandCard(selectedSource)
+                    },
+                  },
+                ]
+              : []),
             ...(selectedFaceUp !== undefined
               ? [
                   {

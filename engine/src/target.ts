@@ -154,8 +154,12 @@ export type TargetSpec =
        * `"creature-defending-player-controls"` does. `{ seat }` is one
        * player's graveyard, as for `permanent` — Afterlife from the Loam's
        * "for each player, choose up to one target creature card in that
-       * player's graveyard" is one optional slot per seat 0–3. */
-      readonly whose?: "any" | "you" | "opponent" | "defending-player" | TargetSeat;
+       * player's graveyard" is one optional slot per seat 0–3.
+       * `"trigger-player"` is "that player's graveyard" of a trigger naming a
+       * player (Skullsnatcher's "whenever this creature deals combat damage
+       * to a player, exile up to two target cards from that player's
+       * graveyard"), as for `permanent`. */
+      readonly whose?: "any" | "you" | "opponent" | "defending-player" | "trigger-player" | TargetSeat;
       readonly filter?: CardFilter;
     }
   /**
@@ -712,7 +716,9 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
         ? "your graveyard"
         : spec.whose === "opponent"
           ? "an opponent's graveyard"
-          : "a graveyard";
+          : spec.whose === "trigger-player"
+            ? "that player's graveyard"
+            : "a graveyard";
   const what = spec.filter?.type ?? "card";
   return `${what} in ${whose}`;
 }

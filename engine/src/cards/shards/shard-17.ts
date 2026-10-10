@@ -162,6 +162,7 @@ import _poolPeregrineDrake from "../pool/peregrine-drake.js";
 import _poolPhyrexianVault from "../pool/phyrexian-vault.js";
 import _poolPrimevalShambler from "../pool/primeval-shambler.js";
 import _poolPrismariCommand from "../pool/prismari-command.js";
+import _poolProsperousThief from "../pool/prosperous-thief.js";
 import _poolPullFromTomorrow from "../pool/pull-from-tomorrow.js";
 import _poolPyreCharger from "../pool/pyre-charger.js";
 import _poolPyromancersGoggles from "../pool/pyromancers-goggles.js";
@@ -439,6 +440,7 @@ const shard: CardShard = {
     _poolPhyrexianVault,
     _poolPrimevalShambler,
     _poolPrismariCommand,
+    _poolProsperousThief,
     _poolPullFromTomorrow,
     _poolPyreCharger,
     _poolPyromancersGoggles,

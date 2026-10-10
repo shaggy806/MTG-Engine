@@ -242,6 +242,50 @@ export const crewText = (n: number): string =>
   `Crew ${n} (Tap any number of creatures you control with total power ${n} or more: This Vehicle becomes an artifact creature until end of turn.)`;
 
 /**
+ * Ninjutsu [cost] (rule 702.49a): "[Cost], Reveal this card from your hand,
+ * Return an unblocked attacking creature you control to its owner's hand:
+ * Put this card onto the battlefield from your hand tapped and attacking."
+ * An ability of the card in the hand (`zone: "hand"`, which it stays in —
+ * revealed, 702.49b), at instant speed, so only once blockers are declared
+ * (an attacker is unblocked from then, `unblocked`); the attacker is chosen
+ * as the cost is paid, and the ninja attacks what it was attacking (702.49c
+ * — the `ninjutsu` effect). Rule 400.7: a card that leaves the hand in
+ * response isn't put anywhere. `commander` is commander ninjutsu (702.49d):
+ * the same ability from the command zone too, as a second entry — spread it
+ * into `activated`. `text` defaults to the keyword with its reminder.
+ */
+export const ninjutsu = (cost: string, text = ninjutsuText(cost)): ActivatedAbility => ({
+  cost: {
+    mana: cost,
+    tap: false,
+    returnToHand: { count: 1, filter: { type: "creature", unblocked: true } },
+  },
+  zone: "hand",
+  staysInZone: true,
+  ninjutsu: true,
+  targets: [],
+  effect: { kind: "ninjutsu" },
+  resolve: null,
+  text,
+});
+
+/** Ninjutsu [cost]'s printed line with its reminder text. */
+export const ninjutsuText = (cost: string): string =>
+  `Ninjutsu ${cost} (${cost}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)`;
+
+/** Commander ninjutsu (rule 702.49d): ninjutsu from the hand or the command
+ * zone — two entries, one per zone, the same ability. Spread into
+ * `activated`. */
+export const commanderNinjutsu = (cost: string, text = commanderNinjutsuText(cost)): readonly ActivatedAbility[] => {
+  const fromHand = ninjutsu(cost, text);
+  return [fromHand, { ...fromHand, zone: "command" }];
+};
+
+/** Commander ninjutsu [cost]'s printed line with its reminder text. */
+export const commanderNinjutsuText = (cost: string): string =>
+  `Commander ninjutsu ${cost} (${cost}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand or the command zone tapped and attacking.)`;
+
+/**
  * Transmute (rule 702.53a): "[Cost], Discard this card: Search your library
  * for a card with the same mana value as the discarded card, reveal that
  * card, and put it into your hand. Then shuffle. Activate only as a

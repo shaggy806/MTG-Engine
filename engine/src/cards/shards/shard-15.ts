@@ -119,6 +119,7 @@ import _poolIrenicussVileDuplication from "../pool/irenicuss-vile-duplication.js
 import _poolIronMyr from "../pool/iron-myr.js";
 import _poolIzzetCluestone from "../pool/izzet-cluestone.js";
 import _poolJhovallQueen from "../pool/jhovall-queen.js";
+import _poolJillShivasDominant from "../pool/jill-shivas-dominant.js";
 import _poolJungleHollow from "../pool/jungle-hollow.js";
 import _poolKeeperOfFables from "../pool/keeper-of-fables.js";
 import _poolKetramoseTheNewDawn from "../pool/ketramose-the-new-dawn.js";
@@ -386,6 +387,7 @@ const shard: CardShard = {
     _poolIronMyr,
     _poolIzzetCluestone,
     _poolJhovallQueen,
+    _poolJillShivasDominant,
     _poolJungleHollow,
     _poolKeeperOfFables,
     _poolKetramoseTheNewDawn,

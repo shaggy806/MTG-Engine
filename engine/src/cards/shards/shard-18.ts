@@ -105,6 +105,7 @@ import _poolHornOfGondor from "../pool/horn-of-gondor.js";
 import _poolIcetillExplorer from "../pool/icetill-explorer.js";
 import _poolIndependentTroops from "../pool/independent-troops.js";
 import _poolInfernoFist from "../pool/inferno-fist.js";
+import _poolInkEyesServantOfOni from "../pool/ink-eyes-servant-of-oni.js";
 import _poolInspiredInsurgent from "../pool/inspired-insurgent.js";
 import _poolInspiringCaptain from "../pool/inspiring-captain.js";
 import _poolInvigoratingSurge from "../pool/invigorating-surge.js";
@@ -394,6 +395,7 @@ const shard: CardShard = {
     _poolIcetillExplorer,
     _poolIndependentTroops,
     _poolInfernoFist,
+    _poolInkEyesServantOfOni,
     _poolInspiredInsurgent,
     _poolInspiringCaptain,
     _poolInvigoratingSurge,

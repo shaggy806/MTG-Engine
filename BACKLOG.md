@@ -13,7 +13,7 @@ None open.
 
 ## Commander gap (the current priority)
 
-**399 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**400 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -59,23 +59,19 @@ section keeps only what to do next.
   (`engine/data/sweep-3/PC-*.json`) go as their originals land.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
-- **14 cards whose recorded blockers have all been built since** (Blightsteel Colossus, Great
-  Train Heist, Perplex, The Master, Multiplied, the two Limit Breaks, three Sagas or creatures
-  that return transformed and 5 more) — recheck each with `card:brief` (`npm run cards:needs -w
-  engine -- --stale`).
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,450 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,463 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
-  of them — crew, the Ring, dice and most of casting during resolution landed 2026-10-09; leading
-  now (`cards:needs -- --rank`): face-down's leftovers (24 cards), ninjutsu (23), attach
-  extensions (23), Class (22) —
+  of them — crew, the Ring, dice, ninjutsu and most of casting during resolution landed 2026-10-09;
+  leading now (`cards:needs -- --rank`): attach extensions (23 cards), face-down's leftovers
+  (23), Class (22), Rooms (20, all fully unblocked) —
    (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`).
 - **Features with a family of cards behind them**, each detailed where it points:
-  Ninjutsu and the rest of "enters tapped and attacking" (`docs/card-blockers.md`); modal
+  the rest of "enters tapped and attacking" (`docs/card-blockers.md`); modal
   activated abilities with targeted modes, host triggers (28 cards), the EDH-popularity tiers
   (Class; Discover, Reconfigure) and the limitation ledger (`neededCards-features.md`); the
   Incarnations' evoke by exiling a card, and the labelled abilities (Case, Forecast, Max speed)
@@ -171,6 +167,7 @@ One line each; the detail is in **`docs/client-gaps.md`**, under the same bold t
 animation follow-ups in `docs/plans/legibility-of-play.md`, "Follow-ups". Delete both when an
 item lands.
 
+- **A forced look-and-choose still asks**: Yuriko's and Dark Confidant's "reveal the top card and put it into your hand" open a one-card picker with nothing to choose (`look-and-choose` with `count`, `min` and `max` 1); it could take the card unasked.
 - **The library's card viewer has no printings panel** (the user's ask, 2026-10-09): a scrollable list of every set/printing of the card, clicking one showing that printing; and its next/previous buttons shift as the box widens or narrows with whether the card has tokens (`client/src/library/LibraryPage.tsx`).
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review): with bot speed moved into Settings every step shows at 1366, but at 1024 the track stops at EC.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.

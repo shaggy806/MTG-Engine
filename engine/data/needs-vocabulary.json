@@ -4943,6 +4943,21 @@
   },
   "condition:filter-shares-creature-type-with-controlled": {
    "example": "Descendants' Path: the revealed card must share a creature type with a creature you control; sharesCreatureTypeWith reads only the trigger object."
+  },
+  "static:grant-ninjutsu": {
+   "family": "keyword:ninjutsu",
+   "example": "Satoru Umezawa: 'Each creature card in your hand has ninjutsu {2}{U}{B}' — a static granting an ability to cards in a hand."
+  },
+  "condition:entered-from-hand": {
+   "family": "condition:entry-provenance",
+   "example": "Thousand-Faced Shadow: 'When this creature enters from your hand, if it's attacking' — which zone it entered from."
+  },
+  "effect:discard-filtered": {
+   "example": "Dokuchi Silencer: 'you may discard a creature card. When you do, …' — discard's choice limited to a kind of card."
+  },
+  "effect:manifest-from-other-library": {
+   "family": "mechanic:face-down",
+   "example": "Orochi Soul-Reaver: 'manifest the top card of that player's library' — under you, from another player's library."
   }
  }
 }

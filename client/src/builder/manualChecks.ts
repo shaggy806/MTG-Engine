@@ -2531,6 +2531,18 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    "Ninja of the Deep Hours, Yuriko, the Tiger's Shadow",
+    board({
+      you: {
+        bf: ['Grizzly Bears', 'Llanowar Elves', 'Island*3', 'Swamp*2'],
+        hand: ['Ninja of the Deep Hours'],
+        cmd: ["Yuriko, the Tiger's Shadow"],
+        lib: ['Hill Giant', 'Island*4'],
+      },
+      opp: { bf: ['Drift of Phantasms'] },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

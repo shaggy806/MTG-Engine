@@ -234,6 +234,16 @@ export interface CardFilter {
    * "blocking creatures with flying get +0/+2"). */
   readonly blocking?: boolean;
   /**
+   * An **unblocked** attacking creature (rule 509.1h): attacking, with
+   * blockers already declared this combat and none declared for it — or put
+   * onto the battlefield attacking since (508.4d). Before blockers are
+   * declared an attacker is neither blocked nor unblocked. Blockers are
+   * declared as the declare blockers step begins, before anyone gets
+   * priority (509.1), so from then to the end of combat. Ninjutsu's "return
+   * an unblocked attacker you control" (702.49a).
+   */
+  readonly unblocked?: boolean;
+  /**
    * Is (or isn't) **goaded** (rule 701.15b), by anyone and whichever way — a
    * one-shot goad, one for the rest of the game, or a static one (`goadersOf`
    * in `goad.ts`). One that has left the battlefield is asked as it last was:
@@ -880,6 +890,16 @@ export function matchesFilter(
     // a snapshot still knows (Kardur's "whenever an attacking creature dies").
     const attacking = live !== undefined ? live.attacking !== null : lki!.attacking;
     if (attacking !== filter.attacking) return false;
+  }
+  if (filter.unblocked !== undefined) {
+    const step = state.turn.step;
+    const unblocked =
+      live !== undefined &&
+      live.zone === "battlefield" &&
+      live.attacking !== null &&
+      !live.blocked &&
+      (step === "declare-blockers" || step === "combat-damage" || step === "end-combat");
+    if (unblocked !== filter.unblocked) return false;
   }
   if (filter.suspected !== undefined) {
     const suspected =

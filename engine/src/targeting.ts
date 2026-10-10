@@ -358,6 +358,9 @@ export function isLegalTarget(
     if (whose === "you" && object.owner !== forPlayer) return false;
     if (whose === "opponent" && object.owner === forPlayer) return false;
     if (whose === "defending-player" && object.owner !== defendingPlayerOf(state, source)) return false;
+    if (whose === "trigger-player" && (source?.triggerPlayer === undefined || object.owner !== source.triggerPlayer)) {
+      return false;
+    }
     // Printed characteristics: layer effects don't reach a graveyard, and
     // `matchesFilter` degrades to printed values off the battlefield anyway.
     return (

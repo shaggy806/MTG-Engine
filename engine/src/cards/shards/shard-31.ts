@@ -79,6 +79,7 @@ import _poolElspethStormSlayer from "../pool/elspeth-storm-slayer.js";
 import _poolElvishLyrist from "../pool/elvish-lyrist.js";
 import _poolEnergyRefractor from "../pool/energy-refractor.js";
 import _poolFacevaulter from "../pool/facevaulter.js";
+import _poolFallenShinobi from "../pool/fallen-shinobi.js";
 import _poolFellwarStone from "../pool/fellwar-stone.js";
 import _poolFesteringGoblin from "../pool/festering-goblin.js";
 import _poolFetidHeath from "../pool/fetid-heath.js";
@@ -349,6 +350,7 @@ const shard: CardShard = {
     _poolElvishLyrist,
     _poolEnergyRefractor,
     _poolFacevaulter,
+    _poolFallenShinobi,
     _poolFellwarStone,
     _poolFesteringGoblin,
     _poolFetidHeath,

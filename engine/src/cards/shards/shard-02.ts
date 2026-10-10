@@ -144,6 +144,7 @@ import _poolMemorialToWar from "../pool/memorial-to-war.js";
 import _poolMetallurgicSummonings from "../pool/metallurgic-summonings.js";
 import _poolMindSpring from "../pool/mind-spring.js";
 import _poolMishrasOnslaught from "../pool/mishras-onslaught.js";
+import _poolMistbladeShinobi from "../pool/mistblade-shinobi.js";
 import _poolMisterFantasticReedRichards from "../pool/mister-fantastic-reed-richards.js";
 import _poolMolderingKarok from "../pool/moldering-karok.js";
 import _poolMountain from "../pool/mountain.js";
@@ -200,6 +201,7 @@ import _poolShalaiVoiceOfPlenty from "../pool/shalai-voice-of-plenty.js";
 import _poolShatterskullGiant from "../pool/shatterskull-giant.js";
 import _poolSinisterStarfish from "../pool/sinister-starfish.js";
 import _poolSkeletalSnake from "../pool/skeletal-snake.js";
+import _poolSkullsnatcher from "../pool/skullsnatcher.js";
 import _poolSkyDiamond from "../pool/sky-diamond.js";
 import _poolSkyhunterPatrol from "../pool/skyhunter-patrol.js";
 import _poolSkyrakerGiant from "../pool/skyraker-giant.js";
@@ -224,9 +226,11 @@ import _poolSurtlandFrostpyre from "../pool/surtland-frostpyre.js";
 import _poolSwordsToPlowshares from "../pool/swords-to-plowshares.js";
 import _poolSylvanOffering from "../pool/sylvan-offering.js";
 import _poolSymbolOfUnsummoning from "../pool/symbol-of-unsummoning.js";
+import _poolTheRestorationOfEiganjo from "../pool/the-restoration-of-eiganjo.js";
 import _poolTheSurgicalBay from "../pool/the-surgical-bay.js";
 import _poolTheThirteenthDoctor from "../pool/the-thirteenth-doctor.js";
 import _poolThrillingDiscovery from "../pool/thrilling-discovery.js";
+import _poolThroatSlitter from "../pool/throat-slitter.js";
 import _poolThrummingHivepool from "../pool/thrumming-hivepool.js";
 import _poolTidespoutTyrant from "../pool/tidespout-tyrant.js";
 import _poolTotemGuideHartebeest from "../pool/totem-guide-hartebeest.js";
@@ -408,6 +412,7 @@ const shard: CardShard = {
     _poolMetallurgicSummonings,
     _poolMindSpring,
     _poolMishrasOnslaught,
+    _poolMistbladeShinobi,
     _poolMisterFantasticReedRichards,
     _poolMolderingKarok,
     _poolMountain,
@@ -464,6 +469,7 @@ const shard: CardShard = {
     _poolShatterskullGiant,
     _poolSinisterStarfish,
     _poolSkeletalSnake,
+    _poolSkullsnatcher,
     _poolSkyDiamond,
     _poolSkyhunterPatrol,
     _poolSkyrakerGiant,
@@ -488,9 +494,11 @@ const shard: CardShard = {
     _poolSwordsToPlowshares,
     _poolSylvanOffering,
     _poolSymbolOfUnsummoning,
+    _poolTheRestorationOfEiganjo,
     _poolTheSurgicalBay,
     _poolTheThirteenthDoctor,
     _poolThrillingDiscovery,
+    _poolThroatSlitter,
     _poolThrummingHivepool,
     _poolTidespoutTyrant,
     _poolTotemGuideHartebeest,

@@ -153,6 +153,7 @@ import _poolMesaFalcon from "../pool/mesa-falcon.js";
 import _poolMidnightReaper from "../pool/midnight-reaper.js";
 import _poolMindStone from "../pool/mind-stone.js";
 import _poolMirrisGuile from "../pool/mirris-guile.js";
+import _poolMistSyndicateNaga from "../pool/mist-syndicate-naga.js";
 import _poolMorskaUnderseaSleuth from "../pool/morska-undersea-sleuth.js";
 import _poolMossbornHydra from "../pool/mossborn-hydra.js";
 import _poolMosswortBridge from "../pool/mosswort-bridge.js";
@@ -427,6 +428,7 @@ const shard: CardShard = {
     _poolMidnightReaper,
     _poolMindStone,
     _poolMirrisGuile,
+    _poolMistSyndicateNaga,
     _poolMorskaUnderseaSleuth,
     _poolMossbornHydra,
     _poolMosswortBridge,

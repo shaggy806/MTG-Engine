@@ -110,6 +110,7 @@ import _poolImpeccableTiming from "../pool/impeccable-timing.js";
 import _poolIndustrialAdvancement from "../pool/industrial-advancement.js";
 import _poolInfiltrationLens from "../pool/infiltration-lens.js";
 import _poolIngaAndEsika from "../pool/inga-and-esika.js";
+import _poolIngeniousInfiltrator from "../pool/ingenious-infiltrator.js";
 import _poolIridescentVinelasher from "../pool/iridescent-vinelasher.js";
 import _poolIrohsDemonstration from "../pool/irohs-demonstration.js";
 import _poolIronBarbHellion from "../pool/iron-barb-hellion.js";
@@ -149,6 +150,7 @@ import _poolMutableExplorer from "../pool/mutable-explorer.js";
 import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
 import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
 import _poolMysticMonastery from "../pool/mystic-monastery.js";
+import _poolNezumiProwler from "../pool/nezumi-prowler.js";
 import _poolNightguardPatrol from "../pool/nightguard-patrol.js";
 import _poolNissasPilgrimage from "../pool/nissas-pilgrimage.js";
 import _poolOctomancer from "../pool/octomancer.js";
@@ -383,6 +385,7 @@ const shard: CardShard = {
     _poolIndustrialAdvancement,
     _poolInfiltrationLens,
     _poolIngaAndEsika,
+    _poolIngeniousInfiltrator,
     _poolIridescentVinelasher,
     _poolIrohsDemonstration,
     _poolIronBarbHellion,
@@ -422,6 +425,7 @@ const shard: CardShard = {
     _poolMutantTownMusicians,
     _poolMyrkulLordOfBones,
     _poolMysticMonastery,
+    _poolNezumiProwler,
     _poolNightguardPatrol,
     _poolNissasPilgrimage,
     _poolOctomancer,

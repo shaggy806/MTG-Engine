@@ -10807,7 +10807,7 @@ export class Game {
     // needn't have.
     const hasX = parsed.x > 0 || costAnnouncesX(ability.cost);
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
-    const mod = this.abilityCostModificationFor(sourceId, isManaAbility(ability));
+    const mod = this.abilityCostModificationFor(sourceId, ability, player);
     // Increases first, then the reductions (rule 601.2f).
     let generic = parsed.generic + parsed.x * chosenX + mod.increaseGeneric;
     // "This effect can't reduce the mana in that cost to less than one mana"
@@ -10876,8 +10876,9 @@ export class Game {
    * and take off (rule 602.2b), the reductions that must leave one mana
    * apart. Only an ability of a permanent: every one of them reads
    * "activated abilities of [permanents] you control", and a card in a hand
-   * or graveyard is no permanent (Forensic Gadgeteer's ruling on cycling). */
-  private abilityCostModificationFor(sourceId: ObjectId, manaAbility: boolean): {
+   * or graveyard is no permanent (Forensic Gadgeteer's ruling on cycling) —
+   * bar the `ninjutsu` ones, which name abilities of cards in a hand. */
+  private abilityCostModificationFor(sourceId: ObjectId, ability: ActivatedAbility, player: PlayerId): {
     increaseGeneric: number;
     reduceGeneric: number;
     reduceGenericLeavingOne: number;
@@ -10885,10 +10886,12 @@ export class Game {
     let increaseGeneric = 0;
     let reduceGeneric = 0;
     let reduceGenericLeavingOne = 0;
-    if (this.state.objects[sourceId]?.zone !== "battlefield") {
-      return { increaseGeneric, reduceGeneric, reduceGenericLeavingOne };
-    }
+    const manaAbility = isManaAbility(ability);
+    const onBattlefield = this.state.objects[sourceId]?.zone === "battlefield";
     for (const { controller, mod } of this.abilityCostModifiers()) {
+      // "Ninjutsu abilities you activate" (Silver-Fur Master), wherever the
+      // card is; every other kind, only a permanent's.
+      if (mod.ninjutsu === true ? ability.ninjutsu !== true || player !== controller : !onBattlefield) continue;
       // "…unless they're mana abilities" (Suppression Field, Zirda).
       if (manaAbility && mod.exceptManaAbilities === true) continue;
       if (!matchesFilter(this.state, this.registry, sourceId, mod.applies, { you: controller })) continue;
@@ -11376,7 +11379,11 @@ export class Game {
       sacrificedRef = { object: victim, zoneChangeCount: stint };
     }
 
-    if (ability.zone === "hand") {
+    if (ability.zone === "hand" && ability.staysInZone === true) {
+      // Ninjutsu (rule 702.49a, b): the card is revealed as part of the cost
+      // and stays in the hand, revealed, until the ability leaves the stack.
+      if (ability.ninjutsu === true) this.revealCards(player, [sourceId], "hand");
+    } else if (ability.zone === "hand") {
       // Channel (rule 702.51a): discarding the source card is an implicit,
       // unconditional part of the cost, paid alongside the mana above.
       this.moveObject(sourceId, "graveyard");
@@ -11568,8 +11575,18 @@ export class Game {
     // "Return a Forest you control to its owner's hand": which, asked now
     // too (rules 602.2b, 601.2h).
     const costReturn = ability.cost.returnToHand;
-    if (costReturn !== undefined) this.payReturnToHandCost(player, sourceId, costReturn);
+    if (costReturn !== undefined) this.payReturnToHandCost(player, sourceId, costReturn, abilityId);
     this.afterPlayerAction(player);
+  }
+
+  /** As `ability`'s `returnToHand` cost returns `returned`: what it was
+   * attacking, if it was — where a ninja goes (rule 702.49c). The first one
+   * returned that was attacking. */
+  private recordReturnedAttacking(ability: ObjectId, returned: ObjectId): void {
+    const object = this.state.objects[ability];
+    const at = this.state.objects[returned]?.attacking ?? null;
+    if (object === undefined || at === null || object.lastKnownRefs?.returnedAttacking !== undefined) return;
+    object.lastKnownRefs = { ...object.lastKnownRefs, returnedAttacking: at };
   }
 
   /** A discard just asked for as a cost — a spell's or an activated
@@ -11637,11 +11654,13 @@ export class Game {
     player: PlayerId,
     source: ObjectId,
     cost: NonNullable<AbilityCost["returnToHand"]>,
+    ability: ObjectId,
   ): void {
     const filter: CardFilter = { ...cost.filter, controlledBy: "you" };
     const eligible = this.battlefieldMatching(player, filter);
     if (permanentCount(this.state, eligible) <= cost.count) {
       for (const id of eligible) {
+        this.recordReturnedAttacking(ability, id);
         const n = this.state.objects[id]?.stackCount ?? 1;
         for (let i = 0; i < n; i += 1) this.returnToHandByEffect({ kind: "object", object: id });
       }
@@ -11659,7 +11678,7 @@ export class Game {
     );
     const awaiting = this.state.awaiting;
     if (awaiting?.kind === "choose-permanents" && awaiting.player === player) {
-      this.state.awaiting = { ...awaiting, priorityTo: player };
+      this.state.awaiting = { ...awaiting, priorityTo: player, costOf: ability };
     }
   }
 
@@ -18449,6 +18468,27 @@ export class Game {
           return link !== undefined && link.source === source && link.zoneChangeCount === stint;
         });
       },
+      ninjutsu: () => {
+        // Still in the hand (or command zone) it was activated from, and the
+        // same object (rule 400.7): one discarded in response is gone.
+        const card = this.state.objects[source];
+        if (opts.sourceLost === true || card === undefined || (card.zone !== "hand" && card.zone !== "command")) {
+          return false;
+        }
+        const at = refs.returnedAttacking;
+        return this.putOntoBattlefieldByEffect(
+          { kind: "object", object: source },
+          controller,
+          false,
+          true,
+          undefined,
+          false,
+          false,
+          undefined,
+          undefined,
+          at !== undefined ? { defender: at } : undefined,
+        );
+      },
       copyCards: (cards, times) => {
         // Rule 707.12: each copy is made in the zone its card is in, to be
         // cast from there; owned by the player who'll cast it. A copy not cast
@@ -22281,6 +22321,10 @@ export class Game {
     let options: (PlayerId | ObjectId)[];
     if (how === "choose") {
       options = defenders;
+    } else if ("defender" in how) {
+      // That one, if it can still be attacked: a player still in the game, a
+      // planeswalker a defending player still controls (rule 508.4a).
+      options = defenders.includes(how.defender) ? [how.defender] : [];
     } else {
       // "Attacking that player": a defending player still in the game
       // (rule 508.4a), or nothing.
@@ -22392,8 +22436,9 @@ export class Game {
       if (this.state.awaiting === null) this.prepareForPriority(awaiting.priorityTo ?? this.activePlayer);
       return;
     }
-    const { then, source, x, priorityTo } = awaiting;
+    const { then, source, x, priorityTo, costOf } = awaiting;
     this.state.awaiting = null;
+    if (costOf !== undefined) for (const id of chosen) this.recordReturnedAttacking(costOf, id);
     // One instruction acting on each permanent chosen (rule 608.2c), so one
     // event: God-Eternal Bontu's "sacrifice any number of other permanents"
     // sacrifices them all at once, and a "whenever one or more" sees one batch.
@@ -23040,6 +23085,7 @@ export class Game {
     transformed = false,
     underPlayer?: PlayerId,
     types?: EnterTypes,
+    attacking?: ResolvedEnterAttacking,
   ): boolean {
     const under = underPlayer ?? (underYourControl ? controller : undefined);
     if (target.kind !== "object") return false;
@@ -23076,6 +23122,9 @@ export class Game {
       // Put there, counters and all, by whoever puts it onto the battlefield.
       this.addCounter(target, withCounters.kind, withCounters.amount, true, under ?? controller);
     }
+    // "…tapped and attacking" (rule 508.4): as it enters, before anything
+    // sees it arrive.
+    if (attacking !== undefined) this.putIntoAttack([target.object], entered.controller, attacking);
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
     return false;
   }

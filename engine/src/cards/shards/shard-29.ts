@@ -8,6 +8,7 @@ import _poolAdaptiveGemguard from "../pool/adaptive-gemguard.js";
 import _poolAffaProtector from "../pool/affa-protector.js";
 import _poolAllosaurusShepherd from "../pool/allosaurus-shepherd.js";
 import _poolApproachOfTheSecondSun from "../pool/approach-of-the-second-sun.js";
+import _poolArchitectOfRestoration from "../pool/architect-of-restoration.js";
 import _poolArchmageOfEchoes from "../pool/archmage-of-echoes.js";
 import _poolArdbert from "../pool/ardbert.js";
 import _poolArgentumArmor from "../pool/argentum-armor.js";
@@ -272,6 +273,7 @@ const shard: CardShard = {
     _poolAffaProtector,
     _poolAllosaurusShepherd,
     _poolApproachOfTheSecondSun,
+    _poolArchitectOfRestoration,
     _poolArchmageOfEchoes,
     _poolArdbert,
     _poolArgentumArmor,

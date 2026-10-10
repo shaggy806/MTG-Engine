@@ -1,0 +1,172 @@
+{
+  "batch": "B43",
+  "status": "complete",
+  "ranks": "keyword:ninjutsu's waiting cards (rule 702.49): ninjutsu and commander ninjutsu, the `unblocked` filter clause, a graveyard target 'that player's', and a cost reduction for ninjutsu abilities",
+  "authored": [
+    {
+      "name": "Ninja of the Deep Hours",
+      "files": [
+        "engine/src/cards/pool/ninja-of-the-deep-hours.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Yuriko, the Tiger's Shadow",
+      "files": [
+        "engine/src/cards/pool/yuriko-the-tigers-shadow.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Fallen Shinobi",
+      "files": [
+        "engine/src/cards/pool/fallen-shinobi.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prosperous Thief",
+      "files": [
+        "engine/src/cards/pool/prosperous-thief.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Silver-Fur Master",
+      "files": [
+        "engine/src/cards/pool/silver-fur-master.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ink-Eyes, Servant of Oni",
+      "files": [
+        "engine/src/cards/pool/ink-eyes-servant-of-oni.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ingenious Infiltrator",
+      "files": [
+        "engine/src/cards/pool/ingenious-infiltrator.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mistblade Shinobi",
+      "files": [
+        "engine/src/cards/pool/mistblade-shinobi.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Moon-Circuit Hacker",
+      "files": [
+        "engine/src/cards/pool/moon-circuit-hacker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sakashima's Student",
+      "files": [
+        "engine/src/cards/pool/sakashimas-student.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Throat Slitter",
+      "files": [
+        "engine/src/cards/pool/throat-slitter.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mist-Syndicate Naga",
+      "files": [
+        "engine/src/cards/pool/mist-syndicate-naga.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Higure, the Still Wind",
+      "files": [
+        "engine/src/cards/pool/higure-the-still-wind.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nezumi Prowler",
+      "files": [
+        "engine/src/cards/pool/nezumi-prowler.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Skullsnatcher",
+      "files": [
+        "engine/src/cards/pool/skullsnatcher.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Satoru Umezawa",
+      "needs": [
+        "static:grant-ninjutsu",
+        "trigger:activates-ability"
+      ],
+      "why": "ninjutsu granted to the creature cards in your hand, and 'whenever you activate a ninjutsu ability' once each turn"
+    },
+    {
+      "name": "Thousand-Faced Shadow",
+      "needs": [
+        "condition:entered-from-hand"
+      ],
+      "why": "'when this creature enters from your hand, if it's attacking': nothing reads which zone it entered from"
+    },
+    {
+      "name": "Yuffie, Materia Hunter",
+      "needs": [
+        "effect:control-while-you-control-source",
+        "effect:attach-extensions"
+      ],
+      "why": "control 'for as long as you control Yuffie' ends on a change of control too, and 'attach an Equipment you control to Yuffie'"
+    },
+    {
+      "name": "Dokuchi Silencer",
+      "needs": [
+        "effect:discard-filtered"
+      ],
+      "why": "'you may discard a creature card. When you do' — discard can't be limited to a kind of card"
+    },
+    {
+      "name": "Nashi, Moon Sage's Scion",
+      "needs": [
+        "cost:alt-cost-pay-life-equal-mana-value"
+      ],
+      "why": "play one of the cards exiled from each library, casting it by paying life equal to its mana value"
+    },
+    {
+      "name": "Silent-Blade Oni",
+      "needs": [
+        "zone:cast-from-opponents-hand"
+      ],
+      "why": "cast a spell from among the cards in that player's hand"
+    },
+    {
+      "name": "Orochi Soul-Reaver",
+      "needs": [
+        "effect:manifest-from-other-library"
+      ],
+      "why": "manifest the top card of that player's library under your control"
+    },
+    {
+      "name": "Kaito, Bane of Nightmares",
+      "needs": [
+        "static:planeswalker-becomes-creature"
+      ],
+      "why": "he's a 3/4 Ninja creature during your turn while he has loyalty counters"
+    }
+  ]
+}

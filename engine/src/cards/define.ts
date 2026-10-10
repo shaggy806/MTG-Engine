@@ -1640,6 +1640,11 @@ export interface StaticAbility {
      */
     readonly leavesOneMana?: boolean;
     readonly exceptManaAbilities?: boolean;
+    /** Only ninjutsu abilities this static's controller activates (Silver-Fur
+     * Master: "Ninjutsu abilities you activate cost {1} less to activate"),
+     * from the hand or the command zone — the one kind that reaches a card
+     * that isn't a permanent. `applies` still filters the card. */
+    readonly ninjutsu?: true;
   };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */

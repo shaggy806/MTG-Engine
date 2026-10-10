@@ -158,6 +158,7 @@ import _poolMidnightGuard from "../pool/midnight-guard.js";
 import _poolMoatPiranhas from "../pool/moat-piranhas.js";
 import _poolMoltenRavager from "../pool/molten-ravager.js";
 import _poolMonstrousGrowth from "../pool/monstrous-growth.js";
+import _poolMoonCircuitHacker from "../pool/moon-circuit-hacker.js";
 import _poolMorcantsLoyalist from "../pool/morcants-loyalist.js";
 import _poolMortivore from "../pool/mortivore.js";
 import _poolMourning from "../pool/mourning.js";
@@ -453,6 +454,7 @@ const shard: CardShard = {
     _poolMoatPiranhas,
     _poolMoltenRavager,
     _poolMonstrousGrowth,
+    _poolMoonCircuitHacker,
     _poolMorcantsLoyalist,
     _poolMortivore,
     _poolMourning,

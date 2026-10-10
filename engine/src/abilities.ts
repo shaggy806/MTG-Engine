@@ -353,9 +353,15 @@ export interface ActivatedAbility {
    * (Reassembling Skeleton: "{1}{B}: Return this card from your graveyard to
    * the battlefield tapped."). The card stays in the graveyard while the
    * ability is on the stack, so it can be activated again in response, and
-   * the effect finds it only if it's still there (see `zone`).
+   * the effect finds it only if it's still there (see `zone`). With `zone:
+   * "hand"`, a hand ability that isn't channel: the card isn't discarded
+   * (ninjutsu).
    */
   readonly staysInZone?: boolean;
+  /** A ninjutsu ability (rule 702.49), as the `ninjutsu()` helper writes it:
+   * the card is revealed from the hand as it's activated (702.49b). What "a
+   * ninjutsu ability" names. */
+  readonly ninjutsu?: true;
   /** "Activate only once each turn" (rule 602.5g — Steel Hellkite). Tracked
    * per ability index on `GameObject.abilitiesUsedThisTurn`, so a permanent
    * with two such abilities limits each separately. */

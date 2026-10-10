@@ -230,6 +230,7 @@ import _poolSyrGingerTheMealEnder from "../pool/syr-ginger-the-meal-ender.js";
 import _poolTalismanOfDominance from "../pool/talisman-of-dominance.js";
 import _poolTemporalAdept from "../pool/temporal-adept.js";
 import _poolThassasOracle from "../pool/thassas-oracle.js";
+import _poolTheLegendOfKyoshi from "../pool/the-legend-of-kyoshi.js";
 import _poolTheShire from "../pool/the-shire.js";
 import _poolThornMammoth from "../pool/thorn-mammoth.js";
 import _poolThornglintBridge from "../pool/thornglint-bridge.js";
@@ -528,6 +529,7 @@ const shard: CardShard = {
     _poolTalismanOfDominance,
     _poolTemporalAdept,
     _poolThassasOracle,
+    _poolTheLegendOfKyoshi,
     _poolTheShire,
     _poolThornMammoth,
     _poolThornglintBridge,

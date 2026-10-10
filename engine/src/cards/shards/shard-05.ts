@@ -220,6 +220,7 @@ import _poolShamanOfSpring from "../pool/shaman-of-spring.js";
 import _poolShamblingGoblin from "../pool/shambling-goblin.js";
 import _poolSharlayanNationOfScholars from "../pool/sharlayan-nation-of-scholars.js";
 import _poolShatterskullRecruit from "../pool/shatterskull-recruit.js";
+import _poolShivaWardenOfIce from "../pool/shiva-warden-of-ice.js";
 import _poolShriekdiver from "../pool/shriekdiver.js";
 import _poolSifterOfSkulls from "../pool/sifter-of-skulls.js";
 import _poolSkyTheaterStrix from "../pool/sky-theater-strix.js";
@@ -517,6 +518,7 @@ const shard: CardShard = {
     _poolShamblingGoblin,
     _poolSharlayanNationOfScholars,
     _poolShatterskullRecruit,
+    _poolShivaWardenOfIce,
     _poolShriekdiver,
     _poolSifterOfSkulls,
     _poolSkyTheaterStrix,

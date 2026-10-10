@@ -1,0 +1,32 @@
+{
+  "batch": "B42",
+  "status": "complete",
+  "ranks": "The stale records: the three exile-and-return-transformed cards whose blocker (bug:return-transformed-non-dfc-stays-exiled) landed 2026-10-09",
+  "authored": [
+    {
+      "name": "Jill, Shiva's Dominant",
+      "files": [
+        "engine/src/cards/pool/jill-shivas-dominant.ts",
+        "engine/src/cards/pool/shiva-warden-of-ice.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Restoration of Eiganjo",
+      "files": [
+        "engine/src/cards/pool/the-restoration-of-eiganjo.ts",
+        "engine/src/cards/pool/architect-of-restoration.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Legend of Kyoshi",
+      "files": [
+        "engine/src/cards/pool/the-legend-of-kyoshi.ts",
+        "engine/src/cards/pool/avatar-kyoshi.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": []
+}

@@ -74,7 +74,7 @@ export function CommanderTile({
   const tint = cardTint(obj)
 
   return (
-    <div className="commander-tile-wrap" ref={wrapRef} {...handlers}>
+    <div className="commander-tile-wrap" ref={wrapRef} data-obj-id={obj.id} {...handlers}>
       <button
         type="button"
         className={`commander-tile${highlight ? ' highlight' : ''}${clickable ? ' clickable' : ''}${paired ? ' paired' : ''}`}

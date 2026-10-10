@@ -826,10 +826,14 @@ export type EnterAttacking =
   | "choose"
   | { readonly player: EffectPlayerRef; readonly orTheirPlaneswalker?: boolean };
 
-/** {@link EnterAttacking} with its player resolved, as `Game` takes it. */
+/** {@link EnterAttacking} with its player resolved, as `Game` takes it —
+ * or `defender`, one exact player, planeswalker or battle (ninjutsu's "the
+ * same … as the creature that was returned", rule 702.49c), attacked only
+ * if it can still be (508.4a). */
 export type ResolvedEnterAttacking =
   | "choose"
-  | { readonly player: PlayerId | undefined; readonly orTheirPlaneswalker: boolean };
+  | { readonly player: PlayerId | undefined; readonly orTheirPlaneswalker: boolean }
+  | { readonly defender: PlayerId | ObjectId };
 
 /** One row of a die roll's results table (rule 706.3a): a result from `min`
  * to `max` (any result from `min` up, without one) gets `effect`. */
@@ -2096,6 +2100,20 @@ export type EffectSpec =
       readonly kind: "earthbend";
       readonly target: EffectTargetRef;
       readonly amount: EffectAmount;
+    }
+  | {
+      /**
+       * Ninjutsu's effect (rule 702.49a): "put this card onto the battlefield
+       * from your hand tapped and attacking" — from the command zone too, for
+       * commander ninjutsu (702.49d). It attacks the player, planeswalker or
+       * battle the creature returned for its cost was attacking (702.49c,
+       * recorded as that cost was paid), and nothing at all if that's gone
+       * (508.4a): it still enters, just not attacking. Entering during the
+       * declare blockers step or later it's unblocked (508.4d). The card must
+       * still be the same object in that zone (rule 400.7), or nothing
+       * happens. Written by the `ninjutsu()` helper; nothing else uses it.
+       */
+      readonly kind: "ninjutsu";
     }
   | {
       /**
@@ -4553,6 +4571,9 @@ export interface EffectApi {
    * `GameObject.exiledWith`), in the battlefield stint the resolving spell
    * or ability refers to. */
   cardsExiledWithSource(): readonly ObjectId[];
+  /** See the `"ninjutsu"` {@link EffectSpec}: whether it stopped to ask an
+   * "as this enters" choice, after which it's applied again. */
+  ninjutsu(): boolean;
   /** The top `count` cards of `player`'s library, top first. */
   libraryTop(player: PlayerId, count: number, reveal?: boolean): readonly ObjectId[];
   /** `times` copies of each of `cards` (rule 707.12), made in the card's
@@ -6917,6 +6938,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "allow-cast-from-exile": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.allowCastFromExile(target, spec.free === true, spec.laterTurns === true);
+      return;
+    }
+    case "ninjutsu": {
+      const parked = ctx.parkedCount();
+      // Its "as this enters" choices first (Sakashima's Student's copy),
+      // then this again to put it there.
+      if (ctx.ninjutsu()) ctx.resumeAfterDecisions(spec, parked);
       return;
     }
     case "earthbend": {

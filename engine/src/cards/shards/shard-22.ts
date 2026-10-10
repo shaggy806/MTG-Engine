@@ -192,6 +192,7 @@ import _poolRunAwayTogether from "../pool/run-away-together.js";
 import _poolRustedSentinel from "../pool/rusted-sentinel.js";
 import _poolRyuseiTheFallingStar from "../pool/ryusei-the-falling-star.js";
 import _poolSacrifice from "../pool/sacrifice.js";
+import _poolSakashimasStudent from "../pool/sakashimas-student.js";
 import _poolSamwiseGamgee from "../pool/samwise-gamgee.js";
 import _poolSavvyHunter from "../pool/savvy-hunter.js";
 import _poolSawItComing from "../pool/saw-it-coming.js";
@@ -204,6 +205,7 @@ import _poolSentinelsOfGlenElendra from "../pool/sentinels-of-glen-elendra.js";
 import _poolShepherdOfRot from "../pool/shepherd-of-rot.js";
 import _poolShireTerrace from "../pool/shire-terrace.js";
 import _poolSiegeGangCommander from "../pool/siege-gang-commander.js";
+import _poolSilverFurMaster from "../pool/silver-fur-master.js";
 import _poolSkirkProspector from "../pool/skirk-prospector.js";
 import _poolSkitteringSurveyor from "../pool/skittering-surveyor.js";
 import _poolSkycatSovereign from "../pool/skycat-sovereign.js";
@@ -282,6 +284,7 @@ import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
 import _poolYargleGluttonOfUrborg from "../pool/yargle-glutton-of-urborg.js";
 import _poolYavimayaElder from "../pool/yavimaya-elder.js";
 import _poolYawgmothThranPhysician from "../pool/yawgmoth-thran-physician.js";
+import _poolYurikoTheTigersShadow from "../pool/yuriko-the-tigers-shadow.js";
 import _poolZiatoraTheIncinerator from "../pool/ziatora-the-incinerator.js";
 import _tokensDragonEggToken from "../tokens/dragon-egg-token.js";
 import _tokensDwarfToken from "../tokens/dwarf-token.js";
@@ -481,6 +484,7 @@ const shard: CardShard = {
     _poolRustedSentinel,
     _poolRyuseiTheFallingStar,
     _poolSacrifice,
+    _poolSakashimasStudent,
     _poolSamwiseGamgee,
     _poolSavvyHunter,
     _poolSawItComing,
@@ -493,6 +497,7 @@ const shard: CardShard = {
     _poolShepherdOfRot,
     _poolShireTerrace,
     _poolSiegeGangCommander,
+    _poolSilverFurMaster,
     _poolSkirkProspector,
     _poolSkitteringSurveyor,
     _poolSkycatSovereign,
@@ -571,6 +576,7 @@ const shard: CardShard = {
     _poolYargleGluttonOfUrborg,
     _poolYavimayaElder,
     _poolYawgmothThranPhysician,
+    _poolYurikoTheTigersShadow,
     _poolZiatoraTheIncinerator,
   ],
   tokens: [

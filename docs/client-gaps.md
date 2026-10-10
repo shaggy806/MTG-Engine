@@ -66,3 +66,11 @@ title; when one lands, delete it in both. The animation follow-ups are in
   that day) already shortened to "R3" below 75rem. "Player 1 to act" and the text buttons
   (Settings, History, Capture, Seat) are what's left to shorten — icons, or the acting player
   folded into the turn banner.
+
+**A forced look-and-choose still asks**
+
+Yuriko, the Tiger's Shadow and Dark Confidant reveal the top card and put it into your hand: a
+`look-and-choose` over the library with `count: 1, min: 1, max: 1`, so the zone picker opens on one
+card that must be taken (seen live 2026-10-09). The engine could skip the `choose-from-zone` when
+the eligible cards are exactly `min` = `max` and there's no order to pick (`Game`'s look-and-choose,
+where the decision is raised); bots and the fuzzer answer it already.
