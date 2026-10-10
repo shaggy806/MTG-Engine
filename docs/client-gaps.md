@@ -55,6 +55,11 @@ title; when one lands, delete it in both. The animation follow-ups are in
   "you may" asked after another decision in the same resolution (it parks, and loses
   `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
   granted (`grantedAbility` kind `modifier`, which has no signature).
+- **The library's card viewer has no printings panel** (the user's ask, 2026-10-09). Add "just
+  a scrollable list of all the sets/printings of a card"; clicking a printing changes the
+  displayed one to it. Also keep the next/previous buttons still: today they move as the
+  viewer box grows and shrinks with whether the card has associated tokens.
+  `client/src/library/LibraryPage.tsx`, `library.css`.
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review). Moving bot
   speed into the Settings panel brought every step back at 1366x768, but at 1024 the track
   (`PhaseTrack`) still stops short: at EC on 2026-10-09, with the turn banner's round (added
