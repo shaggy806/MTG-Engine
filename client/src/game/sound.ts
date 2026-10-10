@@ -5,8 +5,8 @@ import { motionPrefs } from './motionPrefs.ts'
  * `sound`). Played from the same cues the animations are (see
  * `AnimationLayer`), so a sound lands with the thing it belongs to.
  *
- * Two sources. The table's own noises — cards, dice, chips — are recorded
- * (`public/sfx/`, from Kenney's CC0 packs; `CREDITS.md` there says which),
+ * Two sources. The table's own noises — cards, dice, chips — and the victory
+ * tune are recorded (`public/sfx/`, all CC0; `CREDITS.md` there says whose),
  * loaded once sound is first played. Everything else is a short tone
  * synthesised with Web Audio, which is also what a recorded cue falls back to
  * while its files load (or if they can't), where it has a tone at all.
@@ -29,6 +29,7 @@ export type SoundCue =
   | 'countered'
   | 'dice'
   | 'die'
+  | 'victory'
 
 /** `name-1` … `name-n`: a recording's takes, as its pack numbers them. */
 function takes(name: string, n: number): string[] {
@@ -50,7 +51,11 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   countered: ['error_006'],
   dice: ['dice-throw-1', 'dice-throw-3'],
   die: takes('die-throw', 4),
+  victory: ['newthingget'],
 }
+
+/** Cues that are tunes: played as recorded, never nudged in pitch. */
+const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory'])
 
 /** Kept low: these play under a game, not over it. */
 const VOLUME = 0.6
@@ -126,7 +131,7 @@ function sample(a: AudioContext, cue: SoundCue): boolean {
   const source = a.createBufferSource()
   source.buffer = buffers.get(file) ?? null
   // A touch of pitch either way, so even the same take twice isn't identical.
-  source.playbackRate.value = 0.96 + Math.random() * 0.08
+  if (!TUNES.has(cue)) source.playbackRate.value = 0.96 + Math.random() * 0.08
   const gain = a.createGain()
   gain.gain.value = SAMPLE_LEVEL * VOLUME
   source.connect(gain).connect(a.destination)

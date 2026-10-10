@@ -284,7 +284,7 @@ Follow-on ideas, approved by the user on 2026-09-30:
   are recorded now (draw, land, shuffle, discard, mill, counters, dice, a countered spell; Kenney's
   CC0 packs, `client/public/sfx/CREDITS.md`), but cast, hit, death, exile, life, turn and tap are
   still Web Audio tones. Cues with nothing yet: attack, block, noncombat damage, bounce, your
-  turn and your priority (viewer-only), a player eliminated, victory and defeat, a token arriving,
+  turn and your priority (viewer-only), a player eliminated, defeat (victory has its tune), a token arriving,
   a trigger, a transform, a change of control, and a commander cast; and `game-started`, if a
   frame ever carries it to the client. A new cue is a `SoundCue`, a `SAMPLES` entry and a
   `soundFor` case; an event with no animation needs a `sound` slot (`animationSchedule.ts`).

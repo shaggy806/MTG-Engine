@@ -42,6 +42,7 @@ import type { RematchOffer } from './net/rematch.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { waitingLabel } from './game/waitingLabel.ts'
 import { gameStats } from './game/gameStats.ts'
+import { playSound } from './game/sound.ts'
 import { useEscape } from './ui/useEscape.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { applyBoardOrder } from './game/boardOrder.ts'
@@ -925,6 +926,12 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
     // A spectator has no seat to pass for.
     if (status === 'playing' && !spectating) sendPassSettings(passSettings)
   }, [passSettings, sendPassSettings, status, spectating])
+  // The winner hears a tune as the game ends: with the result panel, once the
+  // last frame has played. Not someone watching.
+  const won = view !== null && seat !== null && !spectating && view.result.over && view.result.winner === seat
+  useEffect(() => {
+    if (won) playSound('victory')
+  }, [won])
   if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }

@@ -8,3 +8,4 @@ moment, so `sound.ts` sets one level for all of them.
 |---|---|---|
 | `card-*`, `chip-lay-*`, `dice-throw-*`, `die-throw-*` | [Casino Audio](https://kenney.nl/assets/casino-audio) 1.1 by Kenney (`card-shuffle` trimmed to its first 2 s) | CC0 |
 | `error_006` | [Interface Sounds](https://kenney.nl/assets/interface-sounds) 1.0 by Kenney | CC0 |
+| `newthingget` (the victory tune) | [New thing get!](https://opengameart.org/content/new-thing-get) by congusbongus, on OpenGameArt (128 kbps) | CC0 |
