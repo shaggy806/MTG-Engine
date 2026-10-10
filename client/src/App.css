@@ -1716,11 +1716,33 @@
 }
 /* face-down library placeholder — CSS-only, no image, so it can never 404 */
 /* A face-down permanent's art box (rule 708): the card back's leather, in a
-   tile otherwise drawn as any creature — its P/T, counters and flags. */
+   tile otherwise drawn as any creature — its P/T, counters and flags. Set
+   through `--tint-bg`, as the identity tints are (see .tint-W): .ct-art and
+   .mt-art come later in this file, so a `background` here would lose to
+   theirs and the art box would show as a plain dark well. */
 .face-down-art {
-  background:
+  --tint-bg:
     radial-gradient(circle closest-side at center, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 70%, transparent 73%),
     var(--card-back-leather);
+}
+/* …and in its owner's seat colour once the tile knows whose it is
+   (`faceDownArtClass`): the same mix as their library's back below. */
+.face-down-art.fd-seat-a {
+  --fd-seat: var(--seat-a);
+}
+.face-down-art.fd-seat-b {
+  --fd-seat: var(--seat-b);
+}
+.face-down-art.fd-seat-c {
+  --fd-seat: var(--seat-c);
+}
+.face-down-art.fd-seat-d {
+  --fd-seat: var(--seat-d);
+}
+.face-down-art.owned {
+  --tint-bg:
+    radial-gradient(circle closest-side at center, color-mix(in srgb, var(--fd-seat) 26%, transparent) 0%, color-mix(in srgb, var(--fd-seat) 8%, transparent) 70%, transparent 73%),
+    linear-gradient(160deg, color-mix(in srgb, var(--fd-seat) 34%, #17130f), color-mix(in srgb, var(--fd-seat) 12%, #08070a));
 }
 .card-back {
   width: var(--card-w);

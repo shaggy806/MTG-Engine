@@ -2952,6 +2952,8 @@ function Table({
       obj.attachedToPlayer !== null && view.turnOrder.includes(obj.attachedToPlayer)
         ? { seat: seatClassOf(view.turnOrder, obj.attachedToPlayer), name: playerLabel(obj.attachedToPlayer, game.seats) }
         : null
+    // A face-down permanent wears its owner's card back.
+    const backSeat = view.turnOrder.includes(obj.owner) ? seatClassOf(view.turnOrder, obj.owner) : null
     if (opts.mini) {
       return (
         <MiniTile
@@ -2968,6 +2970,7 @@ function Table({
           goaders={goaders}
           enchanting={enchanting}
           held={(obj.holding ?? []).map((h) => ({ id: h, obj: view.objects[h] ?? null }))}
+          ownerSeat={backSeat}
           onClick={() => clickPermanent(ids)}
         />
       )
@@ -2985,6 +2988,7 @@ function Table({
         aimedBy={aimedBy}
         goaders={goaders}
         enchanting={enchanting}
+        ownerSeat={backSeat}
         onClick={() => clickPermanent(ids)}
       />
     )

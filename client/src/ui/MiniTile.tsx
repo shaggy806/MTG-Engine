@@ -13,7 +13,7 @@ import { TargetedMark } from './TargetedMark.tsx'
 import { CardFlags } from './CardFlags.tsx'
 import { CounterChips } from './CounterChips.tsx'
 import type { Goader } from './CardFlags.tsx'
-import { faceDownLabel } from './faceDown.ts'
+import { faceDownArtClass, faceDownLabel } from './faceDown.ts'
 import {
   isArtBlocked,
   isArtPending,
@@ -55,6 +55,10 @@ export interface MiniTileProps {
    * each with what this seat can see of it — `null` for one exiled face
    * down (rule 406.3), drawn as a card back. Shown beside the hover card. */
   readonly held?: readonly HeldCard[]
+  /** The owner's seat class (`seatClassOf`), for a face-down permanent's
+   * card back in their colour (`faceDownArtClass`); `null` for the plain
+   * back. */
+  readonly ownerSeat?: string | null
   readonly onClick?: () => void
 }
 
@@ -92,6 +96,7 @@ export function MiniTile({
   goaders = [],
   enchanting = null,
   held = [],
+  ownerSeat = null,
   onClick,
 }: MiniTileProps) {
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
@@ -155,7 +160,7 @@ export function MiniTile({
           {faceDown ?? obj.name ?? face}
         </span>
         <span className="mt-body">
-          <span className={faceDown !== null ? 'mt-art face-down-art' : `mt-art tint-${tint}`}>
+          <span className={faceDown !== null ? `mt-art ${faceDownArtClass(ownerSeat)}` : `mt-art tint-${tint}`}>
             {faceDown === null && !pending && !artFailed ? (
               <img
                 src={artSrc}
@@ -229,6 +234,7 @@ export function MiniTile({
                 badge={badge}
                 goaders={goaders}
                 enchanting={enchanting}
+                ownerSeat={ownerSeat}
               />
               <KeywordTips obj={obj} />
               {held.length > 0 ? (

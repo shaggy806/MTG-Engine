@@ -7,7 +7,7 @@ import { TargetedMark } from './TargetedMark.tsx'
 import { stripReminders } from './textKeywords.ts'
 import { CardFlags } from './CardFlags.tsx'
 import type { Goader } from './CardFlags.tsx'
-import { faceDownLabel } from './faceDown.ts'
+import { faceDownArtClass, faceDownLabel } from './faceDown.ts'
 import {
   isArtBlocked,
   isArtPending,
@@ -53,6 +53,10 @@ export interface CardTileProps {
    * in place of its placeholder colored circles). */
   readonly layout?: 'title' | 'art-first'
   readonly onClick?: () => void
+  /** The owner's seat class (`seatClassOf`), for a face-down permanent's
+   * card back in their colour (`faceDownArtClass`); `null` for the plain
+   * back. */
+  readonly ownerSeat?: string | null
 }
 
 const KEYWORD_LABEL: Record<string, string> = {
@@ -148,6 +152,7 @@ export function CardTile({
   goaders = [],
   enchanting = null,
   layout = 'title',
+  ownerSeat = null,
   onClick,
 }: CardTileProps) {
   // A Clone renders the *copied* card's face; a multi-face card renders its up
@@ -317,7 +322,7 @@ export function CardTile({
         </span>
       )}
 
-      <span className={faceDown !== null ? 'ct-art face-down-art' : `ct-art tint-${tint}`}>
+      <span className={faceDown !== null ? `ct-art ${faceDownArtClass(ownerSeat)}` : `ct-art tint-${tint}`}>
         {faceDown === null && !pending && !artFailed ? (
           <img
             src={artSrc}

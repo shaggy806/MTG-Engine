@@ -4160,7 +4160,7 @@ stack count once per token)
   top of bob's library. You also have Forests and a Serra Angel on top of your own library.
 - **Do:** Cast Reality Shift on the Grizzly Bears. Then, with a seat of your own manifested (Sit at
   bob, or cast it on your own creature), open the face-down creature's ability menu.
-- **Check:** The Bears are exiled and bob gets a face-down 2/2: a card-back tile reading
+- **Check:** The Bears are exiled and bob gets a face-down 2/2: a card-back tile in bob's seat colour (his library's back) reading
   "Face-down (manifested)" from your seat and "Manifested: Elvish Visionary" from bob's; the
   hover card shows no name, text or cost, and the log never names it. Bob doesn't draw (its enters
   ability never happens). Its controller's ability menu offers "Turn face up — Elvish Visionary,
