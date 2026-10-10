@@ -173,7 +173,6 @@ item lands.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **The lobby's seat box changes scale as people ready up** (the user, 2026-10-10): it should hold its size whoever is ready (`client/src/lobby/SeatBoard.tsx`).
 - **The mana pool display jitters the screen when mana is added** (the user, 2026-10-10): move it up onto the same row as the hand, library, graveyard and exile counts (`.pp-mana` in `client/src/ui/PlayerPanel.tsx`).
-- **A token stack hitting token by token waits a beat per token for one strike** (found 2026-10-10): each folded token's combat damage gets its own paced `hit` slot (`HIT_STEP_MS` 720) in `animationSchedule.ts`, but only the tile's own token can lunge (`runHit` finds no tile for the rest), so a stack of 5 sits through four silent, empty beats. Their slots could share the first one's beat.
 - **Every library zone shrinks after a mulligan** (found 2026-10-10): at 1920×1080 each seat's side column goes from 135×298 to 128×279 once the redrawn hand animates in, and stays so; not with reduced motion, so likely the hand row's height feeding `--card-w`.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards (manifested ones), damage, turn-long effects, the stack, the turn number.
 - **One art-crop primitive** — the art lookup is repeated in six components.

@@ -5,6 +5,7 @@ import { retimeFlights, scheduleEvents } from './animationSchedule.ts'
 import type { ScheduledEvent } from './animationSchedule.ts'
 import type { AnimationBus, AnimationCue } from './animationBus.ts'
 import { motionPrefs } from './motionPrefs.ts'
+import { tilesOf } from './board.ts'
 
 /** One server push: the events since the previous frame, the board they
  * settled into, and what this seat may do once it's shown. */
@@ -242,6 +243,8 @@ export function usePlayback(
       reduced: prefs.reduced,
       handDraws: handDrawsOf(events, next.view, seatRef.current),
       seat: seatRef.current,
+      // The board the first half plays over, where the strikes are drawn.
+      ...(prev ? { tileOf: tilesOf(prev) } : {}),
     })
     // A hidden tab has nobody watching, and the browser throttles its timers
     // to about one tick a second, so playing the frame out would only hold up

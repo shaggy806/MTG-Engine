@@ -338,6 +338,11 @@ export interface ScheduleOptions {
   /** The viewer's own seat, whose mulligan first sends the hand on screen
    * back to the library (`MULLIGAN_RETURN_MS`); null for a spectator. */
   readonly seat?: PlayerId | null
+  /** Which tile each permanent on the board on screen is drawn in (`board.ts`'s
+   * `tilesOf`): only a tile's own permanent can strike, so a token folded
+   * into another's tile hitting in the same frame shares that tile's strike
+   * rather than waiting a beat of its own with nothing drawn. */
+  readonly tileOf?: ReadonlyMap<ObjectId, ObjectId>
 }
 
 const NORMAL_SPEED: ScheduleOptions = { scale: 1, reduced: false }
@@ -785,7 +790,7 @@ function layOutFrame(
   scale: number,
   reduced: boolean,
   landings: Landings,
-  { handDraws = new Set(), seat = null }: ScheduleOptions,
+  { handDraws = new Set(), seat = null, tileOf = new Map() }: ScheduleOptions,
 ): { schedule: EventSchedule; paired: Set<number> } {
   const phase = { current: startPhase }
   const slots: Slot[] = []
@@ -828,6 +833,7 @@ function layOutFrame(
     kept.filter((s) => !AFTER.has(s.kind)),
     scale,
     ceiling,
+    tileOf,
   )
   const after = layOut(
     // A stable sort, so events of one kind keep the order they happened in.
@@ -926,6 +932,7 @@ function layOut(
   slots: readonly Slot[],
   scale: number,
   ceiling: number,
+  tileOf: ReadonlyMap<ObjectId, ObjectId> = new Map(),
 ): { items: ScheduledEvent[]; totalMs: number; landings: Set<number> } {
   const items: ScheduledEvent[] = []
   const landings = new Set<number>()
@@ -935,11 +942,32 @@ function layOut(
   // once, because they did.
   let shared: { kind: SlotKind; offset: number } | null = null
   let drawsSoFar = 0
+  // Each tile that has struck in this half, and when (see `tileOf`).
+  const struck = new Map<ObjectId, number>()
+  // The tile a hit's source is folded into, when that tile is drawn as some
+  // other token: such a hit can't be drawn (only the tile's own token
+  // strikes), so it costs no beat.
+  const foldedInto = (slot: Slot): ObjectId | null => {
+    if (slot.kind !== 'hit' || slot.event.type !== 'damage-dealt') return null
+    const tile = tileOf.get(slot.event.source)
+    return tile !== undefined && tile !== slot.event.source ? tile : null
+  }
+  const striker = (slot: Slot): ObjectId | null =>
+    slot.kind === 'hit' && slot.event.type === 'damage-dealt' ? slot.event.source : null
   for (const [index, slot] of slots.entries()) {
     // Before the ceiling: a run's later members cost nothing, the beat they
     // share is already paid for — and a run of mills is timed as a whole.
     if (shared !== null && shared.kind === slot.kind) {
       items.push({ event: slot.event, offset: shared.offset })
+      continue
+    }
+    // A token folded into another's tile hitting: the tile's own strike is
+    // the one drawn, so it goes with that, or costs nothing before it. (The
+    // tile's own token hitting twice — a blocker and then the player — is
+    // two strikes, each its beat.)
+    const tile = foldedInto(slot)
+    if (tile !== null) {
+      items.push({ event: slot.event, offset: struck.get(tile) ?? cumulative })
       continue
     }
     if (cumulative >= ceiling) break
@@ -965,6 +993,8 @@ function layOut(
         ...(slot.kind === 'putDown' ? { flightMs: cost } : {}),
       })
     }
+    const source = striker(slot)
+    if (source !== null && !struck.has(source)) struck.set(source, cumulative)
     // Only a paced slot breaks a run: a snapshot or a banner between two
     // deaths doesn't make them two beats.
     if (PACED.has(slot.kind)) {

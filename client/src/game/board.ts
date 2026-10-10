@@ -124,3 +124,20 @@ export function computeBoardEntries(
   }
   return entries
 }
+
+/**
+ * Which tile each permanent on `view`'s battlefield is drawn in, by the id
+ * the tile is drawn as (its first member's, the one whose `data-obj-id` a
+ * strike or a flight can find): itself, unless the board folds it into a
+ * fellow token's tile. What `animationSchedule` reads to give a stack's
+ * tokens hitting one by one a single strike's beat.
+ */
+export function tilesOf(view: PlayerView): ReadonlyMap<ObjectId, ObjectId> {
+  const tiles = new Map<ObjectId, ObjectId>()
+  for (const pid of view.turnOrder) {
+    for (const entry of computeBoardEntries(view, pid)) {
+      for (const id of entry.ids) tiles.set(id, entry.ids[0])
+    }
+  }
+  return tiles
+}

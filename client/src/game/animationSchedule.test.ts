@@ -193,6 +193,32 @@ describe('scheduleEvents', () => {
     expect(s.afterMs).toBe(ENTER_STEP_MS + MARK_STEP_MS + TRIGGER_STEP_MS)
   })
 
+  it("gives a tile's tokens hitting one by one the one strike the tile draws", () => {
+    const hitBy = (source: string) =>
+      ev({ type: 'damage-dealt', source, target: { kind: 'player', player: 'p2' }, amount: 1, combat: true })
+    // t1..t3 are one folded tile, drawn as t1; c is a creature of its own.
+    const tileOf = new Map([
+      ['t1', 't1'],
+      ['t2', 't1'],
+      ['t3', 't1'],
+      ['c', 'c'],
+    ] as [ObjectId, ObjectId][])
+    const s = scheduleEvents([hitBy('c'), hitBy('t2'), hitBy('t1'), hitBy('t3')], 'combat', {
+      scale: 1,
+      reduced: false,
+      tileOf,
+    })
+    expect(s.items.map((i) => [i.event.type === 'damage-dealt' ? i.event.source : '', i.offset])).toEqual([
+      ['c', 0],
+      ['t2', HIT_STEP_MS],
+      ['t1', HIT_STEP_MS],
+      ['t3', HIT_STEP_MS],
+    ])
+    expect(s.totalMs).toBe(2 * HIT_STEP_MS)
+    // Without the board's tiles to go by, each is its own strike, as before.
+    expect(scheduleEvents([hitBy('t2'), hitBy('t1')], 'combat').totalMs).toBe(2 * HIT_STEP_MS)
+  })
+
   it('strikes with combat damage over the old board, and numbers it over the new', () => {
     const toCreature = ev({
       type: 'damage-dealt',
