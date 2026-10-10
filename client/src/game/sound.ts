@@ -71,6 +71,10 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   click: ['click_001'],
 }
 
+/** A cue's own level against the rest, where it isn't 1: the button click
+ * a little under the game's sounds (the user's ask, 2026-10-10). */
+const CUE_LEVEL: Partial<Record<SoundCue, number>> = { click: 0.7 }
+
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
 const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'your-turn'])
 
@@ -164,7 +168,7 @@ function sample(a: AudioContext, cue: SoundCue): boolean {
   // A touch of pitch either way, so even the same take twice isn't identical.
   if (!TUNES.has(cue)) source.playbackRate.value = 0.96 + Math.random() * 0.08
   const gain = a.createGain()
-  gain.gain.value = SAMPLE_LEVEL * level()
+  gain.gain.value = SAMPLE_LEVEL * level() * (CUE_LEVEL[cue] ?? 1)
   source.connect(gain).connect(a.destination)
   source.start()
   return true
@@ -263,22 +267,44 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
   }
 }
 
+/** How long a link that leaves the page waits, so its click is heard. */
+const LEAVE_DELAY_MS = 90
+
 /**
- * Every enabled button on the site clicks (`click`), on every page: one
- * listener on the document, installed once by `main.tsx`, in the capture
- * phase so a button that stops its click from bubbling still sounds. A
- * disabled button gets no click event at all. Its sound loads at once
- * (when sound is on), and only it: the landing page has no need of the
- * game's.
+ * Every enabled button on the site clicks (`click`), on every page, and so
+ * does every link: each is styled as a button (the landing page's deck
+ * builder and library, the pages' way back). One listener on the document,
+ * installed once by `main.tsx`, in the capture phase so a button that stops
+ * its click from bubbling still sounds; a disabled button gets no click
+ * event at all. A link loads another page, which would cut its click off,
+ * so a plain click on one (no new tab, nothing else handling it) waits
+ * `LEAVE_DELAY_MS` before it goes. The click's sound loads at once (when
+ * sound is on), and only it: the landing page has no need of the game's.
  */
 export function clickButtons(): void {
   if (motionPrefs().soundVolume > 0) preloadSounds(['click'])
   document.addEventListener(
     'click',
     (e) => {
-      const button = e.target instanceof Element ? e.target.closest('button') : null
-      if (button !== null && !button.disabled) playSound('click')
+      const target = e.target instanceof Element ? e.target.closest('button, a[href]') : null
+      if (target === null || (target instanceof HTMLButtonElement && target.disabled)) return
+      playSound('click')
     },
     true,
   )
+  // After React's own handlers (on the root, below the document), so a link
+  // something else already handled is left alone.
+  document.addEventListener('click', (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+    if (motionPrefs().soundVolume <= 0) return
+    const link = e.target instanceof Element ? e.target.closest('a[href]') : null
+    if (!(link instanceof HTMLAnchorElement) || (link.target !== '' && link.target !== '_self') || link.hasAttribute('download')) {
+      return
+    }
+    const to = new URL(link.href, window.location.href)
+    // A link within the page (#…) doesn't leave it.
+    if (to.origin === window.location.origin && to.pathname === window.location.pathname && to.search === window.location.search) return
+    e.preventDefault()
+    window.setTimeout(() => window.location.assign(to.href), LEAVE_DELAY_MS)
+  })
 }
