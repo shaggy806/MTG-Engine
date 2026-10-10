@@ -29,6 +29,7 @@ export type SoundCue =
   | 'turn'
   | 'your-turn'
   | 'tap'
+  | 'untap'
   | 'counters'
   | 'countered'
   | 'dice'
@@ -57,8 +58,12 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   counters: takes('chip-lay', 3),
   // qubodup's Energy Drain: a spell or ability countered or fizzling.
   countered: ['energy-drain'],
-  dice: ['dice-throw-1', 'dice-throw-3'],
-  die: takes('die-throw', 4),
+  // HaelDB's Cockatrice sounds (OpenGameArt's "Card Game sounds"): a
+  // permanent tapping and untapping, and dice rolled, one or several.
+  tap: ['card-tap'],
+  untap: ['card-untap'],
+  dice: ['roll-die'],
+  die: ['roll-die'],
   // Swords (StarNinjas) for combat's declarations: a swing as attackers are
   // declared, a clash as a blocker is.
   attack: takes('sword', 10),
@@ -76,8 +81,10 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
 }
 
 /** A cue's own level against the rest, where it isn't 1: the button click
- * a little under the game's sounds (the user's ask, 2026-10-10). */
-const CUE_LEVEL: Partial<Record<SoundCue, number>> = { click: 0.7 }
+ * a little under the game's sounds (the user's ask, 2026-10-10), and a tap
+ * or untap too, as the commonest thing on the table (every mana tapped, a
+ * whole untap step). */
+const CUE_LEVEL: Partial<Record<SoundCue, number>> = { click: 0.7, tap: 0.7, untap: 0.7 }
 
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
 const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'turn', 'your-turn'])
@@ -249,6 +256,7 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
       tone(a, 784, 380, { type: 'triangle', at: 120, gain: 0.07 })
       break
     case 'tap':
+    case 'untap':
     case 'click':
       tone(a, 1200, 40, { type: 'square', gain: 0.03 })
       break

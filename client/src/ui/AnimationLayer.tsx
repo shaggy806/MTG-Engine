@@ -1421,6 +1421,9 @@ function soundFor(ev: GameEvent, seat: PlayerId): void {
     case 'permanent-tapped':
       playSound('tap')
       return
+    case 'permanent-untapped':
+      playSound('untap')
+      return
     default:
       return
   }
