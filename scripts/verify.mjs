@@ -96,8 +96,15 @@ function addedCards() {
     if (!/^(\?\?|A )/.test(line)) continue;
     const file = path.join(ROOT, line.slice(3).trim());
     if (!file.endsWith(".ts") || !existsSync(file)) continue;
-    const m = /^\s*name:\s*"((?:[^"\\]|\\.)*)"/m.exec(readFileSync(file, "utf8"));
-    if (m) names.push(JSON.parse(`"${m[1]}"`));
+    const source = readFileSync(file, "utf8");
+    const m = /^\s*name:\s*"((?:[^"\\]|\\.)*)"/m.exec(source);
+    if (m === null) continue;
+    const name = JSON.parse(`"${m[1]}"`);
+    // A double-faced card's back face has its own file but isn't a card a
+    // deck can hold: its front face (also new) stands for it.
+    const front = /^\s*faces:\s*\[\s*"((?:[^"\\]|\\.)*)"/m.exec(source);
+    if (front !== null && JSON.parse(`"${front[1]}"`) !== name) continue;
+    names.push(name);
   }
   return names;
 }

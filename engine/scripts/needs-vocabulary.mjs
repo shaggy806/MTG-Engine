@@ -259,15 +259,21 @@ function main() {
   }
 
   if (args.includes("--stale")) {
-    const byCard = new Map();
+    // A card's newest record wins: it was triaged against a later engine.
+    // Picked before asking what's been built, so an older record can't
+    // stand in for a newer one that has nothing built since.
+    const newest = new Map();
     for (const r of waiting) {
+      const prev = newest.get(r.name);
+      if (prev === undefined || (r.date ?? "") > (prev.date ?? "")) newest.set(r.name, r);
+    }
+    const byCard = new Map();
+    for (const r of newest.values()) {
       const keys = r.needs.map((raw) => vocab.canonical(raw) ?? raw).filter((k) => !vocab.isMeta(k));
       const built = keys.filter((k) => vocab.builtSince(k, r.date));
       if (built.length === 0) continue;
       const open = keys.filter((k) => !vocab.isBuilt(k));
-      const prev = byCard.get(r.name);
-      // A card's newest record wins: it was triaged against a later engine.
-      if (prev === undefined || (r.date ?? "") > (prev.date ?? "")) byCard.set(r.name, { ...r, built, open });
+      byCard.set(r.name, { ...r, built, open });
     }
     const all = [...byCard.values()].sort((a, b) => a.open.length - b.open.length || a.name.localeCompare(b.name));
     const ready = all.filter((r) => r.open.length === 0);
