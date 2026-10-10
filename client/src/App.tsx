@@ -934,8 +934,14 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   useEffect(() => {
     if (won) playSound('victory')
   }, [won])
+  // And a loser a sting, the moment they're out: the game's end, or knocked
+  // out of a table that plays on without them.
+  const lost = view !== null && seat !== null && !spectating && view.players[seat]?.hasLost === true
+  useEffect(() => {
+    if (lost) playSound('defeat')
+  }, [lost])
   // Music through the game, fading out as it ends.
-  useGameMusic(view !== null && !view.result.over)
+  useGameMusic(view !== null && !view.result.over && !lost)
   // What the table may act on: the mulligan stays up through a frame playing
   // out, its buttons locked (`locked` below) — see `tableActions`.
   const latestActions = game.frame?.actions ?? EMPTY_ACTIONS

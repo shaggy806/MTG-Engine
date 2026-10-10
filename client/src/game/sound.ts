@@ -38,6 +38,7 @@ export type SoundCue =
   | 'dice'
   | 'die'
   | 'victory'
+  | 'defeat'
   | 'click'
 
 /** `name-1` … `name-n`: a recording's takes, as its pack numbers them. */
@@ -74,6 +75,10 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // Hits (Independent.nu) as combat damage lands, on a creature or a player.
   hit: ['hit-25', 'hit-26', 'hit-27', 'hit-28', 'hit-29', 'hit-32'],
   victory: ['newthingget'],
+  // congusbongus's "A surprising twist (NES sting)" (OpenGameArt, CC0), whose
+  // last note is cut off mid-sustain: here it fades into a short reverb-like
+  // tail (echoes at 37-401 ms, decaying over a second).
+  defeat: ['surprise-defeat'],
   // A turn beginning, anyone's: HaelDB's game-start sound for Cockatrice
   // (OpenGameArt's "Card Game sounds", CC0). Two cues, so yours can be told
   // apart again if it should sound different.
@@ -106,7 +111,7 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
 const CUE_LEVEL: Partial<Record<SoundCue, number>> = { click: 0.7, tap: 0.7, untap: 0.7 }
 
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
-const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'turn', 'your-turn'])
+const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'defeat', 'turn', 'your-turn'])
 
 /** Kept low at the slider's default: these play under a game, not over it. */
 const VOLUME = 0.6
