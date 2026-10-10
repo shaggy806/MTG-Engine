@@ -310,11 +310,15 @@ function srcBaseTransform(el: HTMLElement): string {
  * this fires while the board on screen is still the one from *before* the
  * frame being played, which is exactly the "before" picture the punch needs
  * to start from (see usePlayback.ts).
+ *
+ * Whether it drew anything: a token the board folds into another's tile has
+ * no tile of its own to punch with (its tile shows a fellow token), so a
+ * stack's tokens hitting one by one strike once, on the tile's own token.
  */
-function runHit(source: ObjectId, target: TargetRef): void {
+function runHit(source: ObjectId, target: TargetRef): boolean {
   const srcEl = elementFor({ kind: 'object', object: source })
   const targetEl = elementFor(target)
-  if (!srcEl || !targetEl) return
+  if (!srcEl || !targetEl) return false
   const lungeMs = scaled(LUNGE_DURATION_MS)
   const reactionMs = scaled(HIT_REACTION_DURATION_MS)
 
@@ -329,7 +333,7 @@ function runHit(source: ObjectId, target: TargetRef): void {
       ],
       { duration: lungeMs + reactionMs, easing: 'ease-out' },
     )
-    return
+    return true
   }
 
   const a = srcEl.getBoundingClientRect()
@@ -392,6 +396,7 @@ function runHit(source: ObjectId, target: TargetRef): void {
       { duration: reactionMs, easing: 'ease-out' },
     )
   }, lungeMs * LUNGE_IMPACT_FRACTION)
+  return true
 }
 
 /**
@@ -1405,9 +1410,7 @@ function soundFor(ev: GameEvent, seat: PlayerId): void {
     case 'blocker-declared':
       playSound('block')
       return
-    case 'damage-dealt':
-      if (ev.combat) playSound('hit')
-      return
+    // Combat damage sounds with its strike (`fire`), where one is drawn.
     case 'permanent-left-battlefield':
       playSound(ev.toZone === 'exile' ? 'exile' : 'death')
       return
@@ -2417,7 +2420,9 @@ export function AnimationLayer({
           }, scaled(CARD_HOLD_MS) + 12_000)
         } else window.setTimeout(remove, scaled(PLAYED_CARD_DURATION_MS))
       } else if (ev.type === 'damage-dealt' && ev.combat) {
-        runHit(ev.source, ev.target)
+        // Heard as often as it's seen: once for a stack's tokens hitting one
+        // by one, which strike once on their shared tile (`runHit`).
+        if (runHit(ev.source, ev.target)) playSound('hit')
       } else if (
         ev.type === 'spell-resolved' ||
         ev.type === 'ability-resolved' ||
