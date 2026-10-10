@@ -1347,6 +1347,10 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 4px;
+  /* Room for a held button's 1px drop (index.css, the bevel's :active): flush
+     with the box's bottom, the last row's dropped past it and the box
+     scrolled while it was held (a bug report, 2026-10-10, as .stack-counts). */
+  padding-bottom: 1px;
 }
 /* An always-drawn thumb, as on .quadrant-body: an overlay scrollbar that
    only appears on hover gives no sign there are more rows below. */
@@ -1396,6 +1400,10 @@
   max-height: min(26vh, 11em);
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Room for a held button's 1px drop: flush with the box's bottom, the last
+     row's +/− dropped past it, and a scrollbar came and went with every press
+     of Atarka's damage split (a bug report, 2026-10-10). */
+  padding-bottom: 1px;
 }
 .count-stepper {
   display: contents;
@@ -2554,6 +2562,12 @@
    (.ct-loyalty, 2.1em of 13px) needs more than a P/T box. */
 .card-tile.no-corner-stat .ct-text {
   padding-bottom: calc(4px * var(--ct-scale, 1));
+}
+/* ...unless the bottom-left corner shows a chip (.card-flags): a Curse's "on
+   Edgar Markov", a Class's level, Banishing Light's "N exiled" sat on its last
+   line of rules text (a bug report, 2026-10-10). One row of chips' room. */
+.card-tile.no-corner-stat:has(> .card-flags) .ct-text {
+  padding-bottom: calc(21px * var(--ct-scale, 1));
 }
 .card-tile.has-loyalty .ct-text {
   padding-bottom: calc(29px * var(--ct-scale, 1));
