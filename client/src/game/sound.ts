@@ -64,9 +64,11 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // Hits (Independent.nu) as combat damage lands, on a creature or a player.
   hit: ['hit-25', 'hit-26', 'hit-27', 'hit-28', 'hit-29', 'hit-32'],
   victory: ['newthingget'],
-  // colorsCrimsonTears' Fanfare 2 (Freesound, CC0): a stand-in until a
-  // warmer, Hearthstone-like chime turns up.
-  'your-turn': ['fanfare-2-rpg'],
+  // A turn beginning, anyone's: HaelDB's game-start sound for Cockatrice
+  // (OpenGameArt's "Card Game sounds", CC0). Two cues, so yours can be told
+  // apart again if it should sound different.
+  turn: ['game-start'],
+  'your-turn': ['game-start'],
   // Kenney's Interface Sounds: any button on the site (`clickButtons`).
   click: ['click_001'],
 }
@@ -76,7 +78,7 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
 const CUE_LEVEL: Partial<Record<SoundCue, number>> = { click: 0.7 }
 
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
-const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'your-turn'])
+const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'turn', 'your-turn'])
 
 /** Kept low at the slider's default: these play under a game, not over it. */
 const VOLUME = 0.6
@@ -238,7 +240,7 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
       tone(a, 420, 120, { type: 'sine' })
       tone(a, 280, 180, { type: 'sine', at: 90 })
       break
-    // Your turn's own fanfare falls back to everyone's chime.
+    // Until the recording loads, a chime.
     case 'turn':
     case 'your-turn':
       tone(a, 523, 260, { type: 'triangle', gain: 0.08 })
