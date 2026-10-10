@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { DEFAULT_MUSIC_VOLUME, motionPrefs, useMotionPrefs } from './motionPrefs.ts'
+import { motionPrefs, useMotionPrefs } from './motionPrefs.ts'
 import { audio } from './sound.ts'
 
 /**
@@ -28,13 +28,14 @@ export const TRACKS = [
 ] as const
 
 /**
- * The music's gain at the slider's default. The files are all normalised to
+ * The music's gain with the slider at half. The files are all normalised to
  * -23 LUFS across the piece; this puts them near -41, under the sound
- * effects (about -38 at their loudest), as music behind a game should be.
- * Scaled by the square of the slider, as the sound effects are, so its top
- * end is four times this.
+ * effects (about -38 at their loudest). Scaled by the square of the slider,
+ * as the sound effects are: at its default of 70% (the user's pick,
+ * 2026-10-10, after listening) about twice this, near -35, and four times
+ * this at the top.
  */
-const LEVEL_AT_DEFAULT = 0.12
+const LEVEL_AT_HALF = 0.12
 const FADE_IN_S = 2
 const FADE_OUT_S = 1.2
 
@@ -48,7 +49,7 @@ let pauseTimer: number | null = null
 let waitingForClick = false
 
 function level(): number {
-  return Math.min(1, LEVEL_AT_DEFAULT * (motionPrefs().musicVolume / DEFAULT_MUSIC_VOLUME) ** 2)
+  return Math.min(1, LEVEL_AT_HALF * (motionPrefs().musicVolume / 0.5) ** 2)
 }
 
 /** The next piece: through every one in a shuffled order, then shuffled

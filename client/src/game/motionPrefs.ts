@@ -51,7 +51,7 @@ const SOUND_DEFAULT_ON = 2
 
 /** Where each slider starts. */
 export const DEFAULT_SOUND_VOLUME = 0.7
-export const DEFAULT_MUSIC_VOLUME = 0.5
+export const DEFAULT_MUSIC_VOLUME = 0.7
 
 const volume = (v: unknown, fallback: number): number =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : fallback
