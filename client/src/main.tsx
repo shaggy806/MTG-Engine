@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { loadCardPool } from './cards/cardData.ts'
 import { PoolLoadBoundary, PoolLoading } from './cards/PoolLoading.tsx'
+import { clickButtons } from './game/sound.ts'
 
 /**
  * A page that works over the whole card pool, loaded with it. The library
@@ -43,5 +44,8 @@ const page = path.startsWith('/library')
   : path.startsWith('/deck-builder')
     ? poolPage(<DeckBuilderPage />)
     : <App />
+
+// Every button on every page clicks.
+clickButtons()
 
 createRoot(document.getElementById('root')!).render(<StrictMode>{page}</StrictMode>)

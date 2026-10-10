@@ -34,6 +34,7 @@ export type SoundCue =
   | 'dice'
   | 'die'
   | 'victory'
+  | 'click'
 
 /** `name-1` … `name-n`: a recording's takes, as its pack numbers them. */
 function takes(name: string, n: number): string[] {
@@ -66,6 +67,8 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // colorsCrimsonTears' Fanfare 2 (Freesound, CC0): a stand-in until a
   // warmer, Hearthstone-like chime turns up.
   'your-turn': ['fanfare-2-rpg'],
+  // Kenney's Interface Sounds: any button on the site (`clickButtons`).
+  click: ['click_001'],
 }
 
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
@@ -110,30 +113,35 @@ export function audio(): AudioContext | null {
 /** Each recording once decoded. One that failed to load is simply never
  * here, and its cue keeps falling back to its tone. */
 const buffers = new Map<string, AudioBuffer>()
-let loading = false
+/** Each recording asked for, so none is fetched twice. */
+const requested = new Set<string>()
+let decoder: OfflineAudioContext | null = null
 
 /**
- * Fetches and decodes every recording, once: when the game mounts with sound
- * on, or else the first time sound plays. Decoded offline, which needs no
- * click first (a live context made before one starts suspended), so the
- * opening hand's draws can already be heard; a buffer plays in any context.
+ * Fetches and decodes the recordings of `cues` (every cue's, by default),
+ * each once: all of them when the game mounts with sound on, or a cue's own
+ * the first time it plays; the button click alone on any page
+ * (`clickButtons`), so the landing page doesn't download the game's sounds.
+ * Decoded offline, which needs no click first (a live context made before
+ * one starts suspended), so the opening hand's draws can already be heard;
+ * a buffer plays in any context.
  */
-export function preloadSounds(): void {
-  if (loading) return
-  loading = true
-  let decoder: OfflineAudioContext
+export function preloadSounds(cues: readonly SoundCue[] = Object.keys(SAMPLES) as SoundCue[]): void {
   try {
-    decoder = new OfflineAudioContext(2, 1, 44100)
+    decoder ??= new OfflineAudioContext(2, 1, 44100)
   } catch {
     return
   }
-  for (const file of new Set(Object.values(SAMPLES).flat())) {
+  const d = decoder
+  for (const file of new Set(cues.flatMap((cue) => SAMPLES[cue] ?? []))) {
+    if (requested.has(file)) continue
+    requested.add(file)
     fetch(`/sfx/${file}.mp3`)
       .then((r) => {
         if (!r.ok) throw new Error(`${r.status}`)
         return r.arrayBuffer()
       })
-      .then((data) => decoder.decodeAudioData(data))
+      .then((data) => d.decodeAudioData(data))
       .then(
         (buffer) => buffers.set(file, buffer),
         () => {},
@@ -201,7 +209,7 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
   lastPlayed.set(cue, now)
   const a = audio()
   if (a === null) return
-  preloadSounds()
+  preloadSounds([cue])
   if (sample(a, cue)) return
   switch (cue) {
     case 'cast':
@@ -233,6 +241,7 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
       tone(a, 784, 380, { type: 'triangle', at: 120, gain: 0.07 })
       break
     case 'tap':
+    case 'click':
       tone(a, 1200, 40, { type: 'square', gain: 0.03 })
       break
     case 'dice':
@@ -252,4 +261,24 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
     default:
       break
   }
+}
+
+/**
+ * Every enabled button on the site clicks (`click`), on every page: one
+ * listener on the document, installed once by `main.tsx`, in the capture
+ * phase so a button that stops its click from bubbling still sounds. A
+ * disabled button gets no click event at all. Its sound loads at once
+ * (when sound is on), and only it: the landing page has no need of the
+ * game's.
+ */
+export function clickButtons(): void {
+  if (motionPrefs().soundVolume > 0) preloadSounds(['click'])
+  document.addEventListener(
+    'click',
+    (e) => {
+      const button = e.target instanceof Element ? e.target.closest('button') : null
+      if (button !== null && !button.disabled) playSound('click')
+    },
+    true,
+  )
 }

@@ -53,7 +53,7 @@ import {
 } from '../game/animationSchedule.ts'
 import type { PeelPart } from '../game/animationSchedule.ts'
 import type { AnimationBus, AnimationCue } from '../game/animationBus.ts'
-import { motionPrefs } from '../game/motionPrefs.ts'
+import { motionPrefs, useMotionPrefs } from '../game/motionPrefs.ts'
 import { playSound, preloadSounds } from '../game/sound.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
@@ -2315,10 +2315,12 @@ export function AnimationLayer({
     seatsRef.current = seats
   }, [seat, seats])
 
-  // The recorded sounds load ahead of the first frame, so its draws are heard.
+  // The recorded sounds load ahead of the first frame, so its draws are
+  // heard — or as soon as sound is turned up from off.
+  const soundOn = useMotionPrefs().soundVolume > 0
   useEffect(() => {
-    if (motionPrefs().soundVolume > 0) preloadSounds()
-  }, [])
+    if (soundOn) preloadSounds()
+  }, [soundOn])
 
   useEffect(
     () => () => {
