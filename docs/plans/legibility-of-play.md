@@ -280,5 +280,11 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **A history entry whose cards have left the board highlights nothing**: `highlightEvent` finds
   only what's still drawn (a permanent, a stack entry, your hand, a player's panel). It could
   open the zone the card went to instead.
-- **The sounds are synthesised placeholders** (`game/sound.ts`, Web Audio tones): licence-free
-  and download-free, but plain. Real samples could replace them cue for cue.
+- **Half the sounds are still synthesised placeholders** (`game/sound.ts`): the table's own noises
+  are recorded now (draw, land, shuffle, discard, mill, counters, dice, a countered spell; Kenney's
+  CC0 packs, `client/public/sfx/CREDITS.md`), but cast, hit, death, exile, life, turn and tap are
+  still Web Audio tones. Cues with nothing yet: attack, block, noncombat damage, bounce, your
+  turn and your priority (viewer-only), a player eliminated, victory and defeat, a token arriving,
+  a trigger, a transform, a change of control, and a commander cast; and `game-started`, if a
+  frame ever carries it to the client. A new cue is a `SoundCue`, a `SAMPLES` entry and a
+  `soundFor` case; an event with no animation needs a `sound` slot (`animationSchedule.ts`).

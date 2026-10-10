@@ -16,6 +16,14 @@ export const MAX_DICE_SHOWN = 12
 /** The phases of the beat, as fractions of `DICE_STEP_MS`. */
 const THROW_SHARE = 0.6
 const FADE_SHARE = 0.1
+/** When the dice first strike the table, as a fraction of the throw. */
+const FIRST_STRIKE = 0.38
+
+/** How long after a roll's beat starts its dice first hit the table: when
+ * its sound goes. At once under reduced motion, which sets them down. */
+export function diceStrikeMs(durationMs: number, reduced: boolean): number {
+  return reduced ? 0 : durationMs * THROW_SHARE * FIRST_STRIKE
+}
 
 /** mulberry32: a small seeded generator, the same numbers on every client. */
 function seeded(seed: number): () => number {
@@ -131,7 +139,7 @@ export function throwDice(roll: DiceThrow): void {
       [
         { offset: 0, transform: `translate(${startX}px, ${startY}px) scale(1.6)`, opacity: 0 },
         { offset: 0.08, opacity: 1 },
-        { offset: 0.38, transform: `translate(${p1.x}px, ${p1.y}px) scale(1)`, easing: 'ease-out' },
+        { offset: FIRST_STRIKE, transform: `translate(${p1.x}px, ${p1.y}px) scale(1)`, easing: 'ease-out' },
         { offset: 0.5, transform: `${hop(0.7)} scale(1.25)`, easing: 'ease-in' },
         { offset: 0.64, transform: `translate(${p2.x}px, ${p2.y}px) scale(1)`, easing: 'ease-out' },
         { offset: 0.73, transform: `${hop(0.9)} scale(1.1)`, easing: 'ease-in' },
@@ -143,7 +151,7 @@ export function throwDice(roll: DiceThrow): void {
     die.animate(
       [
         { offset: 0, transform: `rotate(${spin}deg)` },
-        { offset: 0.38, transform: `rotate(${spin * 0.45}deg) scale(1.12, 0.86)` },
+        { offset: FIRST_STRIKE, transform: `rotate(${spin * 0.45}deg) scale(1.12, 0.86)` },
         { offset: 0.42, transform: `rotate(${spin * 0.4}deg)` },
         { offset: 0.64, transform: `rotate(${spin * 0.15}deg) scale(1.08, 0.9)` },
         { offset: 0.68, transform: `rotate(${spin * 0.12}deg)` },

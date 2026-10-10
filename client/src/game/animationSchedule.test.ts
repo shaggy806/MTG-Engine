@@ -374,6 +374,17 @@ describe('scheduleEvents', () => {
     expect(s.totalMs).toBe(0)
     expect(s.afterMs).toBe(0)
   })
+
+  it('gives a shuffle a slot to be heard in, costing nothing and splitting no beat', () => {
+    const s = scheduleEvents([dies(), ev({ type: 'library-shuffled', player: 'p1' }), dies()], 'precombat-main')
+    expect(s.items.map((i) => [i.event.type, i.offset])).toEqual([
+      ['permanent-left-battlefield', 0],
+      ['library-shuffled', DEATH_STEP_MS],
+      ['permanent-left-battlefield', 0],
+    ])
+    expect(s.totalMs).toBe(DEATH_STEP_MS)
+    expect(s.after).toEqual([])
+  })
 })
 
 describe("scheduleEvents: a card drawn into the viewer's own hand", () => {

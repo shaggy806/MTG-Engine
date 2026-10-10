@@ -441,6 +441,9 @@ type SlotKind =
   | 'capture'
   | 'move'
   | 'crown'
+  // Nothing drawn, only heard (a library shuffled, a mulligan's shuffle):
+  // costs no time.
+  | 'sound'
 
 /**
  * The kinds that play over the new board rather than the old one, in the
@@ -710,6 +713,9 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
   }
   if (ev.type === 'dice-rolled') {
     return { event: ev, kind: 'dice', duration: DICE_STEP_MS }
+  }
+  if (ev.type === 'library-shuffled' || ev.type === 'mulligan-taken') {
+    return { event: ev, kind: 'sound', duration: 0 }
   }
   if (ev.type === 'cards-revealed') {
     return { event: ev, kind: 'reveal', duration: REVEAL_STEP_MS }

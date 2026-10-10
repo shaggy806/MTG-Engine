@@ -15,7 +15,7 @@ import { publicNameAt } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
 import { flyIntoHand, liftFromHand, placeLiftedSpotlight } from './handMotion.ts'
 import { closeStackGap } from './stackDepth.ts'
-import { throwDice } from './diceRoll.ts'
+import { diceStrikeMs, throwDice } from './diceRoll.ts'
 import { defToVisible } from './defToVisible.ts'
 import { loadCard, peekCard } from '../cards/cardData.ts'
 import { playerLabel, seatClassOf } from '../format.ts'
@@ -52,7 +52,7 @@ import {
 import type { PeelPart } from '../game/animationSchedule.ts'
 import type { AnimationBus, AnimationCue } from '../game/animationBus.ts'
 import { motionPrefs } from '../game/motionPrefs.ts'
-import { playSound } from '../game/sound.ts'
+import { playSound, preloadSounds } from '../game/sound.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
  * fixed jab distance rather than a fraction of the real gap between the two
@@ -1364,8 +1364,31 @@ function runPulse(source: ObjectId, delay: number): void {
 function soundFor(ev: GameEvent): void {
   switch (ev.type) {
     case 'spell-cast':
-    case 'land-played':
       playSound('cast')
+      return
+    case 'land-played':
+      playSound('land')
+      return
+    case 'card-drawn':
+      playSound('draw')
+      return
+    case 'library-shuffled':
+    // A mulligan shuffles the hand back in without a `library-shuffled`.
+    case 'mulligan-taken':
+      playSound('shuffle')
+      return
+    case 'cards-discarded':
+      playSound('discard')
+      return
+    case 'cards-milled':
+      playSound('mill')
+      return
+    case 'counter-added':
+      playSound('counters')
+      return
+    case 'spell-countered':
+    case 'spell-fizzled':
+      playSound('countered')
       return
     case 'damage-dealt':
       if (ev.combat) playSound('hit')
@@ -1380,7 +1403,11 @@ function soundFor(ev: GameEvent): void {
       playSound('turn')
       return
     case 'dice-rolled':
-      playSound('dice')
+      // As the dice hit the table, not as they leave the roller's hand.
+      playSound(
+        ev.results.length > 1 ? 'dice' : 'die',
+        diceStrikeMs(scaled(DICE_STEP_MS), motionPrefs().reduced),
+      )
       return
     case 'permanent-tapped':
       playSound('tap')
@@ -2166,6 +2193,11 @@ export function AnimationLayer({
     seatsRef.current = seats
   }, [seat, seats])
 
+  // The recorded sounds load ahead of the first frame, so its draws are heard.
+  useEffect(() => {
+    if (motionPrefs().sound) preloadSounds()
+  }, [])
+
   useEffect(
     () => () => {
       if (bannerTimerRef.current !== null) window.clearTimeout(bannerTimerRef.current)
@@ -2370,6 +2402,8 @@ export function AnimationLayer({
             const run = handDraws.get(cue.delay) ?? { player: cue.event.player, objects: [] }
             run.objects.push(cue.event.object)
             handDraws.set(cue.delay, run)
+            // Heard card by card as the run is dealt, below.
+            continue
           } else if (cue.event.type === 'permanent-transformed') runFlip(cue.event.object, cue.delay)
           else if (cue.event.type === 'control-changed' || cue.event.type === 'permanent-attached') {
             runMove(cue.event, cue.delay)
@@ -2406,10 +2440,16 @@ export function AnimationLayer({
         const seatColour = seatColourOf(run.player)
         run.objects.forEach((object, i) => {
           flyIntoHand(object, pile, seatColour, delay + i * stagger, scaled(HAND_DRAW_STEP_MS))
+          playSound('draw', delay + i * stagger)
         })
       }
       holdEntriesAbove(stackLandings, abilitiesFlying)
-      for (const [delay, run] of mills) window.setTimeout(() => runMill(run.events, run.view), delay)
+      for (const [delay, run] of mills) {
+        window.setTimeout(() => {
+          runMill(run.events, run.view)
+          for (const ev of run.events) soundFor(ev)
+        }, delay)
+      }
     })
   }, [bus])
 
