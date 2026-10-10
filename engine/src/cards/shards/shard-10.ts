@@ -46,6 +46,7 @@ import _poolBullRush from "../pool/bull-rush.js";
 import _poolBurstOfEnergy from "../pool/burst-of-energy.js";
 import _poolCanyonMinotaur from "../pool/canyon-minotaur.js";
 import _poolCapitalGuard from "../pool/capital-guard.js";
+import _poolChandraTorchOfDefiance from "../pool/chandra-torch-of-defiance.js";
 import _poolChangelingWayfinder from "../pool/changeling-wayfinder.js";
 import _poolChapelGeist from "../pool/chapel-geist.js";
 import _poolCitanulHierophants from "../pool/citanul-hierophants.js";
@@ -183,6 +184,7 @@ import _poolPinToTheEarth from "../pool/pin-to-the-earth.js";
 import _poolPippinWardenOfIsengard from "../pool/pippin-warden-of-isengard.js";
 import _poolPlanarBridge from "../pool/planar-bridge.js";
 import _poolPlatedSpider from "../pool/plated-spider.js";
+import _poolPowerbalance from "../pool/powerbalance.js";
 import _poolPravaOfTheSteelLegion from "../pool/prava-of-the-steel-legion.js";
 import _poolPriestOfUrabrask from "../pool/priest-of-urabrask.js";
 import _poolPrismaticOmen from "../pool/prismatic-omen.js";
@@ -344,6 +346,7 @@ const shard: CardShard = {
     _poolBurstOfEnergy,
     _poolCanyonMinotaur,
     _poolCapitalGuard,
+    _poolChandraTorchOfDefiance,
     _poolChangelingWayfinder,
     _poolChapelGeist,
     _poolCitanulHierophants,
@@ -481,6 +484,7 @@ const shard: CardShard = {
     _poolPippinWardenOfIsengard,
     _poolPlanarBridge,
     _poolPlatedSpider,
+    _poolPowerbalance,
     _poolPravaOfTheSteelLegion,
     _poolPriestOfUrabrask,
     _poolPrismaticOmen,

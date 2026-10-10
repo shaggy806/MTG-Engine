@@ -184,6 +184,7 @@ import _poolPainDistributor from "../pool/pain-distributor.js";
 import _poolPalladiumMyr from "../pool/palladium-myr.js";
 import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
 import _poolPawpatchFormation from "../pool/pawpatch-formation.js";
+import _poolPerceptionBobblehead from "../pool/perception-bobblehead.js";
 import _poolPhantomWarrior from "../pool/phantom-warrior.js";
 import _poolPhyrexianDefiler from "../pool/phyrexian-defiler.js";
 import _poolPiratesPillage from "../pool/pirates-pillage.js";
@@ -488,6 +489,7 @@ const shard: CardShard = {
     _poolPalladiumMyr,
     _poolPardicCollaborator,
     _poolPawpatchFormation,
+    _poolPerceptionBobblehead,
     _poolPhantomWarrior,
     _poolPhyrexianDefiler,
     _poolPiratesPillage,

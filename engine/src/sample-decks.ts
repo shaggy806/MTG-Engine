@@ -1009,7 +1009,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Molten Slagheap", "Sulfurous Springs", "Land that makes both colours."),
       sub("Profane Command", "Kolaghan's Command", "Modal black-red Command with a recursion mode."),
       sub("Scythe Specter", "Hypnotic Specter", "Flying Specter that makes opponents discard."),
-      sub("Sunbird's Invocation", "Phyrexian Arena", "Card-advantage enchantment."),
       sub("Wild Ricochet", "Act of Treason", "Uses an opponent's resources against them."),
       sub("Wildfire Devils", "Cinder Elemental", "Four-mana red creature that turns into damage."),
     ],

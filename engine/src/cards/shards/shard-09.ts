@@ -135,6 +135,7 @@ import _poolManaLeak from "../pool/mana-leak.js";
 import _poolMerfolkPupil from "../pool/merfolk-pupil.js";
 import _poolMinaAndDennWildborn from "../pool/mina-and-denn-wildborn.js";
 import _poolMistralCharger from "../pool/mistral-charger.js";
+import _poolMizzixsMastery from "../pool/mizzixs-mastery.js";
 import _poolMonasterySwiftspear from "../pool/monastery-swiftspear.js";
 import _poolMoonSprite from "../pool/moon-sprite.js";
 import _poolMudbuttonTorchrunner from "../pool/mudbutton-torchrunner.js";
@@ -411,6 +412,7 @@ const shard: CardShard = {
     _poolMerfolkPupil,
     _poolMinaAndDennWildborn,
     _poolMistralCharger,
+    _poolMizzixsMastery,
     _poolMonasterySwiftspear,
     _poolMoonSprite,
     _poolMudbuttonTorchrunner,

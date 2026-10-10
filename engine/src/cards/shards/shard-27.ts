@@ -141,6 +141,7 @@ import _poolMesmericGlare from "../pool/mesmeric-glare.js";
 import _poolMidnightHaunting from "../pool/midnight-haunting.js";
 import _poolMindsDilation from "../pool/minds-dilation.js";
 import _poolMistDancer from "../pool/mist-dancer.js";
+import _poolMnemonicDeluge from "../pool/mnemonic-deluge.js";
 import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
 import _poolMonstrosityOfTheLake from "../pool/monstrosity-of-the-lake.js";
 import _poolMoonlitWake from "../pool/moonlit-wake.js";
@@ -421,6 +422,7 @@ const shard: CardShard = {
     _poolMidnightHaunting,
     _poolMindsDilation,
     _poolMistDancer,
+    _poolMnemonicDeluge,
     _poolMoltenGatekeeper,
     _poolMonstrosityOfTheLake,
     _poolMoonlitWake,

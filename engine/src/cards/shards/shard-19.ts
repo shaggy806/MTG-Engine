@@ -34,6 +34,7 @@ import _poolCarnelianOrbOfDragonkind from "../pool/carnelian-orb-of-dragonkind.j
 import _poolCartographer from "../pool/cartographer.js";
 import _poolCatharsCrusade from "../pool/cathars-crusade.js";
 import _poolCausticRain from "../pool/caustic-rain.js";
+import _poolCecilyHauntedMage from "../pool/cecily-haunted-mage.js";
 import _poolChallengerTroll from "../pool/challenger-troll.js";
 import _poolChandrasIgnition from "../pool/chandras-ignition.js";
 import _poolChargingMonstrosaur from "../pool/charging-monstrosaur.js";
@@ -322,6 +323,7 @@ const shard: CardShard = {
     _poolCartographer,
     _poolCatharsCrusade,
     _poolCausticRain,
+    _poolCecilyHauntedMage,
     _poolChallengerTroll,
     _poolChandrasIgnition,
     _poolChargingMonstrosaur,

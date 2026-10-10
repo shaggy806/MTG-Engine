@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAdarkarSentinel from "../pool/adarkar-sentinel.js";
+import _poolAetherfluxConduit from "../pool/aetherflux-conduit.js";
 import _poolAjanisPridemate from "../pool/ajanis-pridemate.js";
 import _poolAlabornGrenadier from "../pool/alaborn-grenadier.js";
 import _poolAlgaeGharial from "../pool/algae-gharial.js";
@@ -259,6 +260,7 @@ import _tokensMutavaultToken from "../tokens/mutavault-token.js";
 const shard: CardShard = {
   pool: [
     _poolAdarkarSentinel,
+    _poolAetherfluxConduit,
     _poolAjanisPridemate,
     _poolAlabornGrenadier,
     _poolAlgaeGharial,

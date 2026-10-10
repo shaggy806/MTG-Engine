@@ -2520,6 +2520,17 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Isochron Scepter, Mnemonic Deluge, Narset, Enlightened Exile',
+    board({
+      you: {
+        bf: ['Narset, Enlightened Exile', 'Island*9', 'Wastes*4'],
+        hand: ['Isochron Scepter', 'Lightning Bolt', 'Mnemonic Deluge'],
+        lib: ['Island*6'],
+      },
+      opp: { gy: ['Divination', 'Sol Ring'] },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

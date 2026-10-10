@@ -223,6 +223,7 @@ How to use it:
 | [Smuggler's Copter, Cultivator's Caravan, Kotori, Pilot Prodigy](#smugglers-copter-cultivators-caravan-kotori-pilot-prodigy) | new decision | Crew and Vehicles |
 | [Claim the Precious, Call of the Ring, Birthday Escape](#claim-the-precious-call-of-the-ring-birthday-escape) | new decision | The Ring tempts you |
 | [Clown Car, Hoarding Ogre, Ancient Copper Dragon, Brazen Dwarf](#clown-car-hoarding-ogre-ancient-copper-dragon-brazen-dwarf) | rules call | Rolling dice |
+| [Isochron Scepter, Mnemonic Deluge, Narset, Enlightened Exile](#isochron-scepter-mnemonic-deluge-narset-enlightened-exile) | rules call | Casting copies of cards |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4256,3 +4257,22 @@ stack count once per token)
   their results.
 - **Known limits:** "Roll an extra die and ignore the lowest" (Barbarian Class, Wyll), "roll
   again" and choosing among results (Reckless Endeavor) aren't built.
+
+## Casting copies of cards (2026-10-09)
+
+### Isochron Scepter, Mnemonic Deluge, Narset, Enlightened Exile
+
+*Rules call* — copies of cards cast as an effect resolves (rule 707.12), and the ones not cast ceasing to exist (704.5e)
+
+- **Setup:** Your precombat main. Your battlefield: Narset, Enlightened Exile and thirteen lands
+  (nine Islands, four Wastes). Your hand: Isochron Scepter, Lightning Bolt, Mnemonic Deluge. Bob's
+  graveyard: Divination, Sol Ring.
+- **Do:** Cast Isochron Scepter and exile Lightning Bolt with it. Activate it twice over two turns
+  (or once), aiming the copy at Bob. Cast Mnemonic Deluge on Bob's Divination; cast two of the
+  three copies and decline the third. Attack with Narset, targeting the Sol Ring.
+- **Check:** Each Scepter activation offers a Lightning Bolt to cast free and Bob loses 3; the
+  imprinted Bolt stays in exile under the Scepter. Mnemonic Deluge offers a Divination three times,
+  one after another; two casts draw four cards, and after declining, no extra Divination is left in
+  exile — only the original — and Mnemonic Deluge itself is in exile. Narset's copy of Sol Ring
+  resolves as a Sol Ring token under your control; the card stays in exile.
+- **Known limits:** Bots cast every copy offered.

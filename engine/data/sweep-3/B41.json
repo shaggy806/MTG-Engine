@@ -1,0 +1,230 @@
+{
+  "batch": "B41",
+  "status": "complete",
+  "ranks": "effect:cast-during-resolution's waiting cards (ranks 275-12348): card copies cast during resolution (rule 707.12, 704.5e), any number of spells from among exiled cards, a revealed top X read as an amount, and energy equal to mana spent",
+  "authored": [
+    {
+      "name": "Sunbird's Invocation",
+      "files": [
+        "engine/src/cards/pool/sunbirds-invocation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kiora, Sovereign of the Deep",
+      "files": [
+        "engine/src/cards/pool/kiora-sovereign-of-the-deep.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Perception Bobblehead",
+      "files": [
+        "engine/src/cards/pool/perception-bobblehead.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Etali, Primal Storm",
+      "files": [
+        "engine/src/cards/pool/etali-primal-storm.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Villainous Wealth",
+      "files": [
+        "engine/src/cards/pool/villainous-wealth.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kotis, the Fangkeeper",
+      "files": [
+        "engine/src/cards/pool/kotis-the-fangkeeper.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mnemonic Deluge",
+      "files": [
+        "engine/src/cards/pool/mnemonic-deluge.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Isochron Scepter",
+      "files": [
+        "engine/src/cards/pool/isochron-scepter.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mizzix's Mastery",
+      "files": [
+        "engine/src/cards/pool/mizzixs-mastery.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Narset, Enlightened Exile",
+      "files": [
+        "engine/src/cards/pool/narset-enlightened-exile.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Chandra, Torch of Defiance",
+      "files": [
+        "engine/src/cards/pool/chandra-torch-of-defiance.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Powerbalance",
+      "files": [
+        "engine/src/cards/pool/powerbalance.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cecily, Haunted Mage",
+      "files": [
+        "engine/src/cards/pool/cecily-haunted-mage.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Aetherflux Conduit",
+      "files": [
+        "engine/src/cards/pool/aetherflux-conduit.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Arcane Bombardment",
+      "needs": [
+        "effect:random-choice"
+      ],
+      "why": "copying and casting the exiled cards is built; 'exile an instant or sorcery card at random from your graveyard' (linked to it) isn't"
+    },
+    {
+      "name": "The Infamous Cruelclaw",
+      "needs": [
+        "effect:cast-by-discarding-alt-cost"
+      ],
+      "why": "cast-now offers the normal or free cast, not 'by discarding a card rather than paying its mana cost'"
+    },
+    {
+      "name": "Tibalt's Trickery",
+      "needs": [
+        "effect:random-choice",
+        "effect:cast-now-other-player"
+      ],
+      "why": "the countered spell's controller casts, not the effect's controller; 1, 2 or 3 at random"
+    },
+    {
+      "name": "Bring to Light",
+      "needs": [
+        "effect:search-to-exile-then-cast"
+      ],
+      "why": "search-library has no exile destination that a cast-now then reads"
+    },
+    {
+      "name": "Beseech the Mirror",
+      "needs": [
+        "keyword:bargain",
+        "effect:search-to-exile-then-cast"
+      ],
+      "why": "search to exile face down, then cast it if bargained or put it into hand"
+    },
+    {
+      "name": "Sunforger",
+      "needs": [
+        "cost:unattach-cost",
+        "effect:search-to-exile-then-cast"
+      ],
+      "why": "search and cast the found card as the ability resolves"
+    },
+    {
+      "name": "Ugin, Eye of the Storms",
+      "needs": [
+        "effect:search-to-exile-then-cast"
+      ],
+      "why": "the -11 searches for any number of colorless nonland cards and exiles them, castable free until end of turn"
+    },
+    {
+      "name": "Descendants' Path",
+      "needs": [
+        "condition:filter-shares-creature-type-with-controlled"
+      ],
+      "why": "the revealed card must share a creature type with a creature you control: the filter compares only with the trigger object"
+    },
+    {
+      "name": "Geode Golem",
+      "needs": [
+        "effect:cast-commander-from-command-zone"
+      ],
+      "why": "cast-now can't cast from the command zone (with the commander tax still paid)"
+    },
+    {
+      "name": "Invoke Calamity",
+      "needs": [
+        "effect:look-and-choose-total-mana-value"
+      ],
+      "why": "up to two spells with total mana value 6 or less, from graveyard and/or hand"
+    },
+    {
+      "name": "Surge to Victory",
+      "needs": [
+        "effect:delayed-copy-of-exiled-card"
+      ],
+      "why": "a delayed trigger this turn copies the exiled card each time; +X/+0 by its mana value"
+    },
+    {
+      "name": "Summon: Esper Valigarmanda",
+      "needs": [
+        "effect:cast-now-spend-any-mana"
+      ],
+      "why": "cast an instant or sorcery card exiled with the Saga, spending mana of any type"
+    },
+    {
+      "name": "Malcolm, Alluring Scoundrel",
+      "needs": [
+        "effect:cost-discarded-card-ref"
+      ],
+      "why": "cast the card discarded this way: cast-now can't read it"
+    },
+    {
+      "name": "Etali, Primal Conqueror",
+      "needs": [
+        "effect:reveal-until-each-player"
+      ],
+      "why": "each player exiles from the top until a nonland card; casting any number from among them is built"
+    },
+    {
+      "name": "Etali, Primal Conqueror // Etali, Primal Sickness",
+      "needs": [
+        "effect:reveal-until-each-player"
+      ],
+      "why": "each player exiles from the top until a nonland card; casting any number from among them is built"
+    },
+    {
+      "name": "Zethi, Arcane Blademaster",
+      "needs": [
+        "decision:variable-target-count",
+        "effect:cast-now-exiled-with-counter"
+      ],
+      "why": "up to X targets for X kicks; copies of the exiled cards with a kick counter, paid for"
+    },
+    {
+      "name": "Magar of the Magic Strings",
+      "needs": [
+        "effect:noted-card-name-copy"
+      ],
+      "why": "a face-down instant or sorcery as a 3/3 that copies the noted card's name on combat damage"
+    }
+  ]
+}

@@ -879,7 +879,10 @@ export interface GameObject {
   splitFromStack?: true;
   /** True for a copy of a spell on the stack (rule 707.10 — storm, Twincast).
    * `cardName` is the copied spell's name; the copy ceases to exist instead of
-   * moving to any zone other than the stack. ROADMAP Phase 8. */
+   * moving to any zone other than the stack. ROADMAP Phase 8. Also a copy of
+   * a *card* made to be cast (rule 707.12 — Isochron Scepter, a `cast-now`'s
+   * `copies`), which ceases to exist if it's still outside the stack and
+   * the battlefield at the next state-based check (704.5e). */
   isCopy?: boolean;
   /** Spells (by any player) cast this turn *before* this spell — captured when
    * it's cast, read by a `storm` effect on it (rule 702.40a). ROADMAP Phase 8. */
@@ -2691,7 +2694,7 @@ export interface EntryRecord {
  * {@link ParkedSteps}), or, once nothing is left, just a note that it isn't
  * over until its last decision has been answered — or, with `enter`, a
  * permanent waiting on its "as this enters" choice to finish entering; or,
- * with `leaveStack`, an instant or sorcery whose instructions are done,
+ * with `leaveStack`, an instant, a sorcery or an ability whose instructions are done,
  * leaving the stack as the final part of its resolution (rule 608.2n) once
  * the steps it parked above this are: a spell it lets its controller cast
  * as it resolves is cast while it's still on the stack (608.2g).

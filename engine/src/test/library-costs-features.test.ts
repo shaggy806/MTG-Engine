@@ -100,8 +100,12 @@ describe("Aragorn, the Uniter", () => {
     const opt = game.debugSpawn("Opt", A, "hand");
     game.dispatch({ type: "cast-spell", player: A, card: opt });
     game.advanceUntil((s) => s.awaiting?.kind === "scry");
-    // Aragorn's scry resolves first, above Opt.
-    expect(game.state.zones.shared.stack).toEqual([opt]);
+    // Aragorn's scry resolves first, above Opt — still on the stack as it
+    // asks (rule 608.2n).
+    const stack = game.state.zones.shared.stack;
+    expect(stack).toHaveLength(2);
+    expect(stack[0]).toBe(opt);
+    expect(game.state.objects[stack[1]].kind).toBe("ability");
     game.dispatch({ type: "scry", player: A, away: [] });
     expect(zoneOffer(game)?.order).toBe(true);
     choose(game, [b, a]);

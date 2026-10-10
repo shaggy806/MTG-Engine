@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3442 already implemented / 1558 missing (marks refreshed 2026-10-10)
+3450 already implemented / 1550 missing (marks refreshed 2026-10-10)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -271,7 +271,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   272  Deserted Beach                           {0}              Land
 [x]   273  Unexpected Windfall                      {2}{R}{R}        Instant
 [x]   274  Snap                                     {1}{U}           Instant
-[ ]   275  Etali, Primal Storm                      {4}{R}{R}        Legendary Creature — Elder Dinosaur
+[x]   275  Etali, Primal Storm                      {4}{R}{R}        Legendary Creature — Elder Dinosaur
 [x]   276  Hullbreaker Horror                       {5}{U}{U}        Creature — Kraken Horror
 [x]   277  Jet Medallion                            {2}              Artifact
 [x]   278  Exsanguinate                             {X}{B}{B}        Sorcery
@@ -747,7 +747,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   748  Hellkite Tyrant                          {4}{R}{R}        Creature — Dragon
 [x]   749  Revitalizing Repast // Old-Growth Grove  {1}              Instant // Land
 [x]   750  Scoured Barrens                          {0}              Land
-[ ]   751  Isochron Scepter                         {2}              Artifact
+[x]   751  Isochron Scepter                         {2}              Artifact
 [x]   752  Idyllic Tutor                            {2}{W}           Sorcery
 [x]   753  Loyal Apprentice                         {1}{R}           Creature — Human Artificer
 [x]   754  Eldritch Evolution                       {1}{G}{G}        Sorcery
@@ -804,7 +804,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   808  Sky Diamond                              {2}              Artifact
 [x]   809  Steel Overseer                           {2}              Artifact Creature — Construct
 [x]   810  Fleshbag Marauder                        {2}{B}           Creature — Zombie Warrior
-[ ]   811  Mizzix's Mastery                         {3}{R}           Sorcery
+[x]   811  Mizzix's Mastery                         {3}{R}           Sorcery
 [x]   812  Brightclimb Pathway // Grimclimb Pathway {0}              Land // Land
 [x]   813  Enduring Curiosity                       {2}{U}{U}        Enchantment Creature — Cat Glimmer
 [ ]   814  Cankerbloom                              {1}{G}           Creature — Phyrexian Fungus
@@ -1539,7 +1539,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1546  Tortured Existence                       {B}              Enchantment
 [x]  1547  Rumor Gatherer                           {1}{W}{W}        Creature — Elf Wizard
 [x]  1548  Dragonmaster Outcast                     {R}              Creature — Human Shaman
-[ ]  1549  Chandra, Torch of Defiance               {2}{R}{R}        Legendary Planeswalker — Chandra
+[x]  1549  Chandra, Torch of Defiance               {2}{R}{R}        Legendary Planeswalker — Chandra
 [x]  1550  Ganax, Astral Hunter                     {4}{R}           Legendary Creature — Dragon
 [x]  1551  Aether Channeler                         {2}{U}           Creature — Human Wizard
 [x]  1552  Unstoppable Slasher                      {2}{B}           Creature — Zombie Assassin
@@ -1902,7 +1902,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1909  Smuggler's Copter                        {2}              Artifact — Vehicle
 [x]  1910  Leaf-Crowned Visionary                   {G}{G}           Creature — Elf Druid
 [x]  1911  Tree of Perdition                        {3}{B}           Creature — Plant
-[ ]  1912  Sunbird's Invocation                     {5}{R}           Enchantment
+[x]  1912  Sunbird's Invocation                     {5}{R}           Enchantment
 [ ]  1913  Defense Grid                             {2}              Artifact
 [x]  1914  Helm of Awakening                        {2}              Artifact
 [x]  1915  Moon-Blessed Cleric                      {2}{W}           Creature — Human Elf Cleric
@@ -2429,7 +2429,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2436  Bruna, the Fading Light                  {5}{W}{W}        Legendary Creature — Angel Horror
 [x]  2437  Consuming Corruption                     {B}{B}           Instant
 [x]  2438  Encroaching Dragonstorm                  {3}{G}           Enchantment
-[ ]  2439  Villainous Wealth                        {X}{B}{G}{U}     Sorcery
+[x]  2439  Villainous Wealth                        {X}{B}{G}{U}     Sorcery
 [x]  2440  Faerie Seer                              {U}              Creature — Faerie Wizard
 [ ]  2441  Odric, Master Tactician                  {2}{W}{W}        Legendary Creature — Human Soldier
 [ ]  2442  Harsh Mentor                             {1}{R}           Creature — Human Cleric
@@ -2483,7 +2483,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2490  Agna Qel'a                               {0}              Land
 [x]  2491  Nulldrifter                              {7}              Creature — Eldrazi Elemental
 [x]  2492  Hordeling Outburst                       {1}{R}{R}        Sorcery
-[ ]  2493  Powerbalance                             {R}{R}           Enchantment
+[x]  2493  Powerbalance                             {R}{R}           Enchantment
 [x]  2494  Envoy of the Ancestors                   {2}{W}           Creature — Human Cleric
 [x]  2495  Voldaren Estate                          {0}              Land
 [ ]  2496  Yuriko, the Tiger's Shadow               {1}{U}{B}        Legendary Creature — Human Ninja
@@ -3759,7 +3759,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3766  Court of Ardenvale                       {2}{W}{W}        Enchantment
 [ ]  3767  Mardu Siegebreaker                       {1}{R}{W}{B}     Creature — Human Warrior
 [ ]  3768  Brave the Elements                       {W}              Instant
-[ ]  3769  Mnemonic Deluge                          {6}{U}{U}{U}     Sorcery
+[x]  3769  Mnemonic Deluge                          {6}{U}{U}{U}     Sorcery
 [x]  3770  Sanctum of Eternity                      {0}              Land
 [x]  3771  Faithful Mending                         {W}{U}           Instant
 [x]  3772  Repurposing Bay                          {2}{U}           Artifact

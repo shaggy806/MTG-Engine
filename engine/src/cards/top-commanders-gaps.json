@@ -2,6 +2,11 @@
  "generated": "2026-09-22",
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
  "built": [
+  "effect:cast-any-number-from-exiled",
+  "effect:cast-copies-of-exiled",
+  "effect:cast-copy-of-card",
+  "effect:cast-now-library-top-amount",
+  "effect:copy-card-and-cast",
   "effect:exchange-text-boxes",
   "keyword:dredge",
   "mechanic:curses",
@@ -613,7 +618,7 @@
   "effect:cast-during-resolution": {
    "size": "medium",
    "ui": true,
-   "description": "Casting during resolution for an alternative cost such as discarding a card (The Infamous Cruelclaw), copying a card and casting the copy for free (Mizzix's Mastery, Isochron Scepter, Narset), another player casting (Transforming Flourish, Tibalt's Trickery), casting several (Etali), a revealed top X read as an amount (Sunbird's Invocation) and the card discarded this way (Malcolm). Built so far (2026-09-30, the cast-now effect): the effect's controller casting a target card, or one picked from their hand, graveyard or the looked-at top N of their library, paid or without paying its mana cost, with a filter on the spell and 'if you do' / 'if you don't'."
+   "description": "Casting during resolution for an alternative cost such as discarding a card (The Infamous Cruelclaw), copying a card and casting the copy for free (Mizzix's Mastery, Isochron Scepter, Narset), another player casting (Transforming Flourish, Tibalt's Trickery), casting several (Etali), a revealed top X read as an amount (Sunbird's Invocation) and the card discarded this way (Malcolm). Built so far (2026-09-30, the cast-now effect): the effect's controller casting a target card, or one picked from their hand, graveyard or the looked-at top N of their library, paid or without paying its mana cost, with a filter on the spell and 'if you do' / 'if you don't'. 2026-10-09: copies of cards cast as it resolves (rule 707.12, uncast copies ceasing to exist by 704.5e), any number of spells from among cards exiled this way, and a top X that's an amount, revealed or not. Left: an alternative cost (Cruelclaw), another player casting (Tibalt's Trickery), search to exile then cast (Bring to Light), the command zone (Geode Golem), total mana value (Invoke Calamity), spending any mana type (Esper Valigarmanda), the card discarded this way (Malcolm) — each its own key in needs-vocabulary.json."
   },
   "effect:choices-by-other-players": {
    "size": "medium",

@@ -492,22 +492,22 @@ describe("evaluateDecklist", () => {
     // process-wide, so a repeat would make no call at all and prove nothing.
     // It also has to stay unimplemented: this test once used Thought Vessel,
     // which silently broke when that card joined the pool.
-    const name = "Sunbird's Invocation";
+    const name = "Shahrazad"; // subgames: not coming to the pool
     expect(registry.has(name), `${name} is implemented now — pick another card`).toBe(false);
     const fetchMock = stubCollection({
       [name]: {
         id: "aaaa1111-0000-0000-0000-000000000003",
         name,
-        mana_cost: "{5}{R}",
-        type_line: "Enchantment",
+        mana_cost: "{W}{W}",
+        type_line: "Sorcery",
         oracle_text: "",
-        set: "m19",
-        collector_number: "165",
+        set: "arn",
+        collector_number: "7",
       },
     });
 
     const [result] = await evaluateDecklist(
-      [{ name, count: 1, printing: { set: "m19", collectorNumber: "165" } }],
+      [{ name, count: 1, printing: { set: "arn", collectorNumber: "7" } }],
       registry,
     );
 

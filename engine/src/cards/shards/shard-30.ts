@@ -137,6 +137,7 @@ import _poolInkriseInfiltrator from "../pool/inkrise-infiltrator.js";
 import _poolInspiringCall from "../pool/inspiring-call.js";
 import _poolIntimidation from "../pool/intimidation.js";
 import _poolIrohGrandLotus from "../pool/iroh-grand-lotus.js";
+import _poolIsochronScepter from "../pool/isochron-scepter.js";
 import _poolJeongJeongsDeserters from "../pool/jeong-jeongs-deserters.js";
 import _poolKambalConsulOfAllocation from "../pool/kambal-consul-of-allocation.js";
 import _poolKavuClimber from "../pool/kavu-climber.js";
@@ -170,6 +171,7 @@ import _poolMoorishCavalry from "../pool/moorish-cavalry.js";
 import _poolMoriokScavenger from "../pool/moriok-scavenger.js";
 import _poolMurasaBrute from "../pool/murasa-brute.js";
 import _poolMyrMoonvessel from "../pool/myr-moonvessel.js";
+import _poolNarsetEnlightenedExile from "../pool/narset-enlightened-exile.js";
 import _poolNayaBattlemage from "../pool/naya-battlemage.js";
 import _poolNimbleInnovator from "../pool/nimble-innovator.js";
 import _poolNimbleThopterist from "../pool/nimble-thopterist.js";
@@ -412,6 +414,7 @@ const shard: CardShard = {
     _poolInspiringCall,
     _poolIntimidation,
     _poolIrohGrandLotus,
+    _poolIsochronScepter,
     _poolJeongJeongsDeserters,
     _poolKambalConsulOfAllocation,
     _poolKavuClimber,
@@ -445,6 +448,7 @@ const shard: CardShard = {
     _poolMoriokScavenger,
     _poolMurasaBrute,
     _poolMyrMoonvessel,
+    _poolNarsetEnlightenedExile,
     _poolNayaBattlemage,
     _poolNimbleInnovator,
     _poolNimbleThopterist,

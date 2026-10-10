@@ -13,7 +13,7 @@ None open.
 
 ## Commander gap (the current priority)
 
-**395 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**399 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -55,18 +55,20 @@ section keeps only what to do next.
 
 - **Now: more cards, in EDHREC rank order** (the `author-top-cards` skill). `npm run cards:needs
   -w engine -- --next 60` lists the next untriaged cards by rank: Turntimber Symbiosis (rank
-  2312) is triaged since batch 37, so rank 6672 on. The nine other starter precons' 32 stand-ins
+  2312) is triaged since batch 37, so rank 6672 on. The nine other starter precons' 31 stand-ins
   (`engine/data/sweep-3/PC-*.json`) go as their originals land.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
-- **3 cards whose recorded blockers have all been built since** (The Legend of Kyoshi, The
-  Restoration of Eiganjo, Jill, Shiva's Dominant — each a Saga or creature that returns
-  transformed) — recheck each with `card:brief` (`npm run cards:needs -w engine -- --stale`).
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,442 of 5,000
+- **14 cards whose recorded blockers have all been built since** (Blightsteel Colossus, Great
+  Train Heist, Perplex, The Master, Multiplied, the two Limit Breaks, three Sagas or creatures
+  that return transformed and 5 more) — recheck each with `card:brief` (`npm run cards:needs -w
+  engine -- --stale`).
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,450 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
-  of them — crew, the Ring and dice landed 2026-10-09; leading now (`cards:needs -- --rank`):
-  casting during resolution (26 cards), ninjutsu (23), Class (22) —
+  of them — crew, the Ring, dice and most of casting during resolution landed 2026-10-09; leading
+  now (`cards:needs -- --rank`): face-down's leftovers (24 cards), ninjutsu (23), attach
+  extensions (23), Class (22) —
    (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":

@@ -13747,6 +13747,11 @@ export class Game {
   private leaveStackAfterResolving(id: ObjectId): void {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "stack") return;
+    // An ability, done resolving, ceases to exist (rule 608.2n).
+    if (object.kind === "ability") {
+      this.removeOneAbilityCopy(id);
+      return;
+    }
     // An Omen spell (rule 720.3d) — the omen card cast as its Omen, or a
     // copy of one (720.3c) — is shuffled into its owner's library as it
     // resolves. Judged by what it is on the stack (720.3b): a copy carries
@@ -14119,6 +14124,8 @@ export class Game {
 
   private resolveAbility(object: GameObject): void {
     const id = object.id;
+    // Whatever this resolution parks goes above these.
+    const parked = this.state.suspendedResolutions.length;
     const ability = this.stackAbilityOf(object);
     // A delayed trigger chose no targets — its text doesn't say "target"
     // (rules 115.1d, 115.10a) — so what it carries isn't re-checked as
@@ -14264,6 +14271,14 @@ export class Game {
       this.emit({ type: "chapter-resolved", saga: source, final });
     }
     this.emit({ type: "ability-resolved", source, object: id });
+    // An ability leaves the stack as the final part of its resolution (rule
+    // 608.2n), as a spell does: after any of its steps still waiting on a
+    // decision. A spell its controller casts as it resolves (608.2g) sees it
+    // still there — Vantress Visions may target it.
+    if (this.state.suspendedResolutions.length > parked || this.decisionOutstanding()) {
+      this.state.suspendedResolutions.splice(parked, 0, { effect: null, leaveStack: id });
+      return;
+    }
     this.removeOneAbilityCopy(id);
   }
 
@@ -18434,8 +18449,28 @@ export class Game {
           return link !== undefined && link.source === source && link.zoneChangeCount === stint;
         });
       },
-      libraryTop: (player, count) =>
-        (this.state.zones.perPlayer[player]?.library ?? []).slice(0, Math.max(0, count)),
+      copyCards: (cards, times) => {
+        // Rule 707.12: each copy is made in the zone its card is in, to be
+        // cast from there; owned by the player who'll cast it. A copy not cast
+        // ceases to exist with the next state-based check (704.5e).
+        const made: ObjectId[] = [];
+        for (const id of cards) {
+          const card = this.state.objects[id];
+          if (card === undefined || card.zone === "stack" || card.zone === "battlefield") continue;
+          for (let i = 0; i < times; i += 1) {
+            const copy = this.makeCardObject(card.cardName, controller, { zone: card.zone });
+            this.state.objects[copy].isCopy = true;
+            this.zoneList(card.zone, controller).push(copy);
+            made.push(copy);
+          }
+        }
+        return made;
+      },
+      libraryTop: (player, count, reveal) => {
+        const top = (this.state.zones.perPlayer[player]?.library ?? []).slice(0, Math.max(0, count));
+        if (reveal === true) this.revealCards(player, top, "library");
+        return top;
+      },
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
       placeFound: (hit, put, tapped, attacking) => this.placeFound(hit, put, tapped, attacking),
       placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),
@@ -25825,6 +25860,10 @@ export class Game {
       // is done (below), so the rest of it isn't held up.
       this.offerArrivedCommanders();
 
+      // Rule 704.5e: a copy of a card in any zone but the stack or the
+      // battlefield ceases to exist — one made to be cast and never cast.
+      if (this.removeStrayCardCopies()) changed = true;
+
       // Continuous control effects (layer 2), recomputed each pass: a
       // permanent is controlled by its owner unless a control effect
       // (`controlEffects`) or an attached control-granting Aura says
@@ -28237,6 +28276,32 @@ export class Game {
         })
       );
     });
+  }
+
+  /** Rule 704.5e for the copies `copyCards` made: any still in a hand, a
+   * graveyard, a library, exile or the command zone is removed. Whether
+   * one was. */
+  private removeStrayCardCopies(): boolean {
+    let removed = false;
+    const sweep = (list: ObjectId[]): void => {
+      for (let i = list.length - 1; i >= 0; i -= 1) {
+        const object = this.state.objects[list[i]];
+        if (object?.isCopy !== true) continue;
+        delete this.state.objects[list[i]];
+        list.splice(i, 1);
+        removed = true;
+      }
+    };
+    for (const player of this.state.turnOrder) {
+      const zones = this.state.zones.perPlayer[player];
+      sweep(zones.hand);
+      sweep(zones.graveyard);
+      sweep(zones.library);
+    }
+    sweep(this.state.zones.shared.exile);
+    sweep(this.state.zones.shared.command);
+    if (removed) invalidateComputedCache();
+    return removed;
   }
 
   private zoneList(zone: ZoneType, owner: PlayerId): ObjectId[] {

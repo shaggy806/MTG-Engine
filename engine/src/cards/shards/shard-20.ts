@@ -92,6 +92,7 @@ import _poolEmeriasCall from "../pool/emerias-call.js";
 import _poolEnduringTenacity from "../pool/enduring-tenacity.js";
 import _poolEsperCormorants from "../pool/esper-cormorants.js";
 import _poolEssenceHarvest from "../pool/essence-harvest.js";
+import _poolEtaliPrimalStorm from "../pool/etali-primal-storm.js";
 import _poolEtherealArmor from "../pool/ethereal-armor.js";
 import _poolFierceWitchstalker from "../pool/fierce-witchstalker.js";
 import _poolFireNationAmbushers from "../pool/fire-nation-ambushers.js";
@@ -372,6 +373,7 @@ const shard: CardShard = {
     _poolEnduringTenacity,
     _poolEsperCormorants,
     _poolEssenceHarvest,
+    _poolEtaliPrimalStorm,
     _poolEtherealArmor,
     _poolFierceWitchstalker,
     _poolFireNationAmbushers,

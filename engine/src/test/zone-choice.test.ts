@@ -170,7 +170,8 @@ function castUreni(game: Game): void {
   }
   const card = named(game, game.handOf(A), "Ureni of the Unwritten");
   game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
-  game.advanceUntil(stackEmpty);
+  // Its enters trigger asks with it still on the stack (rule 608.2n).
+  game.advanceUntil((s) => stackEmpty(s) || s.awaiting?.kind === "choose-from-zone");
 }
 
 describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", () => {

@@ -4912,6 +4912,37 @@
   "effect:each-player-rolls": {
    "family": "mechanic:dice-rolling",
    "example": "Chaos Dragon: 'each player rolls a d20. If one or more opponents had the highest result …'."
+  },
+  "effect:search-to-exile-then-cast": {
+   "family": "effect:cast-during-resolution",
+   "example": "Bring to Light: search-library has no exile destination that a cast-now then reads (Beseech the Mirror, Sunforger, Ugin's -11)."
+  },
+  "effect:cast-commander-from-command-zone": {
+   "family": "effect:cast-during-resolution",
+   "example": "Geode Golem: cast-now can't cast from the command zone, with the commander tax still paid."
+  },
+  "effect:delayed-copy-of-exiled-card": {
+   "family": "effect:cast-during-resolution",
+   "example": "Surge to Victory: a delayed trigger this turn copies the card the spell exiled each time, and casts the copy."
+  },
+  "effect:cast-now-spend-any-mana": {
+   "family": "effect:cast-during-resolution",
+   "example": "Summon: Esper Valigarmanda: cast a card exiled with the Saga, spending mana of any type."
+  },
+  "effect:reveal-until-each-player": {
+   "family": "effect:reveal-until",
+   "example": "Etali, Primal Conqueror: each player exiles from the top of their library until a nonland card."
+  },
+  "effect:cast-now-exiled-with-counter": {
+   "family": "effect:cast-during-resolution",
+   "example": "Zethi, Arcane Blademaster: copy each exiled card you own with a kick counter on it and cast the copies, paying for them."
+  },
+  "effect:noted-card-name-copy": {
+   "family": "effect:cast-during-resolution",
+   "example": "Magar of the Magic Strings: note an instant or sorcery card's name, put it onto the battlefield face down as a 3/3 that creates and casts a copy of the noted card."
+  },
+  "condition:filter-shares-creature-type-with-controlled": {
+   "example": "Descendants' Path: the revealed card must share a creature type with a creature you control; sharesCreatureTypeWith reads only the trigger object."
   }
  }
 }

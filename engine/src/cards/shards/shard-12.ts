@@ -125,6 +125,7 @@ import _poolKarlachFuryOfAvernus from "../pool/karlach-fury-of-avernus.js";
 import _poolKayasGhostform from "../pool/kayas-ghostform.js";
 import _poolKazuulTyrantOfTheCliffs from "../pool/kazuul-tyrant-of-the-cliffs.js";
 import _poolKeldonNecropolis from "../pool/keldon-necropolis.js";
+import _poolKotisTheFangkeeper from "../pool/kotis-the-fangkeeper.js";
 import _poolLastGasp from "../pool/last-gasp.js";
 import _poolLaughingMad from "../pool/laughing-mad.js";
 import _poolLeafCrownedVisionary from "../pool/leaf-crowned-visionary.js";
@@ -400,6 +401,7 @@ const shard: CardShard = {
     _poolKayasGhostform,
     _poolKazuulTyrantOfTheCliffs,
     _poolKeldonNecropolis,
+    _poolKotisTheFangkeeper,
     _poolLastGasp,
     _poolLaughingMad,
     _poolLeafCrownedVisionary,

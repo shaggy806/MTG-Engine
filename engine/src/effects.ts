@@ -1958,7 +1958,8 @@ export type EffectSpec =
        * their hand, their graveyard ("an instant or sorcery spell from your
        * graveyard" — Diviner of Mist), or "from among" the top `libraryTop`
        * cards of their library, which they look at (Velomachus Lorehold's top
-       * seven — see `rest`).
+       * seven — see `rest`). An amount, read as this applies: Sunbird's
+       * Invocation's "the top X cards, where X is that spell's mana value".
        *
        * `"exiled-with-source"` is "the exiled card" of a linked ability
        * (rule 607.2a): the cards in exile this effect's source exiled, in
@@ -1980,7 +1981,12 @@ export type EffectSpec =
         | "exiled-with-source"
         | "exiled-this-way"
         | "targets"
-        | { readonly libraryTop: number };
+        | {
+            readonly libraryTop: EffectAmount;
+            /** "**Reveal** the top X cards" (Sunbird's Invocation): every
+             * player sees them (rule 701.16), not only their owner. */
+            readonly reveal?: true;
+          };
       /**
        * "You may play lands and cast spells **from among** cards exiled this
        * way" — any number of them, one after another while this resolves
@@ -2021,6 +2027,18 @@ export type EffectSpec =
       readonly free?: boolean;
       /** "If that spell would be put into your graveyard, exile it instead." */
       readonly exileAfter?: boolean;
+      /**
+       * Cast **copies** of the card rather than the card (rule 707.12): "copy
+       * it, and you may cast the copy" (Narset, Enlightened Exile; Isochron
+       * Scepter), "copy that card three times. You may cast the copies"
+       * (Mnemonic Deluge). This many copies of each card are created in the
+       * card's zone, owned by the caster, and offered in its place, each its
+       * own "may" (707.12a — one after another, as `repeat` offers them); the
+       * card itself stays where it is. A copy not cast ceases to exist (rule
+       * 704.5e), and one cast is a copy of a spell (it ceases to exist leaving
+       * the stack, and becomes a token as a permanent spell resolves, 608.3f).
+       */
+      readonly copies?: EffectAmount;
       /** "If you do, …" — a spell was cast this way (Conduit of Worlds: "you
        * can't cast additional spells this turn"). */
       readonly then?: EffectSpec;
@@ -3365,9 +3383,11 @@ export type EffectSpec =
     }
   | {
       /** A player gets `amount` energy counters ({E} — rule 122 / ROADMAP
-       * Phase 10). `who` defaults to the effect's controller. */
+       * Phase 10). `who` defaults to the effect's controller. An amount:
+       * Aetherflux Conduit's "equal to the amount of mana spent to cast that
+       * spell" is `manaSpentOf`. */
       readonly kind: "get-energy";
-      readonly amount: number;
+      readonly amount: EffectAmount;
       readonly who?: PlayerScope;
     }
   | {
@@ -4534,7 +4554,10 @@ export interface EffectApi {
    * or ability refers to. */
   cardsExiledWithSource(): readonly ObjectId[];
   /** The top `count` cards of `player`'s library, top first. */
-  libraryTop(player: PlayerId, count: number): readonly ObjectId[];
+  libraryTop(player: PlayerId, count: number, reveal?: boolean): readonly ObjectId[];
+  /** `times` copies of each of `cards` (rule 707.12), made in the card's
+   * zone and owned by the controller, for casting; the new objects' ids. */
+  copyCards(cards: readonly ObjectId[], times: number): readonly ObjectId[];
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
   /** Trigger a reflexive ability — see the `"reflexive-trigger"`
@@ -5493,7 +5516,10 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
   let progress = spec.progress;
   if (progress === undefined) {
     const from = spec.from;
-    const looked = typeof from === "object" ? ctx.libraryTop(ctx.controller, from.libraryTop) : [];
+    const looked =
+      typeof from === "object"
+        ? ctx.libraryTop(ctx.controller, Math.max(0, Math.floor(amountValue(from.libraryTop, ctx))), from.reveal === true)
+        : [];
     let cards: readonly ObjectId[];
     if (from === undefined) {
       const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
@@ -5508,6 +5534,14 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
       cards = ctx.targets.flatMap((t) => (t?.kind === "object" ? [t.object] : []));
     } else {
       cards = typeof from === "object" ? looked : ctx.cardsIn(ctx.controller, from);
+    }
+    if (spec.copies !== undefined) {
+      cards = ctx.copyCards(cards, Math.max(0, Math.floor(amountValue(spec.copies, ctx))));
+      // Several copies are each their own "may" (rule 707.12a).
+      if (cards.length > 1 && spec.repeat !== true) {
+        offerCastNow({ ...spec, copies: undefined, repeat: true }, { since: ctx.nextEventSeq(), cards, looked }, ctx);
+        return;
+      }
     }
     progress = { since: ctx.nextEventSeq(), cards, looked };
     if (offerCastNow(spec, progress, ctx)) return;
@@ -7610,7 +7644,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.ringTemptFinish();
       return;
     case "get-energy":
-      ctx.getEnergy(spec.amount, spec.who);
+      ctx.getEnergy(Math.max(0, Math.floor(amountValue(spec.amount, ctx))), spec.who);
       return;
     case "add-player-counters": {
       const players =

@@ -146,6 +146,7 @@ import _poolKavaronMemorialWorld from "../pool/kavaron-memorial-world.js";
 import _poolKederektParasite from "../pool/kederekt-parasite.js";
 import _poolKeepSafe from "../pool/keep-safe.js";
 import _poolKellanTheKid from "../pool/kellan-the-kid.js";
+import _poolKioraSovereignOfTheDeep from "../pool/kiora-sovereign-of-the-deep.js";
 import _poolLeapingMaster from "../pool/leaping-master.js";
 import _poolLeyDruid from "../pool/ley-druid.js";
 import _poolLightningStrike from "../pool/lightning-strike.js";
@@ -442,6 +443,7 @@ const shard: CardShard = {
     _poolKederektParasite,
     _poolKeepSafe,
     _poolKellanTheKid,
+    _poolKioraSovereignOfTheDeep,
     _poolLeapingMaster,
     _poolLeyDruid,
     _poolLightningStrike,
