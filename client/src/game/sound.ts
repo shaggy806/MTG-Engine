@@ -1,8 +1,8 @@
-import { motionPrefs } from './motionPrefs.ts'
+import { DEFAULT_SOUND_VOLUME, motionPrefs } from './motionPrefs.ts'
 
 /**
- * The game's sound effects, on unless the viewer turns them off (motionPrefs'
- * `sound`). Played from the same cues the animations are (see
+ * The game's sound effects, at the viewer's volume (motionPrefs'
+ * `soundVolume`; 0 is off). Played from the same cues the animations are (see
  * `AnimationLayer`), so a sound lands with the thing it belongs to.
  *
  * Two sources. The table's own noises — cards, dice, chips — the swords of
@@ -66,8 +66,15 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
 const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory'])
 
-/** Kept low: these play under a game, not over it. */
+/** Kept low at the slider's default: these play under a game, not over it. */
 const VOLUME = 0.6
+
+/** The level everything plays at: `VOLUME` at the slider's default, scaled
+ * by the square of the slider (loudness heard grows far slower than
+ * amplitude), so its top end is twice the default's amplitude. */
+function level(): number {
+  return VOLUME * (motionPrefs().soundVolume / DEFAULT_SOUND_VOLUME) ** 2
+}
 
 /**
  * The recordings are all normalised to the same loudness (-29 LUFS at their
@@ -78,7 +85,9 @@ const SAMPLE_LEVEL = 0.6
 
 let ctx: AudioContext | null = null
 
-function audio(): AudioContext | null {
+/** The page's one audio context, shared with the music (`music.ts`); null
+ * until the page has had a click, or where there's no Web Audio. */
+export function audio(): AudioContext | null {
   try {
     // The browser plays nothing until the page has had a click (or a key):
     // until then a cue is simply not heard, rather than a blocked context
@@ -142,7 +151,7 @@ function sample(a: AudioContext, cue: SoundCue): boolean {
   // A touch of pitch either way, so even the same take twice isn't identical.
   if (!TUNES.has(cue)) source.playbackRate.value = 0.96 + Math.random() * 0.08
   const gain = a.createGain()
-  gain.gain.value = SAMPLE_LEVEL * VOLUME
+  gain.gain.value = SAMPLE_LEVEL * level()
   source.connect(gain).connect(a.destination)
   source.start()
   return true
@@ -162,7 +171,7 @@ function tone(
   osc.type = opts.type ?? 'sine'
   osc.frequency.setValueAtTime(freq, start)
   if (opts.to !== undefined) osc.frequency.exponentialRampToValueAtTime(opts.to, end)
-  const peak = (opts.gain ?? 0.12) * VOLUME
+  const peak = (opts.gain ?? 0.12) * level()
   gain.gain.setValueAtTime(0.0001, start)
   gain.gain.exponentialRampToValueAtTime(peak, start + 0.012)
   gain.gain.exponentialRampToValueAtTime(0.0001, end)
@@ -177,7 +186,7 @@ const lastPlayed = new Map<SoundCue, number>()
 
 /** Plays `cue` if the viewer has sound on, `afterMs` from now. Never throws. */
 export function playSound(cue: SoundCue, afterMs = 0): void {
-  if (!motionPrefs().sound) return
+  if (motionPrefs().soundVolume <= 0) return
   if (afterMs > 0) {
     window.setTimeout(() => playSound(cue), afterMs)
     return

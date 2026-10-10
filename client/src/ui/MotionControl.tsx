@@ -36,6 +36,8 @@ const ENTRANCE_LABEL: Record<CastEntrance, string> = {
  * - **Bots**, for the host of a table with bots: how fast they play. It sat
  *   in the top strip as three buttons, which squeezed the phase track down to
  *   a few steps on a laptop screen.
+ * - **Sound**: the sound effects' and the music's volumes (`motionPrefs.ts`),
+ *   each a slider from off up.
  *
  * Both speeds read slowest to fastest.
  */
@@ -181,22 +183,54 @@ export function MotionControl({
               <span className="motion-note">(set by your system)</span>
             ) : null}
           </label>
-          <label className="motion-row">
-            <input
-              type="checkbox"
-              checked={prefs.sound}
-              onChange={(e) => {
-                setMotionSettings({ sound: e.target.checked })
-                // A sample, which is also the click a browser wants before
-                // it will play any sound at all.
-                if (e.target.checked) playSound('cast')
-              }}
-            />
-            Sound effects
-          </label>
+          <div className="motion-heading">Sound</div>
+          <VolumeSlider
+            label="Sound effects"
+            value={prefs.soundVolume}
+            onChange={(soundVolume) => setMotionSettings({ soundVolume })}
+            // A sample at the new level as the slider is let go — which is
+            // also the click a browser wants before it plays any sound.
+            onRelease={() => playSound('draw')}
+          />
+          <VolumeSlider
+            label="Music"
+            value={prefs.musicVolume}
+            onChange={(musicVolume) => setMotionSettings({ musicVolume })}
+          />
         </div>
       ) : null}
     </div>
+  )
+}
+
+/** A volume, 0 (off) to 1, as a slider in steps of 5%. */
+function VolumeSlider({
+  label,
+  value,
+  onChange,
+  onRelease,
+}: {
+  readonly label: string
+  readonly value: number
+  readonly onChange: (value: number) => void
+  readonly onRelease?: () => void
+}) {
+  const percent = Math.round(value * 100)
+  return (
+    <label className="motion-row motion-volume">
+      <span className="motion-label">{label}</span>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={percent}
+        onChange={(e) => onChange(Number(e.target.value) / 100)}
+        onPointerUp={onRelease}
+        onKeyUp={onRelease}
+      />
+      <span className="motion-volume-value">{percent === 0 ? 'Off' : `${percent}%`}</span>
+    </label>
   )
 }
 

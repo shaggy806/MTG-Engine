@@ -2317,7 +2317,7 @@ export function AnimationLayer({
 
   // The recorded sounds load ahead of the first frame, so its draws are heard.
   useEffect(() => {
-    if (motionPrefs().sound) preloadSounds()
+    if (motionPrefs().soundVolume > 0) preloadSounds()
   }, [])
 
   useEffect(

@@ -43,6 +43,7 @@ import { stackShowsSomething } from './game/decisionSource.ts'
 import { waitingLabel } from './game/waitingLabel.ts'
 import { gameStats } from './game/gameStats.ts'
 import { playSound } from './game/sound.ts'
+import { useGameMusic } from './game/music.ts'
 import { tableActions } from './game/tableActions.ts'
 import { useEscape } from './ui/useEscape.ts'
 import { computeBoardEntries } from './game/board.ts'
@@ -933,6 +934,8 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   useEffect(() => {
     if (won) playSound('victory')
   }, [won])
+  // Music through the game, fading out as it ends.
+  useGameMusic(view !== null && !view.result.over)
   // What the table may act on: the mulligan stays up through a frame playing
   // out, its buttons locked (`locked` below) — see `tableActions`.
   const latestActions = game.frame?.actions ?? EMPTY_ACTIONS

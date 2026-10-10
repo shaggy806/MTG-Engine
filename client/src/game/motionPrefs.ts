@@ -32,15 +32,29 @@ export interface MotionSettings {
   /** The viewer's own switch, not counting the browser's preference. */
   readonly reduceMotion: boolean
   readonly castEntrance: CastEntrance
-  /** Sound effects (`game/sound.ts`). On unless turned off. */
-  readonly sound: boolean
+  /** Sound effects' volume (`game/sound.ts`), 0 (off) to 1. */
+  readonly soundVolume: number
+  /** The background music's volume in a game (`game/music.ts`), 0 (off) to 1. */
+  readonly musicVolume: number
 }
 
-/** Stored beside the settings from when sound became on by default
- * (2026-10-10). Before then every save wrote `sound: false` whether or not
- * the viewer had touched it (changing the speed saved it too), so a `sound`
- * saved without this mark is no choice, and reads as the default. */
+/**
+ * Which shape the stored settings have, saved beside them. 2 (2026-10-10):
+ * sound became on by default, and before then every save wrote
+ * `sound: false` whether or not the viewer had touched it (changing the speed
+ * saved it too), so a `sound` saved without a version is no choice. 3: the
+ * on/off `sound` became two volumes; a version 2 `sound: false` is a sound
+ * volume of 0.
+ */
+const VERSION = 3
 const SOUND_DEFAULT_ON = 2
+
+/** Where each slider starts. */
+export const DEFAULT_SOUND_VOLUME = 0.7
+export const DEFAULT_MUSIC_VOLUME = 0.5
+
+const volume = (v: unknown, fallback: number): number =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : fallback
 
 export interface MotionPrefs extends MotionSettings {
   /** The setting or the browser's preference. What every animation obeys. */
@@ -52,14 +66,27 @@ const DEFAULTS: MotionSettings = {
   animScale: 1,
   reduceMotion: false,
   castEntrance: 'rise',
-  sound: true,
+  soundVolume: DEFAULT_SOUND_VOLUME,
+  musicVolume: DEFAULT_MUSIC_VOLUME,
 }
 
 function readStored(): MotionSettings {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    return parseSettings(window.localStorage.getItem(STORAGE_KEY))
+  } catch {
+    return DEFAULTS
+  }
+}
+
+/** The settings saved as `raw` (`localStorage`), or the defaults where it
+ * says nothing usable — including an older shape's (see `VERSION`). */
+export function parseSettings(raw: string | null): MotionSettings {
+  try {
     if (raw === null) return DEFAULTS
-    const parsed = JSON.parse(raw) as Partial<MotionSettings> & { readonly version?: number }
+    const parsed = JSON.parse(raw) as Partial<MotionSettings> & {
+      readonly version?: number
+      readonly sound?: boolean
+    }
     const animScale = ANIM_SCALES.find((s) => s === parsed.animScale) ?? DEFAULTS.animScale
     const castEntrance =
       CAST_ENTRANCES.find((e) => e === parsed.castEntrance) ?? DEFAULTS.castEntrance
@@ -67,7 +94,13 @@ function readStored(): MotionSettings {
       animScale,
       reduceMotion: parsed.reduceMotion === true,
       castEntrance,
-      sound: parsed.version === SOUND_DEFAULT_ON ? parsed.sound !== false : DEFAULTS.sound,
+      soundVolume:
+        parsed.version === VERSION
+          ? volume(parsed.soundVolume, DEFAULTS.soundVolume)
+          : parsed.version === SOUND_DEFAULT_ON && parsed.sound === false
+            ? 0
+            : DEFAULTS.soundVolume,
+      musicVolume: parsed.version === VERSION ? volume(parsed.musicVolume, DEFAULTS.musicVolume) : DEFAULTS.musicVolume,
     }
   } catch {
     return DEFAULTS
@@ -92,6 +125,8 @@ function derive(s: MotionSettings): MotionPrefs {
 
 function apply(): void {
   current = derive(settings)
+  // No page (a unit test reading `parseSettings`): nothing to style.
+  if (typeof document === 'undefined') return
   const root = document.documentElement
   root.style.setProperty('--anim-scale', String(current.animScale))
   root.setAttribute('data-cast-entrance', current.castEntrance)
@@ -116,7 +151,7 @@ export function motionPrefs(): MotionPrefs {
 export function setMotionSettings(next: Partial<MotionSettings>): void {
   settings = { ...settings, ...next }
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...settings, version: SOUND_DEFAULT_ON }))
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...settings, version: VERSION }))
   } catch {
     // Not remembered past this page load; still applies now.
   }

@@ -134,6 +134,21 @@
 .motion-note {
   color: var(--muted);
 }
+/* A volume slider: the label, the range, and its value in a fixed width so
+   the row doesn't shift as it changes between "Off" and "100%". */
+.motion-volume .motion-label {
+  min-width: 7.5em;
+}
+.motion-volume input[type='range'] {
+  width: 10em;
+  accent-color: var(--accent);
+}
+.motion-volume-value {
+  min-width: 3em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
 /* The order-triggers decision (ui/TriggerOrder.tsx): the triggers in the
    order they'll resolve, each with a move up / move down pair. */
 .controls.trigger-order {
