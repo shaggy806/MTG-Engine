@@ -55,12 +55,12 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   countered: ['energy-drain'],
   dice: ['dice-throw-1', 'dice-throw-3'],
   die: takes('die-throw', 4),
-  // Swords (StarNinjas): a swing as attackers are declared, and as one
-  // connects with a player; a clash as a blocker is, and as combat damage
-  // lands on a creature.
+  // Swords (StarNinjas) for combat's declarations: a swing as attackers are
+  // declared, a clash as a blocker is.
   attack: takes('sword', 10),
   block: takes('sword-clash', 10),
-  hit: takes('sword-clash', 10),
+  // Hits (Independent.nu) as combat damage lands, on a creature or a player.
+  hit: ['hit-25', 'hit-26', 'hit-27', 'hit-28', 'hit-29', 'hit-32'],
   victory: ['newthingget'],
 }
 

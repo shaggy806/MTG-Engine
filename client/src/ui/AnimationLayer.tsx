@@ -1398,9 +1398,7 @@ function soundFor(ev: GameEvent): void {
       playSound('block')
       return
     case 'damage-dealt':
-      // Steel on steel against a creature; a swing that gets through to a
-      // player.
-      if (ev.combat) playSound(ev.target.kind === 'player' ? 'attack' : 'hit')
+      if (ev.combat) playSound('hit')
       return
     case 'permanent-left-battlefield':
       playSound(ev.toZone === 'exile' ? 'exile' : 'death')
