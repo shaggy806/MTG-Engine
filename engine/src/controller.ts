@@ -2420,7 +2420,7 @@ export class HeuristicBotController extends AutomaticController {
    * Crop Rotation). The lands keep the places the ranking gave them, so a
    * choice that mixes in other permanents still gives up the cheapest.
    */
-  private cheapestPermanents(
+  protected cheapestPermanents(
     state: GameState,
     eligible: readonly ObjectId[],
     count: number,

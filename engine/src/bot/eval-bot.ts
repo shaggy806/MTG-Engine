@@ -625,6 +625,9 @@ export class EvalBotController extends HeuristicBotController {
   /** Whether the last priority search broke a tie with passing toward
    * acting (the `"acting"` rollout), for `scenario-fit.ts`'s replay. */
   lastTiesAct = false;
+  /** The candidates that tied with passing but weren't worth acting on alone
+   * (`scoreAlone`), so the tie stayed with passing — for the replay. */
+  lastRefusedTies: Action[] = [];
   /** The candidates the last priority search ranked unsafe for the
    * crackback (`tapsIntoCrackback`), for the replay. */
   lastUnsafe: Action[] = [];
@@ -689,6 +692,7 @@ export class EvalBotController extends HeuristicBotController {
     // what it taps or sacrifices (`crackbackGuard`), read once per decision.
     this.tapGuard = this.crackbackGuard(view.state);
     this.lastUnsafe = [];
+    this.lastRefusedTies = [];
     this.lastWipePayoff = null;
     // A cast payoff in play or about to be (Shiko and Narset's Flurry, a
     // prowess creature, Young Pyromancer): the rollouts play the rest of our
@@ -911,19 +915,36 @@ export class EvalBotController extends HeuristicBotController {
     // Under the `"acting"` rollout, passing is scored with the spells our own
     // seat casts later in the turn, so it ties with casting the first of them
     // now; the tie goes to acting — to passing, the bot would put every play
-    // off until the last window of its turn. Against each other, candidates
+    // off until the last window of its turn. But an action that does nothing
+    // ties with passing too, the rollout after the pass doing the same
+    // nothing, so each is also scored as if nobody acted after it
+    // (`scoreAlone`). A spell mustn't lose half a card on its own: a
+    // Magmaquake at X=0 throws one away (2.05 under, capture KEYZZ t6), where
+    // Opt before Shiko's copied Bolt is a card for a card (0.05 under, which
+    // card it draws) and the chain shows only in the rollouts. An activation must be better on its own, as nothing
+    // limits a free one: Lightning Greaves' equip {0} moved from creature to
+    // creature for ever (capture WAMFR t54). Against each other, candidates
     // still need to be strictly better.
     const tiesAct = this.decisionRollout === "acting";
     this.lastTiesAct = tiesAct;
+    let passAlone: number | null | undefined;
     for (const action of candidates) {
       if (spent(budget)) break;
       budget.left -= 1;
       const victim = mustKill.get(action);
       const score = this.score(view, action, budget, victim);
       if (score === null) continue;
-      const beats =
-        score > bestScore || (tiesAct && best.type === "pass-priority" && score >= bestScore - TIE);
-      if (!beats) continue;
+      const tiesPass = best.type === "pass-priority" && Math.abs(score - bestScore) <= TIE;
+      if (tiesPass) {
+        if (!tiesAct) continue;
+        passAlone ??= this.scoreAlone(view, pass, budget);
+        const alone = this.scoreAlone(view, action, budget);
+        if (alone === null || passAlone === null) continue;
+        if (action.type === "cast-spell" ? alone < passAlone - this.weights.hand / 2 : alone <= passAlone + TIE) {
+          this.lastRefusedTies.push(action);
+          continue;
+        }
+      } else if (!(score > bestScore)) continue;
       bestScore = score;
       best = action;
     }
@@ -1138,13 +1159,26 @@ export class EvalBotController extends HeuristicBotController {
    * Redemption (draw 13) beside it (a live misplay, 2026-10-06). Up to
    * `MAX_SACRIFICE_CHOICES` choices told apart by name and P/T — identical
    * tokens are one — largest power plus toughness first, the default kept;
-   * an effect that doesn't read the sacrifice keeps the one candidate.
+   * an effect that doesn't read the sacrifice keeps one candidate, paying
+   * with the cheapest thing it can (`cheapestPermanents`).
    */
   private withSacrificeChoices(state: GameState, legal: LegalAction, actions: readonly Action[]): Action[] {
     if (legal.kind !== "cast-spell" && legal.kind !== "activate-ability") return [...actions];
     const choices = legal.sacrifice?.choices ?? [];
     if (choices.length < 2) return [...actions];
-    if (!JSON.stringify(this.offerEffect(legal) ?? null).includes('"sacrificed"')) return [...actions];
+    if (!JSON.stringify(this.offerEffect(legal) ?? null).includes('"sacrificed"')) {
+      // Paid with the cheapest, as v1 pays (`cheapestPermanents`: least
+      // valuable first, a tapped land before an untapped one). A candidate
+      // named the last eligible, which could be the commander: Viscera Seer's
+      // scry 1 paid with Zurgo Stormrender while Twilight Drover and the Seer
+      // itself sat beside it (capture AN5SU t13).
+      const cheapest = this.cheapestPermanents(state, choices, 1)[0];
+      return actions.map((action) =>
+        (action.type === "cast-spell" || action.type === "activate-ability") && action.sacrifice !== undefined
+          ? { ...action, sacrifice: cheapest }
+          : action,
+      );
+    }
     const seen = new Set<string>();
     const distinct = withComputedCache(() =>
       choices.map((id) => {
@@ -2027,6 +2061,29 @@ export class EvalBotController extends HeuristicBotController {
     if (!this.tapsIntoCrackback(view.state, action, budget)) return value;
     this.lastUnsafe.push(action);
     return UNSAFE + value;
+  }
+
+  /**
+   * A priority candidate scored as if nobody acted after it (the `"passive"`
+   * rollout): what it's worth on its own. Under the `"acting"` rollout an
+   * action that does nothing ties with passing, the rollout after the pass
+   * doing the same nothing; scored alone, passing keeps what the action would
+   * have spent (a card, a mana's worth of tapped land), so a pointless action
+   * loses and one that does something still wins.
+   */
+  private scoreAlone(view: ControllerView, action: Action, budget: SearchBudget): number | null {
+    budget.left -= 1;
+    const after = timed(budget, () =>
+      simulateAction(
+        view.state,
+        this.cards,
+        action,
+        this.horizon,
+        "passive",
+        this.rolloutDecisions ? this.selfInRollouts() : undefined,
+      ),
+    );
+    return after === null ? null : evaluateState(after, this.cards, this.playerId, this.weights);
   }
 
   /**

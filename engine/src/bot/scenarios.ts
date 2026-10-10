@@ -1359,6 +1359,88 @@ const SCENARIOS: readonly BotScenario[] = [
     }),
   ),
   asked({
+    name: "doesn't sacrifice its commander to Viscera Seer ahead of Banishing Light",
+    rule: "A sacrifice that's only a cost pays with the cheapest thing, never the commander while there's another.",
+    position(registry) {
+      // Capture AN5SU t13: with dave's Banishing Light on the stack, carol paid
+      // Viscera Seer's scry 1 with Zurgo, her commander: the candidate named
+      // the last eligible creature. Zurgo goes to the command zone either way,
+      // but gone before the Light enters, the rollout's dave exiled alice's
+      // creature instead: a deflection that rested on guessing his target.
+      // Paying with the cheapest creature, scrying 1 isn't worth one.
+      const game = table(registry, [A, B, C, D], D);
+      lands(game, "Plains", D, 3);
+      lands(game, "Mountain", C, 2);
+      onBoard(game, "Viscera Seer", C);
+      onBoard(game, "Sol Ring", C);
+      onBoard(game, "Twilight Drover", C);
+      const zurgo = onBoard(game, "Zurgo Stormrender", C);
+      game.state.objects[zurgo].isCommander = true;
+      // Alice, the strongest opponent, has what the Light would take instead.
+      lands(game, "Forest", A, 3);
+      onBoard(game, "Fanatic of Rhonas", A);
+      onBoard(game, "Llanowar Elves", A);
+      onBoard(game, "Birds of Paradise", A);
+      castAndPassTo(game, D, game.debugSpawn("Banishing Light", D, "hand"), C);
+      return {
+        game,
+        player: C,
+        judge: (action) => ({
+          passed: !(action.type === "activate-ability" && action.sacrifice === zurgo),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "leaves Lightning Greaves where it is when moving it gains nothing",
+    rule: "A free equip that changes nothing isn't worth taking, and taking it once means taking it for ever.",
+    position(registry) {
+      // Capture WAMFR t54: with a cast payoff about (the "acting" rollout),
+      // equip {0} to another creature tied with passing, the rollout after a
+      // pass doing the same, and the tie went to acting, again and again. An
+      // activation now has to be worth something on its own to win a tie.
+      const game = table(registry, [A, B], A);
+      const bears = onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Grizzly Bears", A);
+      const greaves = onBoard(game, "Lightning Greaves", A);
+      game.state.objects[greaves].attachedTo = bears;
+      // A cast payoff in hand puts the decision under the "acting" rollout.
+      game.debugSpawn("Young Pyromancer", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "activate-ability" && action.source === greaves),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "doesn't cast Magmaquake for X=0",
+    rule: "A spell that does nothing at the X it can afford is a card thrown away.",
+    position(registry) {
+      // Capture KEYZZ t6: two Mountains make Magmaquake's X 0. With Firespitter
+      // Whelp in hand (a cast payoff, so the "acting" rollout) casting it tied
+      // with passing, the rollout after the pass casting it too, and the tie
+      // went to acting. On its own it loses a card to passing's keeping it.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 2);
+      onBoard(game, "Grizzly Bears", B);
+      const quake = game.debugSpawn("Magmaquake", A, "hand");
+      game.debugSpawn("Firespitter Whelp", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "cast-spell" && action.card === quake),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "moves Lightning Greaves to the creature just cast",
     rule: "Equipment goes where it does most: Greaves gives the new Craw Wurm haste.",
     position(registry) {

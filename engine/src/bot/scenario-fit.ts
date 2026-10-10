@@ -62,6 +62,9 @@ export interface ScenarioRecord {
   readonly heldAsPass?: readonly Action[];
   /** Whether a tie with passing went to acting (`lastTiesAct`). */
   readonly tiesAct?: boolean;
+  /** Candidates that tied with passing but kept the tie with it, not worth
+   * acting on alone (`lastRefusedTies`). */
+  readonly refusedTies?: readonly Action[];
   /** Candidates ranked below every safe one for the crackback (`lastUnsafe`). */
   readonly unsafe?: readonly Action[];
   /** A wipe the bot played a payoff before (`lastWipePayoff`). */
@@ -107,6 +110,7 @@ export function recordScenario(
     passFallback: bot.lastPassFallback,
     heldAsPass: bot.lastHeldForCombat,
     tiesAct: bot.lastTiesAct,
+    refusedTies: bot.lastRefusedTies,
     unsafe: bot.lastUnsafe,
     wipePayoff: bot.lastWipePayoff,
   };
@@ -118,17 +122,19 @@ export function replayChoice(record: ScenarioRecord, weights: EvalWeights): numb
   const w = normalizeWeights(weights);
   const key = (a: Action | undefined): string => JSON.stringify(a);
   const unsafe = new Set((record.unsafe ?? []).map(key));
+  const refused = new Set((record.refusedTies ?? []).map(key));
   let best = 0;
   let bestScore = -Infinity;
   record.answers.forEach((answer, i) => {
     if (answer.outcome === null) return;
     const score = scoreOutcome(answer.outcome, w) + (unsafe.has(key(answer.action)) ? UNSAFE : 0);
     // A tie with passing goes to acting under the `"acting"` rollout, as
-    // the search breaks it.
+    // the search breaks it — unless acting wasn't worth it alone.
     const tie =
       record.tiesAct === true &&
       record.answers[best]?.action.type === "pass-priority" &&
       answer.action.type !== "pass-priority" &&
+      !refused.has(key(answer.action)) &&
       score >= bestScore - TIE;
     if (score > bestScore || tie) {
       best = i;
