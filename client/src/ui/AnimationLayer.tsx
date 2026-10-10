@@ -1367,11 +1367,11 @@ function runPulse(source: ObjectId, delay: number): void {
   }
 }
 
-/** A creature arriving on the battlefield lands with a thud (`enter`), `at`
- * ms from now: as its card is put down on its tile, or as its tile grows in.
- * Anything else arrives quietly (a land played sounded as it was played). */
+/** A nonland permanent arriving on the battlefield lands with a thud
+ * (`enter`), `at` ms from now: as its card is put down on its tile, or as its
+ * tile grows in. A land arrives quietly (one played sounded as it was). */
 function enterSound(obj: VisibleObject | undefined, at: number): void {
-  if (obj?.types.includes('creature')) playSound('enter', at)
+  if (obj !== undefined && !obj.types.includes('land')) playSound('enter', at)
 }
 
 /** The sound an event makes, if any (and if the viewer has sound on), on

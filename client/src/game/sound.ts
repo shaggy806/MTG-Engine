@@ -78,6 +78,9 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // apart again if it should sound different.
   turn: ['game-start'],
   'your-turn': ['game-start'],
+  // A nonland permanent arriving on the battlefield: OtisJames's thud
+  // (Freesound, CC0), on trial (2026-10-10).
+  enter: ['thud'],
   // An ability going on the stack, as its entry flies there from its source:
   // qubodup's bamboo-stick whoosh (Freesound, CC0).
   ability: ['whoosh'],
@@ -262,8 +265,7 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
       tone(a, 784, 380, { type: 'triangle', at: 120, gain: 0.07 })
       break
     case 'enter':
-      // A creature landing on the battlefield: a low thump, until a
-      // recording is picked.
+      // Until the thud loads, a low thump.
       tone(a, 140, 180, { to: 55, type: 'sine', gain: 0.14 })
       break
     case 'ability':
