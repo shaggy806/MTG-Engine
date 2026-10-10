@@ -34,9 +34,13 @@ import './card-image.css'
 export function CardImage({
   def,
   version = 'normal',
+  backFace = false,
 }: {
   readonly def: CardDefinition
   readonly version?: ArtVersion
+  /** Show the back of the printing `def.art` names (the library's printings
+   * panel, on a flipped double-faced card). */
+  readonly backFace?: boolean
 }) {
   // Re-render when a batched lookup resolves, so the direct CDN URL replaces
   // the by-name fallback (and a name the batch gave up on stops being held).
@@ -51,7 +55,7 @@ export function CardImage({
   if (!def.art && !unlookupable) queueArtLookup(def.name)
 
   const pending = !def.art && !unlookupable && isArtPending(def.name)
-  const src = resolveArtUrl(def.art, def.name, version)
+  const src = resolveArtUrl(def.art, def.name, version, { backFace })
   const failed = !pending && (unlookupable || isArtBlocked(src))
 
   const classes = pending || failed ? 'card-image placeholder' : 'card-image'

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { DragEvent, MouseEvent } from 'react'
+import type { DragEvent, MouseEvent, ReactNode } from 'react'
 import type { CardDefinition, Color } from 'engine/client'
 import {
   canCommandAlone,
@@ -107,6 +107,14 @@ function groupOf(def: CardDefinition | undefined): Group {
   return 'other'
 }
 
+/**
+ * A deck, laid out by type with its legality, and — given `onChange` — the
+ * card pool beside it to build from. Without `onChange` it is read-only: a
+ * starter deck, shown the way a saved deck is but with no pool, no edit
+ * buttons, no drag target and no right-click menu; "Duplicate to edit" is how
+ * one is changed. `intro` goes under the legality line (a starter's
+ * description and stand-ins), and `standIns` marks those rows.
+ */
 export function DeckEditor({
   deck,
   isActive,
@@ -114,14 +122,20 @@ export function DeckEditor({
   onMakeActive,
   onDuplicate,
   onDelete,
+  intro,
+  standIns,
 }: {
   readonly deck: SavedDeck
   readonly isActive: boolean
-  readonly onChange: (next: SavedDeck) => void
+  readonly onChange?: (next: SavedDeck) => void
   readonly onMakeActive: () => void
   readonly onDuplicate: () => void
-  readonly onDelete: () => void
+  readonly onDelete?: () => void
+  readonly intro?: ReactNode
+  readonly standIns?: ReadonlySet<string>
 }) {
+  const readOnly = onChange === undefined
+  const change = (next: SavedDeck) => onChange?.(next)
   const [query, setQuery] = useState('')
   // Delete asks first: a deck lives only in this browser, so a misclick
   // used to lose it for good.
@@ -230,14 +244,14 @@ export function DeckEditor({
     [deck.commanders, deck.cards],
   )
 
-  const addCard = (cardName: string) => onChange({ ...deck, cards: [...deck.cards, cardName] })
+  const addCard = (cardName: string) => change({ ...deck, cards: [...deck.cards, cardName] })
   const removeCard = (cardName: string) => {
     const i = deck.cards.indexOf(cardName)
     if (i === -1) return
-    onChange({ ...deck, cards: [...deck.cards.slice(0, i), ...deck.cards.slice(i + 1)] })
+    change({ ...deck, cards: [...deck.cards.slice(0, i), ...deck.cards.slice(i + 1)] })
   }
   const removeAll = (cardName: string) =>
-    onChange({ ...deck, cards: deck.cards.filter((c) => c !== cardName) })
+    change({ ...deck, cards: deck.cards.filter((c) => c !== cardName) })
   /**
    * Move a card into the command zone, or out of it.
    *
@@ -256,12 +270,12 @@ export function DeckEditor({
   const toggleCommander = (cardName: string) => {
     const commanders = toggledCommanders(deck.commanders, cardName)
     if (deck.commanders.includes(cardName)) {
-      onChange({ ...deck, commanders })
+      change({ ...deck, commanders })
       return
     }
     const at = deck.cards.indexOf(cardName)
     const cards = at === -1 ? deck.cards : [...deck.cards.slice(0, at), ...deck.cards.slice(at + 1)]
-    onChange({ ...deck, commanders, cards })
+    change({ ...deck, commanders, cards })
   }
 
   /** What starring `cardName` would do, for its button's tooltip and its
@@ -281,7 +295,7 @@ export function DeckEditor({
     const next = { ...deck.printings }
     if (id === null) delete next[cardName]
     else next[cardName] = id
-    onChange({
+    change({
       ...deck,
       printings: Object.keys(next).length === 0 ? undefined : next,
     })
@@ -315,7 +329,7 @@ export function DeckEditor({
    * offers that has nowhere else to live.
    */
   const menuProps = (def: CardDefinition | undefined, extra: readonly MenuItem[]) =>
-    def === undefined
+    def === undefined || readOnly
       ? {}
       : {
           onContextMenu: (e: MouseEvent) => {
@@ -338,6 +352,7 @@ export function DeckEditor({
   const pickingDef = picking === null ? null : (cardNamed(picking) ?? null)
 
   const onDrop = (e: DragEvent) => {
+    if (readOnly) return
     e.preventDefault()
     setDropActive(false)
     const dropped = e.dataTransfer.getData(DRAG_MIME)
@@ -347,18 +362,31 @@ export function DeckEditor({
   return (
     <div className="db-editor">
       <div className="db-editor-head">
-        <input
-          className="db-name-input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() => {
-            if (name.trim() && name !== deck.name) onChange({ ...deck, name: name.trim() })
-          }}
-        />
-        {confirmingDelete ? (
+        {readOnly ? (
+          <h2>{deck.name}</h2>
+        ) : (
+          <input
+            className="db-name-input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => {
+              if (name.trim() && name !== deck.name) change({ ...deck, name: name.trim() })
+            }}
+          />
+        )}
+        {readOnly ? (
+          <div className="db-editor-actions">
+            <button type="button" onClick={onMakeActive} disabled={isActive}>
+              {isActive ? 'Active' : 'Make active'}
+            </button>
+            <button type="button" onClick={onDuplicate}>
+              Duplicate to edit
+            </button>
+          </div>
+        ) : confirmingDelete ? (
           <div className="db-editor-actions db-delete-confirm" role="alert">
             <span>Delete this deck? It can't be undone.</span>
-            <button type="button" className="db-danger" onClick={onDelete}>
+            <button type="button" className="db-danger" onClick={() => onDelete?.()}>
               Delete
             </button>
             <button type="button" onClick={() => setConfirmingDelete(false)} autoFocus>
@@ -393,7 +421,9 @@ export function DeckEditor({
         ) : null}
       </div>
 
-      {unknownNames.length > 0 ? (
+      {intro}
+
+      {unknownNames.length > 0 && !readOnly ? (
         <div className="db-unknown">
           <strong>⚠ {unknownNames.length} card(s) this engine no longer has</strong>
           <span className="muted">
@@ -407,7 +437,7 @@ export function DeckEditor({
                 <button
                   type="button"
                   onClick={() =>
-                    onChange({
+                    change({
                       ...deck,
                       cards: deck.cards.filter((c) => c !== n),
                       commanders: deck.commanders.filter((c) => c !== n),
@@ -422,7 +452,8 @@ export function DeckEditor({
         </div>
       ) : null}
 
-      <div className="db-panes">
+      <div className={`db-panes${readOnly ? ' read-only' : ''}`}>
+        {readOnly ? null : (
         <section className="db-pane db-pane-library">
           <header className="db-pane-head">
             <h3>Card pool</h3>
@@ -555,11 +586,12 @@ export function DeckEditor({
             </nav>
           ) : null}
         </section>
+        )}
 
         <section
           className={`db-pane db-pane-deck${dropActive ? ' db-drop-active' : ''}`}
           onDragOver={(e) => {
-            if (!e.dataTransfer.types.includes(DRAG_MIME)) return
+            if (readOnly || !e.dataTransfer.types.includes(DRAG_MIME)) return
             e.preventDefault()
             e.dataTransfer.dropEffect = 'copy'
             setDropActive(true)
@@ -592,9 +624,11 @@ export function DeckEditor({
                   </span>
                 ) : null}
                 <span className="db-card-row-spacer" />
-                <button type="button" title="Clear commander" onClick={() => toggleCommander(commander)}>
-                  −
-                </button>
+                {readOnly ? null : (
+                  <button type="button" title="Clear commander" onClick={() => toggleCommander(commander)}>
+                    −
+                  </button>
+                )}
               </div>
             ))}
             {deck.commanders.length === 0 ? (
@@ -603,7 +637,7 @@ export function DeckEditor({
                   No commander — pick a legendary creature, or another card that can command, with ☆
                 </span>
               </div>
-            ) : deck.commanders.length === 1 && hasPartner(cardPool().registry, deck.commanders[0]) ? (
+            ) : !readOnly && deck.commanders.length === 1 && hasPartner(cardPool().registry, deck.commanders[0]) ? (
               <p className="db-commander-hint muted">
                 {deck.commanders[0]} has Partner — ☆ another commander with Partner to add a second.
               </p>
@@ -626,7 +660,9 @@ export function DeckEditor({
                     {rows.map((row) => (
                       <li
                         key={row.name}
-                        className={row.def === undefined ? 'db-unknown-row' : undefined}
+                        className={
+                          row.def === undefined ? 'db-unknown-row' : standIns?.has(row.name) ? 'db-stand-in' : undefined
+                        }
                         {...hoverProps(row.def)}
                         {...menuProps(row.def, [
                           { label: 'Add another', onSelect: () => addCard(row.name) },
@@ -655,24 +691,28 @@ export function DeckEditor({
                         ) : null}
                         {row.def?.manaCost ? <Symbols text={row.def.manaCost} /> : null}
                         <span className="db-card-row-spacer" />
-                        {row.def !== undefined && canCommandAlone(row.def) ? (
-                          <button
-                            type="button"
-                            title={commanderAction(row.name)}
-                            onClick={() => toggleCommander(row.name)}
-                          >
-                            ☆
-                          </button>
-                        ) : null}
-                        <button type="button" title="Remove one" onClick={() => removeCard(row.name)}>
-                          −
-                        </button>
-                        <button type="button" title="Add another" onClick={() => addCard(row.name)}>
-                          +
-                        </button>
-                        <button type="button" title="Remove all copies" onClick={() => removeAll(row.name)}>
-                          ×
-                        </button>
+                        {readOnly ? null : (
+                          <>
+                            {row.def !== undefined && canCommandAlone(row.def) ? (
+                              <button
+                                type="button"
+                                title={commanderAction(row.name)}
+                                onClick={() => toggleCommander(row.name)}
+                              >
+                                ☆
+                              </button>
+                            ) : null}
+                            <button type="button" title="Remove one" onClick={() => removeCard(row.name)}>
+                              −
+                            </button>
+                            <button type="button" title="Add another" onClick={() => addCard(row.name)}>
+                              +
+                            </button>
+                            <button type="button" title="Remove all copies" onClick={() => removeAll(row.name)}>
+                              ×
+                            </button>
+                          </>
+                        )}
                       </li>
                     ))}
                   </ul>

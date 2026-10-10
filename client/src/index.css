@@ -182,7 +182,7 @@ button {
 button:not(:where(.card-tile, .mini-tile, .commander-tile, .lib-card-open, .seat-deck-slot, .rr-option, .phase-pip,
     .pp-zone-link, .link-button, .deck-picker-close, .lib-overlay-close, .bp-icon, .db-list li > button,
     .deck-picker-row, .seat-add-panel, .landing-nav-card, .lib-color-pip, .lib-flip, .zv-flip, .builder-tab,
-    .bp-card, .db-printing, .db-printing-more)) {
+    .bp-card, .db-printing, .db-printing-more, .lib-printing)) {
   border-color: var(--bevel-edge);
   box-shadow: var(--bevel);
 }
@@ -191,7 +191,7 @@ button:not(:where(.card-tile, .mini-tile, .commander-tile, .lib-card-open, .seat
 button:not(:where(.card-tile, .mini-tile, .commander-tile, .lib-card-open, .seat-deck-slot, .rr-option, .phase-pip,
     .pp-zone-link, .link-button, .deck-picker-close, .lib-overlay-close, .bp-icon, .db-list li > button,
     .deck-picker-row, .seat-add-panel, .landing-nav-card, .lib-color-pip, .lib-flip, .zv-flip, .builder-tab,
-    .bp-card, .db-printing, .db-printing-more)):active:not(:disabled) {
+    .bp-card, .db-printing, .db-printing-more, .lib-printing)):active:not(:disabled) {
   box-shadow: var(--bevel-pressed);
   translate: 0 1px;
 }

@@ -65,9 +65,9 @@ section keeps only what to do next.
   of them — crew, the Ring, dice, ninjutsu, Rooms and most of casting during resolution landed
   2026-10-09, Class 2026-10-10; leading now (`cards:needs -- --rank`): attach extensions (24 cards,
   18 fully unblocked), face-down's leftovers (22, 19), random choice (21, 16), the Kindred card
-  type (19, 17) —
-   (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
-  are in `docs/card-blockers.md`, "Open leads").
+  type (19, 17) (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring
+  blockers are in `docs/card-blockers.md`, "Open leads"). **Next to build: attach extensions**
+  (`cards:needs -- --feature effect:attach-extensions`), then author what it unblocks.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`).
@@ -169,9 +169,6 @@ animation follow-ups in `docs/plans/legibility-of-play.md`, "Follow-ups". Delete
 item lands.
 
 - **A forced look-and-choose still asks**: Yuriko's and Dark Confidant's "reveal the top card and put it into your hand" open a one-card picker with nothing to choose (`look-and-choose` with `count`, `min` and `max` 1); it could take the card unasked.
-- **The library's card viewer has no printings panel** (the user's ask, 2026-10-09): a scrollable list of every set/printing of the card, clicking one showing that printing; and its next/previous buttons shift as the box widens or narrows with whether the card has tokens (`client/src/library/LibraryPage.tsx`).
-- **The library's associated-token tiles react to a click** (the user's ask, 2026-10-10): they may highlight to show which token is displayed, but clicking one should do nothing visible (`client/src/library/LibraryPage.tsx`, `library.css`).
-- **The deck builder shows the starter decks differently from user-made decks** (the user's ask, 2026-10-10): they should show the same way, but without the card pool or the ability to edit the deck (`client/src/deck-builder/DeckBuilderPage.tsx`, `DeckEditor.tsx`).
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review): with bot speed moved into Settings every step shows at 1366, but at 1024 the track stops at EC.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards (manifested ones), damage, turn-long effects, the stack, the turn number.
@@ -190,6 +187,7 @@ item lands.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
+- **A put-down e2e test is flaky on this PC** (found 2026-10-10): `put-down.spec.ts:456`, the 4p opponent's spell flying to the stack, fails its frame-timing checks (seen vs. planned flight, handover budget) in three of four runs that night, at HEAD as well as with the day's client changes; the full suite passed once earlier the same night.
 
 - **Stale 701.19b citations.** 701.19b is regenerate, but about 11 files cite it for "a search
   may fail to find" (701.23b): `effects.ts`, `game.ts`, `zone-choice-together.ts`, AUTHORING,

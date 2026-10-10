@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { STARTER_DECKS, commandersOf, validateCommanderDeck } from 'engine/client'
+import { STARTER_DECKS, commandersOf } from 'engine/client'
 import type { PreconSubstitution } from 'engine/client'
 import {
   createDeck,
@@ -19,7 +19,6 @@ import { importDecklist, resolveImport } from './importDeck.ts'
 import type { ImportProgress, ImportReport } from './importDeck.ts'
 import { ReplacementReview } from './ReplacementReview.tsx'
 import { CONFIDENCE_LABEL } from './replacement-labels.ts'
-import { cardPool } from '../cards/cardData.ts'
 import './deck-builder.css'
 
 type Selection = { readonly kind: 'saved'; readonly id: string } | { readonly kind: 'starter'; readonly index: number } | null
@@ -235,19 +234,23 @@ export function DeckBuilderPage() {
             />
           </>
         ) : selectedStarter && starterIndex !== null ? (
-          <StarterViewer
-            name={selectedStarter.name}
-            commanders={commandersOf(selectedStarter)}
-            cardList={selectedStarter.cards}
-            description={selectedStarter.description}
-            substitutions={selectedStarter.substitutions}
+          <DeckEditor
+            key={`starter-${starterIndex}`}
+            deck={{
+              id: `starter-${starterIndex}`,
+              name: selectedStarter.name,
+              commanders: commandersOf(selectedStarter),
+              cards: selectedStarter.cards,
+            }}
             isActive={isActive({ kind: 'starter', index: starterIndex })}
-            onUseAsIs={() => markActive({ kind: 'starter', index: starterIndex })}
+            onMakeActive={() => markActive({ kind: 'starter', index: starterIndex })}
             onDuplicate={() => {
               const copy = duplicateStarter(starterIndex)
               refreshDecks()
               if (copy) selectDeck({ kind: 'saved', id: copy.id })
             }}
+            intro={<StarterIntro description={selectedStarter.description} substitutions={selectedStarter.substitutions} />}
+            standIns={new Set((selectedStarter.substitutions ?? []).map((sub) => sub.substitute))}
           />
         ) : (
           <p className="muted db-prompt">Pick a deck on the left, or start a new one.</p>
@@ -444,68 +447,19 @@ function ImportReportBanner({
   )
 }
 
-function StarterViewer({
-  name,
-  commanders,
-  cardList,
+/** What a starter deck shows above its list: its one-line description, and
+ * the stand-ins playing for cards the engine doesn't implement yet (each
+ * marked in the list with an asterisk). */
+function StarterIntro({
   description,
   substitutions = [],
-  isActive,
-  onUseAsIs,
-  onDuplicate,
 }: {
-  readonly name: string
-  readonly commanders: readonly string[]
-  readonly cardList: readonly string[]
   readonly description?: string
   readonly substitutions?: readonly PreconSubstitution[]
-  readonly isActive: boolean
-  readonly onUseAsIs: () => void
-  readonly onDuplicate: () => void
 }) {
-  const counts = useMemo(() => {
-    const m = new Map<string, number>()
-    for (const c of cardList) m.set(c, (m.get(c) ?? 0) + 1)
-    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-  }, [cardList])
-
-  const legal = useMemo(
-    () =>
-      commanders.length > 0 &&
-      validateCommanderDeck({ commanders, cards: cardList, size: 100 }, cardPool().registry).legal,
-    [commanders, cardList],
-  )
-  const substitutedIn = useMemo(() => new Set(substitutions.map((s) => s.substitute)), [substitutions])
-
   return (
-    <div className="db-editor">
-      <div className="db-editor-head">
-        <h2>{name}</h2>
-        <div className="db-editor-actions">
-          <button type="button" onClick={onUseAsIs} disabled={isActive}>
-            {isActive ? 'Active' : 'Use as active'}
-          </button>
-          <button type="button" onClick={onDuplicate}>
-            Duplicate to edit
-          </button>
-        </div>
-      </div>
-      {commanders.length > 0 ? (
-        <p className="muted">
-          {commanders.length === 1 ? 'Commander' : 'Commanders'}:{' '}
-          {commanders.map((c, i) => (
-            <span key={c}>
-              {i > 0 ? ' & ' : null}
-              <strong>{c}</strong>
-            </span>
-          ))}
-        </p>
-      ) : null}
-      {description ? <p>{description}</p> : null}
-      <p className="muted">
-        {cardList.length + commanders.length} cards
-        {legal ? ' · Commander-legal' : ' · not Commander-legal'}
-      </p>
+    <>
+      {description ? <p className="db-starter-description">{description}</p> : null}
       {substitutions.length > 0 ? (
         <details className="db-substitutions">
           <summary>
@@ -513,23 +467,15 @@ function StarterViewer({
             engine doesn't support yet
           </summary>
           <ul>
-            {substitutions.map((s) => (
-              <li key={s.original}>
-                <strong>{s.substitute}</strong> plays as <em>{s.original}</em>
-                <span className="muted"> — {s.reason}</span>
+            {substitutions.map((sub) => (
+              <li key={sub.original}>
+                <strong>{sub.substitute}</strong> plays as <em>{sub.original}</em>
+                <span className="muted"> — {sub.reason}</span>
               </li>
             ))}
           </ul>
         </details>
       ) : null}
-      <ul className="db-readonly-list">
-        {counts.map(([name, n]) => (
-          <li key={name} className={substitutedIn.has(name) ? 'db-stand-in' : undefined}>
-            {n > 1 ? `${n}× ` : ''}
-            {name}
-          </li>
-        ))}
-      </ul>
-    </div>
+    </>
   )
 }

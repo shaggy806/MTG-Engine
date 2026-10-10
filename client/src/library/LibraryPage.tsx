@@ -13,6 +13,8 @@ import {
   tokensCreatedBy,
 } from 'engine/client'
 import { cardPool } from '../cards/cardData.ts'
+import { fetchMorePrintings, fetchPrintings } from '../deck-builder/printings.ts'
+import type { Printing, PrintingPage } from '../deck-builder/printings.ts'
 import { CardImage } from '../ui/CardImage.tsx'
 import { Symbols } from '../ui/Symbols.tsx'
 import './library.css'
@@ -579,6 +581,9 @@ function CardOverlay({
   const shown = flipped && entry.other ? entry.other : entry.def
   const tokens = useMemo(() => tokensOf(entry), [entry])
   const [preview, setPreview] = useState<PreviewTarget | null>(null)
+  // The printing picked in the printings panel, or null for the card's own
+  // art. A printing is a whole card, so a flipped one shows its back face.
+  const [printing, setPrinting] = useState<Printing | null>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -598,16 +603,17 @@ function CardOverlay({
       aria-label={entry.def.name}
       onClick={onClose}
     >
-      <div
-        className={`lib-overlay-box${tokens.length > 0 ? ' has-tokens' : ''}`}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="lib-overlay-box" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="lib-overlay-close" onClick={onClose} aria-label="Close">
           ×
         </button>
 
         <div className="lib-overlay-art">
-          <CardImage def={shown} version="large" />
+          {printing === null ? (
+            <CardImage def={shown} version="large" />
+          ) : (
+            <CardImage def={{ ...shown, art: printing.id }} version="large" backFace={flipped} />
+          )}
           {entry.flippable ? (
             <button type="button" className="lib-overlay-flip" onClick={() => setFlipped((f) => !f)}>
               ⇄ {(flipped ? entry.def : entry.other!).name}
@@ -647,38 +653,138 @@ function CardOverlay({
           ) : null}
         </div>
 
-        {tokens.length > 0 ? (
-          <aside className="lib-overlay-tokens" aria-label="Tokens this card makes">
-            <h3>Tokens</h3>
-            <ul>
-              {tokens.map((token) => (
-                <li key={token.name}>
-                  <button
-                    type="button"
-                    className="lib-token-name"
-                    onMouseEnter={(e: MouseEvent<HTMLButtonElement>) =>
-                      setPreview({ def: token, anchor: e.currentTarget.getBoundingClientRect() })
-                    }
-                    onMouseLeave={() => setPreview(null)}
-                    onFocus={(e: FocusEvent<HTMLButtonElement>) =>
-                      setPreview({ def: token, anchor: e.currentTarget.getBoundingClientRect() })
-                    }
-                    onBlur={() => setPreview(null)}
-                  >
-                    <span>{tokenLabel(token)}</span>
-                    <span className="muted lib-token-type">
-                      {token.power !== null && token.toughness !== null ? `${token.power}/${token.toughness} ` : ''}
-                      {typeLineOf(token)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        ) : null}
+        {/* Always present, so the box is one width for every card and the
+            Previous/Next buttons stay put as you walk the results. */}
+        <aside className="lib-overlay-side">
+          {entry.isToken ? null : (
+            <PrintingsPanel name={entry.def.name} chosen={printing?.id ?? null} onChoose={setPrinting} />
+          )}
+          {tokens.length > 0 ? (
+            <section className="lib-overlay-tokens" aria-label="Tokens this card makes">
+              <h3>Tokens</h3>
+              <ul>
+                {tokens.map((token) => (
+                  <li key={token.name}>
+                    {/* Not a button: hovering (or tabbing to) a name shows its
+                        face, and a click does nothing more. */}
+                    <div
+                      className="lib-token-name"
+                      tabIndex={0}
+                      onMouseEnter={(e: MouseEvent<HTMLDivElement>) =>
+                        setPreview({ def: token, anchor: e.currentTarget.getBoundingClientRect() })
+                      }
+                      onMouseLeave={() => setPreview(null)}
+                      onFocus={(e: FocusEvent<HTMLDivElement>) =>
+                        setPreview({ def: token, anchor: e.currentTarget.getBoundingClientRect() })
+                      }
+                      onBlur={() => setPreview(null)}
+                    >
+                      <span>{tokenLabel(token)}</span>
+                      <span className="muted lib-token-type">
+                        {token.power !== null && token.toughness !== null ? `${token.power}/${token.toughness} ` : ''}
+                        {typeLineOf(token)}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </aside>
       </div>
       <TokenPreview target={preview} />
     </div>
+  )
+}
+
+/**
+ * Every printing of the card, newest first, from Scryfall (the same lookup as
+ * the deck builder's "Change printing…", cached for the page). Picking one
+ * shows that printing's face in the overlay; it isn't saved anywhere.
+ */
+function PrintingsPanel({
+  name,
+  chosen,
+  onChoose,
+}: {
+  readonly name: string
+  readonly chosen: string | null
+  readonly onChoose: (printing: Printing) => void
+}) {
+  const [page, setPage] = useState<PrintingPage | 'loading' | 'error'>('loading')
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  useEffect(() => {
+    let live = true
+    fetchPrintings(name).then(
+      (p) => {
+        if (live) setPage(p)
+      },
+      () => {
+        if (live) setPage('error')
+      },
+    )
+    return () => {
+      live = false
+    }
+  }, [name])
+
+  const more = (next: string) => {
+    setLoadingMore(true)
+    fetchMorePrintings(next).then(
+      (p) => {
+        setPage((prev) =>
+          typeof prev === 'string' ? prev : { ...p, printings: [...prev.printings, ...p.printings] },
+        )
+        setLoadingMore(false)
+      },
+      () => setLoadingMore(false),
+    )
+  }
+
+  return (
+    <section className="lib-printings" aria-label="Printings">
+      <h3>
+        Printings
+        {typeof page === 'string' ? null : <span className="lib-printings-count mono"> {page.total}</span>}
+      </h3>
+      {page === 'loading' ? (
+        <p className="muted lib-printings-note">Loading…</p>
+      ) : page === 'error' ? (
+        <p className="muted lib-printings-note">Couldn't reach Scryfall for its printings.</p>
+      ) : (
+        <ul className="lib-printings-list">
+          {page.printings.map((p) => (
+            <li key={p.id}>
+              <button
+                type="button"
+                className="lib-printing"
+                aria-pressed={chosen === p.id}
+                onClick={() => onChoose(p)}
+              >
+                <span>{p.setName}</span>
+                <span className="muted mono lib-printing-meta">
+                  {p.set} #{p.collectorNumber}
+                  {p.releasedAt ? ` · ${p.releasedAt.slice(0, 4)}` : ''}
+                </span>
+              </button>
+            </li>
+          ))}
+          {page.nextPage !== null ? (
+            <li>
+              <button
+                type="button"
+                className="lib-printing lib-printing-more"
+                disabled={loadingMore}
+                onClick={() => more(page.nextPage!)}
+              >
+                {loadingMore ? 'Loading…' : `Show more (${page.total - page.printings.length} left)`}
+              </button>
+            </li>
+          ) : null}
+        </ul>
+      )}
+    </section>
   )
 }
 

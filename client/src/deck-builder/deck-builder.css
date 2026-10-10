@@ -265,24 +265,13 @@
   color: var(--muted);
 }
 
-.db-readonly-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  columns: 2;
-  column-gap: 24px;
-  max-height: 65vh;
-  overflow-y: auto;
-}
-.db-readonly-list li {
-  padding: 2px 0;
-  font-size: var(--text-md);
-  break-inside: avoid;
-}
 /* A precon's stand-in for a card the engine doesn't implement yet. */
-.db-readonly-list li.db-stand-in::after {
+.db-deck-list li.db-stand-in .db-card-name::after {
   content: ' *';
   color: var(--accent);
+}
+.db-starter-description {
+  margin: 0;
 }
 .db-substitutions {
   margin: 0 0 12px;
@@ -648,9 +637,6 @@
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
-  .db-readonly-list {
-    columns: 1;
-  }
 }
 
 /* --- the two-pane editor: card pool on the left, the deck on the right --- */
@@ -660,10 +646,33 @@
   gap: 12px;
   align-items: start;
 }
+/* A starter deck: no pool, so the deck has the width, its groups set in two
+   columns rather than one long scroll. */
+.db-panes.read-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+.db-panes.read-only .db-deck-list {
+  display: block;
+  columns: 2;
+  column-gap: 24px;
+  max-height: none;
+}
+.db-panes.read-only .db-deck-group + .db-deck-group {
+  margin-top: 8px;
+}
+.db-panes.read-only .db-deck-group-head {
+  break-after: avoid;
+}
+.db-panes.read-only .db-deck-list li li {
+  break-inside: avoid;
+}
 /* One column on a narrow screen — the deck pane drops below the pool. */
 @media (max-width: 860px) {
   .db-panes {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .db-panes.read-only .db-deck-list {
+    columns: 1;
   }
 }
 .db-pane {
