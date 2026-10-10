@@ -8,6 +8,8 @@ moment, so `sound.ts` sets one level for all of them.
 |---|---|---|
 | `card-fan-*`, `card-place-*`, `card-shove-*`, `card-shuffle`, `card-slide-*`, `chip-lay-*` | [Casino Audio](https://kenney.nl/assets/casino-audio) 1.1 by Kenney (`card-shuffle` trimmed to its first 2 s) | CC0 |
 | `click_003` (any button) | [Interface Sounds](https://kenney.nl/assets/interface-sounds) 1.0 by Kenney (at the same loudness the earlier click_001 had, -32 LUFS) | CC0 |
+| `grunt-death` (a creature dying) | [Grunt2 - Death Pain.wav](https://freesound.org/people/tonsil5/sounds/416838/) by tonsil5, on Freesound (from the 24-bit WAV; silence and its noise tail trimmed) | CC0 |
+| `breaking` (any other permanent leaving the battlefield, but for exile) | `bfh1_breaking_03` from [75 CC0 breaking / falling / hit sfx](https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx) by rubberduck, on OpenGameArt | CC0 |
 | `sparkle` (life gained) | [cartoon_wink_magic_sparkle.wav](https://freesound.org/people/MLaudio/sounds/511485/) by MLaudio, on Freesound (from the WAV; its quiet tail kept) | CC0 |
 | `thud` (a nonland permanent entering) | [thud.wav](https://freesound.org/people/OtisJames/sounds/215162/) by OtisJames, on Freesound (from the WAV) | CC0 |
 | `whoosh` (an ability going on the stack) | [Whoosh](https://freesound.org/people/qubodup/sounds/60013/) by qubodup, on Freesound (from the FLAC) | CC0 |

@@ -1375,8 +1375,9 @@ function enterSound(obj: VisibleObject | undefined, at: number): void {
 }
 
 /** The sound an event makes, if any (and if the viewer has sound on), on
- * the screen of `seat`. */
-function soundFor(ev: GameEvent, seat: PlayerId): void {
+ * the screen of `seat`; `before` is the board the frame started from, for
+ * what only it still shows (what a permanent that has left was). */
+function soundFor(ev: GameEvent, seat: PlayerId, before: PlayerView | null = null): void {
   switch (ev.type) {
     case 'spell-cast':
       playSound('cast')
@@ -1412,7 +1413,16 @@ function soundFor(ev: GameEvent, seat: PlayerId): void {
       return
     // Combat damage sounds with its strike (`fire`), where one is drawn.
     case 'permanent-left-battlefield':
-      playSound(ev.toZone === 'exile' ? 'exile' : 'death')
+      playSound(
+        ev.toZone === 'exile'
+          ? 'exile'
+          : // A creature dying (rule 700.4: put into a graveyard from the
+            // battlefield) has a voice of its own; anything else leaving
+            // (a noncreature permanent, a creature returned to hand) breaks.
+            ev.toZone === 'graveyard' && before?.objects[ev.object]?.types.includes('creature') === true
+            ? 'creature-death'
+            : 'death',
+      )
       return
     case 'life-changed':
       playSound(ev.delta > 0 ? 'gain' : 'loss')
@@ -2379,7 +2389,7 @@ export function AnimationLayer({
 
     const fire = (cue: AnimationCue): void => {
       const { event: ev, view } = cue
-      soundFor(ev, seatRef.current)
+      soundFor(ev, seatRef.current, cue.prev)
       if (ev.type === 'spell-cast' || ev.type === 'land-played') {
         const obj = view.objects[ev.object]
         if (!obj) return
@@ -2571,7 +2581,8 @@ export function AnimationLayer({
             runHurt(cue.event, cue.delay)
           }
           const ev = cue.event
-          window.setTimeout(() => soundFor(ev, seatRef.current), cue.delay)
+          const before = cue.prev
+          window.setTimeout(() => soundFor(ev, seatRef.current, before), cue.delay)
           continue
         }
         // A move's snapshot is of the board as the frame starts, so it's taken

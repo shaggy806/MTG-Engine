@@ -23,6 +23,7 @@ export type SoundCue =
   | 'block'
   | 'hit'
   | 'death'
+  | 'creature-death'
   | 'exile'
   | 'gain'
   | 'loss'
@@ -78,6 +79,13 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // apart again if it should sound different.
   turn: ['game-start'],
   'your-turn': ['game-start'],
+  // A creature dying (put into a graveyard from the battlefield): tonsil5's
+  // "Grunt2 - Death Pain" (Freesound, CC0).
+  'creature-death': ['grunt-death'],
+  // Any other permanent leaving the battlefield, but for exile (its own
+  // cue): destroyed, sacrificed, returned to hand or library. rubberduck's
+  // "75 CC0 breaking / falling / hit sfx" (OpenGameArt), breaking_03.
+  death: ['breaking'],
   // A player gaining life: MLaudio's cartoon magic sparkle (Freesound, CC0).
   gain: ['sparkle'],
   // A nonland permanent arriving on the battlefield: OtisJames's thud
@@ -247,6 +255,7 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
       tone(a, 140, 140, { to: 60, type: 'square', gain: 0.1 })
       break
     case 'death':
+    case 'creature-death':
       tone(a, 330, 380, { to: 110, type: 'sawtooth', gain: 0.06 })
       break
     case 'exile':
