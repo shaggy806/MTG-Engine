@@ -794,6 +794,8 @@ function evalStaticCondition(
             : state.turnOrder;
       return seats.some((p) => turnStatOf(state, p, condition.stat) >= condition.atLeast);
     }
+    case "ring-tempted":
+      return (state.players[you]?.ringTemptations ?? 0) >= condition.atLeast;
     case "self-counters": {
       // Last-known information once the source has left the battlefield
       // (603.10) — `moveObject` clears `counters`, so a dies-trigger asking

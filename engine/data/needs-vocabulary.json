@@ -4864,6 +4864,26 @@
   "effect:put-arrived-all-tapped": {
    "family": "effect:put-onto-battlefield-options",
    "example": "Hedge Shredder: 'Whenever one or more land cards are put into your graveyard from your library, put them onto the battlefield tapped.'"
+  },
+  "deck:copy-limit-exception": {
+   "family": "mechanic:the-ring",
+   "example": "Nazgûl: 'A deck can have up to nine cards named Nazgûl' — the validator has no exception to the singleton rule (Relentless Rats and kin)."
+  },
+  "filter:not-this-object": {
+   "family": "condition:filter-card-property-clauses",
+   "example": "Gandalf, Friend of the Shire: 'if you chose a creature other than Gandalf as your Ring-bearer' — no filter clause for 'not this object'."
+  },
+  "amount:ring-bearer-power": {
+   "family": "effect:amount-new-variants",
+   "example": "One Ring to Rule Them All: 'each player mills cards equal to your Ring-bearer's power'."
+  },
+  "effect:reveal-until-count-tapped": {
+   "family": "effect:put-onto-battlefield-options",
+   "example": "The Ring Goes South: reveal until X land cards and 'put those land cards onto the battlefield tapped' — reveal-until-count puts them in untapped."
+  },
+  "condition:countered-spell-legendary": {
+   "family": "effect:choices-by-other-players",
+   "example": "Glorious Gale: 'Counter target creature spell. If it was a legendary spell, the Ring tempts you.'"
   }
  }
 }

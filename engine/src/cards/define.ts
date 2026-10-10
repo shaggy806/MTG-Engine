@@ -867,7 +867,14 @@ export type StaticCondition =
       readonly kind: "self-counters";
       readonly counter?: string;
       readonly compare: NumCompare;
-    };
+    }
+  /**
+   * "If the Ring has tempted you N or more times this game" (rule 701.54c —
+   * Frodo, Adventurous Hobbit) — and how the Ring emblem's own later
+   * abilities are gated: "as long as the Ring has tempted that player two or
+   * more times, it has …". The source's controller's count.
+   */
+  | { readonly kind: "ring-tempted"; readonly atLeast: number };
 
 /**
  * A static ability: continuously modifies characteristics (rule 613 layers 6 /

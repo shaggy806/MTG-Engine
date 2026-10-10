@@ -22,6 +22,7 @@ import _poolBlisterBeetle from "../pool/blister-beetle.js";
 import _poolBloodcrusherOfKhorne from "../pool/bloodcrusher-of-khorne.js";
 import _poolBlossomingBogbeast from "../pool/blossoming-bogbeast.js";
 import _poolBoneSplinters from "../pool/bone-splinters.js";
+import _poolBoromirWardenOfTheTower from "../pool/boromir-warden-of-the-tower.js";
 import _poolBruseTarlBoorishHerder from "../pool/bruse-tarl-boorish-herder.js";
 import _poolBurgeoning from "../pool/burgeoning.js";
 import _poolBuriedAlive from "../pool/buried-alive.js";
@@ -284,6 +285,7 @@ const shard: CardShard = {
     _poolBloodcrusherOfKhorne,
     _poolBlossomingBogbeast,
     _poolBoneSplinters,
+    _poolBoromirWardenOfTheTower,
     _poolBruseTarlBoorishHerder,
     _poolBurgeoning,
     _poolBuriedAlive,

@@ -41,6 +41,7 @@ import type {
 } from "./state.js";
 import { decisionHasSource } from "./decisions/registry.js";
 import { goadersOf } from "./goad.js";
+import { hasRingBearerDesignation } from "./ring.js";
 import { activePlayerOf, faceName, manaCostOverride, nameOf, printedCardName, rulesTextName } from "./state.js";
 import { withoutTypeMarkers } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
@@ -230,6 +231,9 @@ export interface VisibleObject {
   /** Suspected (rule 701.60). Its menace and can't-block already show among
    * `keywords` and `restrictions`; this is the designation itself. */
   readonly suspected: boolean;
+  /** Its controller's Ring-bearer (rule 701.54) — a designation; the Ring
+   * emblem says what that gives it. */
+  readonly ringBearer: boolean;
   /** On a permanent: the cards in exile linked to it — what an O-Ring holds
    * until it leaves (rule 720.2 — Banishing Light), or cards exiled with it
    * that it lets someone play (Theater of Horrors, Maralen). Ids only: a
@@ -506,6 +510,7 @@ function visible(
     isCommander: object.isCommander && (faceDown === undefined || viewer === object.controller),
     goadedBy: [...goadersOf(state, registry, id)],
     suspected: object.zone === "battlefield" && object.suspectedAt !== undefined,
+    ringBearer: hasRingBearerDesignation(object),
   };
 }
 

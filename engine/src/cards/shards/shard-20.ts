@@ -107,6 +107,7 @@ import _poolGoblinFireslinger from "../pool/goblin-fireslinger.js";
 import _poolGoblinGardener from "../pool/goblin-gardener.js";
 import _poolGolgariSignet from "../pool/golgari-signet.js";
 import _poolGoliathSpider from "../pool/goliath-spider.js";
+import _poolGollumPatientPlotter from "../pool/gollum-patient-plotter.js";
 import _poolGoodFortuneUnicorn from "../pool/good-fortune-unicorn.js";
 import _poolGranGran from "../pool/gran-gran.js";
 import _poolGravedigger from "../pool/gravedigger.js";
@@ -386,6 +387,7 @@ const shard: CardShard = {
     _poolGoblinGardener,
     _poolGolgariSignet,
     _poolGoliathSpider,
+    _poolGollumPatientPlotter,
     _poolGoodFortuneUnicorn,
     _poolGranGran,
     _poolGravedigger,

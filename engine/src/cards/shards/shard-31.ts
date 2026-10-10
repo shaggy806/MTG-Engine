@@ -124,6 +124,7 @@ import _poolHulkingDevil from "../pool/hulking-devil.js";
 import _poolHuntedHorror from "../pool/hunted-horror.js";
 import _poolIcewindElemental from "../pool/icewind-elemental.js";
 import _poolIllusoryAmbusher from "../pool/illusory-ambusher.js";
+import _poolInheritedEnvelope from "../pool/inherited-envelope.js";
 import _poolIntoTheMawOfHell from "../pool/into-the-maw-of-hell.js";
 import _poolIronBully from "../pool/iron-bully.js";
 import _poolIshaiOjutaiDragonspeaker from "../pool/ishai-ojutai-dragonspeaker.js";
@@ -392,6 +393,7 @@ const shard: CardShard = {
     _poolHuntedHorror,
     _poolIcewindElemental,
     _poolIllusoryAmbusher,
+    _poolInheritedEnvelope,
     _poolIntoTheMawOfHell,
     _poolIronBully,
     _poolIshaiOjutaiDragonspeaker,

@@ -32,6 +32,7 @@ import type { CardFilter } from "../filter.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { matchesFilter } from "../filter.js";
 import { goadersOf, sourceAmount } from "../goad.js";
+import { hasRingBearerDesignation } from "../ring.js";
 import { printedCardName, rulesTextName } from "../state.js";
 import type { AttackRequirementRule, GameObject, GameState } from "../state.js";
 import { permanentSource, protectionBlocks } from "../targeting.js";
@@ -281,6 +282,15 @@ export function whyCannotBlock(
   ) {
     const attackerDef = registry.get(printedCardName(attacker));
     return `${blockerDef.name} can't block ${attackerDef.name}`;
+  }
+  // The Ring emblem: "your Ring-bearer … can't be blocked by creatures with
+  // greater power" (rule 701.54c), the powers compared as blocks are declared.
+  if (
+    hasRingBearerDesignation(attacker) &&
+    computeCharacteristics(state, registry, blockerId).power > computeCharacteristics(state, registry, attackerId).power
+  ) {
+    const attackerDef = registry.get(printedCardName(attacker));
+    return `${blockerDef.name} can't block ${attackerDef.name}, a Ring-bearer with less power`;
   }
   // Fear (702.36) / Intimidate (702.13) — blockable only by an artifact
   // creature, plus black creatures (fear) or colour-sharers (intimidate).

@@ -220,7 +220,8 @@
   "effect:spell-or-permanent-target",
   "effect:emblem-triggered-abilities",
   "keyword:afflict",
-  "keyword:crew"
+  "keyword:crew",
+  "mechanic:the-ring"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -1136,7 +1137,7 @@
   "mechanic:the-ring": {
    "size": "large",
    "ui": true,
-   "description": "The Ring tempts you (rule 701.52): the Ring emblem's four cumulative levels, choosing a Ring-bearer, the temptation count, a 'whenever the Ring tempts you' trigger, and protection from Ring-bearers."
+   "description": "The Ring tempts you (rule 701.54): the Ring emblem's four cumulative levels, choosing a Ring-bearer, the temptation count, a 'whenever the Ring tempts you' trigger, and protection from Ring-bearers."
   },
   "mechanic:voting": {
    "size": "medium",

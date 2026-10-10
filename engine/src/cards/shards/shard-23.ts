@@ -27,6 +27,7 @@ import _poolBenalishMarshal from "../pool/benalish-marshal.js";
 import _poolBigScore from "../pool/big-score.js";
 import _poolBilboBagginsBurglar from "../pool/bilbo-baggins-burglar.js";
 import _poolBilliardRoom from "../pool/billiard-room.js";
+import _poolBirthdayEscape from "../pool/birthday-escape.js";
 import _poolBlackDragon from "../pool/black-dragon.js";
 import _poolBlechLoafingPest from "../pool/blech-loafing-pest.js";
 import _poolBlessedSpirits from "../pool/blessed-spirits.js";
@@ -301,6 +302,7 @@ const shard: CardShard = {
     _poolBigScore,
     _poolBilboBagginsBurglar,
     _poolBilliardRoom,
+    _poolBirthdayEscape,
     _poolBlackDragon,
     _poolBlechLoafingPest,
     _poolBlessedSpirits,

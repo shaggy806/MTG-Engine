@@ -140,6 +140,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
       )} ${event.counter} counter${Math.abs(event.delta) === 1 ? '' : 's'} (now ${event.total})`
     case 'emblem-created':
       return `${who(event.player)} gets an emblem — "${event.text}"`
+    case 'ring-tempted':
+      return event.chosen === null
+        ? `The Ring tempts ${who(event.player)} (${event.count} time${event.count === 1 ? '' : 's'})`
+        : `The Ring tempts ${who(event.player)} (${event.count} time${event.count === 1 ? '' : 's'}) — ${name(event.chosen)} is the Ring-bearer`
     case 'card-on-adventure':
       return `${name(event.object)} goes on an adventure (exiled)`
     case 'cascade-revealed':

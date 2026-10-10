@@ -328,6 +328,10 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "become-copy": (n, v) => v.touch(n.target, "either", MINOR),
   "day-night": none,
   "become-monarch": none,
+  "the-ring-tempts-you": none,
+  // Slot 0 is the creature chosen, not the enclosing ability's target.
+  "become-ring-bearer": none,
+  "ring-tempted": none,
   "add-player-counters": (n, v) =>
     n.counter === "poison" ? v.touch(n.target, "harm", MAJOR) : v.touch(n.target, "help", MINOR),
   "get-energy": none,

@@ -39,6 +39,7 @@ import _poolCathedralOfWar from "../pool/cathedral-of-war.js";
 import _poolChaplainsBlessing from "../pool/chaplains-blessing.js";
 import _poolChromaticOrrery from "../pool/chromatic-orrery.js";
 import _poolCityOfBrass from "../pool/city-of-brass.js";
+import _poolClaimThePrecious from "../pool/claim-the-precious.js";
 import _poolCoastalPiracy from "../pool/coastal-piracy.js";
 import _poolCogworkersPuzzleknot from "../pool/cogworkers-puzzleknot.js";
 import _poolCorpseKnight from "../pool/corpse-knight.js";
@@ -313,6 +314,7 @@ const shard: CardShard = {
     _poolChaplainsBlessing,
     _poolChromaticOrrery,
     _poolCityOfBrass,
+    _poolClaimThePrecious,
     _poolCoastalPiracy,
     _poolCogworkersPuzzleknot,
     _poolCorpseKnight,

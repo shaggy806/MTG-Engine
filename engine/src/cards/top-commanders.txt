@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-394 already implemented / 106 missing
+395 already implemented / 105 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -37,7 +37,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   31  Miirym, Sentinel Wyrm                          28532 decks  {3}{G}{U}{R}     Legendary Creature — Dragon Spirit
 [ ]   32  Chatterfang, Squirrel General                  27793 decks  {2}{G}           Legendary Creature — Squirrel Warrior
 [ ]   33  Ulalek, Fused Atrocity                         27646 decks  {C/W}{C/U}{C/B}{C/R}{C/G} Legendary Creature — Eldrazi
-[ ]   34  Frodo, Adventurous Hobbit                      26958 decks  {W}{B}           Legendary Creature — Halfling Scout
+[x]   34  Frodo, Adventurous Hobbit                      26958 decks  {W}{B}           Legendary Creature — Halfling Scout
 [x]   35  Sam, Loyal Attendant                           26958 decks  {1}{G}{W}        Legendary Creature — Halfling Peasant
 [x]   36  Hashaton, Scarab's Fist                        26919 decks  {W}{B}           Legendary Creature — Zombie Wizard
 [x]   37  Ashling, the Limitless                         26287 decks  {2}{R}           Legendary Creature — Elemental Sorcerer

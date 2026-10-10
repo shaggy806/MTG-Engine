@@ -221,6 +221,7 @@ How to use it:
 | [Ob Nixilis Reignited, Koth, Fire of Resistance](#ob-nixilis-reignited-koth-fire-of-resistance) | rules call | Emblems with triggered abilities, and a turn-long graveyard permission |
 | [Liliana, Untouched by Death](#liliana-untouched-by-death) | rules call | Emblems with triggered abilities, and a turn-long graveyard permission |
 | [Smuggler's Copter, Cultivator's Caravan, Kotori, Pilot Prodigy](#smugglers-copter-cultivators-caravan-kotori-pilot-prodigy) | new decision | Crew and Vehicles |
+| [Claim the Precious, Call of the Ring, Birthday Escape](#claim-the-precious-call-of-the-ring-birthday-escape) | new decision | The Ring tempts you |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4215,3 +4216,23 @@ stack count once per token)
   noncreature artifacts again.
 - **Known limits:** "Whenever this Vehicle becomes crewed" and "crews Vehicles as though its
   power were 2 greater" aren't built yet (Mobilizer Mech, Shorikai's Pilots).
+
+## The Ring tempts you (2026-10-09)
+
+### Claim the Precious, Call of the Ring, Birthday Escape
+
+*New decision* — choosing a Ring-bearer, and the Ring emblem's levels (rule 701.54)
+
+- **Setup:** Your precombat main. Your battlefield: Grizzly Bears, Hill Giant, Call of the Ring,
+  three Swamps and two Islands. Your hand: Claim the Precious, Birthday Escape. Bob's battlefield:
+  Serra Angel, Llanowar Elves, Hill Giant.
+- **Do:** Cast Claim the Precious on the Serra Angel; when asked, choose the Hill Giant as your
+  Ring-bearer, and pay 2 life for Call of the Ring's card. Cast Birthday Escape and choose the
+  Bears. Look at your emblems. Attack with the Bears.
+- **Check:** The banner reads "The Ring tempts you: choose your Ring-bearer". The chosen creature
+  wears a "Ring" chip and is legendary; choosing the Bears moves the chip off the Giant. Your
+  emblems list shows one Ring emblem, its text growing to the loot line after the second
+  temptation. Attacking, the Bears loot (draw, then discard); Bob may block them with the Llanowar
+  Elves but not his Hill Giant (greater power). The log reads "The Ring tempts Alice (2 times) —
+  Grizzly Bears is the Ring-bearer"; the emblem viewer shows "Emblem — The Ring".
+- **Known limits:** The bots choose their first creature as Ring-bearer (BACKLOG, Bots).

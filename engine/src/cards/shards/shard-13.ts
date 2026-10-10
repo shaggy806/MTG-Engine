@@ -38,6 +38,7 @@ import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolBredForTheHunt from "../pool/bred-for-the-hunt.js";
 import _poolBusterSword from "../pool/buster-sword.js";
 import _poolCactusfolkSureshot from "../pool/cactusfolk-sureshot.js";
+import _poolCallOfTheRing from "../pool/call-of-the-ring.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
 import _poolCanopyTactician from "../pool/canopy-tactician.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
@@ -92,6 +93,7 @@ import _poolFlamekinBrawler from "../pool/flamekin-brawler.js";
 import _poolFlowstoneHellion from "../pool/flowstone-hellion.js";
 import _poolFlyingCarpet from "../pool/flying-carpet.js";
 import _poolFountainOfYouth from "../pool/fountain-of-youth.js";
+import _poolFrodoAdventurousHobbit from "../pool/frodo-adventurous-hobbit.js";
 import _poolFrostboilSnarl from "../pool/frostboil-snarl.js";
 import _poolFrostbridgeGuard from "../pool/frostbridge-guard.js";
 import _poolFrostburnWeird from "../pool/frostburn-weird.js";
@@ -206,6 +208,7 @@ import _poolShortBow from "../pool/short-bow.js";
 import _poolSiegeGangLieutenant from "../pool/siege-gang-lieutenant.js";
 import _poolSkullOfRamos from "../pool/skull-of-ramos.js";
 import _poolSoliton from "../pool/soliton.js";
+import _poolSoothingOfSmeagol from "../pool/soothing-of-smeagol.js";
 import _poolSoporificSprings from "../pool/soporific-springs.js";
 import _poolSoulstoneSanctuary from "../pool/soulstone-sanctuary.js";
 import _poolSpawningPit from "../pool/spawning-pit.js";
@@ -312,6 +315,7 @@ const shard: CardShard = {
     _poolBredForTheHunt,
     _poolBusterSword,
     _poolCactusfolkSureshot,
+    _poolCallOfTheRing,
     _poolCanopyGorger,
     _poolCanopyTactician,
     _poolCarrionAnts,
@@ -366,6 +370,7 @@ const shard: CardShard = {
     _poolFlowstoneHellion,
     _poolFlyingCarpet,
     _poolFountainOfYouth,
+    _poolFrodoAdventurousHobbit,
     _poolFrostboilSnarl,
     _poolFrostbridgeGuard,
     _poolFrostburnWeird,
@@ -480,6 +485,7 @@ const shard: CardShard = {
     _poolSiegeGangLieutenant,
     _poolSkullOfRamos,
     _poolSoliton,
+    _poolSoothingOfSmeagol,
     _poolSoporificSprings,
     _poolSoulstoneSanctuary,
     _poolSpawningPit,

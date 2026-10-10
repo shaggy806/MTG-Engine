@@ -89,6 +89,7 @@ import _poolExposeToDaylight from "../pool/expose-to-daylight.js";
 import _poolExultantCultist from "../pool/exultant-cultist.js";
 import _poolFaithlessLooting from "../pool/faithless-looting.js";
 import _poolFearlessHalberdier from "../pool/fearless-halberdier.js";
+import _poolFieryInscription from "../pool/fiery-inscription.js";
 import _poolFillWithFright from "../pool/fill-with-fright.js";
 import _poolFireshrieker from "../pool/fireshrieker.js";
 import _poolFootHeadquarters from "../pool/foot-headquarters.js";
@@ -205,6 +206,7 @@ import _poolRoxanneStarfallSavant from "../pool/roxanne-starfall-savant.js";
 import _poolRumblingSlum from "../pool/rumbling-slum.js";
 import _poolSalvageScout from "../pool/salvage-scout.js";
 import _poolSamLoyalAttendant from "../pool/sam-loyal-attendant.js";
+import _poolSamsDesperateRescue from "../pool/sams-desperate-rescue.js";
 import _poolSamutVoiceOfDissent from "../pool/samut-voice-of-dissent.js";
 import _poolSanctumGargoyle from "../pool/sanctum-gargoyle.js";
 import _poolSarkhanSoulAflame from "../pool/sarkhan-soul-aflame.js";
@@ -273,6 +275,7 @@ import _poolVolunteerMilitia from "../pool/volunteer-militia.js";
 import _poolWallOfBlossoms from "../pool/wall-of-blossoms.js";
 import _poolWallOfSwords from "../pool/wall-of-swords.js";
 import _poolWanderingTombshell from "../pool/wandering-tombshell.js";
+import _poolWarOfTheLastAlliance from "../pool/war-of-the-last-alliance.js";
 import _poolWasteNot from "../pool/waste-not.js";
 import _poolWeeDragonauts from "../pool/wee-dragonauts.js";
 import _poolWhisperOfTheDross from "../pool/whisper-of-the-dross.js";
@@ -381,6 +384,7 @@ const shard: CardShard = {
     _poolExultantCultist,
     _poolFaithlessLooting,
     _poolFearlessHalberdier,
+    _poolFieryInscription,
     _poolFillWithFright,
     _poolFireshrieker,
     _poolFootHeadquarters,
@@ -497,6 +501,7 @@ const shard: CardShard = {
     _poolRumblingSlum,
     _poolSalvageScout,
     _poolSamLoyalAttendant,
+    _poolSamsDesperateRescue,
     _poolSamutVoiceOfDissent,
     _poolSanctumGargoyle,
     _poolSarkhanSoulAflame,
@@ -565,6 +570,7 @@ const shard: CardShard = {
     _poolWallOfBlossoms,
     _poolWallOfSwords,
     _poolWanderingTombshell,
+    _poolWarOfTheLastAlliance,
     _poolWasteNot,
     _poolWeeDragonauts,
     _poolWhisperOfTheDross,

@@ -27,6 +27,7 @@ import type { CastVia } from "./actions.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
 import type { EffectAmount, ThisWayKind } from "./effects.js";
 import { isGoaded } from "./goad.js";
+import { hasRingBearerDesignation, isRingBearer } from "./ring.js";
 import type { Color, ManaCost, ManaFromSpec } from "./mana.js";
 import { COLORS, manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -166,6 +167,9 @@ export function supertypesOf(registry: CardRegistry, object: GameObject): readon
   ) {
     withoutLegendary();
   }
+  // The Ring emblem's "your Ring-bearer is legendary" (rule 701.54c) — the
+  // designation is only ever made under a Ring emblem.
+  if (hasRingBearerDesignation(object) && !out.includes("legendary")) out = [...out, "legendary"];
   return out;
 }
 
@@ -363,6 +367,9 @@ export interface CardFilter {
   /** Has an Equipment attached to it, whoever controls the Equipment (rule
    * 301.5). */
   readonly equipped?: boolean;
+  /** Is (or isn't) the filtering player's **Ring-bearer** (rule 701.54e) —
+   * "if Frodo is your Ring-bearer", "unless Sauron is your Ring-bearer". */
+  readonly ringBearer?: boolean;
   /** Has an Aura attached to it, whoever controls the Aura (rule 303.4). */
   readonly enchanted?: boolean;
   /** Is itself attached to a permanent matching this filter — an Aura or
@@ -1059,6 +1066,11 @@ export function matchesFilter(
       live.zone === "graveyard" &&
       live.putIntoGraveyardFromLibraryOnTurn === state.turn.number;
     if (milled !== filter.putIntoGraveyardFromLibraryThisTurn) return false;
+  }
+  // "Your Ring-bearer" (rule 701.54e) — the filtering player's, on the
+  // battlefield now.
+  if (filter.ringBearer !== undefined && (live !== undefined && isRingBearer(state, ctx.you, id)) !== filter.ringBearer) {
+    return false;
   }
   if (filter.attachedTo !== undefined) {
     const host = live !== undefined ? live.attachedTo : lki!.attachedTo;

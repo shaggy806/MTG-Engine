@@ -241,6 +241,7 @@ import _poolSkyEelSchool from "../pool/sky-eel-school.js";
 import _poolSkyclaveCleric from "../pool/skyclave-cleric.js";
 import _poolSkyhunterSkirmisher from "../pool/skyhunter-skirmisher.js";
 import _poolSlingGangLieutenant from "../pool/sling-gang-lieutenant.js";
+import _poolSlipOnTheRing from "../pool/slip-on-the-ring.js";
 import _poolSliverHivelord from "../pool/sliver-hivelord.js";
 import _poolSomnomancer from "../pool/somnomancer.js";
 import _poolSongOfFreyalise from "../pool/song-of-freyalise.js";
@@ -562,6 +563,7 @@ const shard: CardShard = {
     _poolSkyclaveCleric,
     _poolSkyhunterSkirmisher,
     _poolSlingGangLieutenant,
+    _poolSlipOnTheRing,
     _poolSliverHivelord,
     _poolSomnomancer,
     _poolSongOfFreyalise,

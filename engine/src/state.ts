@@ -244,6 +244,15 @@ export interface GameObject {
    */
   goadedBy?: PlayerId[];
   /**
+   * The player whose **Ring-bearer** this permanent is (rule 701.54a-b): a
+   * designation, not a copiable value. It lasts until another creature
+   * becomes that player's Ring-bearer or another player gains control of it
+   * (cleared on the control change, even if control comes back), and a
+   * zone change ends it (rule 400.7). Ask `isRingBearer` (`ring.ts`), which
+   * also checks who controls it now, rather than this field.
+   */
+  ringBearer?: PlayerId;
+  /**
    * Players who have goaded this creature **for the rest of the game** — Jon
    * Irenicus's "it's goaded for the rest of the game", the tokens Rendmaw,
    * Creaking Nest makes. Never lapses; only leaving the battlefield ends it
@@ -1466,6 +1475,14 @@ export const POISON_LETHAL = 10;
 export interface PlayerState {
   readonly id: PlayerId;
   life: number;
+  /** How many times the Ring has tempted this player this game (rule
+   * 701.54c) — what the Ring emblem's later abilities are gated on. Absent
+   * until it first does. */
+  ringTemptations?: number;
+  /** The creature chosen as Ring-bearer by the temptation under way, between
+   * its choice and its completion — what "whenever the Ring tempts you"
+   * names. Cleared as the temptation completes. */
+  ringChosen?: ObjectId;
   /** Mana floating in this player's pool, as individual units rather than a
    * count per colour — a unit may be restricted in what it pays for, may
    * survive the end of a step, or may carry a rider that fires when it's
@@ -2946,6 +2963,9 @@ export interface EmblemState {
    * Ob Nixilis Reignited gives an opponent a punishing emblem, which is no
    * asset of theirs. */
   readonly createdBy?: PlayerId;
+  /** The Ring (rule 701.54c): one per player, its text growing with the
+   * temptations — `ring.ts`. */
+  readonly ring?: true;
 }
 
 export interface GameState {

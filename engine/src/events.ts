@@ -165,6 +165,15 @@ export type GameEvent =
       readonly text: string;
     })
   | (Base & {
+      /** The Ring tempted `player` (rule 701.54d): they finished choosing a
+       * Ring-bearer — `chosen`, or `null` when they controlled no creature.
+       * `count` is how many times it has tempted them now. */
+      readonly type: "ring-tempted";
+      readonly player: PlayerId;
+      readonly chosen: ObjectId | null;
+      readonly count: number;
+    })
+  | (Base & {
       /** An adventure spell resolved and its card was exiled with a "may cast
        * the creature later" permission (rule 715.3 — ROADMAP Phase 10). */
       readonly type: "card-on-adventure";

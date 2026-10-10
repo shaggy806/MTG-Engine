@@ -20,7 +20,7 @@ const COLOR_WORD: Readonly<Record<string, string>> = {
 /**
  * The small chips along a permanent's bottom-left corner: summoning sickness,
  * and the designations nothing else on the tile shows — goaded (rule 701.15)
- * and suspected (701.60). A designation isn't an ability, so it isn't in the
+ * suspected (701.60) and Ring-bearer (701.54). A designation isn't an ability, so it isn't in the
  * keyword icons; suspect's menace and can't-block are, but not the fact that
  * it's suspected. Also how many cards it holds in exile (`holding` — a
  * Banishing Light's), which the hover card shows, and what was chosen as it
@@ -49,7 +49,7 @@ export function CardFlags({
   const sick = obj.summoningSick && obj.power !== null && obj.toughness !== null
   const held = obj.holding?.length ?? 0
   const chosen = obj.chosen === undefined ? null : (COLOR_WORD[obj.chosen] ?? obj.chosen)
-  if (!sick && goaders.length === 0 && !obj.suspected && held === 0 && chosen === null && enchanting === null) {
+  if (!sick && goaders.length === 0 && !obj.suspected && !obj.ringBearer && held === 0 && chosen === null && enchanting === null) {
     return null
   }
   return (
@@ -77,6 +77,14 @@ export function CardFlags({
       {obj.suspected ? (
         <span className="card-flag suspect" title="Suspected: it has menace and can't block">
           {compact ? 'Sus' : 'suspected'}
+        </span>
+      ) : null}
+      {obj.ringBearer ? (
+        <span
+          className="card-flag ring"
+          title="Ring-bearer: it's legendary and can't be blocked by creatures with greater power — the Ring emblem says what else"
+        >
+          {compact ? 'Ring' : 'Ring-bearer'}
         </span>
       ) : null}
       {chosen !== null ? (

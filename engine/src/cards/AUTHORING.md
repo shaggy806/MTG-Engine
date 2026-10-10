@@ -1097,6 +1097,20 @@ only a combat phase can be "this phase" — use it from a combat trigger.
 
 ### Format extras
 
+**The Ring tempts you** (rule 701.54) is `{ kind: "the-ring-tempts-you" }`: the
+effect's controller gets the Ring emblem if they have none, chooses a creature
+they control as their Ring-bearer (asked, never declined), and is tempted — the
+count goes up and the emblem gains its next ability (`ring.ts`). With no
+creature they're still tempted (701.54d). "Whenever the Ring tempts you" is the
+trigger `{ on: "ring-tempts", who: "you" }`, the creature chosen its trigger
+object; `chosen: true` is "whenever you choose a creature as your Ring-bearer"
+(Call of the Ring). "Your Ring-bearer" is the filter clause `ringBearer: true`
+(Frodo's "if Frodo is your Ring-bearer" is a `source` condition of it), and "the
+Ring has tempted you N or more times" the condition `{ kind: "ring-tempted",
+atLeast: N }`. The emblem's "legendary and can't be blocked by creatures with
+greater power" is built in. Not yet: "a creature other than ~", "your
+Ring-bearer's power", and Nazgûl's nine-copy deck rule.
+
 `become-monarch { who? }`, `get-energy { amount, who? }`,
 `add-player-counters { counter: "poison" | "experience", amount, who?, target? }`
 ("you get an experience counter"; Fynn, the Fangbearer's "that player gets two

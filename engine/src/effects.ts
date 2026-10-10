@@ -1396,6 +1396,10 @@ export type EffectSpec =
        */
       readonly kind: "sacrifice-target";
       readonly target: EffectTargetRef;
+      /** "**Its controller** sacrifices it" — whoever controls it then, not
+       * the effect's controller (the Ring's "the blocking creature's
+       * controller sacrifices it at end of combat"). */
+      readonly byItsController?: boolean;
     }
   | {
       /** Sacrifice the permanent this effect's own source is (Defense of the
@@ -3285,6 +3289,29 @@ export type EffectSpec =
     }
   | {
       /**
+       * **The Ring tempts you** (rule 701.54): the effect's controller gets the
+       * Ring emblem if they have none (701.54c — before choosing), chooses a
+       * creature they control to be their Ring-bearer (`choose-permanents`,
+       * one, never declined), and is then tempted: the count goes up and
+       * "whenever the Ring tempts you" triggers, with no creature to choose
+       * too (701.54d). Its `become-ring-bearer` and `ring-tempted` steps are
+       * the engine's, never authored.
+       */
+      readonly kind: "the-ring-tempts-you";
+    }
+  | {
+      /** The chosen creature becomes the effect's controller's Ring-bearer
+       * (rule 701.54a) — a step of `the-ring-tempts-you`. */
+      readonly kind: "become-ring-bearer";
+      readonly target: EffectTargetRef;
+    }
+  | {
+      /** The temptation completes (rule 701.54d) — the last step of
+       * `the-ring-tempts-you`. */
+      readonly kind: "ring-tempted";
+    }
+  | {
+      /**
        * A player gets `amount` counters of a kind (rule 122.1) — "you get an
        * experience counter" (Ezuri, Claw of Progress), "that player gets two
        * poison counters" (Fynn, the Fangbearer: `who: "trigger-player"`). To
@@ -4424,7 +4451,7 @@ export interface EffectApi {
   returnExiledBySource(linked?: boolean): boolean;
   /** Sacrifice one named permanent — see the `"sacrifice-target"`
    * {@link EffectSpec}. */
-  sacrificeTarget(target: TargetRef): void;
+  sacrificeTarget(target: TargetRef, byItsController?: boolean): void;
   /** Put `target` on top of / on the bottom of / Nth from the top of its
    * owner's library — see the `"put-on-library"` {@link EffectSpec}. */
   putOnLibrary(target: TargetRef, position: "top" | "bottom" | { readonly fromTop: number }): void;
@@ -5018,6 +5045,13 @@ export interface EffectApi {
   setDayNight(value: "day" | "night"): void;
   /** `who` becomes the monarch (rule 720). */
   becomeMonarch(who: PlayerScope | undefined): void;
+  /** The Ring tempts the controller (rule 701.54): the emblem first, if they
+   * have none. */
+  ringTemptBegin(): void;
+  /** `object` becomes the controller's Ring-bearer (rule 701.54a). */
+  becomeRingBearer(object: ObjectId): void;
+  /** The temptation completes: the count, the emblem's text, the event. */
+  ringTemptFinish(): void;
   /** `who` gets `amount` energy counters (rule 122). */
   getEnergy(amount: number, who: PlayerScope | undefined): void;
   /** `player` gets `amount` counters of `counter` — see the
@@ -6839,7 +6873,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               ? undefined
               : ({ kind: "object", object: ctx.triggerObject } as const)
             : ctx.targets[spec.target];
-      if (target !== undefined) ctx.sacrificeTarget(target);
+      if (target !== undefined) ctx.sacrificeTarget(target, spec.byItsController);
       return;
     }
     case "put-on-library": {
@@ -7483,6 +7517,34 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "become-monarch":
       ctx.becomeMonarch(spec.who);
+      return;
+    case "the-ring-tempts-you":
+      ctx.ringTemptBegin();
+      applyEffectSpec(
+        {
+          kind: "sequence",
+          effects: [
+            {
+              kind: "choose-permanents",
+              filter: { type: "creature", controlledBy: "you" },
+              min: 1,
+              upTo: 1,
+              then: { kind: "become-ring-bearer", target: 0 },
+              prompt: "The Ring tempts you: choose your Ring-bearer",
+            },
+            { kind: "ring-tempted" },
+          ],
+        },
+        ctx,
+      );
+      return;
+    case "become-ring-bearer": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target?.kind === "object") ctx.becomeRingBearer(target.object);
+      return;
+    }
+    case "ring-tempted":
+      ctx.ringTemptFinish();
       return;
     case "get-energy":
       ctx.getEnergy(spec.amount, spec.who);

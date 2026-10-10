@@ -2500,6 +2500,17 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Claim the Precious, Call of the Ring, Birthday Escape',
+    board({
+      you: {
+        bf: ['Grizzly Bears', 'Hill Giant', 'Call of the Ring', 'Swamp*3', 'Island*2'],
+        hand: ['Claim the Precious', 'Birthday Escape'],
+        lib: ['Island*4'],
+      },
+      opp: { bf: ['Serra Angel', 'Llanowar Elves', 'Hill Giant'] },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

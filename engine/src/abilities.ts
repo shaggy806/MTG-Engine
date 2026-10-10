@@ -482,9 +482,26 @@ export type TriggerWho =
    * "Whenever a creature **enchanted player controls** enters" (Trespasser's
    * Curse), read as it last existed if it has left. The trigger is the
    * Curse's, and its controller's. */
-  | "enchanted-player-controls";
+  | "enchanted-player-controls"
+  /** This ability's controller's **Ring-bearer** (rule 701.54a) — the Ring
+   * emblem's "whenever your Ring-bearer attacks". */
+  | "ring-bearer";
 
 export type TriggerSpec =
+  | {
+      /**
+       * "Whenever the Ring tempts you" (rule 701.54d): once the player has
+       * chosen a Ring-bearer, or found no creature to choose. The creature
+       * chosen is the trigger object (Gandalf, Friend of the Shire's "if you
+       * chose a creature other than Gandalf"); with `chosen`, only a
+       * temptation that chose one fires it — Call of the Ring's "whenever
+       * you choose a creature as your Ring-bearer", the same creature again
+       * included. `who` is the tempted player.
+       */
+      readonly on: "ring-tempts";
+      readonly who: TriggerWho;
+      readonly chosen?: boolean;
+    }
   | {
       readonly on: "enters-battlefield";
       readonly who: TriggerWho;

@@ -13,7 +13,7 @@ None open.
 
 ## Commander gap (the current priority)
 
-**394 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**395 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -62,11 +62,11 @@ section keeps only what to do next.
 - **3 cards whose recorded blockers have all been built since** (The Legend of Kyoshi, The
   Restoration of Eiganjo, Jill, Shiva's Dominant — each a Saga or creature that returns
   transformed) — recheck each with `card:brief` (`npm run cards:needs -w engine -- --stale`).
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,427 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,438 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
-  of them — crew landed 2026-10-09; leading now (`cards:needs -- --rank`): the Ring tempts you
-  (29 cards), dice rolling (27), casting during resolution (26), ninjutsu (23), Class (22) —
+  of them — crew and the Ring landed 2026-10-09; leading now (`cards:needs -- --rank`): dice
+  rolling (27 cards), casting during resolution (26), ninjutsu (23), Class (22) —
    (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
@@ -138,6 +138,9 @@ game to show a problem, listed in that plan's "Watching live games for" (wraths 
 under count budgets, deck biases, 1/1 tokens since `smallTokens`, Shiko or the other spell, and
 haste enablers in the crackback).
 
+- **A bot's Ring-bearer is its first creature**, not its best: `choose-permanents` asks bots
+  for their own permanents in battlefield order, whatever the `then` does
+  (`decisions/choose-permanents.ts`). Choosing an evasive or high-power creature is the play.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): token payoffs
   beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets past the first two rounds (the early half is done).

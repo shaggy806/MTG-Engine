@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3427 already implemented / 1573 missing (marks refreshed 2026-10-09)
+3438 already implemented / 1562 missing (marks refreshed 2026-10-10)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -853,7 +853,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   857  Mystic Gate                              {0}              Land
 [x]   858  Tear Asunder                             {1}{G}           Instant
 [ ]   859  Tainted Pact                             {1}{B}           Instant
-[ ]   860  Boromir, Warden of the Tower             {2}{W}           Legendary Creature — Human Soldier
+[x]   860  Boromir, Warden of the Tower             {2}{W}           Legendary Creature — Human Soldier
 [x]   861  Heraldic Banner                          {3}              Artifact
 [x]   862  Elesh Norn, Grand Cenobite               {5}{W}{W}        Legendary Creature — Phyrexian Praetor
 [x]   863  Fiery Islet                              {0}              Land
@@ -1136,7 +1136,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1141  Lonely Sandbar                           {0}              Land
 [ ]  1142  Grim Haruspex                            {2}{B}           Creature — Human Wizard
 [x]  1143  Spymaster's Vault                        {0}              Land
-[ ]  1144  Fiery Inscription                        {2}{R}           Enchantment
+[x]  1144  Fiery Inscription                        {2}{R}           Enchantment
 [x]  1145  Waterlogged Grove                        {0}              Land
 [x]  1146  Revel in Riches                          {4}{B}           Enchantment
 [x]  1147  Haven of the Spirit Dragon               {0}              Land
@@ -1395,7 +1395,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1402  Thousand-Year Storm                      {4}{U}{R}        Enchantment
 [ ]  1403  Crawlspace                               {3}              Artifact
 [x]  1404  Adrix and Nev, Twincasters               {2}{G}{U}        Legendary Creature — Merfolk Wizard
-[ ]  1405  Call of the Ring                         {1}{B}           Enchantment
+[x]  1405  Call of the Ring                         {1}{B}           Enchantment
 [x]  1406  Decree of Pain                           {6}{B}{B}        Sorcery
 [x]  1407  Delayed Blast Fireball                   {1}{R}{R}        Instant
 [ ]  1408  Baleful Mastery                          {3}{B}           Instant
@@ -3575,7 +3575,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3582  Retether                                 {3}{W}           Sorcery
 [ ]  3583  Rashmi, Eternities Crafter               {2}{G}{U}        Legendary Creature — Elf Druid
 [ ]  3584  Ninja of the Deep Hours                  {3}{U}           Creature — Human Ninja
-[ ]  3585  War of the Last Alliance                 {3}{W}           Enchantment — Saga
+[x]  3585  War of the Last Alliance                 {3}{W}           Enchantment — Saga
 [x]  3586  Nesting Dragon                           {3}{R}{R}        Creature — Dragon
 [x]  3587  Invigorating Surge                       {2}{G}           Instant
 [x]  3588  The Spear of Leonidas                    {2}{R}           Legendary Artifact — Equipment
@@ -3844,9 +3844,9 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3851  Open the Graves                          {3}{B}{B}        Enchantment
 [x]  3852  Sarkhan's Triumph                        {2}{R}           Instant
 [ ]  3853  Smothering Abomination                   {2}{B}{B}        Creature — Eldrazi
-[ ]  3854  Inherited Envelope                       {3}              Artifact
+[x]  3854  Inherited Envelope                       {3}              Artifact
 [ ]  3855  Hakbal of the Surging Soul               {2}{G}{U}        Legendary Creature — Merfolk Scout
-[ ]  3856  Claim the Precious                       {1}{B}{B}        Sorcery
+[x]  3856  Claim the Precious                       {1}{B}{B}        Sorcery
 [ ]  3857  Maddening Hex                            {1}{R}{R}        Enchantment — Aura Curse
 [ ]  3858  Illusionist's Gambit                     {2}{U}{U}        Instant
 [ ]  3859  Unctus, Grand Metatect                   {1}{U}{U}        Legendary Artifact Creature — Phyrexian Vedalken
@@ -4077,7 +4077,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4084  Bloodline Necromancer                    {4}{B}           Creature — Vampire Wizard
 [x]  4085  Badgermole                               {4}{G}           Creature — Badger Mole
 [ ]  4086  Invoke Calamity                          {1}{R}{R}{R}{R}  Instant
-[ ]  4087  Birthday Escape                          {U}              Sorcery
+[x]  4087  Birthday Escape                          {U}              Sorcery
 [x]  4088  Karn's Temporal Sundering                {4}{U}{U}        Legendary Sorcery
 [x]  4089  Spawning Kraken                          {5}{U}           Creature — Kraken
 [ ]  4090  Banefire                                 {X}{R}           Sorcery
@@ -4106,7 +4106,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4113  Big Game Hunter                          {1}{B}{B}        Creature — Human Rebel Assassin
 [x]  4114  Smell Fear                               {1}{G}           Sorcery
 [x]  4115  Maul of the Skyclaves                    {2}{W}           Artifact — Equipment
-[ ]  4116  Sam's Desperate Rescue                   {B}              Sorcery
+[x]  4116  Sam's Desperate Rescue                   {B}              Sorcery
 [x]  4117  Ethereal Investigator                    {3}{U}           Creature — Spirit
 [x]  4118  Coppercoat Vanguard                      {1}{W}           Creature — Human Soldier
 [ ]  4119  Sword of the Squeak                      {2}              Artifact — Equipment
@@ -4435,7 +4435,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4442  Pawpatch Formation                       {1}{G}           Instant
 [x]  4443  Brute Force                              {R}              Instant
 [ ]  4444  Matoya, Archon Elder                     {2}{U}           Legendary Creature — Human Warlock
-[ ]  4445  Gollum, Patient Plotter                  {1}{B}           Legendary Creature — Halfling Horror
+[x]  4445  Gollum, Patient Plotter                  {1}{B}           Legendary Creature — Halfling Horror
 [x]  4446  Dusk Legion Zealot                       {1}{B}           Creature — Vampire Soldier
 [x]  4447  Akroan Horse                             {4}              Artifact Creature — Horse
 [ ]  4448  New Blood                                {2}{B}{B}        Sorcery
@@ -4751,7 +4751,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4758  Deekah, Fractal Theorist                 {4}{U}           Legendary Creature — Human Wizard
 [ ]  4759  Component Pouch                          {3}              Artifact
 [x]  4760  Triskelion                               {6}              Artifact Creature — Construct
-[ ]  4761  Frodo, Adventurous Hobbit                {W}{B}           Legendary Creature — Halfling Scout
+[x]  4761  Frodo, Adventurous Hobbit                {W}{B}           Legendary Creature — Halfling Scout
 [x]  4762  Alrund's Epiphany                        {5}{U}{U}        Sorcery
 [ ]  4763  Kruphix, God of Horizons                 {3}{G}{U}        Legendary Enchantment Creature — God
 [ ]  4764  Vexing Radgull                           {1}{U}           Creature — Bird Mutant
@@ -5001,4 +5001,4 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  5008  Elspeth Tirel                            {3}{W}{W}        Legendary Planeswalker — Elspeth
 [x]  5009  Fleet Swallower                          {5}{U}{U}        Creature — Fish
 [x]  5010  Oboro, Palace in the Clouds              {0}              Legendary Land
-[ ]  5011  Slip On the Ring                         {1}{W}           Instant
+[x]  5011  Slip On the Ring                         {1}{W}           Instant

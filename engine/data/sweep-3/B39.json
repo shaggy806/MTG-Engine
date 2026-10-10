@@ -1,0 +1,128 @@
+{
+ "batch": "B39",
+ "status": "complete",
+ "ranks": "mechanic:the-ring's cards",
+ "authored": [
+  {
+   "name": "Birthday Escape",
+   "files": [
+    "engine/src/cards/pool/birthday-escape.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Claim the Precious",
+   "files": [
+    "engine/src/cards/pool/claim-the-precious.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Sam's Desperate Rescue",
+   "files": [
+    "engine/src/cards/pool/sams-desperate-rescue.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Soothing of Sméagol",
+   "files": [
+    "engine/src/cards/pool/soothing-of-smeagol.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Fiery Inscription",
+   "files": [
+    "engine/src/cards/pool/fiery-inscription.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Inherited Envelope",
+   "files": [
+    "engine/src/cards/pool/inherited-envelope.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Call of the Ring",
+   "files": [
+    "engine/src/cards/pool/call-of-the-ring.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Slip On the Ring",
+   "files": [
+    "engine/src/cards/pool/slip-on-the-ring.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "War of the Last Alliance",
+   "files": [
+    "engine/src/cards/pool/war-of-the-last-alliance.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Boromir, Warden of the Tower",
+   "files": [
+    "engine/src/cards/pool/boromir-warden-of-the-tower.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Gollum, Patient Plotter",
+   "files": [
+    "engine/src/cards/pool/gollum-patient-plotter.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Frodo, Adventurous Hobbit",
+   "files": [
+    "engine/src/cards/pool/frodo-adventurous-hobbit.ts"
+   ],
+   "tested": true
+  }
+ ],
+ "blocked": [
+  {
+   "name": "Nazgûl",
+   "needs": [
+    "deck:copy-limit-exception"
+   ],
+   "why": "The Ring exists now; 'a deck can have up to nine cards named Nazgûl' isn't a deck-validation exception."
+  },
+  {
+   "name": "Gandalf, Friend of the Shire",
+   "needs": [
+    "filter:not-this-object"
+   ],
+   "why": "The Ring exists now; 'a creature other than Gandalf' has no filter clause."
+  },
+  {
+   "name": "One Ring to Rule Them All",
+   "needs": [
+    "amount:ring-bearer-power"
+   ],
+   "why": "The Ring exists now; 'equal to your Ring-bearer's power' isn't an amount."
+  },
+  {
+   "name": "The Ring Goes South",
+   "needs": [
+    "effect:reveal-until-count-tapped"
+   ],
+   "why": "The Ring exists now; the lands it reveals go onto the battlefield tapped."
+  },
+  {
+   "name": "Glorious Gale",
+   "needs": [
+    "condition:countered-spell-legendary"
+   ],
+   "why": "The Ring exists now; 'if it was a legendary spell' asks about the spell it countered."
+  }
+ ]
+}

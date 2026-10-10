@@ -194,6 +194,7 @@ import {
 } from "./filter.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import { goadersOf } from "./goad.js";
+import { isRingBearer, RING_EMBLEM_TRIGGERS, ringEmblemText } from "./ring.js";
 import { colorIdentityOf } from "./identity.js";
 import type {
   EffectDuration,
@@ -14616,6 +14617,8 @@ export class Game {
               ? event.object
               : event.type === "chapter-resolved"
                 ? event.saga
+              : event.type === "ring-tempted"
+                ? (event.chosen ?? undefined)
               : event.type === "attacker-declared" ||
                   event.type === "attacked-alone" ||
                   event.type === "attacker-blocked"
@@ -15501,6 +15504,13 @@ export class Game {
           this.triggerFilterOk(spec.filter, event.object, self) &&
           (spec.byYou !== true || event.by === self.controller)
         );
+      case "ring-tempts":
+        // Rule 701.54d — once the choice is made, or found impossible.
+        return (
+          event.type === "ring-tempted" &&
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          (spec.chosen !== true || event.chosen !== null)
+        );
       case "draws":
         return (
           event.type === "card-drawn" &&
@@ -16101,6 +16111,9 @@ export class Game {
           self.zone === "battlefield" ? self.attachedTo : (self.lastKnown?.attachedTo ?? self.attachedTo);
         return host !== null && host !== undefined && host === subject;
       }
+      case "ring-bearer":
+        // The Ring emblem's "your Ring-bearer" (rule 701.54e).
+        return isRingBearer(this.state, self.controller, subject);
       default:
         return false;
     }
@@ -17494,7 +17507,7 @@ export class Game {
         const object = this.state.objects[target.object];
         return object === undefined ? [] : effectiveSubtypes(this.state, this.registry, object);
       },
-      sacrificeTarget: (target) => {
+      sacrificeTarget: (target, byItsController) => {
         if (target.kind !== "object") return;
         // One that can't be sacrificed just stays (rule 701.21a) — checked
         // before a token is peeled off a stack for it.
@@ -17504,7 +17517,9 @@ export class Game {
         // 701.21a): once someone else has taken it, nothing happens (Sneak
         // Attack's end step, Come Back Wrong). "Its controller may sacrifice
         // it" (Star Athlete) is asked of that controller, whose effect it is.
-        if (this.state.objects[target.object]?.controller !== controller) return;
+        // "Its controller sacrifices it" (the Ring's blocker) names whoever
+        // controls it then.
+        if (byItsController !== true && this.state.objects[target.object]?.controller !== controller) return;
         const id = this.splitOneFromStack(target.object);
         const object = this.state.objects[id];
         if (object === undefined || object.zone !== "battlefield") return;
@@ -18664,6 +18679,36 @@ export class Game {
         for (const p of scoped(who ?? "you")) {
           this.setMonarch(p, "effect");
         }
+      },
+      ringTemptBegin: () => {
+        // Rule 701.54c: the emblem comes before the choice of Ring-bearer.
+        if (this.state.emblems.some((e) => e.ring === true && e.owner === controller)) return;
+        this.createEmblem(controller, ringEmblemText(1), null, "The Ring", RING_EMBLEM_TRIGGERS);
+        const made = this.state.emblems[this.state.emblems.length - 1];
+        this.state.emblems[this.state.emblems.length - 1] = { ...made, ring: true };
+      },
+      becomeRingBearer: (id) => {
+        const chosen = this.state.objects[id];
+        if (chosen?.zone !== "battlefield" || chosen.controller !== controller) return;
+        // One Ring-bearer at a time: the new one ends the old (rule 701.54a).
+        for (const other of this.state.zones.shared.battlefield) {
+          const o = this.state.objects[other];
+          if (o.ringBearer === controller && other !== id) delete o.ringBearer;
+        }
+        chosen.ringBearer = controller;
+        this.state.players[controller].ringChosen = id;
+        // It's legendary now (701.54c): the legend rule may apply.
+        invalidateComputedCache();
+      },
+      ringTemptFinish: () => {
+        const player = this.state.players[controller];
+        const count = (player.ringTemptations ?? 0) + 1;
+        player.ringTemptations = count;
+        const chosen = player.ringChosen ?? null;
+        delete player.ringChosen;
+        const at = this.state.emblems.findIndex((e) => e.ring === true && e.owner === controller);
+        if (at >= 0) this.state.emblems[at] = { ...this.state.emblems[at], text: ringEmblemText(count) };
+        this.emit({ type: "ring-tempted", player: controller, chosen, count });
       },
       getEnergy: (amount, who) => {
         for (const p of scoped(who ?? "you")) {
@@ -27630,6 +27675,7 @@ export class Game {
     delete object.goadedBy;
     delete object.goadedForGameBy;
     delete object.suspectedAt;
+    delete object.ringBearer;
     // Monstrous lasts until the permanent leaves the battlefield (701.37b);
     // being exerted, until it's a new object.
     delete object.monstrous;
@@ -28250,7 +28296,13 @@ export class Game {
     // "For as long as it has a [kind] counter on it" ends with the last one
     // (rule 611.2b), whatever removed it.
     if (full.type === "counter-removed") this.endCounterDurations(full.object);
-    if (full.type === "control-changed") this.shareLinkedLooks(full.object, full.controller);
+    if (full.type === "control-changed") {
+      this.shareLinkedLooks(full.object, full.controller);
+      // A Ring-bearer stops being one once another player gains control of it
+      // (rule 701.54a) — for good, even if control comes back.
+      const moved = this.state.objects[full.object];
+      if (moved?.ringBearer !== undefined && moved.ringBearer !== full.controller) delete moved.ringBearer;
+    }
     // Every consequential state change announces itself here, so this is the
     // broad safety net for the computed-value cache: whatever just changed,
     // `detectTriggers` and everything after it read fresh values.
