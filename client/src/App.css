@@ -1302,6 +1302,9 @@
   width: max-content;
   max-width: min(92vw, 560px);
   pointer-events: none;
+  /* Shrink-to-fit, so a count in proportional figures ("4/5" against "5/5")
+     moved the whole panel as it changed (a bug report, 2026-10-10). */
+  font-variant-numeric: tabular-nums;
 }
 .decision-banner .controls {
   margin-top: 0;

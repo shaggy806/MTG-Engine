@@ -9,12 +9,13 @@ import type { ReactNode } from 'react'
  *
  * The field holds its own text while it's being typed in, so clearing it to
  * type a new number doesn't snap back to 0 on the first keystroke; a number
- * is sent as soon as there is one, clamped to 0..max.
+ * is sent as soon as there is one, clamped to min..max.
  */
 export function CountStepper({
   label,
   symbol,
   count,
+  min = 0,
   max,
   showMax = true,
   onChange,
@@ -24,6 +25,8 @@ export function CountStepper({
   /** Shown in place of `label` (a mana symbol), which still names the field. */
   readonly symbol?: ReactNode
   readonly count: number
+  /** The least it goes to: 1 for a share of divided damage. */
+  readonly min?: number
   readonly max: number
   /** "of N" after the field; off where `max` is only what's left to share
    * out (a mana split), which would read as a moving total. The cell stays,
@@ -32,17 +35,17 @@ export function CountStepper({
   readonly onChange: (n: number) => void
 }) {
   const [draft, setDraft] = useState<string | null>(null)
-  const send = (n: number) => onChange(Math.max(0, Math.min(max, n)))
+  const send = (n: number) => onChange(Math.max(min, Math.min(max, n)))
   return (
     <span className="count-stepper">
       <span className="count-stepper-label">{symbol ?? label}</span>
-      <button type="button" disabled={count <= 0} onClick={() => send(count - 1)} aria-label="One fewer">
+      <button type="button" disabled={count <= min} onClick={() => send(count - 1)} aria-label="One fewer">
         −
       </button>
       <input
         type="number"
         inputMode="numeric"
-        min={0}
+        min={min}
         max={max}
         value={draft ?? String(count)}
         aria-label={`${label}: how many`}

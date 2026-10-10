@@ -77,6 +77,7 @@ import {
   totalOf,
   unassigned,
 } from './game/damageAssignment.ts'
+import { setShare } from './game/divideShares.ts'
 import { usePlayback } from './game/usePlayback.ts'
 import { AnimationBus } from './game/animationBus.ts'
 import { playerLabel, seatClassOf, withNames } from './format.ts'
@@ -3804,7 +3805,7 @@ function Table({
     )
   } else if (mode === 'choose-division' && pendingDivision) {
     // At least 1 each, all of it (rule 601.2d): a share can grow only by what
-    // the others can spare.
+    // the others can spare (game/divideShares.ts).
     const { total, targets: divTargets, shares, resume } = pendingDivision
     const sum = shares.reduce((a, b) => a + b, 0)
     controls = (
@@ -3818,10 +3819,11 @@ function Table({
               key={ref.kind === 'player' ? ref.player : ref.object}
               label={ref.kind === 'player' ? playerLabel(ref.player, game.seats) : game.nameOf(ref.object)}
               count={shares[i]}
+              min={1}
               max={total - (divTargets.length - 1)}
               onChange={(n) =>
                 setPendingDivision((cur) =>
-                  cur === null ? cur : { ...cur, shares: cur.shares.map((v, j) => (j === i ? Math.max(1, n) : v)) },
+                  cur === null ? cur : { ...cur, shares: setShare(cur.shares, i, n, cur.total) },
                 )
               }
             />
