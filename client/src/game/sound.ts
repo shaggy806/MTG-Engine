@@ -51,7 +51,8 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   discard: takes('card-shove', 4),
   mill: ['card-fan-1'],
   counters: takes('chip-lay', 3),
-  countered: ['error_006'],
+  // qubodup's Energy Drain: a spell or ability countered or fizzling.
+  countered: ['energy-drain'],
   dice: ['dice-throw-1', 'dice-throw-3'],
   die: takes('die-throw', 4),
   // Swords (StarNinjas): a swing as attackers are declared, and as one
