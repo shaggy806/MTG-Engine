@@ -1,8 +1,8 @@
 import { defineCard } from "../define.js";
 
-// A Shadowmoor filter land. Its hybrid activation cost keeps the second
-// ability out of the auto-payer (AUTHORING §8), so it is activated by hand and
-// its two mana float; the player picks {G}{G}, {G}{U} or {U}{U} there.
+// A Shadowmoor filter land. The auto-payer funds its hybrid activation cost
+// from another source, as it does a Signet's (AUTHORING, the converter note);
+// activated by hand, its two mana float and the player picks {G}{G}, {G}{U} or {U}{U} there.
 export default defineCard({
   name: "Flooded Grove",
   colors: [],

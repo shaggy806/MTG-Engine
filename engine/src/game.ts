@@ -11872,7 +11872,8 @@ export class Game {
       let sacrificeSelf = false;
       const key = (o: ManaOption): string =>
         `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.anyColorOf?.join(",") ?? ""}` +
-        `|${o.pain}|${o.lifeCost}|${o.genericCost}|${o.untapped ?? ""}|${o.oncePerTurn ?? ""}` +
+        `|${o.pain}|${o.lifeCost}|${o.genericCost}|${(o.hybridCost ?? []).map((pip) => pip.join("/")).join(",")}` +
+        `|${o.untapped ?? ""}|${o.oncePerTurn ?? ""}` +
         `|${(o.extras ?? []).map((e) => `${e.from}:${e.type ?? "*"}`).join(",")}` +
         `|${o.counterCost === undefined ? "" : `${o.counterCost.count}${o.counterCost.kind}`}` +
         // Two options that make the same mana are still different options if
@@ -11943,15 +11944,28 @@ export class Game {
         // make the colour. `{X}` is out for the same reason it is everywhere
         // else here — nothing is resolving, so there's no X to read.
         let genericCost = 0;
+        // A hybrid pip of two colours (a Shadowmoor filter land's `{G/U}`) is
+        // admitted: paid with either colour from *another* source, as the
+        // generic is, never from this one, so it isn't circular
+        // (`ManaOption.hybridCost`). A Treasure was sacrificed for {U} beside
+        // a Flooded Grove a Forest could have fed (a bug report, 2026-10-10).
+        // A pip with a generic or Phyrexian half stays out.
+        let hybridCost: ManaType[][] = [];
         if (ability.cost.mana !== null) {
           const parsed = parseManaCost(ability.cost.mana);
           const colouredPips =
             COLORS.reduce((n, c) => n + parsed.colored[c], 0) + parsed.colorless;
-          if (colouredPips > 0 || parsed.x > 0 || parsed.hybrid.length > 0) return;
+          const twoColour = parsed.hybrid.every(
+            (pip) => pip.length === 2 && pip.every((half) => half.kind === "color"),
+          );
+          if (colouredPips > 0 || parsed.x > 0 || !twoColour) return;
+          hybridCost = parsed.hybrid.map((pip) =>
+            pip.flatMap((half) => (half.kind === "color" ? [half.color as ManaType] : [])),
+          );
           // A printed `{0}` is a cost of nothing (Vivi Ornitier) — only an
           // untapped once-a-turn ability can get here with one, since a
           // `{0}, {T}` ability is written as a plain tap.
-          if (parsed.generic <= 0 && ability.cost.tap) return;
+          if (parsed.generic <= 0 && parsed.hybrid.length === 0 && ability.cost.tap) return;
           // What activating it costs now — Forensic Gadgeteer's reduction
           // reaches a Signet's `{1}` as it would by hand.
           genericCost = this.activatedAbilityManaCost(player, id, ability).cost.generic;
@@ -12013,7 +12027,7 @@ export class Game {
         // "Add {W}{U}" makes `amount` of each type it lists.
         const each = typeof mana === "object" && "all" in mana ? mana.all : null;
         const units = each === null ? manaAmount : manaAmount * each.length;
-        if (manaAmount <= 0 || genericCost >= units) return;
+        if (manaAmount <= 0 || genericCost + hybridCost.length >= units) return;
         const tagOf = this.manaTagFor(object, ability.effect);
         const tag = {
           ...(tagOf === undefined ? {} : { tag: tagOf }),
@@ -12115,7 +12129,8 @@ export class Game {
           (options, extra) => options.flatMap((option) => this.withManaExtra(option, extra, player)),
           multiplied,
         );
-        for (const option of withExtras) {
+        for (const built of withExtras) {
+          const option = hybridCost.length > 0 ? { ...built, hybridCost } : built;
           if (!options.some((o) => key(o) === key(option))) options.push(option);
         }
         if (ability.cost.sacrifice === "self") sacrificeSelf = true;

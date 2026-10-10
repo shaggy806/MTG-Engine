@@ -9,9 +9,9 @@ export default defineCard({
   activated: [
     addManaAbility({ mana: "C", text: "{T}: Add {C}." }),
     {
-      // "{B/R}, {T}" is "{B}, {T} or {R}, {T}" (ruling). A coloured activation
-      // cost keeps it out of the auto-payer, so it's activated by hand, where
-      // the two colours are chosen.
+      // "{B/R}, {T}" is "{B}, {T} or {R}, {T}" (ruling). The auto-payer funds
+      // that from another source, as it does a Signet's (AUTHORING, the
+      // converter note); by hand, the two colours are chosen as it resolves.
       cost: { mana: "{B/R}", tap: true },
       targets: [],
       effect: { kind: "add-mana", mana: { oneOf: ["B", "R"] }, amount: 2 },

@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
+import type { ObjectId } from "../primitives.js";
 import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
@@ -238,5 +239,99 @@ describe("a Signet as a mana source", () => {
     const signet = game.debugSpawn("Izzet Signet", A, "battlefield");
     game.state.objects[signet].tapped = false;
     expect(canCast(game, "Gilded Lotus")).toBe(false);
+  });
+});
+
+/** Untapped permanents for A, by name. */
+const spawn = (game: Game, names: readonly string[]): ObjectId[] =>
+  names.map((name) => {
+    const id = game.debugSpawn(name, A, "battlefield", { summoningSick: false });
+    game.state.objects[id].tapped = false;
+    return id;
+  });
+
+describe("a filter land's hybrid activation cost", () => {
+  // A bug report (2026-10-10): Ureni of the Unwritten ({4}{G}{U}{R}) was paid
+  // by sacrificing a Treasure for its {U} beside a Flooded Grove, whose
+  // `{G/U}, {T}: Add {G}{G}, {G}{U}, or {U}{U}` the auto-payer left out, so
+  // the Treasure was the only blue it saw. A Forest funds the Grove.
+  const board = [
+    "Flooded Grove",
+    "Forest",
+    "Forest",
+    "Mountain",
+    "Mountain",
+    "Temple of Abandon",
+    "Rockfall Vale",
+    "Treasure Token",
+  ];
+
+  it("funds Flooded Grove from a Forest rather than sacrificing a Treasure for blue", () => {
+    const game = makeGame();
+    open(game);
+    const [grove, , , , , , , treasure] = spawn(game, board);
+    const card = game.debugSpawn("Ureni of the Unwritten", A, "hand");
+    expect(game.legalActions(A).some((a) => a.kind === "cast-spell" && a.card === card)).toBe(true);
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+    expect(game.state.zones.shared.battlefield).toContain(treasure);
+    expect(game.state.objects[grove].tapped).toBe(true);
+    expect(game.state.zones.shared.stack).toContain(card);
+  });
+
+  it("is not reached while an ordinary source makes the colour", () => {
+    const game = makeGame();
+    open(game);
+    const [grove, , , , , , , treasure] = spawn(game, [...board, "Island"]);
+    const card = game.debugSpawn("Ureni of the Unwritten", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+    expect(game.state.zones.shared.battlefield).toContain(treasure);
+    // The Island pays the {U}; the Grove is just a land among the {4}.
+    expect(game.state.zones.shared.stack).toContain(card);
+    expect(game.state.players[A].manaPool).toEqual([]);
+    void grove;
+  });
+});
+
+describe("floating mana funds a converter", () => {
+  // A bug report (2026-10-10): with {R} floating from a Mountain tapped by
+  // hand, Mossfire Valley's `{1}, {T}: Add {R}{G}` could take that {R} and
+  // pay Rampant Growth's {1}{G} — but the planner funded a converter only from
+  // other sources, so the spell wasn't offered, the window counted as mana
+  // only, and the server passed it.
+  it("casts Rampant Growth with {R} floating and Mossfire Valley untapped", () => {
+    const game = makeGame();
+    open(game);
+    const [valley] = spawn(game, ["Mossfire Valley"]);
+    game.state.players[A].manaPool = [{ type: "R" }];
+    const card = game.debugSpawn("Rampant Growth", A, "hand");
+    expect(game.legalActions(A).some((a) => a.kind === "cast-spell" && a.card === card)).toBe(true);
+    expect(game.isDeadForMana(A)).toBe(false);
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+    expect(game.state.zones.shared.stack).toContain(card);
+    expect(game.state.objects[valley].tapped).toBe(true);
+    expect(game.state.players[A].manaPool).toEqual([]);
+  });
+
+  it("casts a {2}{G} spell with {G}{G} floating and Mossfire Valley untapped", () => {
+    // The second report: Frontier Siege's {G}{G} floating in the second main.
+    const game = makeGame();
+    open(game);
+    spawn(game, ["Mossfire Valley"]);
+    game.state.players[A].manaPool = [{ type: "G" }, { type: "G" }];
+    const card = game.debugSpawn("Garruk's Uprising", A, "hand");
+    expect(game.legalActions(A).some((a) => a.kind === "cast-spell" && a.card === card)).toBe(true);
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+    expect(game.state.zones.shared.stack).toContain(card);
+    expect(game.state.players[A].manaPool).toEqual([]);
+  });
+
+  it("still can't make what isn't there: {R} floating funds the Valley, not a third mana", () => {
+    const game = makeGame();
+    open(game);
+    spawn(game, ["Mossfire Valley"]);
+    game.state.players[A].manaPool = [{ type: "R" }];
+    // {R} floating plus the Valley is two mana ({R} spent on the Valley, then
+    // {R}{G}): a three-mana spell stays out of reach.
+    expect(canCast(game, "Garruk's Uprising")).toBe(false);
   });
 });

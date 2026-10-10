@@ -1,8 +1,8 @@
 import { defineCard } from "../define.js";
 
-// A Shadowmoor filter land. Its hybrid activation cost keeps the second
-// ability out of the auto-payer (AUTHORING §8), so it is activated by hand and
-// its two mana float; the player picks {R}{R}, {R}{W} or {W}{W} there.
+// A Shadowmoor filter land. The auto-payer funds its hybrid activation cost
+// from another source, as it does a Signet's (AUTHORING, the converter note);
+// activated by hand, its two mana float and the player picks {R}{R}, {R}{W} or {W}{W} there.
 export default defineCard({
   name: "Rugged Prairie",
   colors: [],

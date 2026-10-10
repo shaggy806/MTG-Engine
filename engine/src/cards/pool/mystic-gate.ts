@@ -1,8 +1,8 @@
 import { defineCard } from "../define.js";
 
-// A Shadowmoor filter land, as Fetid Heath: its hybrid activation cost keeps
-// the second ability out of the auto-payer, so it's activated by hand and its
-// two mana float; the player picks {W}{W}, {W}{U} or {U}{U} there.
+// A Shadowmoor filter land. The auto-payer funds its hybrid activation cost
+// from another source, as it does a Signet's (AUTHORING, the converter note);
+// activated by hand, its two mana float and the player picks {W}{W}, {W}{U} or {U}{U} there.
 export default defineCard({
   name: "Mystic Gate",
   colors: [],

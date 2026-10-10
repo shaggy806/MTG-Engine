@@ -3905,16 +3905,19 @@ Delete an entry in the same commit as the feature that retires it.
   built (§6, `create-emblem`'s `triggered`).
 - **The auto-payer never pays a mana ability whose activation cost contains a
   *coloured* pip** (it's activated by hand instead — see §8). `manaSources()`
-  admits a "converter" — a mana ability whose
-  own cost is purely **generic** and which produces more than it costs (the ten
-  Signets via the `signet` helper, filter lands like Flooded Grove). The
-  planner reaches for one only after the ordinary sources are spent, funds its
-  cost from those (never from another converter, and preferring a source whose
-  colour the cost doesn't want), and orders it last so the mana is in the pool
-  when it activates. A *coloured* activation cost stays out, because it is
-  genuinely circular — you'd need the colour to make the colour — and so does
-  an `{X}` one, since nothing is resolving during payment planning. Selvala,
-  Heart of the Wilds is still blocked, on its output rather than its cost.
+  admits a "converter" — a mana ability whose own cost is **generic** or
+  **two-colour hybrid** and which produces more than it costs (the ten Signets
+  via the `signet` helper, the Odyssey filter lands' `{1}`, the Shadowmoor
+  filter lands' `{G/U}`: `ManaOption.hybridCost`). The planner reaches for one
+  only after the ordinary sources are spent, funds its cost from floating mana
+  the payment doesn't need or from those sources (never from another
+  converter, and preferring a source whose colour the cost doesn't want), and
+  orders it last so the mana is in the pool when it activates; a Treasure
+  comes after the converters (2026-10-10). A *coloured* activation cost stays
+  out, because it is genuinely circular — you'd need the colour to make the
+  colour — and so does an `{X}` one, since nothing is resolving during payment
+  planning, and a hybrid pip with a generic or Phyrexian half. Selvala, Heart
+  of the Wilds is still blocked, on its output rather than its cost.
 - **A *mana* ability with a `tapOthers` cost is invisible to the auto-payer**
   (Jaspera Sentinel, Holdout Settlement: "{T}, Tap an untapped creature you
   control: Add one mana of any color"). `useManaSource` taps only the source,

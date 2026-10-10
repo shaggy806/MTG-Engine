@@ -43,6 +43,13 @@ export interface ManaOption {
    */
   readonly genericCost: number;
   /**
+   * Hybrid pips of two colours this activation *costs*, each paid with
+   * either of its colours — a Shadowmoor filter land's `{G/U}`. Funded like
+   * `genericCost`, from another source and never this one, so it isn't
+   * circular either; a source with one is a converter too. Absent for none.
+   */
+  readonly hybridCost?: readonly (readonly ManaType[])[];
+  /**
    * The provenance stamped on every unit this activation makes — a spend
    * restriction, a spend rider, a "doesn't empty" permission (rule 106.6b /
    * 106.12). Resolved here rather than at spend time because the pieces that
@@ -582,7 +589,7 @@ export function planManaPayment(
   // Mana that may be spent as though it were any colour (or type) pays a
   // coloured pip as freely as a generic one (rule 609.4b).
   const cost = costAsSpendable(rawCost, view.spendAs);
-  const plan = planManaPaymentOrdered(view, cost, avoid, exclude, false);
+  const plan = planManaPaymentOrdered(view, cost, avoid, exclude, "plain-first");
   if (plan !== null) return plan;
   // Reaching for a converter last can strand it: two Islands and an Izzet
   // Signet are three mana, but a `{3}` cost spends both Islands before it
@@ -590,16 +597,46 @@ export function planManaPayment(
   // `{1}`. So a failed plan gets a second try with converters funded first.
   // It only ever runs where the first try found nothing, so it can't change
   // a payment that already worked.
-  const hasConverter = view.sources.some((s) => s.options.every((o) => o.genericCost > 0));
-  return hasConverter ? planManaPaymentOrdered(view, cost, avoid, exclude, true) : null;
+  if (!view.sources.some(isConverterSource)) return null;
+  return (
+    planManaPaymentOrdered(view, cost, avoid, exclude, "converters-first") ??
+    // And a last try with a Treasure where it went before converters were put
+    // ahead of it, so no payment that worked then fails now.
+    planManaPaymentOrdered(view, cost, avoid, exclude, "last-resort-early")
+  );
 }
+
+/** Whether `o` costs mana to activate: a converter's option. */
+const costsMana = (o: ManaOption): boolean => o.genericCost > 0 || (o.hybridCost?.length ?? 0) > 0;
+
+/** A converter: a source every option of which costs mana (a Signet, a
+ * filter land). */
+const isConverterSource = (s: ManaSource): boolean => s.options.every(costsMana);
+
+/** A source used only when nothing else pays: one sacrificed to make its mana
+ * (a Treasure), or one that takes a counter as its cost (Wall of Roots). */
+const isLastResort = (s: ManaSource): boolean =>
+  s.sacrificeSelf || s.options.some((o) => o.counterCost !== undefined);
+
+/**
+ * The order a payment reaches for sources in:
+ *
+ * - `"plain-first"`: plain sources, then converters, then the last resorts —
+ *   a Treasure after a filter land a land can fund. One was sacrificed for {U}
+ *   beside a Flooded Grove a Forest could have fed (a bug report, 2026-10-10).
+ * - `"converters-first"`: converters, then plain sources, then the last
+ *   resorts (see `planManaPayment`).
+ * - `"last-resort-early"`: a last resort among the plain sources, converters
+ *   last — the order before converters went ahead of Treasures.
+ */
+type SourceOrder = "plain-first" | "converters-first" | "last-resort-early";
 
 function planManaPaymentOrdered(
   view: ManaPlanningView,
   cost: ManaCost,
   avoid: ObjectId | undefined,
   exclude: ObjectId | undefined,
-  convertersFirst: boolean,
+  order: SourceOrder,
 ): ManaPlanStep[] | null {
   // Floating mana this payment is actually allowed to use. Restricted
   // units `view.canPay` turns down are invisible here, so the planner
@@ -613,10 +650,15 @@ function planManaPaymentOrdered(
     need[color] = Math.max(0, cost.colored[color] - pool[color]);
   }
   need.C = Math.max(0, cost.colorless - pool.C);
-  const poolUsedForSpecific =
-    COLORS.reduce((sum, c) => sum + Math.min(cost.colored[c], pool[c]), 0) +
-    Math.min(cost.colorless, pool.C);
-  let genericNeed = Math.max(0, cost.generic - (poolTotal(pool) - poolUsedForSpecific));
+  // The floating units the coloured and `{C}` pips don't take: they pay the
+  // generic, and what the generic leaves can fund a converter
+  // (`coverGenericFrom`).
+  const spare: Record<ManaType, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
+  for (const color of COLORS) spare[color] = pool[color] - Math.min(cost.colored[color], pool[color]);
+  spare.C = pool.C - Math.min(cost.colorless, pool.C);
+  const MANA_TYPES_ORDER = ["W", "U", "B", "R", "G", "C"] as const;
+  const spareTotal = (): number => MANA_TYPES_ORDER.reduce((n, m) => n + spare[m], 0);
+  let genericNeed = Math.max(0, cost.generic - spareTotal());
 
   // `avoid` (the permanent whose ability is being activated) goes last, so a
   // man-land paying its own `{1}: becomes a creature` cost taps something
@@ -658,16 +700,27 @@ function planManaPaymentOrdered(
   // A converter (a Signet) is only reached once the plain sources are
   // exhausted: it costs mana someone else has to make, and on a board with
   // none of them nothing below behaves any differently than it did before
-  // converters existed.
-  const isConverter = (s: ManaSource): boolean =>
-    s.options.every((o) => o.genericCost > 0);
+  // converters existed. A last resort (a Treasure) comes after both
+  // (`SourceOrder`).
+  const isConverter = isConverterSource;
   const ordered =
     avoid === undefined
       ? all
       : [...all.filter((s) => s.id !== avoid), ...all.filter((s) => s.id === avoid)];
-  const sources = convertersFirst
-    ? [...ordered.filter(isConverter), ...ordered.filter((s) => !isConverter(s))]
-    : [...ordered.filter((s) => !isConverter(s)), ...ordered.filter(isConverter)];
+  /** Where `s` falls in `order`: the groups a payment reaches for in turn. */
+  const groupOf = (s: ManaSource): number => {
+    const converter = isConverter(s);
+    const last = !converter && isLastResort(s);
+    switch (order) {
+      case "plain-first":
+        return converter ? 1 : last ? 2 : 0;
+      case "converters-first":
+        return converter ? 0 : last ? 2 : 1;
+      case "last-resort-early":
+        return converter ? 1 : 0;
+    }
+  };
+  const sources = [0, 1, 2].flatMap((group) => ordered.filter((s) => groupOf(s) === group));
 
   interface Tapped {
     readonly src: ManaSource;
@@ -684,6 +737,7 @@ function planManaPaymentOrdered(
     readonly pain: number;
     readonly lifeCost: number;
     readonly genericCost: number;
+    readonly hybridCost: readonly (readonly ManaType[])[];
     /** For a converter, the exact mana taken from other sources to pay its
      * own cost — spent back verbatim by `useManaSource`. */
     readonly spends: ManaType[];
@@ -750,6 +804,7 @@ function planManaPaymentOrdered(
       pain: opt.pain,
       lifeCost: opt.lifeCost,
       genericCost: opt.genericCost,
+      hybridCost: opt.hybridCost ?? [],
       spends: [],
       ...(opt.tag !== undefined ? { tag: opt.tag } : {}),
       ...(opt.anyColorOf !== undefined ? { anyColorOf: opt.anyColorOf } : {}),
@@ -773,13 +828,23 @@ function planManaPaymentOrdered(
    */
   const openFunded = (src: ManaSource, want: ManaType | null): Tapped | null => {
     const mark = tapped.length;
+    const spareBefore = { ...spare };
+    const genericBefore = genericNeed;
     const t = open(src, want);
+    const fail = (): null => {
+      tapped.length = mark;
+      Object.assign(spare, spareBefore);
+      genericNeed = genericBefore;
+      return null;
+    };
     for (let i = 0; i < t.genericCost; i += 1) {
-      const m = coverGenericFrom(src.id);
-      if (m === null) {
-        tapped.length = mark;
-        return null;
-      }
+      const m = coverGenericFrom(src.id, null);
+      if (m === null) return fail();
+      t.spends.push(m);
+    }
+    for (const pip of t.hybridCost) {
+      const m = coverGenericFrom(src.id, pip);
+      if (m === null) return fail();
       t.spends.push(m);
     }
     return t;
@@ -835,36 +900,69 @@ function planManaPaymentOrdered(
     return false;
   };
   /**
-   * Cover one generic, never drawing on `exclude` or on another converter —
-   * this is what funds a converter's own cost.
+   * Cover one unit of a converter's own cost — a generic (`of` null) or a
+   * hybrid pip (`of` its colours) — never drawing on `exclude` or on another
+   * converter. This is what funds a converter.
    *
-   * Spends a source that can't make any colour this cost still wants before
-   * one that can: the whole point of tapping a Signet is that the board is
-   * short on a colour, and funding it with the one land that made that
-   * colour defeats the exercise (two Islands and a Signet paying
-   * `{W}{U}{U}` — fund from a Swamp, not from an Island).
+   * Floating mana goes first, a unit the cost's own pips don't take: the red
+   * left by tapping a Mountain by hand funds Mossfire Valley's `{1}`, whose
+   * {R}{G} pays Rampant Growth (a bug report, 2026-10-10: the spell wasn't
+   * offered, and the window passed as mana-only). A unit the generic was
+   * counting on hands that unit of the generic back to the sources.
+   *
+   * Then a source that can't make any colour this cost still wants before one
+   * that can: the whole point of tapping a Signet is that the board is short
+   * on a colour, and funding it with the one land that made that colour
+   * defeats the exercise (two Islands and a Signet paying `{W}{U}{U}` — fund
+   * from a Swamp, not from an Island). A Treasure funds one only when nothing
+   * plain can.
    */
-  const coverGenericFrom = (exclude: ObjectId): ManaType | null => {
+  const coverGenericFrom = (exclude: ObjectId, of: readonly ManaType[] | null): ManaType | null => {
+    // The kinds this unit may be, the payment's least wanted first.
+    const kinds = (of ?? MANA_TYPES_ORDER).filter(() => true).sort(
+      (a, b) => Number(wantedColors.has(a)) - Number(wantedColors.has(b)),
+    );
+    const floating = kinds.find((m) => spare[m] > 0);
+    if (floating !== undefined) {
+      const countedForGeneric = spareTotal() <= cost.generic;
+      spare[floating] -= 1;
+      if (countedForGeneric) genericNeed += 1;
+      return floating;
+    }
     const eligible = (t: Tapped): boolean => t.src.id !== exclude && t.spends.length === 0;
     const dull = (src: ManaSource): boolean =>
       src.options.every(
         (o) => o.anyColor === 0 && !o.fixed.some((m) => wantedColors.has(m)),
       );
+    const take = (t: Tapped): ManaType | null => {
+      if (of === null) return takeGeneric(t);
+      for (const m of kinds) if (takeSpecific(t, m)) return m;
+      return null;
+    };
     for (const t of tapped) {
       if (!eligible(t) || !dull(t.src)) continue;
-      const m = takeGeneric(t);
+      const m = take(t);
       if (m !== null) return m;
     }
     for (const t of tapped) {
       if (!eligible(t)) continue;
-      const m = takeGeneric(t);
+      const m = take(t);
       if (m !== null) return m;
     }
+    const makesOne = (s: ManaSource): boolean =>
+      of === null || s.options.some((o) => of.some((m) => o.fixed.includes(m) || anyUnitMakes(o, m)));
     const free = sources.filter(
-      (s) => !isTapped(s.id) && s.id !== exclude && !isConverter(s),
+      (s) => !isTapped(s.id) && s.id !== exclude && !isConverter(s) && makesOne(s),
     );
-    const next = free.find(dull) ?? free[0];
-    return next === undefined ? null : takeGeneric(open(next, null));
+    const plainFree = free.filter((s) => !isLastResort(s));
+    const from = plainFree.length > 0 ? plainFree : free;
+    const next = from.find(dull) ?? from[0];
+    if (next === undefined) return null;
+    const want =
+      of === null
+        ? null
+        : (kinds.find((m) => next.options.some((o) => o.fixed.includes(m) || anyUnitMakes(o, m))) ?? null);
+    return take(open(next, want));
   };
   // What a source's colours are worth keeping for the rest of the hand
   // (`ManaPlanningView.keep`): a fresh source for generic mana is the
@@ -911,8 +1009,8 @@ function planManaPaymentOrdered(
     new Set(
       src.options.flatMap((o) => [...o.fixed.filter((m) => m !== "C"), ...(o.anyColor > 0 ? (o.anyColorOf ?? COLORS) : [])]),
     ).size;
-  // Sorted within each group only: converters stay where `convertersFirst`
-  // put them (last, or first on the second pass), which the plan depends on.
+  // Sorted within each group only: converters and the last resorts stay
+  // where `order` put them, which the plan depends on.
   // Then `avoid` last (a man-land paying its own animation stays untapped to
   // attack), a creature after the rest (its tap costs an attack or a block),
   // and among the rest the source the hand needs least, then the one making
@@ -924,7 +1022,7 @@ function planManaPaymentOrdered(
   const ranked = sources.map((src, i) => ({
     src,
     i,
-    group: isConverter(src) === convertersFirst ? 0 : 1,
+    group: groupOf(src),
     avoided: src.id === avoid ? 1 : 0,
     creature: src.isCreature === true ? 1 : 0,
     colours: colourCount(src),
