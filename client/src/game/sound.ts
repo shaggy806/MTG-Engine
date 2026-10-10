@@ -78,6 +78,8 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // apart again if it should sound different.
   turn: ['game-start'],
   'your-turn': ['game-start'],
+  // A player gaining life: MLaudio's cartoon magic sparkle (Freesound, CC0).
+  gain: ['sparkle'],
   // A nonland permanent arriving on the battlefield: OtisJames's thud
   // (Freesound, CC0), on trial (2026-10-10).
   enter: ['thud'],
