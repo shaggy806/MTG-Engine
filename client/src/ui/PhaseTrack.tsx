@@ -16,6 +16,16 @@ import { STEPS, STOPPABLE_STEPS, toggleStop, usePassSettings } from '../game/pas
  * stops, and the row shows and edits whichever kind of turn this is. Untap
  * and cleanup can't be flagged: nobody gets priority in them.
  */
+/** When a combat stop's window comes, where the name doesn't say: combat
+ * damage is dealt before anyone gets priority in its step (rule 510.2-3), so
+ * acting before it — sacrificing a blocker, a pump — is a declare-blockers
+ * stop (a bug report, 2026-10-10: a combat-damage stop held after the damage
+ * a Sakura-Tribe Elder was blocking to be sacrificed before). */
+const STOP_WHEN: Partial<Record<(typeof STEPS)[number][0], string>> = {
+  'declare-blockers': 'after blockers are declared, before damage',
+  'combat-damage': 'after damage is dealt, nothing in between',
+}
+
 export function PhaseTrack({ view, seat }: { readonly view: PlayerView; readonly seat: PlayerId | null }) {
   // On a narrow strip the row scrolls sideways, and the current step mustn't
   // be the one scrolled out of sight — late in the turn (END, CU) it was the
@@ -49,7 +59,7 @@ export function PhaseTrack({ view, seat }: { readonly view: PlayerView; readonly
               aria-pressed={stoppable ? stopped : undefined}
               title={
                 stoppable
-                  ? `${name} — ${stopped ? 'a stop' : 'click to stop here'} on ${whose}`
+                  ? `${name}${STOP_WHEN[step] ? ` (${STOP_WHEN[step]})` : ''} — ${stopped ? 'a stop' : 'click to stop here'} on ${whose}`
                   : name
               }
               onClick={() => toggleStop(step, mine)}
