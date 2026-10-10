@@ -97,7 +97,8 @@ function addedCards() {
     const file = path.join(ROOT, line.slice(3).trim());
     if (!file.endsWith(".ts") || !existsSync(file)) continue;
     const source = readFileSync(file, "utf8");
-    const m = /^\s*name:\s*"((?:[^"\\]|\\.)*)"/m.exec(source);
+    // A Room's whole card is `roomCard("Name", left, right)`, with no `name:`.
+    const m = /^\s*name:\s*"((?:[^"\\]|\\.)*)"/m.exec(source) ?? /roomCard\(\s*"((?:[^"\\]|\\.)*)"/.exec(source);
     if (m === null) continue;
     const name = JSON.parse(`"${m[1]}"`);
     // A double-faced card's back face has its own file but isn't a card a

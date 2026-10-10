@@ -79,6 +79,7 @@ import _poolFoeRazerRegent from "../pool/foe-razer-regent.js";
 import _poolForbiddenAlchemy from "../pool/forbidden-alchemy.js";
 import _poolFracturedSanity from "../pool/fractured-sanity.js";
 import _poolFrogTongue from "../pool/frog-tongue.js";
+import _poolFuneralRoomAwakeningHall from "../pool/funeral-room-awakening-hall.js";
 import _poolGelectrode from "../pool/gelectrode.js";
 import _poolGenerousVisitor from "../pool/generous-visitor.js";
 import _poolGhostlySentinel from "../pool/ghostly-sentinel.js";
@@ -234,9 +235,11 @@ import _poolThoughtCourier from "../pool/thought-courier.js";
 import _poolThrottle from "../pool/throttle.js";
 import _poolTorWauki from "../pool/tor-wauki.js";
 import _poolTormodTheDesecrator from "../pool/tormod-the-desecrator.js";
+import _poolTorturePit from "../pool/torture-pit.js";
 import _poolTuknirDeathlock from "../pool/tuknir-deathlock.js";
 import _poolTymnaTheWeaver from "../pool/tymna-the-weaver.js";
 import _poolUnderseaInvader from "../pool/undersea-invader.js";
+import _poolUnholyAnnexRitualChamber from "../pool/unholy-annex-ritual-chamber.js";
 import _poolUroTitanOfNaturesWrath from "../pool/uro-titan-of-natures-wrath.js";
 import _poolVenomSliver from "../pool/venom-sliver.js";
 import _poolViciousConquistador from "../pool/vicious-conquistador.js";
@@ -344,6 +347,7 @@ const shard: CardShard = {
     _poolForbiddenAlchemy,
     _poolFracturedSanity,
     _poolFrogTongue,
+    _poolFuneralRoomAwakeningHall,
     _poolGelectrode,
     _poolGenerousVisitor,
     _poolGhostlySentinel,
@@ -499,9 +503,11 @@ const shard: CardShard = {
     _poolThrottle,
     _poolTorWauki,
     _poolTormodTheDesecrator,
+    _poolTorturePit,
     _poolTuknirDeathlock,
     _poolTymnaTheWeaver,
     _poolUnderseaInvader,
+    _poolUnholyAnnexRitualChamber,
     _poolUroTitanOfNaturesWrath,
     _poolVenomSliver,
     _poolViciousConquistador,

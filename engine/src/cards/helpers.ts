@@ -1776,3 +1776,39 @@ export const basicLand = (
     text: `({T}: Add {${produces}}.)`,
     activated: [manaTapAbility(produces)],
   });
+
+/** A Room's reminder text, the last line of each door's (rule 709.5). */
+export const ROOM_REMINDER =
+  "(You may cast either half. That door unlocks on the battlefield. As a sorcery, you may pay the mana cost of a locked door to unlock it.)";
+
+/** "When you unlock this door" (rule 709.5h) — for the door `door` prints
+ * it on: as that door is unlocked however it is, entering included. */
+export const unlockThisDoor = (door: "left" | "right"): TriggerSpec => ({ on: "door-unlocked", who: "self", door });
+
+/**
+ * A Room (rule 709.5) as its whole card, from its two doors' definitions —
+ * each door its own file, `split: true` and `faces: [name, left, right]`,
+ * typed Enchantment — Room. The whole card is what it is everywhere but the
+ * battlefield and the stack (709.4): both names, the combined mana cost and
+ * colours, both doors' text; on the battlefield, the permanent with both
+ * doors unlocked, so it has both doors' abilities, the left door's first.
+ */
+export function roomCard(name: string, left: CardDefinition, right: CardDefinition): CardDefinition {
+  // The halves' costs written one after the other, as Scryfall does (rule
+  // 709.4b: combined — the mana value is their sum either way).
+  const manaCost = `${left.manaCost ?? ""}${right.manaCost ?? ""}`;
+  const colors = [...new Set([...left.colors, ...right.colors])];
+  return defineCard({
+    name,
+    manaCost,
+    colors,
+    types: ["enchantment"],
+    subtypes: ["Room"],
+    text: `${left.text}\n//\n${right.text}`,
+    static: [...left.static, ...right.static],
+    triggered: [...left.triggered, ...right.triggered],
+    activated: [...left.activated, ...right.activated],
+    faces: [name, left.name, right.name],
+    split: true,
+  });
+}

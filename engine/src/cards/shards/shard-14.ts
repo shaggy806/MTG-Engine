@@ -91,6 +91,7 @@ import _poolEdgarMarkov from "../pool/edgar-markov.js";
 import _poolElementalEruption from "../pool/elemental-eruption.js";
 import _poolElephantRat from "../pool/elephant-rat.js";
 import _poolElvishScrapper from "../pool/elvish-scrapper.js";
+import _poolEntityTracker from "../pool/entity-tracker.js";
 import _poolEvendoBrushrazer from "../pool/evendo-brushrazer.js";
 import _poolEvolvingWilds from "../pool/evolving-wilds.js";
 import _poolExcavationMole from "../pool/excavation-mole.js";
@@ -138,6 +139,7 @@ import _poolHollowScavenger from "../pool/hollow-scavenger.js";
 import _poolHumbleBudoka from "../pool/humble-budoka.js";
 import _poolImpassionedOrator from "../pool/impassioned-orator.js";
 import _poolImposingVisage from "../pool/imposing-visage.js";
+import _poolInquisitiveGlimmer from "../pool/inquisitive-glimmer.js";
 import _poolInvokeTheFiremind from "../pool/invoke-the-firemind.js";
 import _poolIronshellBeetle from "../pool/ironshell-beetle.js";
 import _poolIsperiaSupremeJudge from "../pool/isperia-supreme-judge.js";
@@ -271,6 +273,7 @@ import _tokensFishToken from "../tokens/fish-token.js";
 import _tokensGolemEnchantmentArtifactToken from "../tokens/golem-enchantment-artifact-token.js";
 import _tokensGolemVigilanceToken from "../tokens/golem-vigilance-token.js";
 import _tokensKrakenToken from "../tokens/kraken-token.js";
+import _tokensSpiritTokenGhostlyDancers from "../tokens/spirit-token-ghostly-dancers.js";
 import _tokensTentacleToken from "../tokens/tentacle-token.js";
 import _tokensTreefolkToken from "../tokens/treefolk-token.js";
 import _tokensWallTokenRammasEchorAncientShield from "../tokens/wall-token-rammas-echor-ancient-shield.js";
@@ -365,6 +368,7 @@ const shard: CardShard = {
     _poolElementalEruption,
     _poolElephantRat,
     _poolElvishScrapper,
+    _poolEntityTracker,
     _poolEvendoBrushrazer,
     _poolEvolvingWilds,
     _poolExcavationMole,
@@ -412,6 +416,7 @@ const shard: CardShard = {
     _poolHumbleBudoka,
     _poolImpassionedOrator,
     _poolImposingVisage,
+    _poolInquisitiveGlimmer,
     _poolInvokeTheFiremind,
     _poolIronshellBeetle,
     _poolIsperiaSupremeJudge,
@@ -547,6 +552,7 @@ const shard: CardShard = {
     _tokensGolemEnchantmentArtifactToken,
     _tokensGolemVigilanceToken,
     _tokensKrakenToken,
+    _tokensSpiritTokenGhostlyDancers,
     _tokensTentacleToken,
     _tokensTreefolkToken,
     _tokensWallTokenRammasEchorAncientShield,

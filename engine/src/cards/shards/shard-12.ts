@@ -34,6 +34,7 @@ import _poolBookOfRass from "../pool/book-of-rass.js";
 import _poolBootleggersStash from "../pool/bootleggers-stash.js";
 import _poolBorosCluestone from "../pool/boros-cluestone.js";
 import _poolBoseijuReachesSkyward from "../pool/boseiju-reaches-skyward.js";
+import _poolBottomlessPoolLockerRoom from "../pool/bottomless-pool-locker-room.js";
 import _poolBraidsConjurerAdept from "../pool/braids-conjurer-adept.js";
 import _poolBreathOfFire from "../pool/breath-of-fire.js";
 import _poolBrightglassGearhulk from "../pool/brightglass-gearhulk.js";
@@ -254,6 +255,7 @@ import _poolVengefulBloodwitch from "../pool/vengeful-bloodwitch.js";
 import _poolVenserShaperSavant from "../pool/venser-shaper-savant.js";
 import _poolVerdantCatacombs from "../pool/verdant-catacombs.js";
 import _poolVernadiShieldmate from "../pool/vernadi-shieldmate.js";
+import _poolVictorValgavothsSeneschal from "../pool/victor-valgavoths-seneschal.js";
 import _poolVineTrellis from "../pool/vine-trellis.js";
 import _poolVitoThornOfTheDuskRose from "../pool/vito-thorn-of-the-dusk-rose.js";
 import _poolVizzerdrix from "../pool/vizzerdrix.js";
@@ -310,6 +312,7 @@ const shard: CardShard = {
     _poolBootleggersStash,
     _poolBorosCluestone,
     _poolBoseijuReachesSkyward,
+    _poolBottomlessPoolLockerRoom,
     _poolBraidsConjurerAdept,
     _poolBreathOfFire,
     _poolBrightglassGearhulk,
@@ -530,6 +533,7 @@ const shard: CardShard = {
     _poolVenserShaperSavant,
     _poolVerdantCatacombs,
     _poolVernadiShieldmate,
+    _poolVictorValgavothsSeneschal,
     _poolVineTrellis,
     _poolVitoThornOfTheDuskRose,
     _poolVizzerdrix,

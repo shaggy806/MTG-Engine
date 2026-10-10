@@ -85,6 +85,7 @@ import _poolGoldMyr from "../pool/gold-myr.js";
 import _poolGoldhound from "../pool/goldhound.js";
 import _poolGothmogMorgulLieutenant from "../pool/gothmog-morgul-lieutenant.js";
 import _poolGreaterBasilisk from "../pool/greater-basilisk.js";
+import _poolGreenhouseRicketyGazebo from "../pool/greenhouse-rickety-gazebo.js";
 import _poolGrindingStation from "../pool/grinding-station.js";
 import _poolGrizzlyBears from "../pool/grizzly-bears.js";
 import _poolHaldirLorienLieutenant from "../pool/haldir-lorien-lieutenant.js";
@@ -134,6 +135,7 @@ import _poolManaReflection from "../pool/mana-reflection.js";
 import _poolManaweftSliver from "../pool/manaweft-sliver.js";
 import _poolManedServal from "../pool/maned-serval.js";
 import _poolMaraudingBlightPriest from "../pool/marauding-blight-priest.js";
+import _poolMarinaVendrell from "../pool/marina-vendrell.js";
 import _poolMarshThreader from "../pool/marsh-threader.js";
 import _poolMaskOfGriselbrand from "../pool/mask-of-griselbrand.js";
 import _poolMawOfTheObzedat from "../pool/maw-of-the-obzedat.js";
@@ -384,6 +386,7 @@ const shard: CardShard = {
     _poolGoldhound,
     _poolGothmogMorgulLieutenant,
     _poolGreaterBasilisk,
+    _poolGreenhouseRicketyGazebo,
     _poolGrindingStation,
     _poolGrizzlyBears,
     _poolHaldirLorienLieutenant,
@@ -433,6 +436,7 @@ const shard: CardShard = {
     _poolManaweftSliver,
     _poolManedServal,
     _poolMaraudingBlightPriest,
+    _poolMarinaVendrell,
     _poolMarshThreader,
     _poolMaskOfGriselbrand,
     _poolMawOfTheObzedat,

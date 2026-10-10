@@ -247,6 +247,7 @@ import {
   cloneGameState,
   clonePlain,
   createPlayerState,
+  doorsFace,
   faceName,
   manaCostOverride,
   permanentCount,
@@ -1216,6 +1217,9 @@ export class Game {
       case "turn-face-up":
         this.turnFaceUp(action.player, action.permanent);
         break;
+      case "unlock-door":
+        this.payToUnlock(action.player, action.permanent, action.door);
+        break;
       case "cycle":
         this.cycleCard(action.player, action.card);
         break;
@@ -1389,6 +1393,8 @@ export class Game {
         return this.whyCannotForetell(action.player, action.card);
       case "turn-face-up":
         return this.whyCannotTurnFaceUp(action.player, action.permanent);
+      case "unlock-door":
+        return this.whyCannotUnlock(action.player, action.permanent, action.door);
       case "cycle":
         return this.whyCannotCycle(action.player, action.card);
       case "cast-spell":
@@ -1745,6 +1751,22 @@ export class Game {
       if (this.whyCannotTurnFaceUp(player, id) !== null) continue;
       const card = this.registry.get(object.cardName);
       out.push({ kind: "turn-face-up", permanent: id, cardName: card.name, cost: card.manaCost ?? "" });
+    }
+    // Unlocking a Room's locked door (rule 709.5e) — a special action too,
+    // at sorcery speed, offered beside the Room's abilities.
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.doors === undefined || object.controller !== player) continue;
+      for (const door of ["left", "right"] as const) {
+        if (this.whyCannotUnlock(player, id, door) !== null) continue;
+        out.push({
+          kind: "unlock-door",
+          permanent: id,
+          door,
+          doorName: this.doorDef(id, door).name,
+          cost: this.unlockCostText(player, id, door),
+        });
+      }
     }
 
     this.pushActivations(player, out);
@@ -10889,6 +10911,8 @@ export class Game {
     const manaAbility = isManaAbility(ability);
     const onBattlefield = this.state.objects[sourceId]?.zone === "battlefield";
     for (const { controller, mod } of this.abilityCostModifiers()) {
+      // A Room's unlock costs aren't abilities' (`unlockCost` reads these).
+      if (mod.unlock === true) continue;
       // "Ninjutsu abilities you activate" (Silver-Fur Master), wherever the
       // card is; every other kind, only a permanent's.
       if (mod.ninjutsu === true ? ability.ninjutsu !== true || player !== controller : !onBattlefield) continue;
@@ -14381,10 +14405,16 @@ export class Game {
   private abilityTurnKey(object: GameObject): string | undefined {
     if (object.delayedTrigger !== undefined || object.reflexiveTrigger !== undefined) return undefined;
     const granted = object.grantedAbility;
+    // One ability written as two entries counts as one (`sameAbilityAs`).
+    const index = object.abilityIndex ?? 0;
+    const same =
+      object.abilityKind === "triggered" && granted === undefined
+        ? this.registry.get(printedCardName(object)).triggered[index]?.sameAbilityAs
+        : undefined;
     const which =
       granted?.kind === "static"
         ? `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`
-        : `${object.abilityKind}:${object.abilityIndex ?? 0}`;
+        : `${object.abilityKind}:${same ?? index}`;
     return `${object.sourceObjectId ?? object.id}@${object.sourceTimestamp ?? 0}#${which}`;
   }
 
@@ -15542,6 +15572,14 @@ export class Game {
         );
       case "rolls-dice":
         return event.type === "dice-rolled" && this.matchesWhoPlayer(spec.who, event.player, self);
+      case "door-unlocked":
+        return (
+          event.type === "door-unlocked" &&
+          (spec.door === undefined || event.door === spec.door) &&
+          (spec.fully !== true || event.fully) &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
+        );
       case "ring-tempts":
         // Rule 701.54d — once the choice is made, or found impossible.
         return (
@@ -18467,6 +18505,28 @@ export class Game {
           const link = this.state.objects[id]?.exiledWith;
           return link !== undefined && link.source === source && link.zoneChangeCount === stint;
         });
+      },
+      roomDoors: (room) => {
+        const rooms =
+          room !== undefined
+            ? [room]
+            : this.state.zones.shared.battlefield.filter((id) => this.state.objects[id]?.controller === controller);
+        return rooms.flatMap((id) => {
+          const object = this.state.objects[id];
+          if (object?.zone !== "battlefield" || object.doors === undefined) return [];
+          const doors = object.doors;
+          return (["left", "right"] as const).map((door) => ({
+            object: id,
+            door,
+            name: this.doorDef(id, door).name,
+            roomName: this.registry.get(object.cardName).name,
+            unlocked: doors[door],
+          }));
+        });
+      },
+      setDoor: (object, door, lock) => {
+        if (lock) this.lockDoor(object, door);
+        else this.unlockDoor(object, door, controller);
       },
       ninjutsu: () => {
         // Still in the hand (or command zone) it was activated from, and the
@@ -22035,8 +22095,115 @@ export class Game {
     // Since the 2025 rules change a modal DFC turns over too, to a face that
     // is a permanent — never an adventure's or an Omen's spell half.
     if (front.adventure || front.omen) return false;
+    // A Room's halves are doors, not faces (rule 709.5): it never turns over.
+    if (front.split) return false;
     const other = this.registry.get(object.faces[(object.face ?? 0) === 0 ? 1 : 0]);
     return other.types.some((type) => PERMANENT_TYPES.has(type));
+  }
+
+  /** Is `id` a Room — a split card with a shared type line, whose halves
+   * are permanents (rule 709.5)? Judged by the card, wherever it is. */
+  private isRoom(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    if (object === undefined || object.kind !== "card" || object.faces === undefined) return false;
+    const def = this.registry.get(object.cardName);
+    return def.split && this.isPermanentSpell(def);
+  }
+
+  /**
+   * Unlock a door of the Room `id` (rule 709.5e, f): give it that unlocked
+   * designation, so that half's name, mana cost and rules text are the
+   * permanent's from now on — same object, same timestamp. "When you unlock
+   * this door" sees it (709.5h), and a "fully unlock" one if the other door
+   * already was (709.5i). Nothing if the door is unlocked already or `id`
+   * isn't a Room on the battlefield.
+   */
+  private unlockDoor(id: ObjectId, door: "left" | "right", player: PlayerId): void {
+    const object = this.state.objects[id];
+    if (object?.zone !== "battlefield" || object.doors === undefined || object.doors[door]) return;
+    object.doors = { ...object.doors, [door]: true };
+    object.face = doorsFace(object.doors);
+    invalidateComputedCache();
+    this.emit({ type: "door-unlocked", object: id, door, player, fully: object.doors.left && object.doors.right });
+  }
+
+  /** The definition of a Room's door: its card's left half (face 1) or
+   * right half (face 2). */
+  private doorDef(id: ObjectId, door: "left" | "right"): CardDefinition {
+    return this.faceDef(id, door === "left" ? 1 : 2);
+  }
+
+  /** What unlocking `door` costs `player` (rule 709.5e): the half's mana
+   * cost, less the generic mana an "unlock costs you pay cost {1} less"
+   * static of theirs takes off (Inquisitive Glimmer — never below {0}). */
+  private unlockCost(player: PlayerId, id: ObjectId, door: "left" | "right"): ManaCost {
+    const cost = parseManaCost(this.doorDef(id, door).manaCost ?? "");
+    let less = 0;
+    for (const { controller, mod } of this.abilityCostModifiers()) {
+      if (mod.unlock !== true || controller !== player) continue;
+      if (!matchesFilter(this.state, this.registry, id, mod.applies, { you: controller })) continue;
+      less += mod.reduceGeneric ?? 0;
+    }
+    return { ...cost, generic: Math.max(0, cost.generic - less) };
+  }
+
+  /** The unlock cost as its printed symbols, the generic part less the
+   * reduction `unlockCost` takes off — what the offer shows. */
+  private unlockCostText(player: PlayerId, id: ObjectId, door: "left" | "right"): string {
+    const printed = this.doorDef(id, door).manaCost ?? "";
+    const generic = this.unlockCost(player, id, door).generic;
+    let shown = false;
+    const symbols = (printed.match(/\{[^}]+\}/g) ?? []).flatMap((token) => {
+      if (!/^\{\d+\}$/.test(token)) return [token];
+      if (shown) return [];
+      shown = true;
+      return generic > 0 ? [`{${generic}}`] : [];
+    });
+    return symbols.length > 0 ? symbols.join("") : "{0}";
+  }
+
+  /** Why `player` can't unlock `door` of `id` now (rule 709.5e): a special
+   * action for a locked door of a Room they control, any time they have
+   * priority and could cast a sorcery, paying its unlock cost. */
+  private whyCannotUnlock(player: PlayerId, id: ObjectId, door: "left" | "right"): string | null {
+    const blocked = this.whyCannotAct(player);
+    if (blocked !== null) return blocked;
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield" || object.doors === undefined) {
+      return "that isn't a Room";
+    }
+    if (object.controller !== player) return `${player} doesn't control that Room`;
+    if (object.doors[door]) return "that door is already unlocked";
+    const timing = this.whyNotSorcerySpeed(player, "unlock a door");
+    if (timing !== null) return timing;
+    if (this.doorDef(id, door).manaCost === null) return "that door has no mana cost to pay";
+    if (this.payMana(player, this.unlockCost(player, id, door)) === null) {
+      return `${player} cannot pay the unlock cost`;
+    }
+    return null;
+  }
+
+  /** Unlock a door by paying its unlock cost (rule 709.5e) — a special
+   * action, so the player keeps priority (116.3c), and nothing goes on the
+   * stack; "when you unlock this door" triggers (709.5h). */
+  private payToUnlock(player: PlayerId, id: ObjectId, door: "left" | "right"): void {
+    const why = this.whyCannotUnlock(player, id, door);
+    if (why !== null) throw new Error(why);
+    const payment = this.payMana(player, this.unlockCost(player, id, door));
+    if (payment === null) throw new Error(`${player} cannot pay the unlock cost`);
+    this.executePayment(player, payment);
+    this.unlockDoor(id, door, player);
+    this.afterPlayerAction(player);
+  }
+
+  /** Lock a door of the Room `id` (rule 709.5g): it loses that unlocked
+   * designation, and that half's text with it. */
+  private lockDoor(id: ObjectId, door: "left" | "right"): void {
+    const object = this.state.objects[id];
+    if (object?.zone !== "battlefield" || object.doors === undefined || !object.doors[door]) return;
+    object.doors = { ...object.doors, [door]: false };
+    object.face = doorsFace(object.doors);
+    invalidateComputedCache();
   }
 
   /**
@@ -27443,6 +27610,8 @@ export class Game {
       return false;
     }
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
+    // A Room spell's half — the door that enters unlocked (rule 709.5d).
+    const castHalf = object.zone === "stack" && object.isCopy !== true ? (object.face ?? 0) : 0;
     // Last-known information (rules 603.10a, 608.2h), taken before anything
     // below resets control, counters, modifiers or a copy effect: everything a
     // leaves-the-battlefield trigger or a resolving ability may still ask
@@ -27897,6 +28066,9 @@ export class Game {
     // A new object isn't face down (400.7) — `moveObject` revealed it as it
     // left the battlefield (708.9); one entering face down is turned so below.
     delete object.faceDown;
+    // Nor has a Room's unlocked designations (rule 709.5c): set below as it
+    // enters the battlefield.
+    delete object.doors;
     object.exiledWith = undefined;
     // Modes chosen for a targeted modal spell (Phase 11 EG-2) and a kicker
     // paid as it was cast (P8) both end with the stack.
@@ -27964,6 +28136,13 @@ export class Game {
       // the entry — its replacements, other permanents' replacements judging
       // it, the triggers that see it arrive — sees the face-down 2/2.
       if (enter.faceDown !== undefined) object.faceDown = { kind: enter.faceDown };
+      // A Room enters with the door that was cast unlocked, or with both
+      // locked if neither was (rule 709.5d) — before anything sees it arrive,
+      // so a locked door's text isn't the permanent's even as it enters.
+      if (object.faceDown === undefined && this.isRoom(id)) {
+        object.doors = { left: castHalf === 1, right: castHalf === 2 };
+        object.face = doorsFace(object.doors);
+      }
       object.enteredBattlefieldOnTurn = this.state.turn.number;
       object.summoningSick = true;
       this.state.timestampSeq += 1;
@@ -28069,6 +28248,12 @@ export class Game {
           amount: c.amount,
           by: enteringController,
         });
+      }
+      // The door it entered with unlocked was unlocked (rule 709.5h): its
+      // "when you unlock this door" triggers as it enters.
+      const door = object.doors?.left === true ? "left" : object.doors?.right === true ? "right" : null;
+      if (door !== null) {
+        this.emit({ type: "door-unlocked", object: id, door, player: enteringController, fully: false });
       }
       object.controller = object.owner;
     } else {

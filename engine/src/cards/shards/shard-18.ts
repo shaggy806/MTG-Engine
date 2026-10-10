@@ -243,6 +243,7 @@ import _poolTruefirePaladin from "../pool/truefire-paladin.js";
 import _poolTuneTheNarrative from "../pool/tune-the-narrative.js";
 import _poolTyphoidRats from "../pool/typhoid-rats.js";
 import _poolUlamogsCrusher from "../pool/ulamogs-crusher.js";
+import _poolUnholyAnnex from "../pool/unholy-annex.js";
 import _poolUnquestionedAuthority from "../pool/unquestioned-authority.js";
 import _poolUtterEnd from "../pool/utter-end.js";
 import _poolValgavothHarrowerOfSouls from "../pool/valgavoth-harrower-of-souls.js";
@@ -533,6 +534,7 @@ const shard: CardShard = {
     _poolTuneTheNarrative,
     _poolTyphoidRats,
     _poolUlamogsCrusher,
+    _poolUnholyAnnex,
     _poolUnquestionedAuthority,
     _poolUtterEnd,
     _poolValgavothHarrowerOfSouls,

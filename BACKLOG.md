@@ -13,7 +13,7 @@ None open.
 
 ## Commander gap (the current priority)
 
-**400 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**401 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -59,12 +59,12 @@ section keeps only what to do next.
   (`engine/data/sweep-3/PC-*.json`) go as their originals land.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,463 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,470 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
-  of them — crew, the Ring, dice, ninjutsu and most of casting during resolution landed 2026-10-09;
-  leading now (`cards:needs -- --rank`): attach extensions (23 cards), face-down's leftovers
-  (23), Class (22), Rooms (20, all fully unblocked) —
+  of them — crew, the Ring, dice, ninjutsu, Rooms and most of casting during resolution landed
+  2026-10-09; leading now (`cards:needs -- --rank`): attach extensions (24 cards), face-down's
+  leftovers (22), Class (22, 21 fully unblocked), random choice (21) —
    (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":

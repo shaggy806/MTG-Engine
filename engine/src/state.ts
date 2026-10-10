@@ -688,6 +688,19 @@ export interface GameObject {
    * turned face up as a special action (701.40b). */
   faceDown?: { readonly kind: FaceDownKind };
   /**
+   * A **Room**'s unlocked designations (rule 709.5c — a split permanent with
+   * a shared type line): which of its doors, the card's left and right
+   * halves, are unlocked. On the battlefield only; it enters with the door
+   * that was cast unlocked and with neither otherwise (709.5d), and a door is
+   * unlocked by its unlock cost (a special action, 709.5e) or an effect
+   * (709.5f). A locked door's name, mana cost and rules text aren't the
+   * permanent's (709.5): with one door unlocked it is that half (`face` 1 or
+   * 2), with both the whole card (`face` 0), and with neither the internal
+   * {@link LOCKED_ROOM} definition that {@link printedCardName} reads.
+   * Cleared on any zone change.
+   */
+  doors?: { readonly left: boolean; readonly right: boolean };
+  /**
    * The permanent this card was exiled with, in the battlefield stint it was
    * in then — what a linked ability of that object means by "the exiled
    * card" (rule 607.2a — hideaway, rule 702.75). Only that object's abilities
@@ -3604,7 +3617,23 @@ export const faceName = (object: GameObject): string => {
  * P/T goes through this; one for its abilities goes through
  * {@link rulesTextName}. */
 export const printedCardName = (object: GameObject): string =>
-  object.faceDown !== undefined ? FACE_DOWN_CARDS[object.faceDown.kind] : (object.copyOf ?? faceName(object));
+  object.faceDown !== undefined
+    ? FACE_DOWN_CARDS[object.faceDown.kind]
+    : object.doors !== undefined && !object.doors.left && !object.doors.right
+      ? LOCKED_ROOM
+      : (object.copyOf ?? faceName(object));
+
+/** The registry name of a Room with both doors locked (rule 709.5): an
+ * enchantment — Room with no name, mana cost or rules text — an internal
+ * definition, like {@link FACE_DOWN_CARDS}, registered by
+ * `createDefaultRegistry` (`cards/locked-room.ts`). */
+export const LOCKED_ROOM = "Room (Both Doors Locked)";
+
+/** The face a Room's doors give it (`GameObject.doors`): the whole card with
+ * both unlocked, one half with one, and 0 with neither (when
+ * {@link printedCardName} reads {@link LOCKED_ROOM} instead). */
+export const doorsFace = (doors: { readonly left: boolean; readonly right: boolean }): number =>
+  doors.left && doors.right ? 0 : doors.left ? 1 : doors.right ? 2 : 0;
 
 /** How a permanent came to be face down: manifested (rule 701.40) or cloaked
  * (701.58, a manifest with ward {2}). Morph and disguise aren't modeled. */
@@ -3651,8 +3680,9 @@ export const manaCostOverride = (object: GameObject): string | null | undefined 
 
 export const nameOf = (object: GameObject): string => {
   // A face-down permanent has no name at all (rule 708.2a), whatever a copy
-  // effect's exception would have named it: its registry key stands in.
-  if (object.faceDown !== undefined) return printedCardName(object);
+  // effect's exception would have named it: its registry key stands in. So
+  // does a Room with both doors locked (709.5).
+  if (object.faceDown !== undefined || printedCardName(object) === LOCKED_ROOM) return printedCardName(object);
   for (let i = object.modifiers.length - 1; i >= 0; i -= 1) {
     const m = object.modifiers[i];
     if (m.copiable === true && m.setName !== undefined) return m.setName;

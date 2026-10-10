@@ -246,6 +246,8 @@ export function candidateActions(
     // passing like any other play.
     case "turn-face-up":
       return [{ type: "turn-face-up", player, permanent: legal.permanent }];
+    case "unlock-door":
+      return [{ type: "unlock-door", player, permanent: legal.permanent, door: legal.door }];
     case "cycle":
       return [{ type: "cycle", player, card: legal.card }];
     default:

@@ -168,6 +168,17 @@ export type GameEvent =
       /** `player` rolled `results.length` `sides`-sided dice (rule 706) as one
        * roll — each die's natural result, in order. The client throws the
        * dice and lets them land on these. */
+      readonly type: "door-unlocked";
+      /** A Room was given an unlocked designation (rule 709.5h): its `door`
+       * (the card's left or right half), by `player` — as it entered with the
+       * door that was cast, by its unlock cost, or by an effect. `fully` when
+       * that left it with both doors unlocked (709.5i). */
+      readonly object: ObjectId;
+      readonly door: "left" | "right";
+      readonly player: PlayerId;
+      readonly fully: boolean;
+    })
+  | (Base & {
       readonly type: "dice-rolled";
       readonly player: PlayerId;
       readonly sides: number;

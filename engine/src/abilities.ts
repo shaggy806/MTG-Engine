@@ -518,6 +518,22 @@ export type TriggerSpec =
       readonly who: TriggerWho;
     }
   | {
+      /**
+       * A Room's door was unlocked (rule 709.5h) — the `door-unlocked` event.
+       * "When you unlock this door" is `who: "self"` with `door` the half
+       * that prints it (the `room()` helper writes it), and it triggers as
+       * that door unlocks however it does: entering with it unlocked (the
+       * half cast), its unlock cost, or an effect. "Whenever you fully unlock
+       * a Room" (Entity Tracker's eerie) is `fully: true` (709.5i), `who` the
+       * Room's controller. `filter` narrows the Room.
+       */
+      readonly on: "door-unlocked";
+      readonly who: TriggerWho;
+      readonly door?: "left" | "right";
+      readonly fully?: boolean;
+      readonly filter?: CardFilter;
+    }
+  | {
       readonly on: "enters-battlefield";
       readonly who: TriggerWho;
       /** Narrow which entering permanent counts (Soul Warden: a creature;
@@ -1370,6 +1386,13 @@ export interface TriggeredAbility {
    */
   readonly stackFirst?: boolean;
   readonly trigger: TriggerSpec;
+  /** One ability with two trigger events, "whenever A **and whenever** B"
+   * (eerie: "whenever an enchantment you control enters and whenever you
+   * fully unlock a Room"), is written as two entries, one per event; this
+   * one names the other's index in `triggered`, so they're counted as the
+   * one ability they are — Victor, Valgavoth's Seneschal's "if this is the
+   * first time this ability has resolved this turn". */
+  readonly sameAbilityAs?: number;
   readonly targets: readonly TargetSpec[];
   readonly effect: EffectSpec | null;
   readonly resolve: SpellResolver | null;

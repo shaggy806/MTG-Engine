@@ -4958,6 +4958,23 @@
   "effect:manifest-from-other-library": {
    "family": "mechanic:face-down",
    "example": "Orochi Soul-Reaver: 'manifest the top card of that player's library' — under you, from another player's library."
+  },
+  "effect:card-types-among-trigger-batch": {
+   "example": "Polluted Cistern: 'each opponent loses 1 life for each card type among those cards' — the cards a batched put-into-graveyard trigger fired on."
+  },
+  "static:spells-gain-types": {
+   "example": "Secret Arcade: 'permanent spells you control are enchantments in addition to their other types' — a type change that reaches spells on the stack."
+  },
+  "trigger:attacks-player-filter": {
+   "example": "Dollmaker's Shop: 'whenever one or more non-Toy creatures you control attack a player' — attacks-player with a filter on the attackers."
+  },
+  "replacement:graveyard-to-exile-this-turn": {
+   "family": "replacement:exile-instead",
+   "example": "Forgotten Cellar: 'if a card would be put into your graveyard from anywhere this turn, exile it instead' — a one-shot, turn-long replacement."
+  },
+  "static:stun-counters-cant-be-removed": {
+   "family": "mechanic:stun-counters",
+   "example": "Fear of Sleep Paralysis: 'Stun counters can't be removed from permanents your opponents control.'"
   }
  }
 }

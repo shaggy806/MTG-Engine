@@ -1443,6 +1443,16 @@ function Table({
   }, [actions])
   // A face-down permanent that can be turned face up (rule 701.40b): the
   // offer sits in the permanent's own ability menu, as its abilities do.
+  // A Room's locked doors that can be unlocked (rule 709.5e): a special
+  // action, offered in the Room's own ability menu, as turning face up is.
+  const unlockBySource = useMemo(() => {
+    const m = new Map<ObjectId, Extract<LegalAction, { kind: 'unlock-door' }>[]>()
+    for (const a of actions) {
+      if (a.kind !== 'unlock-door') continue
+      m.set(a.permanent, [...(m.get(a.permanent) ?? []), a])
+    }
+    return m
+  }, [actions])
   const faceUpBySource = useMemo(() => {
     const m = new Map<ObjectId, Extract<LegalAction, { kind: 'turn-face-up' }>>()
     for (const a of actions) if (a.kind === 'turn-face-up') m.set(a.permanent, a)
@@ -2591,13 +2601,14 @@ function Table({
         if (stack !== undefined) setBlockSplit((cur) => (cur === stack ? null : stack))
         return
       }
-      if (mode === 'priority' && (abilitiesBySource.has(id) || faceUpBySource.has(id))) {
+      if (mode === 'priority' && (abilitiesBySource.has(id) || faceUpBySource.has(id) || unlockBySource.has(id))) {
         setSelectedSource((cur) => (cur === id ? null : id))
       }
     },
     [
       abilitiesBySource,
       faceUpBySource,
+      unlockBySource,
       assignDamageAction,
       attackAction,
       attackAssignments,
@@ -2936,7 +2947,7 @@ function Table({
       highlight = eligibleToProliferate(proliferateAction, id) && !picked
       selected = picked
     } else if (mode === 'priority' && ownerSeat === seat) {
-      activatable = ids.some((i) => abilitiesBySource.has(i) || faceUpBySource.has(i))
+      activatable = ids.some((i) => abilitiesBySource.has(i) || faceUpBySource.has(i) || unlockBySource.has(i))
       selected = selectedSource !== null && ids.includes(selectedSource)
     }
 
@@ -4659,6 +4670,7 @@ function Table({
     ? (abilitiesBySource.get(selectedSource) ?? [])
     : []
   const selectedFaceUp = selectedSource ? faceUpBySource.get(selectedSource) : undefined
+  const selectedUnlocks = selectedSource ? (unlockBySource.get(selectedSource) ?? []) : []
   // A commander whose tile opened the menu (it has an ability that works from
   // the command zone) is still cast from it.
   const selectedCast =
@@ -5246,7 +5258,8 @@ function Table({
           itself rather than in a bar at the bottom of the screen. Picking
           one hands off to `clickAbility` (targeting, an {X} prompt, a
           sacrifice choice), so the menu closes either way. */}
-      {selectedSource !== null && (selectedAbilities.length > 0 || selectedFaceUp !== undefined) ? (
+      {selectedSource !== null &&
+      (selectedAbilities.length > 0 || selectedFaceUp !== undefined || selectedUnlocks.length > 0) ? (
         <AbilityMenu
           source={selectedSource}
           title={game.nameOf(selectedSource)}
@@ -5263,6 +5276,14 @@ function Table({
                   },
                 ]
               : []),
+            ...selectedUnlocks.map((u) => ({
+              key: `unlock:${u.door}`,
+              label: `Unlock ${u.doorName} — pay ${u.cost}`,
+              onSelect: () => {
+                setSelectedSource(null)
+                game.dispatch({ type: 'unlock-door', player: seat, permanent: u.permanent, door: u.door })
+              },
+            })),
             ...(selectedFaceUp !== undefined
               ? [
                   {

@@ -83,6 +83,7 @@ import _poolFlopsieBumisBuddy from "../pool/flopsie-bumis-buddy.js";
 import _poolFlowstoneMauler from "../pool/flowstone-mauler.js";
 import _poolFluxChanneler from "../pool/flux-channeler.js";
 import _poolFlyingMen from "../pool/flying-men.js";
+import _poolFracturedRealm from "../pool/fractured-realm.js";
 import _poolFungusFrolic from "../pool/fungus-frolic.js";
 import _poolFynnTheFangbearer from "../pool/fynn-the-fangbearer.js";
 import _poolGeistflame from "../pool/geistflame.js";
@@ -359,6 +360,7 @@ const shard: CardShard = {
     _poolFlowstoneMauler,
     _poolFluxChanneler,
     _poolFlyingMen,
+    _poolFracturedRealm,
     _poolFungusFrolic,
     _poolFynnTheFangbearer,
     _poolGeistflame,

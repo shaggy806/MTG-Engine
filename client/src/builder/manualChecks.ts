@@ -2543,6 +2543,17 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Bottomless Pool // Locker Room, Unholy Annex // Ritual Chamber',
+    board({
+      you: {
+        bf: ['Unholy Annex // Ritual Chamber', 'Grizzly Bears', 'Island*5', 'Swamp*5'],
+        hand: ['Bottomless Pool // Locker Room'],
+        lib: ['Island*6'],
+      },
+      opp: { bf: ['Hill Giant'] },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

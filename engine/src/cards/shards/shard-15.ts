@@ -82,6 +82,7 @@ import _poolFlowstoneGiant from "../pool/flowstone-giant.js";
 import _poolForebodingRuins from "../pool/foreboding-ruins.js";
 import _poolForecastingFortuneTeller from "../pool/forecasting-fortune-teller.js";
 import _poolFortressCrab from "../pool/fortress-crab.js";
+import _poolFuneralRoom from "../pool/funeral-room.js";
 import _poolFyndhornElder from "../pool/fyndhorn-elder.js";
 import _poolGanaxAstralHunter from "../pool/ganax-astral-hunter.js";
 import _poolGavonyTownship from "../pool/gavony-township.js";
@@ -350,6 +351,7 @@ const shard: CardShard = {
     _poolForebodingRuins,
     _poolForecastingFortuneTeller,
     _poolFortressCrab,
+    _poolFuneralRoom,
     _poolFyndhornElder,
     _poolGanaxAstralHunter,
     _poolGavonyTownship,

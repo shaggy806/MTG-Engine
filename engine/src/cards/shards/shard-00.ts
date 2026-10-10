@@ -111,6 +111,7 @@ import _poolGoldPan from "../pool/gold-pan.js";
 import _poolGolgariGuildgate from "../pool/golgari-guildgate.js";
 import _poolGravelHideGoblin from "../pool/gravel-hide-goblin.js";
 import _poolGravewaker from "../pool/gravewaker.js";
+import _poolGreenhouse from "../pool/greenhouse.js";
 import _poolGrixisPanorama from "../pool/grixis-panorama.js";
 import _poolGuardianAutomaton from "../pool/guardian-automaton.js";
 import _poolGyreSage from "../pool/gyre-sage.js";
@@ -202,6 +203,7 @@ import _poolRevelInRiches from "../pool/revel-in-riches.js";
 import _poolRideTheShoopuf from "../pool/ride-the-shoopuf.js";
 import _poolRiotPiker from "../pool/riot-piker.js";
 import _poolRiseOfTheDreadMarn from "../pool/rise-of-the-dread-marn.js";
+import _poolRitualChamber from "../pool/ritual-chamber.js";
 import _poolRocOfKherRidges from "../pool/roc-of-kher-ridges.js";
 import _poolRoxanneStarfallSavant from "../pool/roxanne-starfall-savant.js";
 import _poolRumblingSlum from "../pool/rumbling-slum.js";
@@ -407,6 +409,7 @@ const shard: CardShard = {
     _poolGolgariGuildgate,
     _poolGravelHideGoblin,
     _poolGravewaker,
+    _poolGreenhouse,
     _poolGrixisPanorama,
     _poolGuardianAutomaton,
     _poolGyreSage,
@@ -498,6 +501,7 @@ const shard: CardShard = {
     _poolRideTheShoopuf,
     _poolRiotPiker,
     _poolRiseOfTheDreadMarn,
+    _poolRitualChamber,
     _poolRocOfKherRidges,
     _poolRoxanneStarfallSavant,
     _poolRumblingSlum,

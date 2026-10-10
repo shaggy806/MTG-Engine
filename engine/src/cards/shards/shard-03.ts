@@ -201,6 +201,7 @@ import _poolSpareSupplies from "../pool/spare-supplies.js";
 import _poolSparkDouble from "../pool/spark-double.js";
 import _poolSpectralDeluge from "../pool/spectral-deluge.js";
 import _poolSpectralSailor from "../pool/spectral-sailor.js";
+import _poolSpikedCorridor from "../pool/spiked-corridor.js";
 import _poolSplendidReclamation from "../pool/splendid-reclamation.js";
 import _poolStarlitAngel from "../pool/starlit-angel.js";
 import _poolSteamVents from "../pool/steam-vents.js";
@@ -461,6 +462,7 @@ const shard: CardShard = {
     _poolSparkDouble,
     _poolSpectralDeluge,
     _poolSpectralSailor,
+    _poolSpikedCorridor,
     _poolSplendidReclamation,
     _poolStarlitAngel,
     _poolSteamVents,

@@ -213,6 +213,15 @@ export type Action =
       readonly permanent: ObjectId;
     }
   | {
+      /** Unlock a locked door of a Room you control (rule 709.5e): a special
+       * action, paying that half's mana cost (its "unlock cost"), any time
+       * you could cast a sorcery — your main phase, the stack empty. */
+      readonly type: "unlock-door";
+      readonly player: PlayerId;
+      readonly permanent: ObjectId;
+      readonly door: "left" | "right";
+    }
+  | {
       /** Cycle a card from hand (rule 702.29): pay its cycling cost, discard
        * it, draw a card. Any time you could cast an instant. */
       readonly type: "cycle";
@@ -650,6 +659,16 @@ export type LegalAction =
       readonly kind: "turn-face-up";
       readonly permanent: ObjectId;
       readonly cardName: string;
+      readonly cost: string;
+    }
+  | {
+      /** A locked door of one of your Rooms can be unlocked (rule 709.5e):
+       * the door's name (its half's) and the unlock cost to pay, after any
+       * reduction (Inquisitive Glimmer). */
+      readonly kind: "unlock-door";
+      readonly permanent: ObjectId;
+      readonly door: "left" | "right";
+      readonly doorName: string;
       readonly cost: string;
     }
   | {

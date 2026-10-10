@@ -179,6 +179,13 @@ const KNOWN_TYPES = new Set([
   "Tribal", "Kindred", "Dungeon", "Plane", "Phenomenon", "Scheme", "Vanguard", "Conspiracy",
 ]);
 function parseTypeLine(typeLine) {
+  // A split card's whole face writes each half's type line apart ("Enchantment
+  // — Room // Enchantment — Room"): it has all of them (rule 709.4c).
+  if (typeLine.includes(" // ")) {
+    const halves = typeLine.split(/\s+\/\/\s+/).map(parseTypeLine);
+    const union = (key) => [...new Set(halves.flatMap((h) => h[key]))];
+    return { supertypes: union("supertypes"), types: union("types"), subtypes: union("subtypes") };
+  }
   const [frontPart, subPart] = typeLine.split(/\s+—\s+/);
   const words = frontPart.trim().split(/\s+/);
   const supertypes = words.filter((w) => KNOWN_SUPERTYPES.has(w)).map((w) => w.toLowerCase());
@@ -503,8 +510,13 @@ function compare(def, card) {
   // no colours of its own on Scryfall, and the card's are its first face's:
   // the spell half's colour is its own mana cost's (rules 105.2, 720.3b) —
   // Whirlwing Stormbrood is blue, its Omen Dynamic Soar green.
+  // So does a split card's half (a Room's door): its colour is its own
+  // mana cost's (rules 105.2, 709.3b) — Restricted Office is white, Lecture
+  // Hall blue.
   const spellHalf =
-    card.layout === "adventure" && face !== card && face !== card.card_faces?.[0] && face.colors === undefined;
+    ((card.layout === "adventure" && face !== card.card_faces?.[0]) || card.layout === "split") &&
+    face !== card &&
+    face.colors === undefined;
   const theirColors = spellHalf
     ? [...new Set((face.mana_cost ?? "").match(/[WUBRG]/g) ?? [])]
     : (face.colors ?? card.colors ?? []);

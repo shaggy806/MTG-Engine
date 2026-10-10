@@ -2560,6 +2560,21 @@
 .ct-sf-head {
   color: #e2d6b4;
 }
+/* A Room's doors (rule 709.5) use the same block, one per door: an unlocked
+   door in the accent's border, a locked one dimmed — its text isn't the
+   permanent's. The last door has no rule beneath it. */
+.ct-door.unlocked {
+  border-left-color: var(--accent);
+}
+.ct-door.locked {
+  opacity: 0.55;
+}
+.ct-door:last-of-type {
+  border-bottom: none;
+}
+.ct-door-lock {
+  font-size: 0.9em;
+}
 .ct-sf-type {
   color: #9aa0ad;
   font-style: italic;

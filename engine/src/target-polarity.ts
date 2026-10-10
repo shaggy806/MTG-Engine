@@ -223,6 +223,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   },
   earthbend: (n, v) => v.touch(n.target, "help", MAJOR),
   ninjutsu: none,
+  "unlock-door": (n, v) => v.touch(n.target, "help", MINOR),
+  "set-door": none,
   "reflexive-trigger": none,
   "put-on-library": (n, v) => v.touch(n.target, "help", MINOR),
   discard: (n, v) => v.touch(n.target, "harm", MAJOR),

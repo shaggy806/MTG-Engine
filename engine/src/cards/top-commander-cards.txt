@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3463 already implemented / 1537 missing (marks refreshed 2026-10-10)
+3470 already implemented / 1530 missing (marks refreshed 2026-10-10)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2063,7 +2063,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2070  Sarkhan, Soul Aflame                     {1}{U}{R}        Legendary Creature — Human Shaman
 [x]  2071  Cancel                                   {1}{U}{U}        Instant
 [ ]  2072  Alchemist's Talent                       {3}{R}           Enchantment — Class
-[ ]  2073  Funeral Room // Awakening Hall           {2}{B} // {6}{B}{B} Enchantment — Room // Enchantment — Room
+[x]  2073  Funeral Room // Awakening Hall           {2}{B} // {6}{B}{B} Enchantment — Room // Enchantment — Room
 [ ]  2074  Gonti, Lord of Luxury                    {2}{B}{B}        Legendary Creature — Aetherborn Rogue
 [x]  2075  Everybody Lives!                         {1}{W}           Instant
 [x]  2076  Selesnya Guildgate                       {0}              Land — Gate
@@ -2130,7 +2130,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2137  Wrenn's Resolve                          {1}{R}           Sorcery
 [x]  2138  Bone Miser                               {4}{B}           Creature — Zombie Wizard
 [ ]  2139  Multiversal Passage                      {0}              Land
-[ ]  2140  Entity Tracker                           {2}{U}           Creature — Human Scout
+[x]  2140  Entity Tracker                           {2}{U}           Creature — Human Scout
 [x]  2141  Zendikar's Roil                          {3}{G}{G}        Enchantment
 [x]  2142  Plague Myr                               {2}              Artifact Creature — Phyrexian Myr
 [ ]  2143  Liliana of the Dark Realms               {2}{B}{B}        Legendary Planeswalker — Liliana
@@ -2594,7 +2594,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2601  Angelic Destiny                          {2}{W}{W}        Enchantment — Aura
 [x]  2602  Black Mage's Rod                         {1}{B}           Artifact — Equipment
 [ ]  2603  Ghirapur Orrery                          {4}              Artifact
-[ ]  2604  Inquisitive Glimmer                      {W}{U}           Enchantment Creature — Fox Glimmer
+[x]  2604  Inquisitive Glimmer                      {W}{U}           Enchantment Creature — Fox Glimmer
 [x]  2605  Cid, Freeflier Pilot                     {1}{W}           Legendary Creature — Human Warrior Pilot
 [x]  2606  Bloated Contaminator                     {2}{G}           Creature — Phyrexian Beast
 [x]  2607  Burglar Rat                              {1}{B}           Creature — Rat
@@ -2797,7 +2797,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2804  Dance of the Manse                       {X}{W}{U}        Sorcery
 [x]  2805  Uncharted Haven                          {0}              Land
 [x]  2806  Cemetery Tampering                       {2}{B}           Enchantment
-[ ]  2807  Mirror Room // Fractured Realm           {2}{U} // {5}{U}{U} Enchantment — Room // Enchantment — Room
+[x]  2807  Mirror Room // Fractured Realm           {2}{U} // {5}{U}{U} Enchantment — Room // Enchantment — Room
 [x]  2808  Volrath's Stronghold                     {0}              Legendary Land
 [x]  2809  The Seriema                              {1}{W}{W}        Legendary Artifact — Spacecraft
 [x]  2810  Mist-Cloaked Herald                      {U}              Creature — Merfolk Warrior
@@ -2877,7 +2877,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2884  Glistening Sphere                        {3}              Artifact
 [x]  2885  One with the Machine                     {3}{U}           Sorcery
 [x]  2886  Silver-Fur Master                        {U}{B}           Creature — Rat Ninja
-[ ]  2887  Unholy Annex // Ritual Chamber           {2}{B} // {3}{B}{B} Enchantment — Room // Enchantment — Room
+[x]  2887  Unholy Annex // Ritual Chamber           {2}{B} // {3}{B}{B} Enchantment — Room // Enchantment — Room
 [ ]  2888  Renata, Called to the Hunt               {2}{G}{G}        Legendary Enchantment Creature — Demigod
 [ ]  2889  Outcaster Trailblazer                    {2}{G}           Creature — Human Druid
 [x]  2890  Chief of the Foundry                     {3}              Artifact Creature — Construct
@@ -3722,7 +3722,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3729  Omnath, Locus of Mana                    {2}{G}           Legendary Creature — Elemental
 [x]  3730  Deadly Tempest                           {4}{B}{B}        Sorcery
 [x]  3731  MacCready, Lamplight Mayor               {W}{B}           Legendary Creature — Human Advisor
-[ ]  3732  Ghostly Dancers                          {3}{W}{W}        Creature — Spirit
+[x]  3732  Ghostly Dancers                          {3}{W}{W}        Creature — Spirit
 [x]  3733  Capital City                             {0}              Land — Town
 [x]  3734  Skyline Despot                           {5}{R}{R}        Creature — Dragon
 [x]  3735  Memory Erosion                           {1}{U}{U}        Enchantment
@@ -4189,7 +4189,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4196  The Millennium Calendar                  {1}              Legendary Artifact
 [x]  4197  Tender Wildguide                         {1}{G}           Creature — Possum Druid
 [x]  4198  Stormsplitter                            {3}{R}           Creature — Otter Wizard
-[ ]  4199  Spiked Corridor // Torture Pit           {3}{R} // {3}{R} Enchantment — Room // Enchantment — Room
+[x]  4199  Spiked Corridor // Torture Pit           {3}{R} // {3}{R} Enchantment — Room // Enchantment — Room
 [x]  4200  Sword of Sinew and Steel                 {3}              Artifact — Equipment
 [x]  4201  Grave Venerations                        {3}{B}           Enchantment
 [ ]  4202  Nahiri's Lithoforming                    {X}{R}{R}        Sorcery

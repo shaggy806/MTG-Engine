@@ -2117,6 +2117,30 @@ export type EffectSpec =
     }
   | {
       /**
+       * Unlock a door of a Room (rule 709.5f) — "unlock a locked door of a
+       * Room you control" (Ghostly Dancers): the effect's controller picks
+       * one locked door among the Rooms they control, or of the Room in
+       * `target` (a slot, `"source"`). `orLock` is Marina Vendrell's "lock or
+       * unlock a door of target Room": any door of it, locking an unlocked
+       * one (709.5g). With more than one door to choose from the choice is a
+       * `choose-modes` as it resolves, one mode per door; with one there's
+       * nothing to ask. A door unlocked this way triggers "when you unlock
+       * this door" (709.5h).
+       */
+      readonly kind: "unlock-door";
+      readonly target?: EffectTargetRef;
+      readonly orLock?: boolean;
+    }
+  | {
+      /** One door's change as an `unlock-door` choice settled it — written by
+       * that effect for its modes, never by a card. */
+      readonly kind: "set-door";
+      readonly object: ObjectId;
+      readonly door: "left" | "right";
+      readonly lock: boolean;
+    }
+  | {
+      /**
        * "**When you do**, [effect]" — a reflexive triggered ability (rule
        * 603.12): Terra, Herald of Hope's "you may pay {2}. When you do,
        * return target creature card with power 3 or less from your graveyard
@@ -4574,6 +4598,18 @@ export interface EffectApi {
   /** See the `"ninjutsu"` {@link EffectSpec}: whether it stopped to ask an
    * "as this enters" choice, after which it's applied again. */
   ninjutsu(): boolean;
+  /** The doors of `room`, or of every Room the effect's controller controls:
+   * each with its half's name, its Room's, and whether it's unlocked. */
+  roomDoors(room?: ObjectId): readonly {
+    readonly object: ObjectId;
+    readonly door: "left" | "right";
+    readonly name: string;
+    readonly roomName: string;
+    readonly unlocked: boolean;
+  }[];
+  /** Unlock (or `lock`) a door of the Room `object` (rule 709.5f, g), by
+   * the effect's controller. */
+  setDoor(object: ObjectId, door: "left" | "right", lock: boolean): void;
   /** The top `count` cards of `player`'s library, top first. */
   libraryTop(player: PlayerId, count: number, reveal?: boolean): readonly ObjectId[];
   /** `times` copies of each of `cards` (rule 707.12), made in the card's
@@ -6940,6 +6976,24 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) ctx.allowCastFromExile(target, spec.free === true, spec.laterTurns === true);
       return;
     }
+    case "unlock-door": {
+      const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
+      if (spec.target !== undefined && target?.kind !== "object") return;
+      const options = ctx
+        .roomDoors(target?.kind === "object" ? target.object : undefined)
+        .filter((d) => !d.unlocked || spec.orLock === true);
+      if (options.length === 0) return;
+      const modes = options.map((d) => ({
+        text: `${d.unlocked ? "Lock" : "Unlock"} ${d.name}${target === undefined ? ` (${d.roomName})` : ""}`,
+        effect: { kind: "set-door", object: d.object, door: d.door, lock: d.unlocked } as const,
+      }));
+      if (modes.length === 1) applyEffectSpec(modes[0].effect, ctx);
+      else applyEffectSpec({ kind: "modal", minModes: 1, maxModes: 1, modes }, ctx);
+      return;
+    }
+    case "set-door":
+      ctx.setDoor(spec.object, spec.door, spec.lock);
+      return;
     case "ninjutsu": {
       const parked = ctx.parkedCount();
       // Its "as this enters" choices first (Sakashima's Student's copy),

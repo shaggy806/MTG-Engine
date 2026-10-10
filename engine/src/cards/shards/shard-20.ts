@@ -154,6 +154,7 @@ import _poolMillikin from "../pool/millikin.js";
 import _poolMindspliceApparatus from "../pool/mindsplice-apparatus.js";
 import _poolMirageMesa from "../pool/mirage-mesa.js";
 import _poolMirriCatWarrior from "../pool/mirri-cat-warrior.js";
+import _poolMirrorRoomFracturedRealm from "../pool/mirror-room-fractured-realm.js";
 import _poolMoltenTributary from "../pool/molten-tributary.js";
 import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
 import _poolMomentOfCraving from "../pool/moment-of-craving.js";
@@ -193,6 +194,7 @@ import _poolRaiseThePast from "../pool/raise-the-past.js";
 import _poolRatcatcher from "../pool/ratcatcher.js";
 import _poolRavagingHorde from "../pool/ravaging-horde.js";
 import _poolRecklessAssault from "../pool/reckless-assault.js";
+import _poolRestrictedOffice from "../pool/restricted-office.js";
 import _poolRetreatToEmeria from "../pool/retreat-to-emeria.js";
 import _poolRevTitheExtractor from "../pool/rev-tithe-extractor.js";
 import _poolReyhanLastOfTheAbzan from "../pool/reyhan-last-of-the-abzan.js";
@@ -436,6 +438,7 @@ const shard: CardShard = {
     _poolMindspliceApparatus,
     _poolMirageMesa,
     _poolMirriCatWarrior,
+    _poolMirrorRoomFracturedRealm,
     _poolMoltenTributary,
     _poolMoltensteelDragon,
     _poolMomentOfCraving,
@@ -475,6 +478,7 @@ const shard: CardShard = {
     _poolRatcatcher,
     _poolRavagingHorde,
     _poolRecklessAssault,
+    _poolRestrictedOffice,
     _poolRetreatToEmeria,
     _poolRevTitheExtractor,
     _poolReyhanLastOfTheAbzan,

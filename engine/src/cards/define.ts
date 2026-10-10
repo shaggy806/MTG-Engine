@@ -1645,6 +1645,10 @@ export interface StaticAbility {
      * from the hand or the command zone — the one kind that reaches a card
      * that isn't a permanent. `applies` still filters the card. */
     readonly ninjutsu?: true;
+    /** Not an ability's cost but a Room's unlock costs (rule 709.5e) this
+     * static's controller pays — Inquisitive Glimmer's "Unlock costs you pay
+     * cost {1} less". `applies` filters the Room. */
+    readonly unlock?: true;
   };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */

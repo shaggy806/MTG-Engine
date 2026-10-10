@@ -31,6 +31,7 @@ import _poolBloodCrypt from "../pool/blood-crypt.js";
 import _poolBloodthroneVampire from "../pool/bloodthrone-vampire.js";
 import _poolBogRaiders from "../pool/bog-raiders.js";
 import _poolBoonOfTheSpiritRealm from "../pool/boon-of-the-spirit-realm.js";
+import _poolBottomlessPool from "../pool/bottomless-pool.js";
 import _poolBoulderloftPathway from "../pool/boulderloft-pathway.js";
 import _poolBoundingWolf from "../pool/bounding-wolf.js";
 import _poolBrainsurge from "../pool/brainsurge.js";
@@ -185,6 +186,7 @@ import _poolRedDragon from "../pool/red-dragon.js";
 import _poolRegrowth from "../pool/regrowth.js";
 import _poolRemorsefulCleric from "../pool/remorseful-cleric.js";
 import _poolRestlessRidgeline from "../pool/restless-ridgeline.js";
+import _poolRestrictedOfficeLectureHall from "../pool/restricted-office-lecture-hall.js";
 import _poolReturnFromTheWilds from "../pool/return-from-the-wilds.js";
 import _poolReyaDawnbringer from "../pool/reya-dawnbringer.js";
 import _poolRidgelineRager from "../pool/ridgeline-rager.js";
@@ -302,6 +304,7 @@ const shard: CardShard = {
     _poolBloodthroneVampire,
     _poolBogRaiders,
     _poolBoonOfTheSpiritRealm,
+    _poolBottomlessPool,
     _poolBoulderloftPathway,
     _poolBoundingWolf,
     _poolBrainsurge,
@@ -456,6 +459,7 @@ const shard: CardShard = {
     _poolRegrowth,
     _poolRemorsefulCleric,
     _poolRestlessRidgeline,
+    _poolRestrictedOfficeLectureHall,
     _poolReturnFromTheWilds,
     _poolReyaDawnbringer,
     _poolRidgelineRager,

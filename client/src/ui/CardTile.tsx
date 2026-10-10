@@ -20,6 +20,18 @@ import {
 
 const TAP_ICON_URL = manaSymbolUrl('T')
 
+/** Rules text without the Room reminder every door repeats ("You may cast
+ * either half…") and with `stripReminders`' — a Room's door blocks, or the
+ * whole card in hand, say as much without it. */
+function doorText(text: string): string {
+  return stripReminders(
+    text
+      .split('\n')
+      .filter((line) => !line.startsWith('(You may cast either half.'))
+      .join('\n'),
+  )
+}
+
 export interface CardTileProps {
   readonly obj: VisibleObject
   readonly highlight?: boolean
@@ -195,8 +207,12 @@ export function CardTile({
   // Reminder text goes first: the hover card's keyword tooltips carry it
   // (`stripReminders`), and a leading "Flying (This creature can't…)" only
   // reads as the bare keyword line it restates once its aside is gone.
-  const displayText = bodyText(obj, stripReminders(obj.text))
-  const showText = displayText.length > 0 && !isJustKeywords(displayText, keywordWordSet(obj))
+  // A Room's reminder ("You may cast either half…") goes too: every door
+  // repeats it, and the card in hand carries both doors' text.
+  const displayText = bodyText(obj, doorText(obj.text))
+  // A Room shows its two doors instead, locked or not (`obj.doors`).
+  const showText =
+    obj.doors === undefined && displayText.length > 0 && !isJustKeywords(displayText, keywordWordSet(obj))
   // Toxic last, as its total: a granted one is in no rules text at all.
   const keywordLine = [
     ...obj.keywords.map((k) => KEYWORD_LABEL[k] ?? cap(k)),
@@ -259,7 +275,7 @@ export function CardTile({
     <span className="ct-name" ref={artFirst ? nameRef : undefined}>
       {faceDown ?? obj.name ?? face}
       {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
-      {obj.faces && obj.faces.length > 1 ? (
+      {obj.faces && obj.faces.length > 1 && obj.doors === undefined ? (
         <span className="ct-copy" title={obj.faces.join(' // ')}> ⇄</span>
       ) : null}
     </span>
@@ -372,6 +388,28 @@ export function CardTile({
             </span>
           </span>
         ) : null}
+        {/* A Room's doors (rule 709.5): both printed halves, each marked
+            locked or unlocked — a locked door's text isn't the permanent's,
+            so it's drawn dimmed. */}
+        {obj.doors?.map((d) => (
+          <span key={d.door} className={`ct-spellface ct-door${d.unlocked ? ' unlocked' : ' locked'}`}>
+            <span className="ct-sf-head">
+              <span className="ct-door-lock" aria-label={d.unlocked ? 'unlocked' : 'locked'}>
+                {d.unlocked ? '🔓' : '🔒'}
+              </span>{' '}
+              <b>{d.name}</b>
+              {d.manaCost ? (
+                <>
+                  {' '}
+                  <Symbols text={d.manaCost} />
+                </>
+              ) : null}
+            </span>
+            <span className="ct-rules">
+              <Symbols text={doorText(d.text)} />
+            </span>
+          </span>
+        ))}
         {keywordLine ? <b className="ct-kw">{keywordLine}</b> : null}
         {showText ? (
           <span className="ct-rules">

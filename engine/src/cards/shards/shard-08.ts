@@ -135,10 +135,12 @@ import _poolKwainItinerantMeddler from "../pool/kwain-itinerant-meddler.js";
 import _poolKyrenNegotiations from "../pool/kyren-negotiations.js";
 import _poolLavabellySliver from "../pool/lavabelly-sliver.js";
 import _poolLeaveInTheDust from "../pool/leave-in-the-dust.js";
+import _poolLectureHall from "../pool/lecture-hall.js";
 import _poolLegionWarboss from "../pool/legion-warboss.js";
 import _poolLessonsFromLife from "../pool/lessons-from-life.js";
 import _poolLilianaVess from "../pool/liliana-vess.js";
 import _poolLlanowarEnvoy from "../pool/llanowar-envoy.js";
+import _poolLockerRoom from "../pool/locker-room.js";
 import _poolLoftyDenial from "../pool/lofty-denial.js";
 import _poolLongBodiedGreyDog from "../pool/long-bodied-grey-dog.js";
 import _poolLotusField from "../pool/lotus-field.js";
@@ -190,6 +192,7 @@ import _poolRemoveSoul from "../pool/remove-soul.js";
 import _poolRepulsorRays from "../pool/repulsor-rays.js";
 import _poolRetractionHelix from "../pool/retraction-helix.js";
 import _poolReturnedCentaur from "../pool/returned-centaur.js";
+import _poolRicketyGazebo from "../pool/rickety-gazebo.js";
 import _poolRighteousAvengers from "../pool/righteous-avengers.js";
 import _poolRishadanPort from "../pool/rishadan-port.js";
 import _poolRisingPopulace from "../pool/rising-populace.js";
@@ -272,6 +275,7 @@ import _poolZuranOrb from "../pool/zuran-orb.js";
 import _tokensCatWarriorToken from "../tokens/cat-warrior-token.js";
 import _tokensElfWarriorTokenRhysTheRedeemed from "../tokens/elf-warrior-token-rhys-the-redeemed.js";
 import _tokensFoodToken from "../tokens/food-token.js";
+import _tokensHorrorToken from "../tokens/horror-token.js";
 import _tokensThopterToken from "../tokens/thopter-token.js";
 import _tokensWarriorToken from "../tokens/warrior-token.js";
 import _tokensWolfToken from "../tokens/wolf-token.js";
@@ -410,10 +414,12 @@ const shard: CardShard = {
     _poolKyrenNegotiations,
     _poolLavabellySliver,
     _poolLeaveInTheDust,
+    _poolLectureHall,
     _poolLegionWarboss,
     _poolLessonsFromLife,
     _poolLilianaVess,
     _poolLlanowarEnvoy,
+    _poolLockerRoom,
     _poolLoftyDenial,
     _poolLongBodiedGreyDog,
     _poolLotusField,
@@ -465,6 +471,7 @@ const shard: CardShard = {
     _poolRepulsorRays,
     _poolRetractionHelix,
     _poolReturnedCentaur,
+    _poolRicketyGazebo,
     _poolRighteousAvengers,
     _poolRishadanPort,
     _poolRisingPopulace,
@@ -549,6 +556,7 @@ const shard: CardShard = {
     _tokensCatWarriorToken,
     _tokensElfWarriorTokenRhysTheRedeemed,
     _tokensFoodToken,
+    _tokensHorrorToken,
     _tokensThopterToken,
     _tokensWarriorToken,
     _tokensWolfToken,

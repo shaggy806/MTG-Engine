@@ -14,6 +14,7 @@ import { CardFlags } from './CardFlags.tsx'
 import { CounterChips } from './CounterChips.tsx'
 import type { Goader } from './CardFlags.tsx'
 import { faceDownArtClass, faceDownLabel } from './faceDown.ts'
+import { roomLabel } from './rooms.ts'
 import {
   isArtBlocked,
   isArtPending,
@@ -156,8 +157,8 @@ export function MiniTile({
             .mt-body — which is what carries the 4:3 aspect ratio (and is
             the positioning context for those overlays) now that the tile
             itself is banner + art, not art alone. */}
-        <span className="mt-banner" title={faceDown ?? obj.name ?? face}>
-          {faceDown ?? obj.name ?? face}
+        <span className="mt-banner" title={faceDown ?? roomLabel(obj) ?? obj.name ?? face}>
+          {faceDown ?? roomLabel(obj) ?? obj.name ?? face}
         </span>
         <span className="mt-body">
           <span className={faceDown !== null ? `mt-art ${faceDownArtClass(ownerSeat)}` : `mt-art tint-${tint}`}>

@@ -1,0 +1,166 @@
+{
+  "batch": "B44",
+  "status": "complete",
+  "ranks": "mechanic:rooms's waiting cards (rule 709.5): Rooms, unlocking a door (the special action and the effect), 'when you unlock this door' and 'fully unlock' triggers",
+  "authored": [
+    {
+      "name": "Bottomless Pool // Locker Room",
+      "files": [
+        "engine/src/cards/pool/bottomless-pool-locker-room.ts",
+        "engine/src/cards/pool/bottomless-pool.ts",
+        "engine/src/cards/pool/locker-room.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Funeral Room // Awakening Hall",
+      "files": [
+        "engine/src/cards/pool/funeral-room-awakening-hall.ts",
+        "engine/src/cards/pool/funeral-room.ts",
+        "engine/src/cards/pool/awakening-hall.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Unholy Annex // Ritual Chamber",
+      "files": [
+        "engine/src/cards/pool/unholy-annex-ritual-chamber.ts",
+        "engine/src/cards/pool/unholy-annex.ts",
+        "engine/src/cards/pool/ritual-chamber.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Spiked Corridor // Torture Pit",
+      "files": [
+        "engine/src/cards/pool/spiked-corridor-torture-pit.ts",
+        "engine/src/cards/pool/spiked-corridor.ts",
+        "engine/src/cards/pool/torture-pit.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Restricted Office // Lecture Hall",
+      "files": [
+        "engine/src/cards/pool/restricted-office-lecture-hall.ts",
+        "engine/src/cards/pool/restricted-office.ts",
+        "engine/src/cards/pool/lecture-hall.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Defiled Crypt // Cadaver Lab",
+      "files": [
+        "engine/src/cards/pool/defiled-crypt-cadaver-lab.ts",
+        "engine/src/cards/pool/defiled-crypt.ts",
+        "engine/src/cards/pool/cadaver-lab.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Greenhouse // Rickety Gazebo",
+      "files": [
+        "engine/src/cards/pool/greenhouse-rickety-gazebo.ts",
+        "engine/src/cards/pool/greenhouse.ts",
+        "engine/src/cards/pool/rickety-gazebo.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mirror Room // Fractured Realm",
+      "files": [
+        "engine/src/cards/pool/mirror-room-fractured-realm.ts",
+        "engine/src/cards/pool/mirror-room.ts",
+        "engine/src/cards/pool/fractured-realm.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Entity Tracker",
+      "files": [
+        "engine/src/cards/pool/entity-tracker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ghostly Dancers",
+      "files": [
+        "engine/src/cards/pool/ghostly-dancers.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Victor, Valgavoth's Seneschal",
+      "files": [
+        "engine/src/cards/pool/victor-valgavoths-seneschal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Marina Vendrell",
+      "files": [
+        "engine/src/cards/pool/marina-vendrell.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Inquisitive Glimmer",
+      "files": [
+        "engine/src/cards/pool/inquisitive-glimmer.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Polluted Cistern // Dim Oubliette",
+      "needs": [
+        "effect:card-types-among-trigger-batch"
+      ],
+      "why": "Rooms are built; 'for each card type among those cards' of a put-into-graveyard batch isn't an amount"
+    },
+    {
+      "name": "Secret Arcade // Dusty Parlor",
+      "needs": [
+        "static:spells-gain-types"
+      ],
+      "why": "Rooms are built; 'permanent spells you control are enchantments' would have to reach spells on the stack"
+    },
+    {
+      "name": "Charred Foyer // Warped Space",
+      "needs": [
+        "cost:alternative-cost-for-spells-limits"
+      ],
+      "why": "Rooms are built; Warped Space's 'once each turn, you may pay {0} rather than the mana cost for a spell you cast from exile'"
+    },
+    {
+      "name": "Dollmaker's Shop // Porcelain Gallery",
+      "needs": [
+        "trigger:attacks-player-filter",
+        "static:set-base-pt-others"
+      ],
+      "why": "Rooms are built; 'non-Toy creatures attack a player', and creatures you control with base P/T equal to the number of creatures you control"
+    },
+    {
+      "name": "Walk-In Closet // Forgotten Cellar",
+      "needs": [
+        "replacement:graveyard-to-exile-this-turn"
+      ],
+      "why": "Rooms are built; Forgotten Cellar's 'if a card would be put into your graveyard this turn, exile it instead'"
+    },
+    {
+      "name": "Dazzling Theater // Prop Room",
+      "needs": [
+        "static:grant-convoke"
+      ],
+      "why": "Rooms are built; 'creature spells you cast have convoke' — convoke is a printed flag only"
+    },
+    {
+      "name": "Fear of Sleep Paralysis",
+      "needs": [
+        "static:stun-counters-cant-be-removed"
+      ],
+      "why": "the eerie triggers exist now; 'stun counters can't be removed from permanents your opponents control' doesn't"
+    }
+  ]
+}

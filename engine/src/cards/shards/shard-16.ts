@@ -39,6 +39,7 @@ import _poolBoltHound from "../pool/bolt-hound.js";
 import _poolBoneShards from "../pool/bone-shards.js";
 import _poolBorosRecruit from "../pool/boros-recruit.js";
 import _poolBoulderRush from "../pool/boulder-rush.js";
+import _poolCadaverLab from "../pool/cadaver-lab.js";
 import _poolCarnivorousMossBeast from "../pool/carnivorous-moss-beast.js";
 import _poolCartoucheOfKnowledge from "../pool/cartouche-of-knowledge.js";
 import _poolCatOwl from "../pool/cat-owl.js";
@@ -344,6 +345,7 @@ const shard: CardShard = {
     _poolBoneShards,
     _poolBorosRecruit,
     _poolBoulderRush,
+    _poolCadaverLab,
     _poolCarnivorousMossBeast,
     _poolCartoucheOfKnowledge,
     _poolCatOwl,

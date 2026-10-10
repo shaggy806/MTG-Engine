@@ -21,6 +21,7 @@ import _poolAshlingRekindled from "../pool/ashling-rekindled.js";
 import _poolAspiringAeronaut from "../pool/aspiring-aeronaut.js";
 import _poolAuraMutation from "../pool/aura-mutation.js";
 import _poolAvatarKyoshi from "../pool/avatar-kyoshi.js";
+import _poolAwakeningHall from "../pool/awakening-hall.js";
 import _poolAyaraFirstOfLocthwain from "../pool/ayara-first-of-locthwain.js";
 import _poolBaithookAngler from "../pool/baithook-angler.js";
 import _poolBanehound from "../pool/banehound.js";
@@ -299,6 +300,7 @@ const shard: CardShard = {
     _poolAspiringAeronaut,
     _poolAuraMutation,
     _poolAvatarKyoshi,
+    _poolAwakeningHall,
     _poolAyaraFirstOfLocthwain,
     _poolBaithookAngler,
     _poolBanehound,

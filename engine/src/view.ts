@@ -216,6 +216,17 @@ export interface VisibleObject {
    * art), and `card` — the card it really is — is in its controller's view
    * only, who may look at it (708.5). */
   readonly faceDown?: { readonly kind: "manifest" | "cloak"; readonly card?: string };
+  /** A Room on the battlefield (rule 709.5): its two doors — the card's
+   * left and right halves, each with its name, mana cost and rules text —
+   * and whether each is unlocked. The rest of this object is what the
+   * permanent has: only the unlocked doors' text, a locked Room no name. */
+  readonly doors?: readonly {
+    readonly door: "left" | "right";
+    readonly name: string;
+    readonly manaCost: string | null;
+    readonly text: string;
+    readonly unlocked: boolean;
+  }[];
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   readonly attachedTo: ObjectId | null;
   /** The player this Aura is attached to — a Curse's "Enchant player" —
@@ -366,13 +377,19 @@ function visible(
   const faceDown = object.zone === "battlefield" ? object.faceDown : undefined;
   const printedName = printedCardName(object);
   const def = registry.get(printedName);
+  // A Room on the battlefield is drawn as its whole card — both doors are
+  // public, locked or not — with what each door is in `doors`; the rest
+  // here is what it has (rule 709.5: a locked door's name, cost and text
+  // aren't the permanent's).
+  const roomDoors = object.zone === "battlefield" ? object.doors : undefined;
+  const cardDef = roomDoors !== undefined ? registry.get(object.cardName) : def;
   const chosen = chosenOf(object);
   const computed = computeCharacteristics(state, registry, id);
   // The printing this card's *owner* brought (see `PlayerState.printings`)
   // stands in for the pool's default illustration. Keyed by the card's front
   // face, which is the name a decklist (and so the printings map) uses — a
   // turned-over permanent is still the same physical card.
-  const printing = state.players[object.owner]?.printings[def.faces?.[0] ?? printedName];
+  const printing = state.players[object.owner]?.printings[cardDef.faces?.[0] ?? printedName];
   // Whether the up face is the card's *second printed image* — a
   // transforming DFC turned over, or an MDFC's other face. An adventure has
   // the same two-entry `faces` shape but only one printed image, so it is
@@ -441,12 +458,20 @@ function visible(
     // card's name (rule 707) and the client renders that face.
     cardName: faceDown !== undefined ? printedName : object.cardName,
     copyOf: faceDown !== undefined ? null : object.copyOf,
-    faceName: faceDown !== undefined ? printedName : faceName(object),
+    faceName: faceDown !== undefined ? printedName : roomDoors !== undefined ? object.cardName : faceName(object),
     ...(nameOf(object) !== printedCardName(object) ? { name: nameOf(object) } : {}),
     faces: object.faces === undefined || faceDown !== undefined ? null : [...object.faces],
     ...(faceDown !== undefined ? {} : spellFaceOf(registry, object)),
-    art: faceDown !== undefined ? null : (printing ?? def.art),
+    art: faceDown !== undefined ? null : (printing ?? cardDef.art),
     faceIsBack: faceDown !== undefined ? false : faceIsBack,
+    ...(roomDoors !== undefined
+      ? {
+          doors: (["left", "right"] as const).map((door) => {
+            const half = registry.get(cardDef.faces?.[door === "left" ? 1 : 2] ?? object.cardName);
+            return { door, name: half.name, manaCost: half.manaCost, text: half.text, unlocked: roomDoors[door] };
+          }),
+        }
+      : {}),
     ...(faceDown !== undefined
       ? {
           faceDown: {

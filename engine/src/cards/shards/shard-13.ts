@@ -151,6 +151,7 @@ import _poolMerfolkSovereign from "../pool/merfolk-sovereign.js";
 import _poolMidnightBanshee from "../pool/midnight-banshee.js";
 import _poolMigratingKetradon from "../pool/migrating-ketradon.js";
 import _poolMindslicer from "../pool/mindslicer.js";
+import _poolMirrorRoom from "../pool/mirror-room.js";
 import _poolMishrasFactory from "../pool/mishras-factory.js";
 import _poolMithrilCoat from "../pool/mithril-coat.js";
 import _poolMonstrousCarabid from "../pool/monstrous-carabid.js";
@@ -213,6 +214,7 @@ import _poolSoporificSprings from "../pool/soporific-springs.js";
 import _poolSoulstoneSanctuary from "../pool/soulstone-sanctuary.js";
 import _poolSpawningPit from "../pool/spawning-pit.js";
 import _poolSphinxSummoner from "../pool/sphinx-summoner.js";
+import _poolSpikedCorridorTorturePit from "../pool/spiked-corridor-torture-pit.js";
 import _poolSpinalCentipede from "../pool/spinal-centipede.js";
 import _poolStampedingRhino from "../pool/stampeding-rhino.js";
 import _poolSteadfastSentry from "../pool/steadfast-sentry.js";
@@ -272,6 +274,7 @@ import _poolZephyrCharge from "../pool/zephyr-charge.js";
 import _poolZndrspltEyeOfWisdom from "../pool/zndrsplt-eye-of-wisdom.js";
 import _tokensBatToken from "../tokens/bat-token.js";
 import _tokensClueToken from "../tokens/clue-token.js";
+import _tokensDemonToken from "../tokens/demon-token.js";
 import _tokensEldraziHorrorToken from "../tokens/eldrazi-horror-token.js";
 import _tokensGolemTrampleToken from "../tokens/golem-trample-token.js";
 import _tokensHumanWarriorToken from "../tokens/human-warrior-token.js";
@@ -428,6 +431,7 @@ const shard: CardShard = {
     _poolMidnightBanshee,
     _poolMigratingKetradon,
     _poolMindslicer,
+    _poolMirrorRoom,
     _poolMishrasFactory,
     _poolMithrilCoat,
     _poolMonstrousCarabid,
@@ -490,6 +494,7 @@ const shard: CardShard = {
     _poolSoulstoneSanctuary,
     _poolSpawningPit,
     _poolSphinxSummoner,
+    _poolSpikedCorridorTorturePit,
     _poolSpinalCentipede,
     _poolStampedingRhino,
     _poolSteadfastSentry,
@@ -551,6 +556,7 @@ const shard: CardShard = {
   tokens: [
     _tokensBatToken,
     _tokensClueToken,
+    _tokensDemonToken,
     _tokensEldraziHorrorToken,
     _tokensGolemTrampleToken,
     _tokensHumanWarriorToken,

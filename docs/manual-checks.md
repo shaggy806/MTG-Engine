@@ -225,6 +225,7 @@ How to use it:
 | [Clown Car, Hoarding Ogre, Ancient Copper Dragon, Brazen Dwarf](#clown-car-hoarding-ogre-ancient-copper-dragon-brazen-dwarf) | rules call | Rolling dice |
 | [Isochron Scepter, Mnemonic Deluge, Narset, Enlightened Exile](#isochron-scepter-mnemonic-deluge-narset-enlightened-exile) | rules call | Casting copies of cards |
 | [Ninja of the Deep Hours, Yuriko, the Tiger's Shadow](#ninja-of-the-deep-hours-yuriko-the-tigers-shadow) | new decision | Ninjutsu |
+| [Bottomless Pool // Locker Room, Unholy Annex // Ritual Chamber](#bottomless-pool--locker-room-unholy-annex--ritual-chamber) | new decision | Rooms |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4296,3 +4297,23 @@ stack count once per token)
   reveals the Hill Giant, puts it into your hand and Bob loses 4 more.
 - **Known limits:** Satoru Umezawa's granted ninjutsu and "whenever you activate a ninjutsu ability"
   aren't built.
+
+## Rooms (2026-10-09)
+
+### Bottomless Pool // Locker Room, Unholy Annex // Ritual Chamber
+
+*New decision* — Rooms (rule 709.5): casting either door, and unlocking a locked door as a special action
+
+- **Setup:** Your precombat main. Your battlefield: Unholy Annex // Ritual Chamber (put there, not cast, so
+  both doors are locked), Grizzly Bears, five Islands and five Swamps. Your hand: Bottomless Pool // Locker
+  Room. Bob: Hill Giant.
+- **Do:** Look at the locked Room on the board and hover it. Open its menu and unlock Unholy Annex ({2}{B}).
+  Cast the hand's Room as Bottomless Pool, returning Bob's Hill Giant. Then unlock Locker Room ({4}{U})
+  in your next main phase, or Ritual Chamber now.
+- **Check:** The locked Room's tile reads "🔒 Unholy Annex // Ritual Chamber"; its hover card shows both
+  doors dimmed with locks. The hand card offers "Cast Bottomless Pool" and "Cast Locker Room". Its menu
+  offers "Unlock … — pay …" for each locked door, only in your main phase with the stack empty, and not
+  for an unlocked one. An unlocked door's lock opens and its text brightens; the tile names the unlocked
+  door. Bottomless Pool's "when you unlock this door" triggers as it enters; Ritual Chamber's makes a 6/6
+  flying Demon, and Unholy Annex then drains instead of costing you 2 at your end step.
+- **Known limits:** Bots unlock doors only as the evaluation sees fit (no Room-specific planning).
