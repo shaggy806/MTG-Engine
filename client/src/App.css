@@ -4389,6 +4389,16 @@
   transform-origin: center;
   perspective: 600px;
 }
+/* A shuffled library's top cards twisting over the pile (`runShuffle`):
+   fixed boxes on <body>, so a card swung past the library's zone overhangs
+   it instead of growing it. Under a peel (10002). */
+.shuffle-card {
+  position: fixed;
+  z-index: 10001;
+  pointer-events: none;
+  transform-origin: center;
+}
+.shuffle-card .card-back,
 .peel-card .card-back {
   width: 100%;
   height: 100%;

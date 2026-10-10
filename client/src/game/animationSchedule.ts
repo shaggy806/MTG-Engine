@@ -236,6 +236,9 @@ export function peelDurationMs(peels: readonly LibraryPeel[]): number {
 }
 /** A discarded card leaving the hand, in place. */
 export const DISCARD_STEP_MS = 480
+/** A library shuffled: its top cards twist out over the pile and back
+ * (`AnimationLayer`'s `runShuffle`). */
+export const SHUFFLE_STEP_MS = 1200
 /** A permanent moving to a new place on the board: a change of control, an
  * Aura or Equipment moving to a new host. */
 export const MOVE_STEP_MS = 560
@@ -441,8 +444,9 @@ type SlotKind =
   | 'capture'
   | 'move'
   | 'crown'
-  // Nothing drawn, only heard (a library shuffled, a mulligan's shuffle):
-  // costs no time.
+  | 'shuffle'
+  // Nothing drawn, only heard (a shuffle, under reduced motion): costs no
+  // time.
   | 'sound'
 
 /**
@@ -505,6 +509,7 @@ const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'discard',
   'move',
   'crown',
+  'shuffle',
 ])
 /** Kinds where a run in one frame plays together on one beat rather than one
  * after another: a wrath's deaths, a spell's worth of lands tapping. */
@@ -512,6 +517,8 @@ const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'death',
   'mill',
   'discard',
+  // Every player's library at once (Timetwister, a table of mulligans).
+  'shuffle',
   // Not `putDown`: two permanents resolving in one frame land one after the
   // other, each card onto its own tile.
   ...AFTER_ORDER.filter((k) => k !== 'putDown'),
@@ -714,8 +721,10 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
   if (ev.type === 'dice-rolled') {
     return { event: ev, kind: 'dice', duration: DICE_STEP_MS }
   }
+  // A mulligan shuffles the hand back in without a `library-shuffled`. Pure
+  // movement, so reduced motion keeps only its sound.
   if (ev.type === 'library-shuffled' || ev.type === 'mulligan-taken') {
-    return { event: ev, kind: 'sound', duration: 0 }
+    return reduced ? { event: ev, kind: 'sound', duration: 0 } : { event: ev, kind: 'shuffle', duration: SHUFFLE_STEP_MS }
   }
   if (ev.type === 'cards-revealed') {
     return { event: ev, kind: 'reveal', duration: REVEAL_STEP_MS }

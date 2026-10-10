@@ -41,6 +41,7 @@ import {
   CARD_HOLD_MS,
   REVEAL_STEP_MS,
   DICE_STEP_MS,
+  SHUFFLE_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
@@ -1921,6 +1922,95 @@ function peelCards(
   }
 }
 
+/** At most how many cards a shuffle twists out over its pile. */
+const SHUFFLE_CARDS = 7
+/** How far apart the shuffle's bottom and top cards turn, and slide (in
+ * card widths), at full swing. */
+const SHUFFLE_TWIST_DEG = 64
+const SHUFFLE_SPREAD = 0.5
+
+/**
+ * A library shuffled (`library-shuffled`, or a mulligan's, which announces
+ * none): cardback copies stacked on the pile fan out in a twist one way, sweep
+ * through each other to the other side and settle square again, the way a
+ * deck spins in a tabletop shuffle. Each card starts a moment after the one
+ * under it, so the deck twists rather than swinging as one. Fixed boxes on
+ * `<body>` like the mill's peels, so a card swung past the library's zone
+ * overhangs it rather than growing it. The pile's own card stays underneath
+ * as the deck's bottom, and its number rides on the top copy. Nothing for a
+ * pile out of view or of fewer than two cards; never under reduced motion,
+ * whose shuffle is only heard (`animationSchedule`'s `sound` slot).
+ */
+function runShuffle(player: PlayerId): void {
+  if (motionPrefs().reduced) return
+  const top = libraryCardOf(player)
+  if (top === null) return
+  const r = top.getBoundingClientRect()
+  if (r.width === 0) return
+  const who = CSS.escape(player)
+  const pileCount = top.querySelector<HTMLElement>('.card-back-count')
+  const countText =
+    document.querySelector<HTMLElement>(`[data-library-count-of="${who}"]`)?.textContent ?? pileCount?.textContent
+  const count = Number(/\d+/.exec(countText ?? '')?.[0] ?? NaN)
+  const n = Number.isFinite(count) ? Math.min(SHUFFLE_CARDS, count) : SHUFFLE_CARDS
+  if (n < 2) return
+
+  const height = Math.min(r.height, r.width * 1.4)
+  const seat = getComputedStyle(top).getPropertyValue('--seat').trim()
+  const total = scaled(SHUFFLE_STEP_MS)
+  const stagger = total * 0.025
+  const duration = total - stagger * (n - 1)
+  // How far the outermost cards reach past the pile's sides at full swing:
+  // their swing, and the corners a turned card sticks out by.
+  const swing = SHUFFLE_TWIST_DEG / 2
+  const radians = (swing * Math.PI) / 180
+  const reach = (r.width * SHUFFLE_SPREAD) / 2 + (r.width * Math.cos(radians) + height * Math.sin(radians) - r.width) / 2
+  // A pile at the screen's edge swings in from it, rather than off the page.
+  const margin = 8
+  let shift = 0
+  if (r.right + reach > window.innerWidth - margin) shift = window.innerWidth - margin - (r.right + reach)
+  else if (r.left - reach < margin) shift = margin - (r.left - reach)
+  for (let i = 0; i < n; i += 1) {
+    const card = document.createElement('div')
+    card.className = 'shuffle-card'
+    if (seat !== '') {
+      card.classList.add('seat-tinted')
+      card.style.setProperty('--seat', seat)
+    }
+    card.style.left = `${r.left}px`
+    card.style.top = `${r.top}px`
+    card.style.width = `${r.width}px`
+    card.style.height = `${height}px`
+    const back = card.appendChild(document.createElement('div'))
+    back.className = 'card-back'
+    if (i === n - 1 && pileCount !== null) {
+      const number = back.appendChild(document.createElement('span'))
+      number.className = 'card-back-count'
+      number.textContent = pileCount.textContent
+    }
+    document.body.appendChild(card)
+    // From the bottom card (-0.5) to the top (+0.5): the further from the
+    // middle, the further it swings, so the two ends cross.
+    const f = i / (n - 1) - 0.5
+    const angle = f * SHUFFLE_TWIST_DEG
+    const dx = f * r.width * SHUFFLE_SPREAD
+    const rise = -i * 1.5
+    const lift = rise - height * 0.04
+    const a = card.animate(
+      [
+        { transform: `translate(0px, ${rise}px) rotate(0deg) scale(1)` },
+        { transform: `translate(${shift + dx}px, ${lift}px) rotate(${angle}deg) scale(1.04)`, offset: 0.28 },
+        { transform: `translate(${shift - dx}px, ${lift}px) rotate(${-angle}deg) scale(1.04)`, offset: 0.62 },
+        { transform: `translate(${shift * 0.15 + dx * 0.15}px, ${rise}px) rotate(${angle * 0.15}deg) scale(1)`, offset: 0.86 },
+        { transform: `translate(0px, ${rise}px) rotate(0deg) scale(1)` },
+      ],
+      { duration, delay: i * stagger, easing: 'ease-in-out', fill: 'both' },
+    )
+    a.onfinish = () => card.remove()
+    a.oncancel = () => card.remove()
+  }
+}
+
 /** A cardback peeling off a pile, for a card nobody saw — see
  * {@link peelCards}. */
 function animateBack(card: HTMLElement, exile: boolean, reduced: boolean, duration: number, delay: number): void {
@@ -2288,6 +2378,8 @@ export function AnimationLayer({
         else runDeath(ev.object, ev.toZone)
       } else if (ev.type === 'cards-discarded') {
         runDiscard(ev, seatRef.current)
+      } else if (ev.type === 'library-shuffled' || ev.type === 'mulligan-taken') {
+        runShuffle(ev.player)
       } else if (ev.type === 'dice-rolled') {
         throwDice({
           seq: ev.seq,

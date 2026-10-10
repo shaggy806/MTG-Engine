@@ -16,6 +16,7 @@ import {
   FLIGHT_MAX_MS,
   FLIGHT_MIN_MS,
   HAND_DRAW_STEP_MS,
+  SHUFFLE_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
@@ -375,15 +376,33 @@ describe('scheduleEvents', () => {
     expect(s.afterMs).toBe(0)
   })
 
-  it('gives a shuffle a slot to be heard in, costing nothing and splitting no beat', () => {
-    const s = scheduleEvents([dies(), ev({ type: 'library-shuffled', player: 'p1' }), dies()], 'precombat-main')
+  it('twists a shuffled library over the old board, every shuffle in a run on one beat', () => {
+    const shuffled = (player: string) => ev({ type: 'library-shuffled', player })
+    const s = scheduleEvents(
+      [dies(), shuffled('p1'), ev({ type: 'mulligan-taken', player: 'p2', count: 1 }), dies()],
+      'precombat-main',
+    )
+    expect(s.items.map((i) => [i.event.type, i.offset])).toEqual([
+      ['permanent-left-battlefield', 0],
+      ['library-shuffled', DEATH_STEP_MS],
+      ['mulligan-taken', DEATH_STEP_MS],
+      ['permanent-left-battlefield', DEATH_STEP_MS + SHUFFLE_STEP_MS],
+    ])
+    expect(s.totalMs).toBe(DEATH_STEP_MS * 2 + SHUFFLE_STEP_MS)
+    expect(s.after).toEqual([])
+  })
+
+  it('keeps only a shuffle to be heard under reduced motion, costing nothing and splitting no beat', () => {
+    const s = scheduleEvents([dies(), ev({ type: 'library-shuffled', player: 'p1' }), dies()], 'precombat-main', {
+      scale: 1,
+      reduced: true,
+    })
     expect(s.items.map((i) => [i.event.type, i.offset])).toEqual([
       ['permanent-left-battlefield', 0],
       ['library-shuffled', DEATH_STEP_MS],
       ['permanent-left-battlefield', 0],
     ])
     expect(s.totalMs).toBe(DEATH_STEP_MS)
-    expect(s.after).toEqual([])
   })
 })
 
