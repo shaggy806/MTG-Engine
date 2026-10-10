@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3408 already implemented / 1592 missing (marks refreshed 2026-10-09)
+3427 already implemented / 1573 missing (marks refreshed 2026-10-09)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1899,7 +1899,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1906  Aven Interrupter                         {1}{W}{W}        Creature — Bird Rogue
 [x]  1907  Harvester of Souls                       {4}{B}{B}        Creature — Demon
 [ ]  1908  Abundance                                {2}{G}{G}        Enchantment
-[ ]  1909  Smuggler's Copter                        {2}              Artifact — Vehicle
+[x]  1909  Smuggler's Copter                        {2}              Artifact — Vehicle
 [x]  1910  Leaf-Crowned Visionary                   {G}{G}           Creature — Elf Druid
 [x]  1911  Tree of Perdition                        {3}{B}           Creature — Plant
 [ ]  1912  Sunbird's Invocation                     {5}{R}           Enchantment
@@ -2473,13 +2473,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2480  Manor Gate                               {0}              Land — Gate
 [x]  2481  Inga and Esika                           {2}{G}{U}        Legendary Creature — Human God
 [ ]  2482  Aminatou's Augury                        {6}{U}{U}        Sorcery
-[ ]  2483  Weatherlight                             {4}              Legendary Artifact — Vehicle
+[x]  2483  Weatherlight                             {4}              Legendary Artifact — Vehicle
 [x]  2484  Infectious Inquiry                       {2}{B}           Sorcery
 [x]  2485  Fear of Missing Out                      {1}{R}           Enchantment Creature — Nightmare
 [x]  2486  Valley Rotcaller                         {1}{B}           Creature — Squirrel Warlock
 [ ]  2487  Expropriate                              {7}{U}{U}        Sorcery
 [x]  2488  Captivating Vampire                      {1}{B}{B}        Creature — Vampire
-[ ]  2489  The Regalia                              {4}              Legendary Artifact — Vehicle
+[x]  2489  The Regalia                              {4}              Legendary Artifact — Vehicle
 [x]  2490  Agna Qel'a                               {0}              Land
 [x]  2491  Nulldrifter                              {7}              Creature — Eldrazi Elemental
 [x]  2492  Hordeling Outburst                       {1}{R}{R}        Sorcery
@@ -2702,7 +2702,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2709  Thrakkus the Butcher                     {3}{R}{G}        Legendary Creature — Dragon Peasant
 [x]  2710  Bloodsoaked Insight // Sanguine Morass   {7}              Sorcery // Land
 [x]  2711  Harmonized Crescendo                     {4}{U}{U}        Instant
-[ ]  2712  Skysovereign, Consul Flagship            {5}              Legendary Artifact — Vehicle
+[x]  2712  Skysovereign, Consul Flagship            {5}              Legendary Artifact — Vehicle
 [ ]  2713  Fire Covenant                            {1}{B}{R}        Instant
 [x]  2714  Vega, the Watcher                        {1}{W}{U}        Legendary Creature — Bird Spirit
 [x]  2715  Blade Historian                          {R/W}{R/W}{R/W}{R/W} Creature — Human Cleric
@@ -2938,7 +2938,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2945  Umezawa's Jitte                          {2}              Legendary Artifact — Equipment
 [ ]  2946  Maze's End                               {0}              Land
 [ ]  2947  Benevolent Hydra                         {X}{G}{G}        Creature — Hydra
-[ ]  2948  Cultivator's Caravan                     {3}              Artifact — Vehicle
+[x]  2948  Cultivator's Caravan                     {3}              Artifact — Vehicle
 [x]  2949  Oakhollow Village                        {0}              Land
 [ ]  2950  Nazgûl                                   {2}{B}           Creature — Wraith Knight
 [x]  2951  Shoreline Looter                         {1}{U}           Creature — Rat Rogue
@@ -3016,7 +3016,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3023  Abdel Adrian, Gorion's Ward              {4}{W}           Legendary Creature — Human Warrior
 [x]  3024  Lifeblood Hydra                          {X}{G}{G}{G}     Creature — Hydra
 [ ]  3025  Brimaz, King of Oreskos                  {1}{W}{W}        Legendary Creature — Cat Soldier
-[ ]  3026  Esika's Chariot                          {3}{G}           Legendary Artifact — Vehicle
+[x]  3026  Esika's Chariot                          {3}{G}           Legendary Artifact — Vehicle
 [x]  3027  Ultima, Origin of Oblivion               {5}              Legendary Creature — God
 [x]  3028  Dazzling Angel                           {2}{W}           Creature — Angel
 [x]  3029  Magic Damper                             {U}              Instant
@@ -3216,7 +3216,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3223  Éowyn, Fearless Knight                   {2}{R}{W}        Legendary Creature — Human Knight
 [ ]  3224  Strong Back                              {2}{G}           Enchantment — Aura
 [ ]  3225  Emeritus of Woe // Demonic Tutor         {3}{B} // {1}{B} Creature — Vampire Warlock // Sorcery
-[ ]  3226  Parhelion II                             {6}{W}{W}        Legendary Artifact — Vehicle
+[x]  3226  Parhelion II                             {6}{W}{W}        Legendary Artifact — Vehicle
 [ ]  3227  Ingenious Prodigy                        {X}{U}           Creature — Human Wizard
 [x]  3228  Marang River Regent // Coil and Catch    {4}{U}{U} // {3}{U} Creature — Dragon // Instant — Omen
 [x]  3229  Tangled Florahedron // Tangled Vale      {2}              Creature — Elemental // Land
@@ -3324,7 +3324,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3331  Ichor Rats                               {1}{B}{B}        Creature — Phyrexian Rat
 [ ]  3332  Mendicant Core, Guidelight               {W}{U}           Legendary Artifact Creature — Robot
 [x]  3333  Make a Stand                             {2}{W}           Instant
-[ ]  3334  Mech Hangar                              {0}              Land
+[x]  3334  Mech Hangar                              {0}              Land
 [ ]  3335  Fain, the Broker                         {2}{B}           Legendary Creature — Human Warlock
 [ ]  3336  Germination Practicum                    {3}{G}{G}        Sorcery — Lesson
 [x]  3337  Rapacious Guest                          {2}{B}           Creature — Halfling Citizen
@@ -3637,7 +3637,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3644  Sakura-Tribe Scout                       {G}              Creature — Snake Shaman Scout
 [x]  3645  Prowling Serpopard                       {1}{G}{G}        Creature — Cat Snake
 [x]  3646  Crossway Troublemakers                   {5}{B}           Creature — Vampire
-[ ]  3647  Thunderhawk Gunship                      {6}              Artifact — Vehicle
+[x]  3647  Thunderhawk Gunship                      {6}              Artifact — Vehicle
 [x]  3648  Angelic Gift                             {1}{W}           Enchantment — Aura
 [x]  3649  Tormod, the Desecrator                   {3}{B}           Legendary Creature — Zombie Wizard
 [x]  3650  Stocking the Pantry                      {G}              Enchantment
@@ -3768,7 +3768,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3775  Searslicer Goblin                        {1}{R}           Creature — Goblin Warrior
 [x]  3776  Putrid Goblin                            {1}{B}           Creature — Zombie Goblin
 [ ]  3777  Blacksmith's Talent                      {R}              Enchantment — Class
-[ ]  3778  Salvation Engine                         {4}{W}           Artifact — Vehicle
+[x]  3778  Salvation Engine                         {4}{W}           Artifact — Vehicle
 [ ]  3779  Gravebreaker Lamia                       {4}{B}           Enchantment Creature — Snake Lamia
 [ ]  3780  Chainsaw                                 {1}{R}           Artifact — Equipment
 [ ]  3781  Angel of Serenity                        {4}{W}{W}{W}     Creature — Angel
@@ -4146,7 +4146,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4153  Azami, Lady of Scrolls                   {2}{U}{U}{U}     Legendary Creature — Human Wizard
 [ ]  4154  Norn's Decree                            {2}{W}           Enchantment
 [ ]  4155  Search for Glory                         {2}{W}           Snow Sorcery
-[ ]  4156  Lumbering Worldwagon                     {2}{G}           Artifact — Vehicle
+[x]  4156  Lumbering Worldwagon                     {2}{G}           Artifact — Vehicle
 [ ]  4157  Elesh Norn // The Argent Etchings        {4}              Legendary Creature — Phyrexian Praetor // Enchantment — Saga
 [ ]  4158  Benthic Anomaly                          {6}{U}           Creature — Eldrazi Serpent
 [x]  4159  The Legend of Roku // Avatar Roku        {4}              Enchantment — Saga // Legendary Creature — Avatar
@@ -4207,7 +4207,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4214  Murmuration                              {4}{W}           Enchantment
 [ ]  4215  March of the World Ooze                  {3}{G}{G}{G}     Enchantment
 [ ]  4216  Chandra, Hope's Beacon                   {4}{R}{R}        Legendary Planeswalker — Chandra
-[ ]  4217  Thopter Fabricator                       {2}{U}           Artifact — Vehicle
+[x]  4217  Thopter Fabricator                       {2}{U}           Artifact — Vehicle
 [ ]  4218  Cori-Steel Cutter                        {1}{R}           Artifact — Equipment
 [ ]  4219  Snapback                                 {1}{U}           Instant
 [ ]  4220  Shadow of the Goblin                     {1}{R}           Enchantment
@@ -4224,7 +4224,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4231  Locke, Treasure Hunter                   {1}{B}{R}        Legendary Creature — Human Rogue
 [ ]  4232  Zhur-Taa Druid                           {R}{G}           Creature — Human Druid
 [x]  4233  Count on Luck                            {R}{R}{R}        Enchantment
-[ ]  4234  Rolling Hamsphere                        {7}              Artifact — Vehicle
+[x]  4234  Rolling Hamsphere                        {7}              Artifact — Vehicle
 [ ]  4235  Unwanted Remake                          {W}              Instant
 [x]  4236  The First Sliver                         {W}{U}{B}{R}{G}  Legendary Creature — Sliver
 [x]  4237  Gothmog, Morgul Lieutenant               {3}{B}           Legendary Creature — Human Soldier
@@ -4471,7 +4471,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4478  Purphoros, Bronze-Blooded                {4}{R}           Legendary Enchantment Creature — God
 [x]  4479  Angelic Field Marshal                    {2}{W}{W}        Creature — Angel
 [ ]  4480  Luck Bobblehead                          {3}              Artifact — Bobblehead
-[ ]  4481  Cryptcaller Chariot                      {3}{B}           Artifact — Vehicle
+[x]  4481  Cryptcaller Chariot                      {3}{B}           Artifact — Vehicle
 [ ]  4482  Lost Jitte                               {1}              Legendary Artifact — Equipment
 [ ]  4483  Deeproot Pilgrimage                      {1}{U}           Enchantment
 [ ]  4484  Katilda, Dawnhart Prime                  {G}{W}           Legendary Creature — Human Warlock
@@ -4581,7 +4581,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4588  Impassioned Orator                       {1}{W}           Creature — Human Cleric
 [ ]  4589  Seasoned Dungeoneer                      {3}{W}           Creature — Human Warrior
 [x]  4590  Strixhaven Stadium                       {3}              Artifact
-[ ]  4591  RMS Titanic                              {3}{R}           Legendary Artifact — Vehicle
+[x]  4591  RMS Titanic                              {3}{R}           Legendary Artifact — Vehicle
 [x]  4592  Electrickery                             {R}              Instant
 [ ]  4593  Thran Portal                             {0}              Land — Gate
 [ ]  4594  Katara, Water Tribe's Hope               {2}{W}{U}{U}     Legendary Creature — Human Warrior Ally
@@ -4692,11 +4692,11 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4699  Freya Crescent                           {R}              Legendary Creature — Rat Knight
 [x]  4700  Restless Bivouac                         {0}              Land
 [x]  4701  Galvanic Blast                           {R}              Instant
-[ ]  4702  Peacewalker Colossus                     {3}              Artifact — Vehicle
+[x]  4702  Peacewalker Colossus                     {3}              Artifact — Vehicle
 [x]  4703  Mulch                                    {1}{G}           Sorcery
 [ ]  4704  Haunted One                              {2}{B}           Legendary Enchantment — Background
 [ ]  4705  Trenzalore Clocktower                    {0}              Legendary Land
-[ ]  4706  Surgehacker Mech                         {4}              Artifact — Vehicle
+[x]  4706  Surgehacker Mech                         {4}              Artifact — Vehicle
 [ ]  4707  Marshal's Anthem                         {2}{W}{W}        Enchantment
 [ ]  4708  Guardian Scalelord                       {4}{W}           Creature — Dragon
 [x]  4709  Felisa, Fang of Silverquill              {2}{W}{B}        Legendary Creature — Vampire Wizard
@@ -4820,7 +4820,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4827  Zenos yae Galvus // Shinryu, Transcendent Rival {5}              Legendary Creature — Human Noble Warrior // Legendary Creature — Dragon
 [x]  4828  Atzocan Seer                             {1}{G}{W}        Creature — Human Druid
 [x]  4829  Neriv, Heart of the Storm                {1}{R}{W}{B}     Legendary Creature — Spirit Dragon
-[ ]  4830  Brotherhood Vertibird                    {3}              Artifact — Vehicle
+[x]  4830  Brotherhood Vertibird                    {3}              Artifact — Vehicle
 [ ]  4831  Flamerush Rider                          {4}{R}           Creature — Human Warrior
 [x]  4832  Brainstone                               {1}              Artifact
 [x]  4833  Short Bow                                {2}              Artifact — Equipment
@@ -4845,7 +4845,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4852  Goblin Lackey                            {R}              Creature — Goblin
 [x]  4853  Open the Gates                           {G}              Sorcery
 [ ]  4854  Reflector Mage                           {1}{W}{U}        Creature — Human Wizard
-[ ]  4855  Astor, Bearer of Blades                  {2}{R}{W}        Legendary Creature — Human Warrior
+[x]  4855  Astor, Bearer of Blades                  {2}{R}{W}        Legendary Creature — Human Warrior
 [x]  4856  Nelly Borca, Impulsive Accuser           {2}{R}{W}        Legendary Creature — Human Detective
 [ ]  4857  Aang, Airbending Master                  {4}{W}           Legendary Creature — Human Avatar Ally
 [x]  4858  Doomskar                                 {3}{W}{W}        Sorcery

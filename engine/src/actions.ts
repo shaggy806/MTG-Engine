@@ -141,6 +141,39 @@ export interface TapCostOffer {
   readonly count: number;
   readonly choices: readonly ObjectId[];
   readonly copies?: Readonly<Record<ObjectId, number>>;
+  /** Crew (rule 702.122a): instead of exactly `count` (then 0), **any
+   * number** of `choices` whose powers add up to at least this. `power` is
+   * each choice's power now (one token's, for a stack). */
+  readonly totalPower?: number;
+  readonly power?: Readonly<Record<ObjectId, number>>;
+}
+
+/** The power a set of tap picks adds up to under a crew offer (each id once
+ * per token it names). */
+export function tapPicksPower(offer: TapCostOffer, picks: readonly ObjectId[]): number {
+  return picks.reduce((sum, id) => sum + (offer.power?.[id] ?? 0), 0);
+}
+
+/**
+ * The picks a driver that doesn't choose gets — the engine's own answer,
+ * and what a bot assumes it will be: `preferFirst` (the summoning-sick ones,
+ * which couldn't attack anyway) before the rest, in offer order; then, for a
+ * crew offer, only until the power is enough. Short of `count` (or of the
+ * power) when the offer can't be met.
+ */
+export function defaultTapPicks(offer: TapCostOffer, preferFirst: (id: ObjectId) => boolean): ObjectId[] {
+  const order = [...offer.choices.filter(preferFirst), ...offer.choices.filter((id) => !preferFirst(id))];
+  const picked: ObjectId[] = [];
+  const enough = (): boolean =>
+    offer.totalPower !== undefined ? tapPicksPower(offer, picked) >= offer.totalPower : picked.length >= offer.count;
+  for (const id of order) {
+    for (let i = 0; i < (offer.copies?.[id] ?? 1) && !enough(); i += 1) {
+      // Under crew, a creature with no power to give isn't worth tapping.
+      if (offer.totalPower !== undefined && (offer.power?.[id] ?? 0) <= 0) break;
+      picked.push(id);
+    }
+  }
+  return picked;
 }
 
 export type Action =

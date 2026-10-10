@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-393 already implemented / 107 missing
+394 already implemented / 106 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -462,7 +462,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  456  Karametra, God of Harvests                      6674 decks  {3}{G}{W}        Legendary Enchantment Creature — God
 [x]  457  Delney, Streetwise Lookout                      6658 decks  {2}{W}           Legendary Creature — Human Scout
 [x]  458  Yusri, Fortune's Flame                          6649 decks  {1}{U}{R}        Legendary Creature — Efreet
-[ ]  459  Greasefang, Okiba Boss                          6625 decks  {1}{W}{B}        Legendary Creature — Rat Pilot
+[x]  459  Greasefang, Okiba Boss                          6625 decks  {1}{W}{B}        Legendary Creature — Rat Pilot
 [x]  460  Maha, Its Feathers Night                        6622 decks  {3}{B}{B}        Legendary Creature — Elemental Bird
 [ ]  461  Jaws, Relentless Predator                       6620 decks  {3}{R}{R}        Legendary Creature — Shark
 [x]  462  Dr. Madison Li                                  6610 decks  {U}{R}{W}        Legendary Creature — Human Scientist

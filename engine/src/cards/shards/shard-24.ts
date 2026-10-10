@@ -212,6 +212,7 @@ import _poolStormshriekFeral from "../pool/stormshriek-feral.js";
 import _poolSulfuricVortex from "../pool/sulfuric-vortex.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
 import _poolSunblastAngel from "../pool/sunblast-angel.js";
+import _poolSurgehackerMech from "../pool/surgehacker-mech.js";
 import _poolSwordOfTheRealms from "../pool/sword-of-the-realms.js";
 import _poolSwordOfWealthAndPower from "../pool/sword-of-wealth-and-power.js";
 import _poolTaintedStrike from "../pool/tainted-strike.js";
@@ -483,6 +484,7 @@ const shard: CardShard = {
     _poolSulfuricVortex,
     _poolSunbladeAngel,
     _poolSunblastAngel,
+    _poolSurgehackerMech,
     _poolSwordOfTheRealms,
     _poolSwordOfWealthAndPower,
     _poolTaintedStrike,

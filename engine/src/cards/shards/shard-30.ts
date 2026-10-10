@@ -209,6 +209,7 @@ import _poolShrineOfTheForsakenGods from "../pool/shrine-of-the-forsaken-gods.js
 import _poolShuSoldierFarmers from "../pool/shu-soldier-farmers.js";
 import _poolSkitteringCicada from "../pool/skittering-cicada.js";
 import _poolSkyshroudElf from "../pool/skyshroud-elf.js";
+import _poolSkysovereignConsulFlagship from "../pool/skysovereign-consul-flagship.js";
 import _poolSmaugTheMagnificent from "../pool/smaug-the-magnificent.js";
 import _poolSmugglersSurprise from "../pool/smugglers-surprise.js";
 import _poolSneeringShadewriter from "../pool/sneering-shadewriter.js";
@@ -483,6 +484,7 @@ const shard: CardShard = {
     _poolShuSoldierFarmers,
     _poolSkitteringCicada,
     _poolSkyshroudElf,
+    _poolSkysovereignConsulFlagship,
     _poolSmaugTheMagnificent,
     _poolSmugglersSurprise,
     _poolSneeringShadewriter,

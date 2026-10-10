@@ -269,6 +269,7 @@ import _tokensCentaurToken from "../tokens/centaur-token.js";
 import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
 import _tokensDragonIllusionToken from "../tokens/dragon-illusion-token.js";
 import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
+import _tokensHamsterToken from "../tokens/hamster-token.js";
 import _tokensPhyrexianGolemToken from "../tokens/phyrexian-golem-token.js";
 import _tokensSoldierTokenFinaleOfGlory from "../tokens/soldier-token-finale-of-glory.js";
 import _tokensVampireToken from "../tokens/vampire-token.js";
@@ -545,6 +546,7 @@ const shard: CardShard = {
     _tokensChocoboBirdToken,
     _tokensDragonIllusionToken,
     _tokensElementalToken55,
+    _tokensHamsterToken,
     _tokensPhyrexianGolemToken,
     _tokensSoldierTokenFinaleOfGlory,
     _tokensVampireToken,

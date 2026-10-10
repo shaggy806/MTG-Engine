@@ -259,6 +259,12 @@ export interface AbilityCost {
    */
   readonly tapOthers?: {
     readonly count: number;
+    /** Crew's form instead of a count (rule 702.122a): "tap **any number**
+     * of other untapped creatures you control with **total power N or
+     * greater**". `count` is then 0 and ignored; the tapped creatures'
+     * powers as the cost is paid must add up to at least this. The `crew(n)`
+     * helper writes it. */
+    readonly totalPower?: number;
     readonly filter: CardFilter;
     /** Whether the ability's own source may be one of the permanents tapped.
      * True for Gravespawn Sovereign, which is itself a Zombie and has no

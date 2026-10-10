@@ -148,6 +148,7 @@ import _poolOminousSeas from "../pool/ominous-seas.js";
 import _poolOnyxMage from "../pool/onyx-mage.js";
 import _poolOrcishMedicine from "../pool/orcish-medicine.js";
 import _poolOtharriSunsGlory from "../pool/otharri-suns-glory.js";
+import _poolParhelionIi from "../pool/parhelion-ii.js";
 import _poolPathOfAnnihilation from "../pool/path-of-annihilation.js";
 import _poolPetAvengers from "../pool/pet-avengers.js";
 import _poolPhalanxVanguard from "../pool/phalanx-vanguard.js";
@@ -244,6 +245,7 @@ import _poolVoloGuideToMonsters from "../pool/volo-guide-to-monsters.js";
 import _poolWallOfIce from "../pool/wall-of-ice.js";
 import _poolWaterServant from "../pool/water-servant.js";
 import _poolWeaponizeTheMonsters from "../pool/weaponize-the-monsters.js";
+import _poolWeatherlight from "../pool/weatherlight.js";
 import _poolWeightOfTheUnderworld from "../pool/weight-of-the-underworld.js";
 import _poolWharfInfiltrator from "../pool/wharf-infiltrator.js";
 import _poolWildRide from "../pool/wild-ride.js";
@@ -408,6 +410,7 @@ const shard: CardShard = {
     _poolOnyxMage,
     _poolOrcishMedicine,
     _poolOtharriSunsGlory,
+    _poolParhelionIi,
     _poolPathOfAnnihilation,
     _poolPetAvengers,
     _poolPhalanxVanguard,
@@ -504,6 +507,7 @@ const shard: CardShard = {
     _poolWallOfIce,
     _poolWaterServant,
     _poolWeaponizeTheMonsters,
+    _poolWeatherlight,
     _poolWeightOfTheUnderworld,
     _poolWharfInfiltrator,
     _poolWildRide,

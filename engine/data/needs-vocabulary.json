@@ -4848,6 +4848,22 @@
   "replacement:shuffle-into-library-instead": {
    "family": "effect:shuffle-into-library",
    "example": "Blightsteel Colossus: 'If it would be put into a graveyard from anywhere, reveal it and shuffle it into its owner's library instead.'"
+  },
+  "static:crews-as-though-power": {
+   "family": "keyword:crew",
+   "example": "Shorikai's Pilot token: 'This token crews Vehicles as though its power were 2 greater.'"
+  },
+  "condition:crewed-by-this-turn": {
+   "family": "keyword:crew",
+   "example": "Golden Argosy: 'exile each creature that crewed it this turn' (rule 702.122c)."
+  },
+  "amount:count-for-trigger-player": {
+   "family": "effect:amount-new-variants",
+   "example": "Hoard Hauler: 'create a Treasure token for each artifact they control' — countOf reads from a target slot's player, not the trigger's."
+  },
+  "effect:put-arrived-all-tapped": {
+   "family": "effect:put-onto-battlefield-options",
+   "example": "Hedge Shredder: 'Whenever one or more land cards are put into your graveyard from your library, put them onto the battlefield tapped.'"
   }
  }
 }

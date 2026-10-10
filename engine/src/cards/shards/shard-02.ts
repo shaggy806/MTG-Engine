@@ -29,6 +29,7 @@ import _poolBogWraith from "../pool/bog-wraith.js";
 import _poolBoonOfTheWishGiver from "../pool/boon-of-the-wish-giver.js";
 import _poolBoundlessRealms from "../pool/boundless-realms.js";
 import _poolBranchingEvolution from "../pool/branching-evolution.js";
+import _poolBrotherhoodVertibird from "../pool/brotherhood-vertibird.js";
 import _poolBruceBanner from "../pool/bruce-banner.js";
 import _poolBulkUp from "../pool/bulk-up.js";
 import _poolCabalCoffers from "../pool/cabal-coffers.js";
@@ -135,6 +136,7 @@ import _poolLilianasCaress from "../pool/lilianas-caress.js";
 import _poolLorienRevealed from "../pool/lorien-revealed.js";
 import _poolLostInALabyrinth from "../pool/lost-in-a-labyrinth.js";
 import _poolLostInTheMist from "../pool/lost-in-the-mist.js";
+import _poolLumberingWorldwagon from "../pool/lumbering-worldwagon.js";
 import _poolMadrushCyclops from "../pool/madrush-cyclops.js";
 import _poolMaestrosInitiate from "../pool/maestros-initiate.js";
 import _poolMayhemDevil from "../pool/mayhem-devil.js";
@@ -186,6 +188,7 @@ import _poolRootwaterCommando from "../pool/rootwater-commando.js";
 import _poolRumorGatherer from "../pool/rumor-gatherer.js";
 import _poolRuthlessTechnomancer from "../pool/ruthless-technomancer.js";
 import _poolSagesRowSavant from "../pool/sages-row-savant.js";
+import _poolSalvationEngine from "../pool/salvation-engine.js";
 import _poolSandstoneWarrior from "../pool/sandstone-warrior.js";
 import _poolSapphireMedallion from "../pool/sapphire-medallion.js";
 import _poolScavengedWeaponry from "../pool/scavenged-weaponry.js";
@@ -290,6 +293,7 @@ const shard: CardShard = {
     _poolBoonOfTheWishGiver,
     _poolBoundlessRealms,
     _poolBranchingEvolution,
+    _poolBrotherhoodVertibird,
     _poolBruceBanner,
     _poolBulkUp,
     _poolCabalCoffers,
@@ -396,6 +400,7 @@ const shard: CardShard = {
     _poolLorienRevealed,
     _poolLostInALabyrinth,
     _poolLostInTheMist,
+    _poolLumberingWorldwagon,
     _poolMadrushCyclops,
     _poolMaestrosInitiate,
     _poolMayhemDevil,
@@ -447,6 +452,7 @@ const shard: CardShard = {
     _poolRumorGatherer,
     _poolRuthlessTechnomancer,
     _poolSagesRowSavant,
+    _poolSalvationEngine,
     _poolSandstoneWarrior,
     _poolSapphireMedallion,
     _poolScavengedWeaponry,

@@ -173,6 +173,7 @@ import _poolOrochiLeafcaller from "../pool/orochi-leafcaller.js";
 import _poolOssification from "../pool/ossification.js";
 import _poolOvergrownArmasaur from "../pool/overgrown-armasaur.js";
 import _poolOverwhelmingInstinct from "../pool/overwhelming-instinct.js";
+import _poolPeacewalkerColossus from "../pool/peacewalker-colossus.js";
 import _poolPhyrexianTower from "../pool/phyrexian-tower.js";
 import _poolPiaNalaarConsulOfRevival from "../pool/pia-nalaar-consul-of-revival.js";
 import _poolPincherBeetles from "../pool/pincher-beetles.js";
@@ -451,6 +452,7 @@ const shard: CardShard = {
     _poolOssification,
     _poolOvergrownArmasaur,
     _poolOverwhelmingInstinct,
+    _poolPeacewalkerColossus,
     _poolPhyrexianTower,
     _poolPiaNalaarConsulOfRevival,
     _poolPincherBeetles,

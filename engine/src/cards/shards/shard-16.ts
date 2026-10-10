@@ -248,6 +248,7 @@ import _poolTheLocustGod from "../pool/the-locust-god.js";
 import _poolTheirNameIsDeath from "../pool/their-name-is-death.js";
 import _poolThrabenPurebloods from "../pool/thraben-purebloods.js";
 import _poolThraxodemon from "../pool/thraxodemon.js";
+import _poolThunderhawkGunship from "../pool/thunderhawk-gunship.js";
 import _poolThunderingTanadon from "../pool/thundering-tanadon.js";
 import _poolTimidShieldbearer from "../pool/timid-shieldbearer.js";
 import _poolToadstoolAdmirer from "../pool/toadstool-admirer.js";
@@ -551,6 +552,7 @@ const shard: CardShard = {
     _poolTheirNameIsDeath,
     _poolThrabenPurebloods,
     _poolThraxodemon,
+    _poolThunderhawkGunship,
     _poolThunderingTanadon,
     _poolTimidShieldbearer,
     _poolToadstoolAdmirer,

@@ -14,6 +14,7 @@ import _poolAmbushGigapede from "../pool/ambush-gigapede.js";
 import _poolAntagonize from "../pool/antagonize.js";
 import _poolArchonOfFallingStars from "../pool/archon-of-falling-stars.js";
 import _poolAssassinInitiate from "../pool/assassin-initiate.js";
+import _poolAstorBearerOfBlades from "../pool/astor-bearer-of-blades.js";
 import _poolAuriokChampion from "../pool/auriok-champion.js";
 import _poolAustereCommand from "../pool/austere-command.js";
 import _poolBakeryRaid from "../pool/bakery-raid.js";
@@ -310,6 +311,7 @@ const shard: CardShard = {
     _poolAntagonize,
     _poolArchonOfFallingStars,
     _poolAssassinInitiate,
+    _poolAstorBearerOfBlades,
     _poolAuriokChampion,
     _poolAustereCommand,
     _poolBakeryRaid,

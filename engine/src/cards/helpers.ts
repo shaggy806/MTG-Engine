@@ -219,6 +219,29 @@ export const afflict = (n: number): TriggeredAbility => ({
 });
 
 /**
+ * Crew N (rule 702.122a): "Tap any number of other untapped creatures you
+ * control with total power N or greater: This permanent becomes an artifact
+ * creature until end of turn." The creatures are chosen as the cost is paid
+ * (`tapOthers.totalPower` — any of them, summoning sick or not, never the
+ * Vehicle itself), and their powers are read then. Not sorcery speed. A
+ * Vehicle that becomes a creature has its printed power and toughness (rule
+ * 301.7b); crewing one that already is a creature changes nothing (the
+ * rulings). Grant it with `grantsActivated` (Kotori, Pilot Prodigy's
+ * "Vehicles you control have crew 2"). `text` defaults to the bare keyword.
+ */
+export const crew = (n: number, text = `Crew ${n}`): ActivatedAbility => ({
+  cost: { mana: null, tap: false, tapOthers: { count: 0, totalPower: n, filter: { type: "creature" } } },
+  targets: [],
+  effect: { kind: "add-types", target: "source", addTypes: ["artifact", "creature"], duration: "end-of-turn" },
+  resolve: null,
+  text,
+});
+
+/** Crew N's printed line with its reminder text. */
+export const crewText = (n: number): string =>
+  `Crew ${n} (Tap any number of creatures you control with total power ${n} or more: This Vehicle becomes an artifact creature until end of turn.)`;
+
+/**
  * Transmute (rule 702.53a): "[Cost], Discard this card: Search your library
  * for a card with the same mana value as the discarded card, reveal that
  * card, and put it into your hand. Then shuffle. Activate only as a

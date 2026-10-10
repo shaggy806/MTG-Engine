@@ -1,0 +1,234 @@
+{
+ "batch": "B38",
+ "status": "complete",
+ "ranks": "keyword:crew's cards",
+ "authored": [
+  {
+   "name": "Smuggler's Copter",
+   "files": [
+    "engine/src/cards/pool/smugglers-copter.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Skysovereign, Consul Flagship",
+   "files": [
+    "engine/src/cards/pool/skysovereign-consul-flagship.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Cultivator's Caravan",
+   "files": [
+    "engine/src/cards/pool/cultivators-caravan.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Parhelion II",
+   "files": [
+    "engine/src/cards/pool/parhelion-ii.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Thunderhawk Gunship",
+   "files": [
+    "engine/src/cards/pool/thunderhawk-gunship.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Salvation Engine",
+   "files": [
+    "engine/src/cards/pool/salvation-engine.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Thopter Fabricator",
+   "files": [
+    "engine/src/cards/pool/thopter-fabricator.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Cryptcaller Chariot",
+   "files": [
+    "engine/src/cards/pool/cryptcaller-chariot.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "RMS Titanic",
+   "files": [
+    "engine/src/cards/pool/rms-titanic.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Recon Craft Theta",
+   "files": [
+    "engine/src/cards/pool/recon-craft-theta.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Knight Paladin",
+   "files": [
+    "engine/src/cards/pool/knight-paladin.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Surgehacker Mech",
+   "files": [
+    "engine/src/cards/pool/surgehacker-mech.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Peacewalker Colossus",
+   "files": [
+    "engine/src/cards/pool/peacewalker-colossus.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Kotori, Pilot Prodigy",
+   "files": [
+    "engine/src/cards/pool/kotori-pilot-prodigy.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Mech Hangar",
+   "files": [
+    "engine/src/cards/pool/mech-hangar.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Esika's Chariot",
+   "files": [
+    "engine/src/cards/pool/esikas-chariot.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Weatherlight",
+   "files": [
+    "engine/src/cards/pool/weatherlight.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "The Regalia",
+   "files": [
+    "engine/src/cards/pool/the-regalia.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Greasefang, Okiba Boss",
+   "files": [
+    "engine/src/cards/pool/greasefang-okiba-boss.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Astor, Bearer of Blades",
+   "files": [
+    "engine/src/cards/pool/astor-bearer-of-blades.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Lumbering Worldwagon",
+   "files": [
+    "engine/src/cards/pool/lumbering-worldwagon.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Brotherhood Vertibird",
+   "files": [
+    "engine/src/cards/pool/brotherhood-vertibird.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Rolling Hamsphere",
+   "files": [
+    "engine/src/cards/pool/rolling-hamsphere.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Bespoke Battlewagon",
+   "files": [
+    "engine/src/cards/pool/bespoke-battlewagon.ts"
+   ],
+   "tested": false
+  }
+ ],
+ "blocked": [
+  {
+   "name": "Hoard Hauler",
+   "needs": [
+    "amount:count-for-trigger-player"
+   ],
+   "why": "Crew exists now; 'a Treasure for each artifact they control' counts from the damaged player's side."
+  },
+  {
+   "name": "Hedge Shredder",
+   "needs": [
+    "effect:put-arrived-all-tapped"
+   ],
+   "why": "Crew exists now; 'put them onto the battlefield tapped' moves every arrived land, tapped — put-arrived-onto-battlefield takes a fixed count, untapped."
+  },
+  {
+   "name": "Shorikai, Genesis Engine",
+   "needs": [
+    "static:crews-as-though-power"
+   ],
+   "why": "Crew exists now; its Pilot tokens crew 'as though its power were 2 greater'."
+  },
+  {
+   "name": "Reckoner Bankbuster",
+   "needs": [
+    "static:crews-as-though-power"
+   ],
+   "why": "Crew exists now; its Pilot token crews 'as though its power were 2 greater'."
+  },
+  {
+   "name": "Defend the Rider",
+   "needs": [
+    "static:crews-as-though-power",
+    "keyword:saddle"
+   ],
+   "why": "Crew exists now; the Pilot token saddles and crews 'as though its power were 2 greater'."
+  },
+  {
+   "name": "Golden Argosy",
+   "needs": [
+    "condition:crewed-by-this-turn"
+   ],
+   "why": "Crew exists now; 'each creature that crewed it this turn' isn't recorded (rule 702.122c)."
+  },
+  {
+   "name": "Mobilizer Mech",
+   "needs": [
+    "trigger:becomes-crewed-trigger"
+   ],
+   "why": "Crew exists now; 'whenever this Vehicle becomes crewed' (rule 702.122e) doesn't."
+  },
+  {
+   "name": "Nautiloid Ship",
+   "needs": [
+    "effect:put-exiled-with-source-onto-battlefield"
+   ],
+   "why": "Crew exists now; 'a creature card exiled with this Vehicle' onto the battlefield doesn't."
+  }
+ ]
+}

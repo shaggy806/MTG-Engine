@@ -173,6 +173,7 @@ import _poolRegathanFirecat from "../pool/regathan-firecat.js";
 import _poolRestlessCottage from "../pool/restless-cottage.js";
 import _poolRetreatToKazandu from "../pool/retreat-to-kazandu.js";
 import _poolRiverMerfolk from "../pool/river-merfolk.js";
+import _poolRmsTitanic from "../pool/rms-titanic.js";
 import _poolRobeOfTheArchmagi from "../pool/robe-of-the-archmagi.js";
 import _poolRodOfRuin from "../pool/rod-of-ruin.js";
 import _poolSagesKnowledge from "../pool/sages-knowledge.js";
@@ -451,6 +452,7 @@ const shard: CardShard = {
     _poolRestlessCottage,
     _poolRetreatToKazandu,
     _poolRiverMerfolk,
+    _poolRmsTitanic,
     _poolRobeOfTheArchmagi,
     _poolRodOfRuin,
     _poolSagesKnowledge,

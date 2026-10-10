@@ -133,7 +133,8 @@ checked-in snapshot.
 - **Station** (7 cards, mostly newest-set/low-rank: Exploration Broodship, Evendo, Uthros) — a whole new subsystem (a permanent sub-type + counter-threshold-gated text tiers, keyed off what's tapped to fund it). Large build, currently low return — revisit once more Station cards enter the format.
 - **Discover** (4), **Reconfigure** (3) — each a distinct, self-contained alt-cast/alt-ability shape; neither shares much with the other or with Tier 1/2. Cherry-pick opportunistically. (**Evoke** is built for mana costs, 2026-09-29; the Incarnations' exile-a-card evoke cost is BACKLOG's.)
 - **Phasing** (8 cards, headlined by **Teferi's Protection** at #109) — explicitly out of scope per this file's parent (CLAUDE.md's "Not modeled" list). High-profile but a genuinely large state-machine addition (a whole not-really-a-zone permanent status); revisit only as a deliberate scope change, not opportunistically.
-- **Dungeons/Initiative** (3), **Vehicles/crew** (2), **split/aftermath layout** (4), **Battle cards** (2) — each explicitly out of scope already; low card counts in the top 2000 confirm they're not worth a scope change yet.
+- **Vehicles/crew** — **built 2026-10-09** (`crew(n)`, rule 702.122; batch 38, 24 cards — it led the triage records with 38 cards waiting). Left: "becomes crewed" triggers, "crews as though its power were greater" and "crewed it this turn".
+- **Dungeons/Initiative** (3), **split/aftermath layout** (4), **Battle cards** (2) — each explicitly out of scope already; low card counts in the top 2000 confirm they're not worth a scope change yet.
 - **Backgrounds** (3) are no longer blocked as a mechanic: the pairing is built (`pairing: { kind: "choose-a-background" }`) and one Background, Raised by Giants, is authored. What's left of the three comes down to each card's own text.
 
 ### Card sweep 1: the staples it skipped

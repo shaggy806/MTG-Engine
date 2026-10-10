@@ -108,6 +108,7 @@ import _poolKamiOfTwistedReflection from "../pool/kami-of-twisted-reflection.js"
 import _poolKarazikarTheEyeTyrant from "../pool/karazikar-the-eye-tyrant.js";
 import _poolKataraWaterbendingMaster from "../pool/katara-waterbending-master.js";
 import _poolKeepWatch from "../pool/keep-watch.js";
+import _poolKnightPaladin from "../pool/knight-paladin.js";
 import _poolKoalaSheep from "../pool/koala-sheep.js";
 import _poolKolaghansCommand from "../pool/kolaghans-command.js";
 import _poolKorCartographer from "../pool/kor-cartographer.js";
@@ -367,6 +368,7 @@ const shard: CardShard = {
     _poolKarazikarTheEyeTyrant,
     _poolKataraWaterbendingMaster,
     _poolKeepWatch,
+    _poolKnightPaladin,
     _poolKoalaSheep,
     _poolKolaghansCommand,
     _poolKorCartographer,

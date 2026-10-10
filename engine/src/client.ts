@@ -38,4 +38,5 @@ export { attackingViolations } from "./combat/attacking.js";
 export { blockingViolations } from "./combat/blocking.js";
 export { damageAssignmentViolations, standardAssignment } from "./combat/damage.js";
 export { fitsTogether } from "./zone-choice-together.js";
+export { defaultTapPicks, tapPicksPower } from "./actions.js";
 export type { ZoneChoiceTogether } from "./zone-choice-together.js";

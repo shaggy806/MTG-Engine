@@ -59,6 +59,7 @@ import _poolConsecratedSphinx from "../pool/consecrated-sphinx.js";
 import _poolConversionApparatus from "../pool/conversion-apparatus.js";
 import _poolCosmicCube from "../pool/cosmic-cube.js";
 import _poolCraterhoofBehemoth from "../pool/craterhoof-behemoth.js";
+import _poolCryptcallerChariot from "../pool/cryptcaller-chariot.js";
 import _poolCursedMinotaur from "../pool/cursed-minotaur.js";
 import _poolDarkTutelage from "../pool/dark-tutelage.js";
 import _poolDazzlingSphinx from "../pool/dazzling-sphinx.js";
@@ -350,6 +351,7 @@ const shard: CardShard = {
     _poolConversionApparatus,
     _poolCosmicCube,
     _poolCraterhoofBehemoth,
+    _poolCryptcallerChariot,
     _poolCursedMinotaur,
     _poolDarkTutelage,
     _poolDazzlingSphinx,

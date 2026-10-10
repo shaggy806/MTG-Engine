@@ -2484,6 +2484,22 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    "Smuggler's Copter, Cultivator's Caravan, Kotori, Pilot Prodigy",
+    board({
+      you: {
+        bf: [
+          "Smuggler's Copter",
+          "Cultivator's Caravan",
+          'Kotori, Pilot Prodigy',
+          'Grizzly Bears',
+          'Llanowar Elves',
+          { name: 'Hill Giant', sick: true },
+        ],
+        lib: ['Island*3'],
+      },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

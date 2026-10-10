@@ -225,6 +225,7 @@ import _poolTendrilsOfAgony from "../pool/tendrils-of-agony.js";
 import _poolTerrorOfTheFairgrounds from "../pool/terror-of-the-fairgrounds.js";
 import _poolTezzeretCruelCaptain from "../pool/tezzeret-cruel-captain.js";
 import _poolTheEldestReborn from "../pool/the-eldest-reborn.js";
+import _poolTheRegalia from "../pool/the-regalia.js";
 import _poolThornwoodFalls from "../pool/thornwood-falls.js";
 import _poolThrivingGrove from "../pool/thriving-grove.js";
 import _poolTomBombadil from "../pool/tom-bombadil.js";
@@ -486,6 +487,7 @@ const shard: CardShard = {
     _poolTerrorOfTheFairgrounds,
     _poolTezzeretCruelCaptain,
     _poolTheEldestReborn,
+    _poolTheRegalia,
     _poolThornwoodFalls,
     _poolThrivingGrove,
     _poolTomBombadil,

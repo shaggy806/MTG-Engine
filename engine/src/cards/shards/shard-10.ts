@@ -23,6 +23,7 @@ import _poolBalefireDragon from "../pool/balefire-dragon.js";
 import _poolBalmorBattlemageCaptain from "../pool/balmor-battlemage-captain.js";
 import _poolBasrisSolidarity from "../pool/basris-solidarity.js";
 import _poolBattlefieldForge from "../pool/battlefield-forge.js";
+import _poolBespokeBattlewagon from "../pool/bespoke-battlewagon.js";
 import _poolBidentOfThassa from "../pool/bident-of-thassa.js";
 import _poolBladebrand from "../pool/bladebrand.js";
 import _poolBlasphemousAct from "../pool/blasphemous-act.js";
@@ -190,6 +191,7 @@ import _poolPunkFrogs from "../pool/punk-frogs.js";
 import _poolRacersRing from "../pool/racers-ring.js";
 import _poolRavenousRats from "../pool/ravenous-rats.js";
 import _poolRealmwalker from "../pool/realmwalker.js";
+import _poolReconCraftTheta from "../pool/recon-craft-theta.js";
 import _poolRekiTheHistoryOfKamigawa from "../pool/reki-the-history-of-kamigawa.js";
 import _poolRenegadesGetaway from "../pool/renegades-getaway.js";
 import _poolResplendentAngel from "../pool/resplendent-angel.js";
@@ -319,6 +321,7 @@ const shard: CardShard = {
     _poolBalmorBattlemageCaptain,
     _poolBasrisSolidarity,
     _poolBattlefieldForge,
+    _poolBespokeBattlewagon,
     _poolBidentOfThassa,
     _poolBladebrand,
     _poolBlasphemousAct,
@@ -486,6 +489,7 @@ const shard: CardShard = {
     _poolRacersRing,
     _poolRavenousRats,
     _poolRealmwalker,
+    _poolReconCraftTheta,
     _poolRekiTheHistoryOfKamigawa,
     _poolRenegadesGetaway,
     _poolResplendentAngel,

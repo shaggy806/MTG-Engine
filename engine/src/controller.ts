@@ -17,7 +17,7 @@ import type {
   TapCostOffer,
 } from "./actions.js";
 import { abilityLifeCost } from "./abilities.js";
-import { convokeProofFor, delvePicks, fitModeSet } from "./actions.js";
+import { convokeProofFor, defaultTapPicks, delvePicks, fitModeSet, tapPicksPower } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
 import { whyCannotAttack } from "./combat/eligibility.js";
 import { standardAssignment } from "./combat/damage.js";
@@ -1094,10 +1094,15 @@ export class ScriptedController implements PlayerController {
 function randomTapPicks(offer: TapCostOffer, pickIndex: (n: number) => number): ObjectId[] {
   const pool: ObjectId[] = [];
   for (const id of offer.choices) {
+    // Under crew, a creature with no power to give would only lower the total.
+    if (offer.totalPower !== undefined && (offer.power?.[id] ?? 0) <= 0) continue;
     for (let i = 0; i < (offer.copies?.[id] ?? 1); i += 1) pool.push(id);
   }
   const picked: ObjectId[] = [];
-  for (let i = 0; i < offer.count && pool.length > 0; i += 1) {
+  // Crew: random creatures until their power is enough.
+  const more = (): boolean =>
+    offer.totalPower !== undefined ? tapPicksPower(offer, picked) < offer.totalPower : picked.length < offer.count;
+  while (more() && pool.length > 0) {
     picked.push(pool.splice(pickIndex(pool.length), 1)[0]);
   }
   return picked;
@@ -2786,7 +2791,11 @@ export class HeuristicBotController extends AutomaticController {
       if (action.type === "activate-ability") {
         // Left out when the offer leaves no choice: then the engine takes the
         // only ones there are.
-        const tapped = action.tap ?? legal.tapCost?.choices.slice(0, legal.tapCost.count) ?? [];
+        const tapped =
+          action.tap ??
+          (legal.tapCost === undefined
+            ? []
+            : defaultTapPicks(legal.tapCost, (id) => state.objects[id]?.summoningSick === true));
         for (const id of tapped) if (isMyCreature(id)) lost.add(id);
         const sacrificed =
           action.sacrifice ?? (legal.sacrifice?.choices.length === 1 ? legal.sacrifice.choices[0] : undefined);

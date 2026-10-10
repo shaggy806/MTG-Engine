@@ -61,6 +61,7 @@ import _poolCorruptCourtOfficial from "../pool/corrupt-court-official.js";
 import _poolCrackTheEarth from "../pool/crack-the-earth.js";
 import _poolCrumbAndGetIt from "../pool/crumb-and-get-it.js";
 import _poolCrypticCommand from "../pool/cryptic-command.js";
+import _poolCultivatorsCaravan from "../pool/cultivators-caravan.js";
 import _poolCuriosity from "../pool/curiosity.js";
 import _poolDaggerclawImp from "../pool/daggerclaw-imp.js";
 import _poolDaiLiCensor from "../pool/dai-li-censor.js";
@@ -231,6 +232,7 @@ import _poolTelimtorsDarts from "../pool/telimtors-darts.js";
 import _poolTheBoulderReadyToRumble from "../pool/the-boulder-ready-to-rumble.js";
 import _poolTheGooseMother from "../pool/the-goose-mother.js";
 import _poolThopterEngineer from "../pool/thopter-engineer.js";
+import _poolThopterFabricator from "../pool/thopter-fabricator.js";
 import _poolThrabenValiant from "../pool/thraben-valiant.js";
 import _poolThreaten from "../pool/threaten.js";
 import _poolThunderSpirit from "../pool/thunder-spirit.js";
@@ -345,6 +347,7 @@ const shard: CardShard = {
     _poolCrackTheEarth,
     _poolCrumbAndGetIt,
     _poolCrypticCommand,
+    _poolCultivatorsCaravan,
     _poolCuriosity,
     _poolDaggerclawImp,
     _poolDaiLiCensor,
@@ -515,6 +518,7 @@ const shard: CardShard = {
     _poolTheBoulderReadyToRumble,
     _poolTheGooseMother,
     _poolThopterEngineer,
+    _poolThopterFabricator,
     _poolThrabenValiant,
     _poolThreaten,
     _poolThunderSpirit,

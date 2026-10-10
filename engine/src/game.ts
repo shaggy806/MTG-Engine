@@ -29,7 +29,7 @@ import type {
   TriggerSpec,
   TriggerWho,
 } from "./abilities.js";
-import { actionPlayer } from "./actions.js";
+import { actionPlayer, defaultTapPicks, tapPicksPower } from "./actions.js";
 import type {
   Action,
   AttackerDeclaration,
@@ -11056,8 +11056,10 @@ export class Game {
       // The tap half is checked against the same mana — see `tapCostOffer`.
       const offer = this.abilityTapCostOffer(player, sourceId, ability);
       if (offer === null) return `${player} cannot pay for ${def.name}'s ability`;
-      if (this.tapCapacity(offer.choices) < offer.count) {
-        return `${def.name}'s ability needs ${offer.count} untapped permanents to tap`;
+      if (!this.tapOfferPayable(offer)) {
+        return offer.totalPower !== undefined
+          ? `${def.name}'s ability needs untapped creatures with total power ${offer.totalPower} to tap`
+          : `${def.name}'s ability needs ${offer.count} untapped permanents to tap`;
       }
       if (tap !== undefined) {
         const wrong = this.whyTapChoiceIsWrong(`${def.name}'s ability`, offer, tap);
@@ -19866,6 +19868,7 @@ export class Game {
     sourceId: ObjectId,
     spec: {
       readonly count: number;
+      readonly totalPower?: number;
       readonly filter: CardFilter;
       readonly includeSelf?: boolean;
     },
@@ -19894,6 +19897,15 @@ export class Game {
     return n;
   }
 
+  /** Whether everything `offer` offers could pay it: `count` permanents, or
+   * — crew — enough power, every token of a stack tapped. */
+  private tapOfferPayable(offer: TapCostOffer): boolean {
+    if (offer.totalPower === undefined) return this.tapCapacity(offer.choices) >= offer.count;
+    let power = 0;
+    for (const id of offer.choices) power += Math.max(0, offer.power?.[id] ?? 0) * (offer.copies?.[id] ?? 1);
+    return power >= offer.totalPower;
+  }
+
   /**
    * The offer for a "tap N untapped … you control" cost, given the mana the
    * same activation or cast pays: see {@link TapCostOffer}. The mana is
@@ -19904,7 +19916,12 @@ export class Game {
   private tapCostOffer(
     player: PlayerId,
     sourceId: ObjectId,
-    spec: { readonly count: number; readonly filter: CardFilter; readonly includeSelf?: boolean },
+    spec: {
+      readonly count: number;
+      readonly totalPower?: number;
+      readonly filter: CardFilter;
+      readonly includeSelf?: boolean;
+    },
     manaCost: ManaCost,
     avoid: ObjectId | undefined,
     exclude: ObjectId | undefined,
@@ -19922,10 +19939,18 @@ export class Game {
       const n = this.state.objects[id].stackCount ?? 1;
       if (n > 1) copies[id] = n;
     }
+    // Crew's total power (rule 702.122a): each creature's power as the cost
+    // is paid — nothing can change it once the activation is announced (the
+    // crew rulings).
+    const power: Record<ObjectId, number> = {};
+    if (spec.totalPower !== undefined) {
+      for (const id of choices) power[id] = computeCharacteristics(this.state, this.registry, id).power;
+    }
     return {
-      count: spec.count,
+      count: spec.totalPower !== undefined ? 0 : spec.count,
       choices,
       ...(Object.keys(copies).length > 0 ? { copies } : {}),
+      ...(spec.totalPower !== undefined ? { totalPower: spec.totalPower, power } : {}),
     };
   }
 
@@ -19987,8 +20012,11 @@ export class Game {
     offer: TapCostOffer,
     tap: readonly ObjectId[],
   ): string | null {
-    if (tap.length !== offer.count) {
+    if (offer.totalPower === undefined && tap.length !== offer.count) {
       return `${what} taps ${offer.count} permanent(s), not ${tap.length}`;
+    }
+    if (offer.totalPower !== undefined && tapPicksPower(offer, tap) < offer.totalPower) {
+      return `${what} taps creatures with total power ${offer.totalPower} or greater, not ${tapPicksPower(offer, tap)}`;
     }
     const named = new Map<ObjectId, number>();
     for (const id of tap) {
@@ -20099,15 +20127,11 @@ export class Game {
       if (wrong !== null) throw new Error(wrong);
       return [...tap];
     }
-    const sick = (id: ObjectId): boolean => this.state.objects[id]?.summoningSick === true;
-    const order = [...offer.choices.filter(sick), ...offer.choices.filter((id) => !sick(id))];
-    const picked: ObjectId[] = [];
-    for (const id of order) {
-      for (let i = 0; i < (offer.copies?.[id] ?? 1) && picked.length < offer.count; i += 1) {
-        picked.push(id);
-      }
+    const picked = defaultTapPicks(offer, (id) => this.state.objects[id]?.summoningSick === true);
+    if (offer.totalPower !== undefined && tapPicksPower(offer, picked) < offer.totalPower) {
+      throw new Error(`${what} needs untapped creatures with total power ${offer.totalPower} to tap`);
     }
-    if (picked.length < offer.count) {
+    if (offer.totalPower === undefined && picked.length < offer.count) {
       throw new Error(`${what} needs ${offer.count} untapped permanents to tap`);
     }
     return picked;

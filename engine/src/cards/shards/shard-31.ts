@@ -141,6 +141,7 @@ import _poolKitesail from "../pool/kitesail.js";
 import _poolKjeldoranOutrider from "../pool/kjeldoran-outrider.js";
 import _poolKodamaOfTheEastTree from "../pool/kodama-of-the-east-tree.js";
 import _poolKorlessaScaleSinger from "../pool/korlessa-scale-singer.js";
+import _poolKotoriPilotProdigy from "../pool/kotori-pilot-prodigy.js";
 import _poolKrarkClanIronworks from "../pool/krark-clan-ironworks.js";
 import _poolKrosanGrip from "../pool/krosan-grip.js";
 import _poolLagomosHandOfHatred from "../pool/lagomos-hand-of-hatred.js";
@@ -152,6 +153,7 @@ import _poolMalevolentRumble from "../pool/malevolent-rumble.js";
 import _poolMarisiBreakerOfTheCoil from "../pool/marisi-breaker-of-the-coil.js";
 import _poolMarkerBeetles from "../pool/marker-beetles.js";
 import _poolMasterOfThePearlTrident from "../pool/master-of-the-pearl-trident.js";
+import _poolMechHangar from "../pool/mech-hangar.js";
 import _poolMerchantOfTruth from "../pool/merchant-of-truth.js";
 import _poolMiscast from "../pool/miscast.js";
 import _poolMischievousMystic from "../pool/mischievous-mystic.js";
@@ -407,6 +409,7 @@ const shard: CardShard = {
     _poolKjeldoranOutrider,
     _poolKodamaOfTheEastTree,
     _poolKorlessaScaleSinger,
+    _poolKotoriPilotProdigy,
     _poolKrarkClanIronworks,
     _poolKrosanGrip,
     _poolLagomosHandOfHatred,
@@ -418,6 +421,7 @@ const shard: CardShard = {
     _poolMarisiBreakerOfTheCoil,
     _poolMarkerBeetles,
     _poolMasterOfThePearlTrident,
+    _poolMechHangar,
     _poolMerchantOfTruth,
     _poolMiscast,
     _poolMischievousMystic,

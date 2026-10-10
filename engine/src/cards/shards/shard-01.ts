@@ -251,6 +251,7 @@ import _poolXandersLounge from "../pool/xanders-lounge.js";
 import _poolYavimayaHollow from "../pool/yavimaya-hollow.js";
 import _poolYgraEaterOfAll from "../pool/ygra-eater-of-all.js";
 import _poolZadasCommando from "../pool/zadas-commando.js";
+import _tokensAlienToken from "../tokens/alien-token.js";
 import _tokensCatTokenArahboTheFirstFang from "../tokens/cat-token-arahbo-the-first-fang.js";
 import _tokensEldraziScionToken from "../tokens/eldrazi-scion-token.js";
 import _tokensMutavaultToken from "../tokens/mutavault-token.js";
@@ -507,6 +508,7 @@ const shard: CardShard = {
     _poolZadasCommando,
   ],
   tokens: [
+    _tokensAlienToken,
     _tokensCatTokenArahboTheFirstFang,
     _tokensEldraziScionToken,
     _tokensMutavaultToken,

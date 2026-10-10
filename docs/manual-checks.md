@@ -220,6 +220,7 @@ How to use it:
 | [Reality Shift](#reality-shift) | new decision | Face-down permanents |
 | [Ob Nixilis Reignited, Koth, Fire of Resistance](#ob-nixilis-reignited-koth-fire-of-resistance) | rules call | Emblems with triggered abilities, and a turn-long graveyard permission |
 | [Liliana, Untouched by Death](#liliana-untouched-by-death) | rules call | Emblems with triggered abilities, and a turn-long graveyard permission |
+| [Smuggler's Copter, Cultivator's Caravan, Kotori, Pilot Prodigy](#smugglers-copter-cultivators-caravan-kotori-pilot-prodigy) | new decision | Crew and Vehicles |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4193,3 +4194,24 @@ stack count once per token)
   Grizzly Bears isn't. A Ghoul that reaches the graveyard later in the turn is castable too (its
   ruling). On your next turn neither is offered.
 - **Known limits:** None documented.
+
+## Crew and Vehicles (2026-10-09)
+
+### Smuggler's Copter, Cultivator's Caravan, Kotori, Pilot Prodigy
+
+*New decision* — crew's cost: any number of other untapped creatures, total power N or more (rule 702.122a)
+
+- **Setup:** Your precombat main. Your battlefield: Smuggler's Copter, Cultivator's Caravan, Kotori,
+  Pilot Prodigy, Grizzly Bears, Llanowar Elves and a summoning-sick Hill Giant. Islands on top of
+  your library.
+- **Do:** (a) Activate the Caravan's printed crew 3: tap the Bears alone, then add the Elves. (b)
+  Crew the Copter with its printed crew 1 using the summoning-sick Hill Giant. (c) Look at the
+  Copter's and the Caravan's ability menus: each also has Kotori's crew 2. Attack with the Copter.
+- **Check:** The banner reads "tap creatures with total power 3 — power 2/3" with the Bears picked
+  and Confirm disabled; with the Elves it reads 3/3 and Confirm works. Neither Vehicle is ever
+  offered to tap for its own crew. The crewed Caravan shows as a 5/5 artifact creature; the Hill
+  Giant, summoning sick, still crews the Copter, which attacks (a noncreature Vehicle that's been
+  yours all turn isn't summoning sick) and offers its loot. At your next turn both are
+  noncreature artifacts again.
+- **Known limits:** "Whenever this Vehicle becomes crewed" and "crews Vehicles as though its
+  power were 2 greater" aren't built yet (Mobilizer Mech, Shorikai's Pilots).

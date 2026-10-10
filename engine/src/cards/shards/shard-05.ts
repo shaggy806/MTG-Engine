@@ -113,6 +113,7 @@ import _poolGrandCrescendo from "../pool/grand-crescendo.js";
 import _poolGrappleWithThePast from "../pool/grapple-with-the-past.js";
 import _poolGrasslands from "../pool/grasslands.js";
 import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
+import _poolGreasefangOkibaBoss from "../pool/greasefang-okiba-boss.js";
 import _poolGreatHallOfTheCitadel from "../pool/great-hall-of-the-citadel.js";
 import _poolGreenwardenOfMurasa from "../pool/greenwarden-of-murasa.js";
 import _poolGrimAffliction from "../pool/grim-affliction.js";
@@ -408,6 +409,7 @@ const shard: CardShard = {
     _poolGrappleWithThePast,
     _poolGrasslands,
     _poolGravespawnSovereign,
+    _poolGreasefangOkibaBoss,
     _poolGreatHallOfTheCitadel,
     _poolGreenwardenOfMurasa,
     _poolGrimAffliction,

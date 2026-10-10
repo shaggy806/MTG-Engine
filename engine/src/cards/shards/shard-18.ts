@@ -69,6 +69,7 @@ import _poolElderGargaroth from "../pool/elder-gargaroth.js";
 import _poolElfReplica from "../pool/elf-replica.js";
 import _poolElgaudInquisitor from "../pool/elgaud-inquisitor.js";
 import _poolEntishRestoration from "../pool/entish-restoration.js";
+import _poolEsikasChariot from "../pool/esikas-chariot.js";
 import _poolExpansion from "../pool/expansion.js";
 import _poolExperimentalConfectioner from "../pool/experimental-confectioner.js";
 import _poolFeastOfTheUnicorn from "../pool/feast-of-the-unicorn.js";
@@ -356,6 +357,7 @@ const shard: CardShard = {
     _poolElfReplica,
     _poolElgaudInquisitor,
     _poolEntishRestoration,
+    _poolEsikasChariot,
     _poolExpansion,
     _poolExperimentalConfectioner,
     _poolFeastOfTheUnicorn,

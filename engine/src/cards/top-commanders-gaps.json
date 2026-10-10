@@ -219,7 +219,8 @@
   "static:suppress-creature-enter-triggers",
   "effect:spell-or-permanent-target",
   "effect:emblem-triggered-abilities",
-  "keyword:afflict"
+  "keyword:afflict",
+  "keyword:crew"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
