@@ -97,6 +97,10 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   death: ['breaking'],
   // A player gaining life: MLaudio's cartoon magic sparkle (Freesound, CC0).
   gain: ['sparkle'],
+  // And losing it: the same sparkle played backwards, its last half-second,
+  // a shimmer sucked inward (a stand-in while the user looks for one,
+  // 2026-10-10).
+  loss: ['sparkle-reversed'],
   // A nonland permanent arriving on the battlefield: OtisJames's thud
   // (Freesound, CC0), on trial (2026-10-10).
   enter: ['thud'],
