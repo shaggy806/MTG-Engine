@@ -43,6 +43,7 @@ import { stackShowsSomething } from './game/decisionSource.ts'
 import { waitingLabel } from './game/waitingLabel.ts'
 import { gameStats } from './game/gameStats.ts'
 import { playSound } from './game/sound.ts'
+import { tableActions } from './game/tableActions.ts'
 import { useEscape } from './ui/useEscape.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { applyBoardOrder } from './game/boardOrder.ts'
@@ -932,6 +933,13 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   useEffect(() => {
     if (won) playSound('victory')
   }, [won])
+  // What the table may act on: the mulligan stays up through a frame playing
+  // out, its buttons locked (`locked` below) — see `tableActions`.
+  const latestActions = game.frame?.actions ?? EMPTY_ACTIONS
+  const actionsOnTable = useMemo(
+    () => tableActions(shown.actions, latestActions, shown.busy, botPlaying),
+    [shown.actions, latestActions, shown.busy, botPlaying],
+  )
   if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
@@ -1058,8 +1066,10 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         // bots to the same rule — see `ackFrame`.
         // And while a bot plays this seat (the seat menu's "Let a bot play
         // for me"), whose moves the server makes and whose answers it would
-        // refuse from here.
-        actions={shown.busy || botPlaying ? EMPTY_ACTIONS : shown.actions}
+        // refuse from here. The mulligan alone stays up, locked (see
+        // `tableActions`).
+        actions={actionsOnTable}
+        locked={shown.busy}
         hand={hand}
         previousView={shown.previousView}
         answered={shown.answered}
@@ -1152,6 +1162,9 @@ interface TableProps {
    * — never `game.actions` directly, which is already ahead of what's drawn
    * on screen (see GameScreen's own comment). */
   readonly actions: readonly LegalAction[]
+  /** A frame is still playing out: what `actions` holds anyway (the
+   * mulligan) is shown but can't be answered yet. */
+  readonly locked: boolean
   /** The peekable hand tray's raised state, owned by `GameScreen` so it
    * survives this component's per-frame remount. */
   readonly hand: {
@@ -1190,6 +1203,7 @@ function Table({
   opponents,
   game,
   actions,
+  locked,
   hand,
   previousView,
   answered,
@@ -4946,10 +4960,10 @@ function Table({
         </span>
         {renderHand()}
         <div className="mulligan-modal-actions">
-          <button type="button" onClick={() => confirmMulligan(true)}>
+          <button type="button" disabled={locked} onClick={() => confirmMulligan(true)}>
             Keep
           </button>
-          <button type="button" onClick={() => confirmMulligan(false)}>
+          <button type="button" disabled={locked} onClick={() => confirmMulligan(false)}>
             Mulligan
           </button>
         </div>

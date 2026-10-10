@@ -239,6 +239,10 @@ export const DISCARD_STEP_MS = 480
 /** A library shuffled: its top cards twist out over the pile and back
  * (`AnimationLayer`'s `runShuffle`). */
 export const SHUFFLE_STEP_MS = 1200
+/** The viewer's own mulligan, before its shuffle: the hand in the mulligan
+ * popup flies back onto the library, card after card, as a draw in reverse
+ * (`AnimationLayer`'s `runReturnHand`). */
+export const MULLIGAN_RETURN_MS = 800
 /** A permanent moving to a new place on the board: a change of control, an
  * Aura or Equipment moving to a new host. */
 export const MOVE_STEP_MS = 560
@@ -331,6 +335,9 @@ export interface ScheduleOptions {
    * the old one. Any other draw — an opponent's, or a card that left the
    * hand again within the frame — is the cardback. */
   readonly handDraws?: ReadonlySet<ObjectId>
+  /** The viewer's own seat, whose mulligan first sends the hand on screen
+   * back to the library (`MULLIGAN_RETURN_MS`); null for a spectator. */
+  readonly seat?: PlayerId | null
 }
 
 const NORMAL_SPEED: ScheduleOptions = { scale: 1, reduced: false }
@@ -756,7 +763,7 @@ export function scheduleEvents(
   // it — and the frame is laid out again without it. Each pass drops at least
   // one, so this ends.
   for (;;) {
-    const { schedule, paired } = layOutFrame(events, startPhase, scale, reduced, landings, options.handDraws)
+    const { schedule, paired } = layOutFrame(events, startPhase, scale, reduced, landings, options)
     const lost = [...landings.byBefore.values()].filter((key) => !paired.has(key))
     if (lost.length === 0) return schedule
     for (const key of lost) {
@@ -774,7 +781,7 @@ function layOutFrame(
   scale: number,
   reduced: boolean,
   landings: Landings,
-  handDraws: ReadonlySet<ObjectId> = new Set(),
+  { handDraws = new Set(), seat = null }: ScheduleOptions,
 ): { schedule: EventSchedule; paired: Set<number> } {
   const phase = { current: startPhase }
   const slots: Slot[] = []
@@ -783,7 +790,15 @@ function layOutFrame(
       // A draw into the viewer's own hand settles into its place there, over
       // the new board.
       const own = slot.kind === 'draw' && slot.event.type === 'card-drawn' && handDraws.has(slot.event.object)
-      slots.push(own ? { ...slot, kind: 'handDraw', duration: HAND_DRAW_STEP_MS } : slot)
+      // The viewer's own mulligan sends the hand back before it shuffles.
+      const ownMulligan = slot.kind === 'shuffle' && slot.event.type === 'mulligan-taken' && slot.event.player === seat
+      slots.push(
+        own
+          ? { ...slot, kind: 'handDraw', duration: HAND_DRAW_STEP_MS }
+          : ownMulligan
+            ? { ...slot, duration: MULLIGAN_RETURN_MS + SHUFFLE_STEP_MS }
+            : slot,
+      )
     }
   }
 
@@ -877,6 +892,16 @@ function beatDuration(slots: readonly Slot[], index: number): number {
       count += 1
     }
     return handDrawBeatMs(count)
+  }
+  if (first.kind === 'shuffle') {
+    // Every shuffle in the run starts together; the viewer's own mulligan's
+    // is the longer one (its hand goes back first).
+    let longest = 0
+    for (const slot of slots.slice(index)) {
+      if (slot.kind === 'shuffle') longest = Math.max(longest, slot.duration)
+      else if (PACED.has(slot.kind)) break
+    }
+    return longest
   }
   if (first.kind !== 'mill') return first.duration
   const run: GameEvent[] = []

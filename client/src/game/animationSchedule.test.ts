@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { GameEvent, ObjectId } from 'engine/client'
+import type { GameEvent, ObjectId, PlayerId } from 'engine/client'
 import {
   CARD_HOLD_MS,
   CARD_STEP_MS,
@@ -16,6 +16,7 @@ import {
   FLIGHT_MAX_MS,
   FLIGHT_MIN_MS,
   HAND_DRAW_STEP_MS,
+  MULLIGAN_RETURN_MS,
   SHUFFLE_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
@@ -390,6 +391,23 @@ describe('scheduleEvents', () => {
     ])
     expect(s.totalMs).toBe(DEATH_STEP_MS * 2 + SHUFFLE_STEP_MS)
     expect(s.after).toEqual([])
+  })
+
+  it("sends the viewer's own hand back before its mulligan's shuffle, the run waiting on the longest", () => {
+    const mulligan = (player: string) => ev({ type: 'mulligan-taken', player, count: 1 })
+    const own = { scale: 1, reduced: false, seat: 'p1' as PlayerId }
+    // Someone else's mulligan is only its shuffle.
+    expect(scheduleEvents([mulligan('p2')], 'beginning', own).totalMs).toBe(SHUFFLE_STEP_MS)
+    expect(scheduleEvents([mulligan('p1')], 'beginning', own).totalMs).toBe(MULLIGAN_RETURN_MS + SHUFFLE_STEP_MS)
+    // Together on one beat, as long as the viewer's, whichever comes first.
+    const s = scheduleEvents([mulligan('p2'), mulligan('p1'), dies()], 'beginning', own)
+    expect(s.items.map((i) => [i.event.type, i.offset])).toEqual([
+      ['mulligan-taken', 0],
+      ['mulligan-taken', 0],
+      ['permanent-left-battlefield', MULLIGAN_RETURN_MS + SHUFFLE_STEP_MS],
+    ])
+    // A spectator has no hand on screen to send back.
+    expect(scheduleEvents([mulligan('p1')], 'beginning', { scale: 1, reduced: false }).totalMs).toBe(SHUFFLE_STEP_MS)
   })
 
   it('keeps only a shuffle to be heard under reduced motion, costing nothing and splitting no beat', () => {

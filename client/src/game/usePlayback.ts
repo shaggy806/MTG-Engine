@@ -241,6 +241,7 @@ export function usePlayback(
       scale: prefs.animScale,
       reduced: prefs.reduced,
       handDraws: handDrawsOf(events, next.view, seatRef.current),
+      seat: seatRef.current,
     })
     // A hidden tab has nobody watching, and the browser throttles its timers
     // to about one tick a second, so playing the frame out would only hold up

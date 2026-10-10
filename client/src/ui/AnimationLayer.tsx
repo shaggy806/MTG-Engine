@@ -13,7 +13,7 @@ import type {
 } from 'engine/client'
 import { publicNameAt } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
-import { flyIntoHand, liftFromHand, placeLiftedSpotlight } from './handMotion.ts'
+import { flyIntoHand, flyOutOfHand, liftFromHand, placeLiftedSpotlight } from './handMotion.ts'
 import { closeStackGap } from './stackDepth.ts'
 import { diceStrikeMs, throwDice } from './diceRoll.ts'
 import { defToVisible } from './defToVisible.ts'
@@ -41,6 +41,7 @@ import {
   CARD_HOLD_MS,
   REVEAL_STEP_MS,
   DICE_STEP_MS,
+  MULLIGAN_RETURN_MS,
   SHUFFLE_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
@@ -1373,9 +1374,8 @@ function soundFor(ev: GameEvent): void {
     case 'card-drawn':
       playSound('draw')
       return
+    // A mulligan's shuffle sounds as it twists (`fire`).
     case 'library-shuffled':
-    // A mulligan shuffles the hand back in without a `library-shuffled`.
-    case 'mulligan-taken':
       playSound('shuffle')
       return
     case 'cards-discarded':
@@ -1922,6 +1922,30 @@ function peelCards(
   }
 }
 
+/**
+ * The viewer's mulligan sending the hand on screen (in the mulligan popup)
+ * back onto the library: a draw in reverse (`flyOutOfHand`), card after card
+ * from the right, within `MULLIGAN_RETURN_MS`, each with a draw's sound. The
+ * ms it takes, for the shuffle to follow; 0 when there's nothing to fly (no
+ * hand on screen, no pile, reduced motion).
+ */
+function runReturnHand(seat: PlayerId): number {
+  if (motionPrefs().reduced) return 0
+  const pile = libraryCardOf(seat)
+  const cards = [...document.querySelectorAll<HTMLElement>('.hand-cards .hand-card[data-obj-id]')].reverse()
+  if (pile === null || cards.length === 0) return 0
+  const total = scaled(MULLIGAN_RETURN_MS)
+  const flight = total * 0.55
+  const stagger = cards.length > 1 ? (total - flight) / (cards.length - 1) : 0
+  const colour = seatColourOf(seat)
+  cards.forEach((card, i) => {
+    const object = card.dataset.objId as ObjectId
+    flyOutOfHand(object, pile, colour, i * stagger, flight)
+    playSound('draw', i * stagger)
+  })
+  return total
+}
+
 /** At most how many cards a shuffle twists out over its pile. */
 const SHUFFLE_CARDS = 7
 /** How far apart the shuffle's bottom and top cards turn, and slide (in
@@ -2378,8 +2402,15 @@ export function AnimationLayer({
         else runDeath(ev.object, ev.toZone)
       } else if (ev.type === 'cards-discarded') {
         runDiscard(ev, seatRef.current)
-      } else if (ev.type === 'library-shuffled' || ev.type === 'mulligan-taken') {
+      } else if (ev.type === 'library-shuffled') {
         runShuffle(ev.player)
+      } else if (ev.type === 'mulligan-taken') {
+        // The viewer's own hand goes back onto the library first, out of the
+        // mulligan popup, and the library twists once it's there.
+        const back = ev.player === seatRef.current ? runReturnHand(ev.player) : 0
+        playSound('shuffle', back)
+        if (back > 0) window.setTimeout(() => runShuffle(ev.player), back)
+        else runShuffle(ev.player)
       } else if (ev.type === 'dice-rolled') {
         throwDice({
           seq: ev.seq,

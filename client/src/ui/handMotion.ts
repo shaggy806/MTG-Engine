@@ -173,21 +173,59 @@ export function flyIntoHand(
   delay: number,
   duration: number,
 ): void {
+  flyHandCard(object, pile, seat, delay, duration, 'in')
+}
+
+/**
+ * A card leaving the viewer's hand for the library pile `pile`: a draw in
+ * reverse (`flyIntoHand`), the copy lifting out of the card's pose in the fan
+ * after `delay` ms, turning face down on the way and settling onto the pile.
+ * The hand card hides as its copy sets off and stays hidden: the board that
+ * follows no longer has it. A mulligan's hand going back before its shuffle.
+ */
+export function flyOutOfHand(
+  object: ObjectId,
+  pile: HTMLElement | null,
+  seat: string,
+  delay: number,
+  duration: number,
+): void {
+  flyHandCard(object, pile, seat, delay, duration, 'out')
+}
+
+/** A hand card's flight between its place in the fan and the library pile,
+ * either way — see {@link flyIntoHand} and {@link flyOutOfHand}. */
+function flyHandCard(
+  object: ObjectId,
+  pile: HTMLElement | null,
+  seat: string,
+  delay: number,
+  duration: number,
+  way: 'in' | 'out',
+): void {
   const first = handCardOf(object)
   if (first === null || pile === null) return
-  first.dataset.arriving = ''
+  const out = way === 'out'
+  // Coming in, the card is hidden until its copy lands; going out, from the
+  // moment its copy sets off.
+  if (!out) first.dataset.arriving = ''
   const started = performance.now()
   const show = (): void => {
     delete first.dataset.arriving
     const now = handCardOf(object)
     if (now) delete now.dataset.arriving
   }
+  const hide = (): void => {
+    const now = handCardOf(object)
+    if (now) now.dataset.arriving = ''
+  }
   const realTile = (host: HTMLElement) => host.querySelector<HTMLElement>('.card-tile:not(.hand-draw-face)')
   requestAnimationFrame(() => {
     const handCard = handCardOf(object)
     const tile = handCard ? realTile(handCard) : null
     if (!handCard || !tile || tile.offsetWidth === 0 || pile.getBoundingClientRect().width === 0) {
-      show()
+      if (out) window.setTimeout(hide, delay)
+      else show()
       return
     }
     const faceUp = pile.classList.contains('card-tile')
@@ -213,12 +251,18 @@ export function flyIntoHand(
     const step = (now: number): boolean => {
       const elapsed = now - started - delay
       const t = Math.min(1, Math.max(0, elapsed / duration))
+      if (out && elapsed >= 0) hide()
+      // How far from the pile: going out, the flight in played backwards.
+      const p = out ? 1 - t : t
       // Its card, should a re-render have replaced the element.
       const card = handCardOf(object)
       if (card !== null && box.parentElement !== card) card.appendChild(box)
       const host = box.parentElement
       const cardTile = host ? realTile(host) : null
       if (host === null || cardTile === null) return false
+      // The mulligan popup clips what overflows it sideways (App.css), which
+      // would cut the flight off at its border, short of the pile.
+      host.closest<HTMLElement>('.mulligan-modal')?.setAttribute('data-flying', '')
       // The tile's layout box in its `.hand-card` is the copy's box too; the
       // fan turns it about its bottom centre.
       const w = cardTile.offsetWidth
@@ -237,23 +281,27 @@ export function flyIntoHand(
       const s0 = from.width / w
       const x0 = from.left + from.width / 2 - at.left - (cardTile.offsetLeft + w / 2)
       const y0 = from.top + from.height / 2 - at.top - (cardTile.offsetTop + h) + (s0 * h) / 2
-      const e = ease(t)
-      // A touch big on the way in, settling to the card's size.
-      const swell = Math.sin(Math.PI * Math.min(1, t / 0.9)) * 0.06
+      const e = ease(p)
+      // A touch big on the way, at the card's size in the hand.
+      const swell = Math.sin(Math.PI * Math.min(1, p / 0.9)) * 0.06
       box.style.transform =
         `translate(${lerp(x0, pose.tx, e)}px, ${lerp(y0, pose.ty, e)}px) ` +
         `rotate(${lerp(0, pose.rotate, e)}deg) scale(${lerp(s0, pose.scale, e) + swell})`
-      box.style.opacity = elapsed < 0 ? '0' : String(Math.min(1, t / 0.08))
+      // Coming in, it fades up off the pile; going out, it's the card itself
+      // from the start, and lands on the pile it then is.
+      box.style.opacity = elapsed < 0 ? '0' : out ? '1' : String(Math.min(1, t / 0.08))
       if (!faceUp) {
-        // Face down off the pile, turning over through the middle of the flight.
-        const turnT = Math.min(1, Math.max(0, (t - 0.15) / 0.5))
+        // Face down at the pile, turned over through the middle of the flight.
+        const turnT = Math.min(1, Math.max(0, (p - 0.15) / 0.5))
         flipper.style.transform = `rotateY(${180 * (1 - (1 - Math.cos(Math.PI * turnT)) / 2)}deg)`
       }
       return t < 1
     }
     const land = (): void => {
+      const modal = box.closest<HTMLElement>('.mulligan-modal')
       box.remove()
-      show()
+      if (modal && modal.querySelector('.hand-draw-ghost') === null) modal.removeAttribute('data-flying')
+      if (!out) show()
     }
     const frame = (now: number): void => {
       if (step(now)) requestAnimationFrame(frame)

@@ -3345,6 +3345,12 @@
   text-align: center;
   font-size: var(--text-base);
 }
+/* While a card flies between the popup's hand and the library pile
+   (handMotion.ts's flyHandCard), out past its border: a mulligan's hand going
+   back, the new one dealt in. */
+.mulligan-modal[data-flying] {
+  overflow: visible;
+}
 .mulligan-modal .hand {
   width: 100%;
   margin-top: 0;
