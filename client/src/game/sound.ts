@@ -107,8 +107,11 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
 /** A cue's own level against the rest, where it isn't 1: the button click
  * a little under the game's sounds (the user's ask, 2026-10-10), and a tap
  * or untap too, as the commonest thing on the table (every mana tapped, a
- * whole untap step). */
-const CUE_LEVEL: Partial<Record<SoundCue, number>> = { click: 0.7, tap: 0.7, untap: 0.7 }
+ * whole untap step). The victory and defeat tunes well over them (+8 dB, the
+ * user's ask, 2026-10-10): matched on loudness, a sustained tune still read
+ * as much quieter than the game's sharp hits and card slaps, whose peaks sit
+ * about 8 dB higher; the tunes peak near -18 dB even so. */
+const CUE_LEVEL: Partial<Record<SoundCue, number>> = { click: 0.7, tap: 0.7, untap: 0.7, victory: 2.5, defeat: 2.5 }
 
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
 const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'defeat', 'turn', 'your-turn'])
