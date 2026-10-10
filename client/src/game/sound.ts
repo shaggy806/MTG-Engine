@@ -1,7 +1,7 @@
 import { motionPrefs } from './motionPrefs.ts'
 
 /**
- * The game's sound effects, off unless the viewer turns them on (motionPrefs'
+ * The game's sound effects, on unless the viewer turns them off (motionPrefs'
  * `sound`). Played from the same cues the animations are (see
  * `AnimationLayer`), so a sound lands with the thing it belongs to.
  *
@@ -66,9 +66,12 @@ let ctx: AudioContext | null = null
 
 function audio(): AudioContext | null {
   try {
+    // The browser plays nothing until the page has had a click (or a key):
+    // until then a cue is simply not heard, rather than a blocked context
+    // made and warned about. A browser that can't say goes ahead.
+    if (navigator.userActivation?.hasBeenActive === false) return null
     ctx ??= new AudioContext()
-    // A context made before any click starts suspended; any later cue after a
-    // click (turning sound on is one) resumes it.
+    // A context can still start suspended; any later cue resumes it.
     if (ctx.state === 'suspended') void ctx.resume()
     return ctx
   } catch {

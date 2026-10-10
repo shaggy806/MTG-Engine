@@ -32,9 +32,15 @@ export interface MotionSettings {
   /** The viewer's own switch, not counting the browser's preference. */
   readonly reduceMotion: boolean
   readonly castEntrance: CastEntrance
-  /** Sound effects (`game/sound.ts`). Off unless turned on. */
+  /** Sound effects (`game/sound.ts`). On unless turned off. */
   readonly sound: boolean
 }
+
+/** Stored beside the settings from when sound became on by default
+ * (2026-10-10). Before then every save wrote `sound: false` whether or not
+ * the viewer had touched it (changing the speed saved it too), so a `sound`
+ * saved without this mark is no choice, and reads as the default. */
+const SOUND_DEFAULT_ON = 2
 
 export interface MotionPrefs extends MotionSettings {
   /** The setting or the browser's preference. What every animation obeys. */
@@ -46,14 +52,14 @@ const DEFAULTS: MotionSettings = {
   animScale: 1,
   reduceMotion: false,
   castEntrance: 'rise',
-  sound: false,
+  sound: true,
 }
 
 function readStored(): MotionSettings {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (raw === null) return DEFAULTS
-    const parsed = JSON.parse(raw) as Partial<MotionSettings>
+    const parsed = JSON.parse(raw) as Partial<MotionSettings> & { readonly version?: number }
     const animScale = ANIM_SCALES.find((s) => s === parsed.animScale) ?? DEFAULTS.animScale
     const castEntrance =
       CAST_ENTRANCES.find((e) => e === parsed.castEntrance) ?? DEFAULTS.castEntrance
@@ -61,7 +67,7 @@ function readStored(): MotionSettings {
       animScale,
       reduceMotion: parsed.reduceMotion === true,
       castEntrance,
-      sound: parsed.sound === true,
+      sound: parsed.version === SOUND_DEFAULT_ON ? parsed.sound !== false : DEFAULTS.sound,
     }
   } catch {
     return DEFAULTS
@@ -110,7 +116,7 @@ export function motionPrefs(): MotionPrefs {
 export function setMotionSettings(next: Partial<MotionSettings>): void {
   settings = { ...settings, ...next }
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...settings, version: SOUND_DEFAULT_ON }))
   } catch {
     // Not remembered past this page load; still applies now.
   }
