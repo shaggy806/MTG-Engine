@@ -78,8 +78,9 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // apart again if it should sound different.
   turn: ['game-start'],
   'your-turn': ['game-start'],
-  // Kenney's Interface Sounds: any button on the site (`clickButtons`).
-  click: ['click_001'],
+  // Kenney's Interface Sounds: any button on the site (`clickButtons`). A
+  // tiny, low click (the user's pick, 2026-10-10; click_001 was too sharp).
+  click: ['click_003'],
 }
 
 /** A cue's own level against the rest, where it isn't 1: the button click
