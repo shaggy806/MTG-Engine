@@ -48,6 +48,8 @@ function takes(name: string, n: number): string[] {
  */
 const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   land: takes('card-place', 4),
+  // A spell cast sounds as a land played does: a card put down.
+  cast: takes('card-place', 4),
   draw: takes('card-slide', 8),
   shuffle: ['card-shuffle'],
   discard: takes('card-shove', 4),
