@@ -87,6 +87,10 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // A creature dying (put into a graveyard from the battlefield): tonsil5's
   // "Grunt2 - Death Pain" (Freesound, CC0).
   'creature-death': ['grunt-death'],
+  // A permanent exiled: dreggsome's "blow smoke" (Freesound, CC0), cut to
+  // start as the breath becomes audible, so its burst lands with the exile's
+  // white-blue flare and its body carries the dissolve.
+  exile: ['blow-smoke'],
   // Any other permanent leaving the battlefield, but for exile (its own
   // cue): destroyed, sacrificed, returned to hand or library. rubberduck's
   // "75 CC0 breaking / falling / hit sfx" (OpenGameArt), breaking_03.
