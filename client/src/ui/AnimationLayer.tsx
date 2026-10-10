@@ -1424,6 +1424,14 @@ function soundFor(ev: GameEvent, seat: PlayerId): void {
     case 'permanent-untapped':
       playSound('untap')
       return
+    // An ability going on the stack: a trigger, or an activated ability other
+    // than a mana ability (which doesn't use the stack, and has no `ability`).
+    case 'ability-triggered':
+      playSound('ability')
+      return
+    case 'ability-activated':
+      if (ev.ability !== undefined) playSound('ability')
+      return
     default:
       return
   }

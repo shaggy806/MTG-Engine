@@ -30,6 +30,7 @@ export type SoundCue =
   | 'your-turn'
   | 'tap'
   | 'untap'
+  | 'ability'
   | 'counters'
   | 'countered'
   | 'dice'
@@ -254,6 +255,11 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
     case 'your-turn':
       tone(a, 523, 260, { type: 'triangle', gain: 0.08 })
       tone(a, 784, 380, { type: 'triangle', at: 120, gain: 0.07 })
+      break
+    case 'ability':
+      // An ability going on the stack: a soft rise, until a recording is
+      // picked.
+      tone(a, 520, 220, { to: 880, type: 'sine', gain: 0.06 })
       break
     case 'tap':
     case 'untap':
