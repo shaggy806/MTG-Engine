@@ -452,8 +452,8 @@ type SlotKind =
   | 'move'
   | 'crown'
   | 'shuffle'
-  // Nothing drawn, only heard (a shuffle, under reduced motion): costs no
-  // time.
+  // Nothing drawn, only heard (attackers or a blocker declared, a shuffle
+  // under reduced motion): costs no time.
   | 'sound'
 
 /**
@@ -727,6 +727,10 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
   }
   if (ev.type === 'dice-rolled') {
     return { event: ev, kind: 'dice', duration: DICE_STEP_MS }
+  }
+  // A declaration's sword sound: the arrows it draws are the board's own.
+  if (ev.type === 'attackers-declared' || ev.type === 'blocker-declared') {
+    return { event: ev, kind: 'sound', duration: 0 }
   }
   // A mulligan shuffles the hand back in without a `library-shuffled`. Pure
   // movement, so reduced motion keeps only its sound.

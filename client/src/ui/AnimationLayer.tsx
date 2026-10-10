@@ -1391,8 +1391,16 @@ function soundFor(ev: GameEvent): void {
     case 'spell-fizzled':
       playSound('countered')
       return
+    case 'attackers-declared':
+      playSound('attack')
+      return
+    case 'blocker-declared':
+      playSound('block')
+      return
     case 'damage-dealt':
-      if (ev.combat) playSound('hit')
+      // Steel on steel against a creature; a swing that gets through to a
+      // player.
+      if (ev.combat) playSound(ev.target.kind === 'player' ? 'attack' : 'hit')
       return
     case 'permanent-left-battlefield':
       playSound(ev.toZone === 'exile' ? 'exile' : 'death')

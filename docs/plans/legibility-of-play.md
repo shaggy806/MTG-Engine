@@ -281,9 +281,9 @@ Follow-on ideas, approved by the user on 2026-09-30:
   only what's still drawn (a permanent, a stack entry, your hand, a player's panel). It could
   open the zone the card went to instead.
 - **Half the sounds are still synthesised placeholders** (`game/sound.ts`): the table's own noises
-  are recorded now (draw, land, shuffle, discard, mill, counters, dice, a countered spell; Kenney's
-  CC0 packs, `client/public/sfx/CREDITS.md`), but cast, hit, death, exile, life, turn and tap are
-  still Web Audio tones. Cues with nothing yet: attack, block, noncombat damage, bounce, your
+  are recorded now (draw, land, shuffle, discard, mill, counters, dice, a countered spell, and
+  combat's attack, block and hit swords; CC0 packs, `client/public/sfx/CREDITS.md`), but cast,
+  death, exile, life, turn and tap are still Web Audio tones. Cues with nothing yet: noncombat damage, bounce, your
   turn and your priority (viewer-only), a player eliminated, defeat (victory has its tune), a token arriving,
   a trigger, a transform, a change of control, and a commander cast; and `game-started`, if a
   frame ever carries it to the client. A new cue is a `SoundCue`, a `SAMPLES` entry and a

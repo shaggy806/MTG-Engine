@@ -5,8 +5,9 @@ import { motionPrefs } from './motionPrefs.ts'
  * `sound`). Played from the same cues the animations are (see
  * `AnimationLayer`), so a sound lands with the thing it belongs to.
  *
- * Two sources. The table's own noises — cards, dice, chips — and the victory
- * tune are recorded (`public/sfx/`, all CC0; `CREDITS.md` there says whose),
+ * Two sources. The table's own noises — cards, dice, chips — the swords of
+ * combat and the victory tune are recorded (`public/sfx/`, all CC0;
+ * `CREDITS.md` there says whose),
  * loaded once sound is first played. Everything else is a short tone
  * synthesised with Web Audio, which is also what a recorded cue falls back to
  * while its files load (or if they can't), where it has a tone at all.
@@ -18,6 +19,8 @@ export type SoundCue =
   | 'shuffle'
   | 'discard'
   | 'mill'
+  | 'attack'
+  | 'block'
   | 'hit'
   | 'death'
   | 'exile'
@@ -51,6 +54,12 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   countered: ['error_006'],
   dice: ['dice-throw-1', 'dice-throw-3'],
   die: takes('die-throw', 4),
+  // Swords (StarNinjas): a swing as attackers are declared, and as one
+  // connects with a player; a clash as a blocker is, and as combat damage
+  // lands on a creature.
+  attack: takes('sword', 10),
+  block: takes('sword-clash', 10),
+  hit: takes('sword-clash', 10),
   victory: ['newthingget'],
 }
 

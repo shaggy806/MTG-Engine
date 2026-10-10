@@ -410,6 +410,25 @@ describe('scheduleEvents', () => {
     expect(scheduleEvents([mulligan('p1')], 'beginning', { scale: 1, reduced: false }).totalMs).toBe(SHUFFLE_STEP_MS)
   })
 
+  it('gives attackers and blockers declared a slot to be heard in, costing nothing', () => {
+    const s = scheduleEvents(
+      [
+        dies(),
+        ev({ type: 'attackers-declared', player: 'p1', attackers: ['a'] }),
+        ev({ type: 'blocker-declared', blocker: 'b', attacker: 'a' }),
+        dies(),
+      ],
+      'combat',
+    )
+    expect(s.items.map((i) => [i.event.type, i.offset])).toEqual([
+      ['permanent-left-battlefield', 0],
+      ['attackers-declared', DEATH_STEP_MS],
+      ['blocker-declared', DEATH_STEP_MS],
+      ['permanent-left-battlefield', 0],
+    ])
+    expect(s.totalMs).toBe(DEATH_STEP_MS)
+  })
+
   it('keeps only a shuffle to be heard under reduced motion, costing nothing and splitting no beat', () => {
     const s = scheduleEvents([dies(), ev({ type: 'library-shuffled', player: 'p1' }), dies()], 'precombat-main', {
       scale: 1,
