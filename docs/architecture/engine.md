@@ -94,7 +94,8 @@ since its pacing tests drive a fake clock.
 **Progress files** (`scripts/progress.mjs`): a long job writes
 `.claude/progress/<label>-<pid>-<n>.json` at the repo root (git-ignored) — `{ label, done, total,
 failed, startedAt, updatedAt, finished }`, at most twice a second, written then renamed so a
-reader never sees half of one, and closed on process exit. The engine and server test runs,
+reader never sees half of one, and closed on process exit. The engine and server test runs, the
+client's Playwright suite (`client/e2e/progress-reporter.mjs`, one unit per test),
 `worker-pool.mjs` (so `bot:ab`, `bot:diff`, `bot:decks`), the fuzzer, `bot:bench`/`bot:tune`
 (one per match), `bot:behaviour` and `bot:crackback` write one. A Claude Code mod (`job-progress`,
 kept outside the repo) polls the folder and draws a bar per job above the prompt; nothing else

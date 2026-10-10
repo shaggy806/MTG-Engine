@@ -21,7 +21,12 @@ export default defineConfig({
   // drops frames now and then: one retry there, so a flake shows as
   // "flaky" in the report instead of failing the run.
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+  // `progress-reporter.mjs` draws the run as a bar above Claude Code's prompt.
+  reporter: [
+    ['list'],
+    ...(process.env.CI ? [['html', { open: 'never' }] as const] : []),
+    ['./e2e/progress-reporter.mjs'],
+  ],
   use: {
     browserName: 'chromium',
     baseURL: `http://127.0.0.1:${webPort}`,
