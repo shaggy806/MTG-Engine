@@ -1362,8 +1362,9 @@ function runPulse(source: ObjectId, delay: number): void {
   }
 }
 
-/** The sound an event makes, if any (and if the viewer has sound on). */
-function soundFor(ev: GameEvent): void {
+/** The sound an event makes, if any (and if the viewer has sound on), on
+ * the screen of `seat`. */
+function soundFor(ev: GameEvent, seat: PlayerId): void {
   switch (ev.type) {
     case 'spell-cast':
       playSound('cast')
@@ -1407,7 +1408,8 @@ function soundFor(ev: GameEvent): void {
       playSound(ev.delta > 0 ? 'gain' : 'loss')
       return
     case 'turn-began':
-      playSound('turn')
+      // Your own turn is announced; anyone else's only marked.
+      playSound(ev.activePlayer === seat ? 'your-turn' : 'turn')
       return
     case 'dice-rolled':
       // As the dice hit the table, not as they leave the roller's hand.
@@ -2354,7 +2356,7 @@ export function AnimationLayer({
 
     const fire = (cue: AnimationCue): void => {
       const { event: ev, view } = cue
-      soundFor(ev)
+      soundFor(ev, seatRef.current)
       if (ev.type === 'spell-cast' || ev.type === 'land-played') {
         const obj = view.objects[ev.object]
         if (!obj) return
@@ -2541,7 +2543,7 @@ export function AnimationLayer({
             runHurt(cue.event, cue.delay)
           }
           const ev = cue.event
-          window.setTimeout(() => soundFor(ev), cue.delay)
+          window.setTimeout(() => soundFor(ev, seatRef.current), cue.delay)
           continue
         }
         // A move's snapshot is of the board as the frame starts, so it's taken
@@ -2576,7 +2578,7 @@ export function AnimationLayer({
       for (const [delay, run] of mills) {
         window.setTimeout(() => {
           runMill(run.events, run.view)
-          for (const ev of run.events) soundFor(ev)
+          for (const ev of run.events) soundFor(ev, seatRef.current)
         }, delay)
       }
     })

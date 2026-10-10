@@ -27,6 +27,7 @@ export type SoundCue =
   | 'gain'
   | 'loss'
   | 'turn'
+  | 'your-turn'
   | 'tap'
   | 'counters'
   | 'countered'
@@ -62,10 +63,13 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // Hits (Independent.nu) as combat damage lands, on a creature or a player.
   hit: ['hit-25', 'hit-26', 'hit-27', 'hit-28', 'hit-29', 'hit-32'],
   victory: ['newthingget'],
+  // colorsCrimsonTears' Fanfare 2 (Freesound, CC0): a stand-in until a
+  // warmer, Hearthstone-like chime turns up.
+  'your-turn': ['fanfare-2-rpg'],
 }
 
 /** Cues that are tunes: played as recorded, never nudged in pitch. */
-const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory'])
+const TUNES: ReadonlySet<SoundCue> = new Set<SoundCue>(['victory', 'your-turn'])
 
 /** Kept low at the slider's default: these play under a game, not over it. */
 const VOLUME = 0.6
@@ -222,7 +226,9 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
       tone(a, 420, 120, { type: 'sine' })
       tone(a, 280, 180, { type: 'sine', at: 90 })
       break
+    // Your turn's own fanfare falls back to everyone's chime.
     case 'turn':
+    case 'your-turn':
       tone(a, 523, 260, { type: 'triangle', gain: 0.08 })
       tone(a, 784, 380, { type: 'triangle', at: 120, gain: 0.07 })
       break
