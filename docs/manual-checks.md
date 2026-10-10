@@ -226,6 +226,7 @@ How to use it:
 | [Isochron Scepter, Mnemonic Deluge, Narset, Enlightened Exile](#isochron-scepter-mnemonic-deluge-narset-enlightened-exile) | rules call | Casting copies of cards |
 | [Ninja of the Deep Hours, Yuriko, the Tiger's Shadow](#ninja-of-the-deep-hours-yuriko-the-tigers-shadow) | new decision | Ninjutsu |
 | [Bottomless Pool // Locker Room, Unholy Annex // Ritual Chamber](#bottomless-pool--locker-room-unholy-annex--ritual-chamber) | new decision | Rooms |
+| [Paladin Class](#paladin-class) | new decision | Class levels |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4317,3 +4318,21 @@ stack count once per token)
   door. Bottomless Pool's "when you unlock this door" triggers as it enters; Ritual Chamber's makes a 6/6
   flying Demon, and Unholy Annex then drains instead of costing you 2 at your end step.
 - **Known limits:** Bots unlock doors only as the evaluation sees fit (no Room-specific planning).
+
+## Class levels (2026-10-10)
+
+### Paladin Class
+
+*New decision* — Class (rule 716): gaining the next level as a sorcery-speed activated ability
+
+- **Setup:** Your precombat main. Your battlefield: Paladin Class, Grizzly Bears, Llanowar Elves and eight
+  Plains. Bob: Hill Giant.
+- **Do:** Look at Paladin Class's tile and open its menu. Gain level 2 ({2}{W}), then level 3 ({4}{W}).
+  Attack Bob with both creatures and target the Bears with the attack trigger. Before combat ends, open the
+  menu again.
+- **Check:** The tile wears a "Lv 1" chip as it sits (the hover card's reads "level 1"). Its menu offers
+  only "Level 2" at first, "Level 3" only once it's level 2, and neither once it's level 3, nor during combat
+  or with something on the stack. At level 2 the chip reads "Lv 2" and the Bears and Elves become 3/3 and 2/2;
+  at level 3 attacking asks for the trigger's target, and the Bears get +1/+1 more and double strike (4/4,
+  dealing 8). The level is gone if the Class leaves and comes back.
+- **Known limits:** Bots level up only as the evaluation sees fit (no Class-specific planning).

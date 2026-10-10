@@ -50,6 +50,7 @@ import _poolChaosWarp from "../pool/chaos-warp.js";
 import _poolCharismaBobblehead from "../pool/charisma-bobblehead.js";
 import _poolChatterOfTheSquirrel from "../pool/chatter-of-the-squirrel.js";
 import _poolCommuneWithLava from "../pool/commune-with-lava.js";
+import _poolCoolButRude from "../pool/cool-but-rude.js";
 import _poolCoordinatedCharge from "../pool/coordinated-charge.js";
 import _poolCrossbowAmbush from "../pool/crossbow-ambush.js";
 import _poolCryptOfTheEternals from "../pool/crypt-of-the-eternals.js";
@@ -274,6 +275,7 @@ import _tokensAssemblyWorkerToken from "../tokens/assembly-worker-token.js";
 import _tokensBlueRedElementalToken44 from "../tokens/blue-red-elemental-token-4-4.js";
 import _tokensConstructTokenMetallurgicSummonings from "../tokens/construct-token-metallurgic-summonings.js";
 import _tokensPlainKnightToken from "../tokens/plain-knight-token.js";
+import _tokensSwordToken from "../tokens/sword-token.js";
 import _tokensVampireToken11 from "../tokens/vampire-token-1-1.js";
 
 const shard: CardShard = {
@@ -325,6 +327,7 @@ const shard: CardShard = {
     _poolCharismaBobblehead,
     _poolChatterOfTheSquirrel,
     _poolCommuneWithLava,
+    _poolCoolButRude,
     _poolCoordinatedCharge,
     _poolCrossbowAmbush,
     _poolCryptOfTheEternals,
@@ -551,6 +554,7 @@ const shard: CardShard = {
     _tokensBlueRedElementalToken44,
     _tokensConstructTokenMetallurgicSummonings,
     _tokensPlainKnightToken,
+    _tokensSwordToken,
     _tokensVampireToken11,
   ],
 };

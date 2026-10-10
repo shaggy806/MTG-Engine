@@ -276,6 +276,7 @@ import _tokensCatWarriorToken from "../tokens/cat-warrior-token.js";
 import _tokensElfWarriorTokenRhysTheRedeemed from "../tokens/elf-warrior-token-rhys-the-redeemed.js";
 import _tokensFoodToken from "../tokens/food-token.js";
 import _tokensHorrorToken from "../tokens/horror-token.js";
+import _tokensOtterToken from "../tokens/otter-token.js";
 import _tokensThopterToken from "../tokens/thopter-token.js";
 import _tokensWarriorToken from "../tokens/warrior-token.js";
 import _tokensWolfToken from "../tokens/wolf-token.js";
@@ -557,6 +558,7 @@ const shard: CardShard = {
     _tokensElfWarriorTokenRhysTheRedeemed,
     _tokensFoodToken,
     _tokensHorrorToken,
+    _tokensOtterToken,
     _tokensThopterToken,
     _tokensWarriorToken,
     _tokensWolfToken,

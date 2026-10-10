@@ -527,6 +527,12 @@ export type TriggerSpec =
        * a Room" (Entity Tracker's eerie) is `fully: true` (709.5i), `who` the
        * Room's controller. `filter` narrows the Room.
        */
+      readonly on: "class-level-gained";
+      /** "When this Class becomes level `level`" (rule 716.2a): `who: "self"`. */
+      readonly who: TriggerWho;
+      readonly level: number;
+    }
+  | {
       readonly on: "door-unlocked";
       readonly who: TriggerWho;
       readonly door?: "left" | "right";
@@ -576,6 +582,12 @@ export type TriggerSpec =
        * things at once is one event. */
       readonly on: "gains-life";
       readonly who: TriggerWho;
+      /** "Whenever you gain life **for the first time each turn**"
+       * (Gourmand's Talent): only the gain that took the player's life gained
+       * this turn from none — one earlier in the turn, even before this
+       * permanent arrived, uses it up. Reads `PlayerState.lifeGainedThisTurn`,
+       * which already counts this gain when the trigger is matched. */
+      readonly firstTimeEachTurn?: boolean;
     }
   | {
       /** A player lost life. `who` is whose life, `{ triggerValue: true }`

@@ -47,6 +47,7 @@ import _poolCharmingPrince from "../pool/charming-prince.js";
 import _poolChulane from "../pool/chulane.js";
 import _poolCitanulDruid from "../pool/citanul-druid.js";
 import _poolClarionConqueror from "../pool/clarion-conqueror.js";
+import _poolClericClass from "../pool/cleric-class.js";
 import _poolClingingDarkness from "../pool/clinging-darkness.js";
 import _poolConsumingAberration from "../pool/consuming-aberration.js";
 import _poolCorruptedConviction from "../pool/corrupted-conviction.js";
@@ -326,6 +327,7 @@ const shard: CardShard = {
     _poolChulane,
     _poolCitanulDruid,
     _poolClarionConqueror,
+    _poolClericClass,
     _poolClingingDarkness,
     _poolConsumingAberration,
     _poolCorruptedConviction,

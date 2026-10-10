@@ -94,6 +94,7 @@ import _poolHedronDetonator from "../pool/hedron-detonator.js";
 import _poolHighlandGiant from "../pool/highland-giant.js";
 import _poolHordelingOutburst from "../pool/hordeling-outburst.js";
 import _poolHorizonChimera from "../pool/horizon-chimera.js";
+import _poolHuntersTalent from "../pool/hunters-talent.js";
 import _poolHypnoticSpecter from "../pool/hypnotic-specter.js";
 import _poolIgnobleHierarch from "../pool/ignoble-hierarch.js";
 import _poolIllustriousHistorian from "../pool/illustrious-historian.js";
@@ -350,6 +351,7 @@ const shard: CardShard = {
     _poolHighlandGiant,
     _poolHordelingOutburst,
     _poolHorizonChimera,
+    _poolHuntersTalent,
     _poolHypnoticSpecter,
     _poolIgnobleHierarch,
     _poolIllustriousHistorian,

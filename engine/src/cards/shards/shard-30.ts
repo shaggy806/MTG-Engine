@@ -267,6 +267,7 @@ import _poolWindStrider from "../pool/wind-strider.js";
 import _poolWindsOfRath from "../pool/winds-of-rath.js";
 import _poolWindseekerCentaur from "../pool/windseeker-centaur.js";
 import _poolWindsweptHeath from "../pool/windswept-heath.js";
+import _poolWizardClass from "../pool/wizard-class.js";
 import _poolWizardsOfThay from "../pool/wizards-of-thay.js";
 import _poolWordsOfWisdom from "../pool/words-of-wisdom.js";
 import _poolZephyrBoots from "../pool/zephyr-boots.js";
@@ -544,6 +545,7 @@ const shard: CardShard = {
     _poolWindsOfRath,
     _poolWindseekerCentaur,
     _poolWindsweptHeath,
+    _poolWizardClass,
     _poolWizardsOfThay,
     _poolWordsOfWisdom,
     _poolZephyrBoots,

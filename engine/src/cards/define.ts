@@ -874,7 +874,16 @@ export type StaticCondition =
    * abilities are gated: "as long as the Ring has tempted that player two or
    * more times, it has …". The source's controller's count.
    */
-  | { readonly kind: "ring-tempted"; readonly atLeast: number };
+  | { readonly kind: "ring-tempted"; readonly atLeast: number }
+  /**
+   * The source's Class level (rule 716.2b) — `atLeast`, or `exactly` (a
+   * level bar's "activate only if this Class is level N-1"). A permanent
+   * with no level is level 1 (716.2d). How a Class's later levels are gated
+   * (`atLevel` in `helpers.ts`): "as long as this Class is level N or
+   * greater, it has [abilities]" (716.2a). Read as it last was once the
+   * source has left the battlefield.
+   */
+  | { readonly kind: "class-level"; readonly atLeast?: number; readonly exactly?: number };
 
 /**
  * A static ability: continuously modifies characteristics (rule 613 layers 6 /

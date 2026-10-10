@@ -15550,7 +15550,8 @@ export class Game {
         return (
           event.type === "life-changed" &&
           event.delta > 0 &&
-          this.matchesWhoPlayer(spec.who, event.player, self)
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          (spec.firstTimeEachTurn !== true || this.state.players[event.player].lifeGainedThisTurn === event.delta)
         );
       case "loses-life":
         return (
@@ -15572,6 +15573,8 @@ export class Game {
         );
       case "rolls-dice":
         return event.type === "dice-rolled" && this.matchesWhoPlayer(spec.who, event.player, self);
+      case "class-level-gained":
+        return event.type === "class-level-gained" && event.level === spec.level && this.matchesWho(spec.who, event.object, self);
       case "door-unlocked":
         return (
           event.type === "door-unlocked" &&
@@ -18505,6 +18508,16 @@ export class Game {
           const link = this.state.objects[id]?.exiledWith;
           return link !== undefined && link.source === source && link.zoneChangeCount === stint;
         });
+      },
+      setClassLevel: (level) => {
+        // Still the same permanent (rule 400.7): a Class that left and came
+        // back is a new object, at no level.
+        const object = this.state.objects[source];
+        if (opts.sourceLost === true || object?.zone !== "battlefield") return;
+        if (refs.source !== undefined && (object.zoneChangeCount ?? 0) !== refs.source) return;
+        object.classLevel = level;
+        invalidateComputedCache();
+        this.emit({ type: "class-level-gained", object: source, level });
       },
       roomDoors: (room) => {
         const rooms =
@@ -27384,6 +27397,7 @@ export class Game {
     const goaders = goadersOf(this.state, this.registry, id);
     return {
       zoneChangeCount: object.zoneChangeCount ?? 0,
+      ...(object.classLevel !== undefined ? { classLevel: object.classLevel } : {}),
       name,
       owner: object.owner,
       controller: object.controller,
@@ -28067,8 +28081,9 @@ export class Game {
     // left the battlefield (708.9); one entering face down is turned so below.
     delete object.faceDown;
     // Nor has a Room's unlocked designations (rule 709.5c): set below as it
-    // enters the battlefield.
+    // enters the battlefield. Nor a Class level (716.2b).
     delete object.doors;
+    delete object.classLevel;
     object.exiledWith = undefined;
     // Modes chosen for a targeted modal spell (Phase 11 EG-2) and a kicker
     // paid as it was cast (P8) both end with the stack.

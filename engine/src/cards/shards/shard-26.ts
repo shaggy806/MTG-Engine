@@ -19,6 +19,7 @@ import _poolAncientGoldDragon from "../pool/ancient-gold-dragon.js";
 import _poolApexDevastator from "../pool/apex-devastator.js";
 import _poolAranaHeartOfTheSpider from "../pool/arana-heart-of-the-spider.js";
 import _poolArdenvaleFealty from "../pool/ardenvale-fealty.js";
+import _poolArtificerClass from "../pool/artificer-class.js";
 import _poolAshcoatBear from "../pool/ashcoat-bear.js";
 import _poolAtomize from "../pool/atomize.js";
 import _poolAutonSoldier from "../pool/auton-soldier.js";
@@ -296,6 +297,7 @@ const shard: CardShard = {
     _poolApexDevastator,
     _poolAranaHeartOfTheSpider,
     _poolArdenvaleFealty,
+    _poolArtificerClass,
     _poolAshcoatBear,
     _poolAtomize,
     _poolAutonSoldier,

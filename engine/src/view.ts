@@ -220,6 +220,9 @@ export interface VisibleObject {
    * left and right halves, each with its name, mana cost and rules text —
    * and whether each is unlocked. The rest of this object is what the
    * permanent has: only the unlocked doors' text, a locked Room no name. */
+  /** A Class on the battlefield's level (rule 716.2b) — 1 without one
+   * (716.2d); absent for anything that isn't a Class there. */
+  readonly classLevel?: number;
   readonly doors?: readonly {
     readonly door: "left" | "right";
     readonly name: string;
@@ -464,6 +467,7 @@ function visible(
     ...(faceDown !== undefined ? {} : spellFaceOf(registry, object)),
     art: faceDown !== undefined ? null : (printing ?? cardDef.art),
     faceIsBack: faceDown !== undefined ? false : faceIsBack,
+    ...(onBattlefield && computed.subtypes.includes("Class") ? { classLevel: object.classLevel ?? 1 } : {}),
     ...(roomDoors !== undefined
       ? {
           doors: (["left", "right"] as const).map((door) => {

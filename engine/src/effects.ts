@@ -2116,6 +2116,14 @@ export type EffectSpec =
       readonly kind: "ninjutsu";
     }
   | {
+      /** A Class level bar's effect (rule 716.2a): "this Class's level
+       * becomes `level`" — the source's, if it's still the same permanent
+       * (rule 400.7). "When this Class becomes level N" triggers on it.
+       * Written by the `classLevel()` helper. */
+      readonly kind: "gain-class-level";
+      readonly level: number;
+    }
+  | {
       /**
        * Unlock a door of a Room (rule 709.5f) — "unlock a locked door of a
        * Room you control" (Ghostly Dancers): the effect's controller picks
@@ -4598,6 +4606,8 @@ export interface EffectApi {
   /** See the `"ninjutsu"` {@link EffectSpec}: whether it stopped to ask an
    * "as this enters" choice, after which it's applied again. */
   ninjutsu(): boolean;
+  /** See the `"gain-class-level"` {@link EffectSpec}. */
+  setClassLevel(level: number): void;
   /** The doors of `room`, or of every Room the effect's controller controls:
    * each with its half's name, its Room's, and whether it's unlocked. */
   roomDoors(room?: ObjectId): readonly {
@@ -6993,6 +7003,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "set-door":
       ctx.setDoor(spec.object, spec.door, spec.lock);
+      return;
+    case "gain-class-level":
+      ctx.setClassLevel(spec.level);
       return;
     case "ninjutsu": {
       const parked = ctx.parkedCount();

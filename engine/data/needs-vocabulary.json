@@ -4975,6 +4975,33 @@
   "static:stun-counters-cant-be-removed": {
    "family": "mechanic:stun-counters",
    "example": "Fear of Sleep Paralysis: 'Stun counters can't be removed from permanents your opponents control.'"
+  },
+  "effect:forced-block-this-combat": {
+   "example": "Fighter Class: 'up to one target creature blocks it this combat if able' — a per-combat block requirement on one creature."
+  },
+  "cost:mana-restriction-class-level": {
+   "family": "cost:mana-spending-rules",
+   "example": "Sorcerer Class: 'Spend this mana only to cast an instant or sorcery spell or to gain a Class level' — a restriction that admits an activated ability by its effect."
+  },
+  "effect:spell-as-damage-source": {
+   "example": "Sorcerer Class: 'that spell deals damage to each opponent' — the triggering spell on the stack, not the Class, is the damage's source."
+  },
+  "effect:opponents-with-few-cards-count": {
+   "example": "Bandit's Talent: 'draw an additional card for each opponent who has one or fewer cards in hand' — a count of opponents meeting a hand-size test."
+  },
+  "cost:spend-mana-as-any-color": {
+   "family": "cost:mana-spending-rules",
+   "example": "Rogue Class: 'you may spend mana as though it were mana of any color to cast those spells' (rule 609.4b)."
+  },
+  "static:look-at-top-card-any-time": {
+   "example": "Fortune Teller's Talent: 'You may look at the top card of your library any time' — a private reveal to one player."
+  },
+  "cost:cost-reduction-cast-not-from-hand": {
+   "example": "Fortune Teller's Talent: 'Spells you cast from anywhere other than your hand cost {2} less to cast.'"
+  },
+  "effect:animate-with-cda-pt": {
+   "family": "static:set-characteristics",
+   "example": "Druid Class: target land becomes a creature with 'power and toughness are each equal to the number of lands you control' — a granted characteristic-defining P/T."
   }
  }
 }

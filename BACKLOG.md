@@ -59,12 +59,13 @@ section keeps only what to do next.
   (`engine/data/sweep-3/PC-*.json`) go as their originals land.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,470 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,482 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them — crew, the Ring, dice, ninjutsu, Rooms and most of casting during resolution landed
-  2026-10-09; leading now (`cards:needs -- --rank`): attach extensions (24 cards), face-down's
-  leftovers (22), Class (22, 21 fully unblocked), random choice (21) —
+  2026-10-09, Class 2026-10-10; leading now (`cards:needs -- --rank`): attach extensions (24 cards,
+  18 fully unblocked), face-down's leftovers (22, 19), random choice (21, 16), the Kindred card
+  type (19, 17) —
    (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
@@ -73,7 +74,7 @@ section keeps only what to do next.
 - **Features with a family of cards behind them**, each detailed where it points:
   the rest of "enters tapped and attacking" (`docs/card-blockers.md`); modal
   activated abilities with targeted modes, host triggers (28 cards), the EDH-popularity tiers
-  (Class; Discover, Reconfigure) and the limitation ledger (`neededCards-features.md`); the
+  (Discover, Reconfigure) and the limitation ledger (`neededCards-features.md`); the
   Incarnations' evoke by exiling a card, and the labelled abilities (Case, Forecast, Max speed)
   (`docs/card-blockers.md`, "Open leads").
 - **More Oracle-parser templates.** The unread lines that recur most are the next templates
@@ -169,6 +170,8 @@ item lands.
 
 - **A forced look-and-choose still asks**: Yuriko's and Dark Confidant's "reveal the top card and put it into your hand" open a one-card picker with nothing to choose (`look-and-choose` with `count`, `min` and `max` 1); it could take the card unasked.
 - **The library's card viewer has no printings panel** (the user's ask, 2026-10-09): a scrollable list of every set/printing of the card, clicking one showing that printing; and its next/previous buttons shift as the box widens or narrows with whether the card has tokens (`client/src/library/LibraryPage.tsx`).
+- **The library's associated-token tiles react to a click** (the user's ask, 2026-10-10): they may highlight to show which token is displayed, but clicking one should do nothing visible (`client/src/library/LibraryPage.tsx`, `library.css`).
+- **The deck builder shows the starter decks differently from user-made decks** (the user's ask, 2026-10-10): they should show the same way, but without the card pool or the ability to edit the deck (`client/src/deck-builder/DeckBuilderPage.tsx`, `DeckEditor.tsx`).
 - **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review): with bot speed moved into Settings every step shows at 1366, but at 1024 the track stops at EC.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards (manifested ones), damage, turn-long effects, the stack, the turn number.

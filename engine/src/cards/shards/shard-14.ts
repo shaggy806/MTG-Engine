@@ -15,6 +15,7 @@ import _poolArchaeomancer from "../pool/archaeomancer.js";
 import _poolArchfiendOfIfnir from "../pool/archfiend-of-ifnir.js";
 import _poolArchonOfRedemption from "../pool/archon-of-redemption.js";
 import _poolArdentElementalist from "../pool/ardent-elementalist.js";
+import _poolArtistsTalent from "../pool/artists-talent.js";
 import _poolAshcoatOfTheShadowSwarm from "../pool/ashcoat-of-the-shadow-swarm.js";
 import _poolAureliaTheLawAbove from "../pool/aurelia-the-law-above.js";
 import _poolAvenOfEnduringHope from "../pool/aven-of-enduring-hope.js";
@@ -218,6 +219,7 @@ import _poolSlinnVodaTheRisingDeep from "../pool/slinn-voda-the-rising-deep.js";
 import _poolSparringConstruct from "../pool/sparring-construct.js";
 import _poolSpitefulMotives from "../pool/spiteful-motives.js";
 import _poolStitchTogether from "../pool/stitch-together.js";
+import _poolStormchasersTalent from "../pool/stormchasers-talent.js";
 import _poolStrikeItRich from "../pool/strike-it-rich.js";
 import _poolStudy from "../pool/study.js";
 import _poolSurgicalSkullbomb from "../pool/surgical-skullbomb.js";
@@ -292,6 +294,7 @@ const shard: CardShard = {
     _poolArchfiendOfIfnir,
     _poolArchonOfRedemption,
     _poolArdentElementalist,
+    _poolArtistsTalent,
     _poolAshcoatOfTheShadowSwarm,
     _poolAureliaTheLawAbove,
     _poolAvenOfEnduringHope,
@@ -495,6 +498,7 @@ const shard: CardShard = {
     _poolSparringConstruct,
     _poolSpitefulMotives,
     _poolStitchTogether,
+    _poolStormchasersTalent,
     _poolStrikeItRich,
     _poolStudy,
     _poolSurgicalSkullbomb,

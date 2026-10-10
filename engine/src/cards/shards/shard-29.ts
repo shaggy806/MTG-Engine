@@ -18,6 +18,7 @@ import _poolAuspiciousArrival from "../pool/auspicious-arrival.js";
 import _poolBargain from "../pool/bargain.js";
 import _poolBetorKinToAll from "../pool/betor-kin-to-all.js";
 import _poolBlackChocobo from "../pool/black-chocobo.js";
+import _poolBlacksmithsTalent from "../pool/blacksmiths-talent.js";
 import _poolBlightedBat from "../pool/blighted-bat.js";
 import _poolBlisterBeetle from "../pool/blister-beetle.js";
 import _poolBloodcrusherOfKhorne from "../pool/bloodcrusher-of-khorne.js";
@@ -29,6 +30,7 @@ import _poolBurgeoning from "../pool/burgeoning.js";
 import _poolBuriedAlive from "../pool/buried-alive.js";
 import _poolBurningFields from "../pool/burning-fields.js";
 import _poolCadaverImp from "../pool/cadaver-imp.js";
+import _poolCaretakersTalent from "../pool/caretakers-talent.js";
 import _poolCavernThoctar from "../pool/cavern-thoctar.js";
 import _poolCelestialAncient from "../pool/celestial-ancient.js";
 import _poolChargingBadger from "../pool/charging-badger.js";
@@ -286,6 +288,7 @@ const shard: CardShard = {
     _poolBargain,
     _poolBetorKinToAll,
     _poolBlackChocobo,
+    _poolBlacksmithsTalent,
     _poolBlightedBat,
     _poolBlisterBeetle,
     _poolBloodcrusherOfKhorne,
@@ -297,6 +300,7 @@ const shard: CardShard = {
     _poolBuriedAlive,
     _poolBurningFields,
     _poolCadaverImp,
+    _poolCaretakersTalent,
     _poolCavernThoctar,
     _poolCelestialAncient,
     _poolChargingBadger,

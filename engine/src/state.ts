@@ -700,6 +700,11 @@ export interface GameObject {
    * Cleared on any zone change.
    */
   doors?: { readonly left: boolean; readonly right: boolean };
+  /** A **Class**'s level (rule 716.2b) — a designation, not a copiable
+   * value, which the permanent keeps even if it stops being a Class; none
+   * is level 1 (716.2d). Set by a level bar (`gain-class-level`), cleared
+   * on any zone change. */
+  classLevel?: number;
   /**
    * The permanent this card was exiled with, in the battlefield stint it was
    * in then — what a linked ability of that object means by "the exiled
@@ -1148,6 +1153,8 @@ export interface LastKnownInfo {
    * that has since come back and left again isn't read through the wrong
    * snapshot. */
   readonly zoneChangeCount: number;
+  /** Its Class level (`GameObject.classLevel`), if it had one. */
+  readonly classLevel?: number;
   /** The name its characteristics came from (`printedCardName`): the card it
    * was a copy of, or the face that was up. Its abilities are read off this,
    * unless `textName` says otherwise. */

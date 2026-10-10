@@ -2645,6 +2645,9 @@
 .card-flag.ring {
   background: #f0c24a;
 }
+.card-flag.level {
+  background: #9fe0c0;
+}
 /* Sits in the art box's top-left corner (CardTile renders it inside .ct-art),
    scaled with the card like everything else on its face. */
 .card-badge {

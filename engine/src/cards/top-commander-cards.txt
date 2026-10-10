@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3470 already implemented / 1530 missing (marks refreshed 2026-10-10)
+3482 already implemented / 1518 missing (marks refreshed 2026-10-10)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -627,10 +627,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   628  Ancient Copper Dragon                    {4}{R}{R}        Creature — Elder Dragon
 [x]   629  Thundering Falls                         {0}              Land — Island Mountain
 [x]   630  All That Glitters                        {1}{W}           Enchantment — Aura
-[ ]   631  Caretaker's Talent                       {2}{W}           Enchantment — Class
+[x]   631  Caretaker's Talent                       {2}{W}           Enchantment — Class
 [x]   632  Aftermath Analyst                        {1}{G}           Creature — Elf Detective
 [x]   633  Boggart Trawler // Boggart Bog           {3}              Creature — Goblin // Land
-[ ]   634  Wizard Class                             {U}              Enchantment — Class
+[x]   634  Wizard Class                             {U}              Enchantment — Class
 [x]   635  Greater Good                             {2}{G}{G}        Enchantment
 [x]   636  Ophiomancer                              {2}{B}           Creature — Human Shaman
 [x]   637  Treasure Cruise                          {7}{U}           Sorcery
@@ -1440,7 +1440,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1447  Drown in the Loch                        {U}{B}           Instant
 [x]  1448  Deep Analysis                            {3}{U}           Sorcery
 [x]  1449  Dreadhorde Invasion                      {1}{B}           Enchantment
-[ ]  1450  Cleric Class                             {W}              Enchantment — Class
+[x]  1450  Cleric Class                             {W}              Enchantment — Class
 [x]  1451  Insidious Roots                          {B}{G}           Enchantment
 [x]  1452  Temur Battle Rage                        {1}{R}           Instant
 [x]  1453  Bulk Up                                  {1}{R}           Instant
@@ -1546,7 +1546,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1553  It That Betrays                          {12}             Creature — Eldrazi
 [x]  1554  Uro, Titan of Nature's Wrath             {1}{G}{U}        Legendary Creature — Elder Giant
 [x]  1555  Simic Guildgate                          {0}              Land — Gate
-[ ]  1556  Artist's Talent                          {1}{R}           Enchantment — Class
+[x]  1556  Artist's Talent                          {1}{R}           Enchantment — Class
 [x]  1557  Marionette Master                        {4}{B}{B}        Creature — Human Artificer
 [ ]  1558  Ashling, Flame Dancer                    {2}{R}{R}        Legendary Creature — Elemental Shaman
 [x]  1559  Radiant Fountain                         {0}              Land
@@ -2062,7 +2062,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2069  Goblin Warchief                          {1}{R}{R}        Creature — Goblin Warrior
 [x]  2070  Sarkhan, Soul Aflame                     {1}{U}{R}        Legendary Creature — Human Shaman
 [x]  2071  Cancel                                   {1}{U}{U}        Instant
-[ ]  2072  Alchemist's Talent                       {3}{R}           Enchantment — Class
+[x]  2072  Alchemist's Talent                       {3}{R}           Enchantment — Class
 [x]  2073  Funeral Room // Awakening Hall           {2}{B} // {6}{B}{B} Enchantment — Room // Enchantment — Room
 [ ]  2074  Gonti, Lord of Luxury                    {2}{B}{B}        Legendary Creature — Aetherborn Rogue
 [x]  2075  Everybody Lives!                         {1}{W}           Instant
@@ -3606,7 +3606,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3613  Mind's Desire                            {4}{U}{U}        Sorcery
 [ ]  3614  Hungering Hydra                          {X}{G}           Creature — Hydra
 [ ]  3615  Detection Tower                          {0}              Land
-[ ]  3616  Hunter's Talent                          {1}{G}           Enchantment — Class
+[x]  3616  Hunter's Talent                          {1}{G}           Enchantment — Class
 [x]  3617  Yavimaya Elder                           {1}{G}{G}        Creature — Human Druid
 [ ]  3618  Bureau Headmaster                        {R}{W}           Creature — Human Assassin
 [x]  3619  Spellstutter Sprite                      {1}{U}           Creature — Faerie Wizard
@@ -3767,7 +3767,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3774  Flick a Coin                             {2}{R}           Instant
 [x]  3775  Searslicer Goblin                        {1}{R}           Creature — Goblin Warrior
 [x]  3776  Putrid Goblin                            {1}{B}           Creature — Zombie Goblin
-[ ]  3777  Blacksmith's Talent                      {R}              Enchantment — Class
+[x]  3777  Blacksmith's Talent                      {R}              Enchantment — Class
 [x]  3778  Salvation Engine                         {4}{W}           Artifact — Vehicle
 [ ]  3779  Gravebreaker Lamia                       {4}{B}           Enchantment Creature — Snake Lamia
 [ ]  3780  Chainsaw                                 {1}{R}           Artifact — Equipment
@@ -4102,7 +4102,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4109  Evendo Brushrazer                        {2}{R}           Creature — Insect Warrior
 [x]  4110  Ajani, the Greathearted                  {2}{G}{W}        Legendary Planeswalker — Ajani
 [x]  4111  Mask of Avacyn                           {2}              Artifact — Equipment
-[ ]  4112  Artificer Class                          {1}{U}           Enchantment — Class
+[x]  4112  Artificer Class                          {1}{U}           Enchantment — Class
 [ ]  4113  Big Game Hunter                          {1}{B}{B}        Creature — Human Rebel Assassin
 [x]  4114  Smell Fear                               {1}{G}           Sorcery
 [x]  4115  Maul of the Skyclaves                    {2}{W}           Artifact — Equipment
@@ -4369,7 +4369,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4376  Wall of Reverence                        {3}{W}           Creature — Spirit Wall
 [x]  4377  Ring of the Lucii                        {4}              Legendary Artifact
 [ ]  4378  Phial of Galadriel                       {3}              Legendary Artifact
-[ ]  4379  Gossip's Talent                          {1}{U}           Enchantment — Class
+[x]  4379  Gossip's Talent                          {1}{U}           Enchantment — Class
 [x]  4380  Undying Evil                             {B}              Instant
 [x]  4381  Sapling Nursery                          {6}{G}{G}        Enchantment
 [x]  4382  Mox Tantalite                            {0}              Artifact
@@ -4613,7 +4613,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4620  Khârn the Betrayer                       {3}{R}           Legendary Creature — Astartes Berserker
 [x]  4621  Stolen Strategy                          {4}{R}           Enchantment
 [ ]  4622  Pyre of Heroes                           {2}              Artifact
-[ ]  4623  Stormchaser's Talent                     {U}              Enchantment — Class
+[x]  4623  Stormchaser's Talent                     {U}              Enchantment — Class
 [x]  4624  Remand                                   {1}{U}           Instant
 [ ]  4625  Rite of Harmony                          {G}{W}           Instant
 [x]  4626  Growing Ranks                            {2}{G/W}{G/W}    Enchantment
@@ -4677,7 +4677,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4684  Hajar, Loyal Bodyguard                   {R}{G}           Legendary Creature — Human Soldier
 [x]  4685  Scampering Surveyor                      {4}              Artifact Creature — Gnome
 [x]  4686  Vodalian Hexcatcher                      {1}{U}           Creature — Merfolk Wizard
-[ ]  4687  Cool but Rude                            {1}{R}           Enchantment — Class
+[x]  4687  Cool but Rude                            {1}{R}           Enchantment — Class
 [x]  4688  Ishai, Ojutai Dragonspeaker              {2}{W}{U}        Legendary Creature — Bird Monk
 [x]  4689  Midnight Banshee                         {3}{B}{B}{B}     Creature — Spirit
 [x]  4690  Eternal Skylord                          {4}{U}           Creature — Zombie Wizard
@@ -4723,7 +4723,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4730  Creative Technique                       {4}{R}           Sorcery
 [x]  4731  Memory Plunder                           {U/B}{U/B}{U/B}{U/B} Instant
 [x]  4732  Curate                                   {1}{U}           Instant
-[ ]  4733  Paladin Class                            {W}              Enchantment — Class
+[x]  4733  Paladin Class                            {W}              Enchantment — Class
 [x]  4734  Plague Stinger                           {1}{B}           Creature — Phyrexian Insect Horror
 [x]  4735  World Breaker                            {6}{G}           Creature — Eldrazi
 [ ]  4736  Displaced Dinosaurs                      {5}{G}{G}        Creature — Dinosaur

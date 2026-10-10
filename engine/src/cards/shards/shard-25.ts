@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAbhorrentOverlord from "../pool/abhorrent-overlord.js";
 import _poolAbominationTerrifyingTitan from "../pool/abomination-terrifying-titan.js";
 import _poolAbundantCountryside from "../pool/abundant-countryside.js";
+import _poolAlchemistsTalent from "../pool/alchemists-talent.js";
 import _poolAlrundsEpiphany from "../pool/alrunds-epiphany.js";
 import _poolAltarOfDementia from "../pool/altar-of-dementia.js";
 import _poolAlwaysWatching from "../pool/always-watching.js";
@@ -288,6 +289,7 @@ const shard: CardShard = {
     _poolAbhorrentOverlord,
     _poolAbominationTerrifyingTitan,
     _poolAbundantCountryside,
+    _poolAlchemistsTalent,
     _poolAlrundsEpiphany,
     _poolAltarOfDementia,
     _poolAlwaysWatching,

@@ -49,7 +49,17 @@ export function CardFlags({
   const sick = obj.summoningSick && obj.power !== null && obj.toughness !== null
   const held = obj.holding?.length ?? 0
   const chosen = obj.chosen === undefined ? null : (COLOR_WORD[obj.chosen] ?? obj.chosen)
-  if (!sick && goaders.length === 0 && !obj.suspected && !obj.ringBearer && held === 0 && chosen === null && enchanting === null) {
+  const level = obj.classLevel ?? null
+  if (
+    !sick &&
+    goaders.length === 0 &&
+    !obj.suspected &&
+    !obj.ringBearer &&
+    held === 0 &&
+    chosen === null &&
+    enchanting === null &&
+    level === null
+  ) {
     return null
   }
   return (
@@ -85,6 +95,11 @@ export function CardFlags({
           title="Ring-bearer: it's legendary and can't be blocked by creatures with greater power — the Ring emblem says what else"
         >
           {compact ? 'Ring' : 'Ring-bearer'}
+        </span>
+      ) : null}
+      {level !== null ? (
+        <span className="card-flag level" title={`Class level ${level}: it has the abilities of level ${level} and below`}>
+          {compact ? `Lv ${level}` : `level ${level}`}
         </span>
       ) : null}
       {chosen !== null ? (

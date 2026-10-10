@@ -162,6 +162,7 @@ import _poolPacificationArray from "../pool/pacification-array.js";
 import _poolPaintedBluffs from "../pool/painted-bluffs.js";
 import _poolPalaceFamiliar from "../pool/palace-familiar.js";
 import _poolPalaceSentinels from "../pool/palace-sentinels.js";
+import _poolPaladinClass from "../pool/paladin-class.js";
 import _poolPestRescuer from "../pool/pest-rescuer.js";
 import _poolPhyrexianMetamorph from "../pool/phyrexian-metamorph.js";
 import _poolPillarvergePathway from "../pool/pillarverge-pathway.js";
@@ -437,6 +438,7 @@ const shard: CardShard = {
     _poolPaintedBluffs,
     _poolPalaceFamiliar,
     _poolPalaceSentinels,
+    _poolPaladinClass,
     _poolPestRescuer,
     _poolPhyrexianMetamorph,
     _poolPillarvergePathway,

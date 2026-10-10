@@ -2554,6 +2554,13 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Paladin Class',
+    board({
+      you: { bf: ['Paladin Class', 'Grizzly Bears', 'Llanowar Elves', 'Plains*8'], lib: ['Plains*6'] },
+      opp: { bf: ['Hill Giant'] },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

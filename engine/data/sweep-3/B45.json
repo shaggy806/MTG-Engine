@@ -1,0 +1,167 @@
+{
+  "batch": "B45",
+  "status": "complete",
+  "ranks": "mechanic:class's waiting cards (rule 716): level bars as sorcery-speed activated abilities, abilities gated by level, 'when this Class becomes level N'",
+  "authored": [
+    {
+      "name": "Caretaker's Talent",
+      "files": [
+        "engine/src/cards/pool/caretakers-talent.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Wizard Class",
+      "files": [
+        "engine/src/cards/pool/wizard-class.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Alchemist's Talent",
+      "files": [
+        "engine/src/cards/pool/alchemists-talent.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Hunter's Talent",
+      "files": [
+        "engine/src/cards/pool/hunters-talent.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Blacksmith's Talent",
+      "files": [
+        "engine/src/cards/pool/blacksmiths-talent.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Artificer Class",
+      "files": [
+        "engine/src/cards/pool/artificer-class.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Gossip's Talent",
+      "files": [
+        "engine/src/cards/pool/gossips-talent.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Stormchaser's Talent",
+      "files": [
+        "engine/src/cards/pool/stormchasers-talent.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cool but Rude",
+      "files": [
+        "engine/src/cards/pool/cool-but-rude.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Paladin Class",
+      "files": [
+        "engine/src/cards/pool/paladin-class.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cleric Class",
+      "files": [
+        "engine/src/cards/pool/cleric-class.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Artist's Talent",
+      "files": [
+        "engine/src/cards/pool/artists-talent.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Gourmand's Talent",
+      "files": [
+        "engine/src/cards/pool/gourmands-talent.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Innkeeper's Talent",
+      "needs": [
+        "replacement:counter-replacement-players"
+      ],
+      "why": "Classes are built; level 3 doubles counters put on a player as well as a permanent"
+    },
+    {
+      "name": "Fighter Class",
+      "needs": [
+        "cost:equip-ability-cost-reduction",
+        "effect:forced-block-this-combat"
+      ],
+      "why": "Classes are built; 'equip abilities you activate cost {2} less', and 'target creature blocks it this combat if able'"
+    },
+    {
+      "name": "Sorcerer Class",
+      "needs": [
+        "cost:mana-restriction-class-level",
+        "effect:spell-as-damage-source"
+      ],
+      "why": "Classes are built; mana spendable only on instants, sorceries or a Class level, and the cast spell as the damage's source"
+    },
+    {
+      "name": "Scavenger's Talent",
+      "needs": [
+        "mechanic:finality-counter"
+      ],
+      "why": "Classes are built; level 3 returns a creature with a finality counter"
+    },
+    {
+      "name": "Barbarian Class",
+      "needs": [
+        "replacement:roll-extra-ignore-lowest"
+      ],
+      "why": "Classes are built; 'roll that many dice plus one and ignore the lowest roll'"
+    },
+    {
+      "name": "Bandit's Talent",
+      "needs": [
+        "effect:opponents-with-few-cards-count"
+      ],
+      "why": "Classes are built; 'an additional card for each opponent who has one or fewer cards in hand'"
+    },
+    {
+      "name": "Rogue Class",
+      "needs": [
+        "zone:exiled-with-source-play",
+        "cost:spend-mana-as-any-color"
+      ],
+      "why": "Classes are built; playing the cards exiled with it, spending mana as though of any color"
+    },
+    {
+      "name": "Fortune Teller's Talent",
+      "needs": [
+        "static:look-at-top-card-any-time",
+        "cost:cost-reduction-cast-not-from-hand"
+      ],
+      "why": "Classes are built; looking at the top card any time, and 'spells cast from anywhere other than your hand cost {2} less'"
+    },
+    {
+      "name": "Druid Class",
+      "needs": [
+        "effect:animate-with-cda-pt"
+      ],
+      "why": "Classes are built; level 3 animates a land with P/T equal to the number of lands you control"
+    }
+  ]
+}

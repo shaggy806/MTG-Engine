@@ -9,7 +9,7 @@ import { wardCostText, type EffectAmount, type EffectSpec, type GiftKind, type W
 import type { CardFilter } from "../filter.js";
 import type { Color, ManaType } from "../mana.js";
 import type { TargetSpec } from "../target.js";
-import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
+import { defineCard, type CardDefinition, type StaticAbility, type StaticCondition } from "./define.js";
 
 /** The placeholder for "the chosen creature type" inside a
  * `choose-creature-type` effect's `then` — re-exported here because card files
@@ -1811,4 +1811,35 @@ export function roomCard(name: string, left: CardDefinition, right: CardDefiniti
     faces: [name, left.name, right.name],
     split: true,
   });
+}
+
+/** A Class's reminder text, its first line (rule 716). */
+export const CLASS_REMINDER = "(Gain the next level as a sorcery to add its ability.)";
+
+/**
+ * A Class level bar (rule 716.2a): "[Cost]: Level N" — "[Cost]: This
+ * Class's level becomes N. Activate only if this Class is level N-1 and only
+ * as a sorcery." The abilities it adds are `atLevel(level, …)`.
+ */
+export const classLevel = (level: number, cost: string): ActivatedAbility => ({
+  cost: { mana: cost, tap: false },
+  sorcerySpeed: true,
+  condition: { kind: "class-level", exactly: level - 1 },
+  targets: [],
+  effect: { kind: "gain-class-level", level },
+  resolve: null,
+  text: `${cost}: Level ${level}`,
+});
+
+/** "As long as this Class is level N or greater, it has [abilities]" (rule
+ * 716.2a): each ability gated on the level — a static's condition, a
+ * triggered ability's intervening-if (equivalent, since a level never goes
+ * down, so one that triggered at level N is at level N still as it
+ * resolves) — joined to any condition it already has. */
+export function atLevel<T extends StaticAbility | TriggeredAbility>(level: number, ability: T): T {
+  const gate: StaticCondition = { kind: "class-level", atLeast: level };
+  return {
+    ...ability,
+    condition: ability.condition === undefined ? gate : { kind: "all", of: [gate, ability.condition] },
+  };
 }

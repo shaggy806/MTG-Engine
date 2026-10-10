@@ -126,7 +126,7 @@ checked-in snapshot.
 ### Tier 2 — solid value, smaller or more speculative
 
 - ~~**Spree**~~ *(built — five Spree cards in the pool; Return the Favor and Great Train Heist wait on other features, BACKLOG's engine rules gaps)*.
-- **Class enchantments** (6 cards, `layout:class`: Wizard Class, Cleric Class, Druid Class) — a leveling permanent with rank-gated ability tiers, paid up incrementally. New card shape, closer to a Saga than anything else, but with a pay-to-advance cost per rank instead of a free per-turn chapter.
+- **Class enchantments** — **built 2026-10-10** (rule 716: `classLevel(n, cost)`, `atLevel(n, ability)`, the `class-level-gained` trigger; batch 45, 13 cards — 22 were waiting). The 9 left each need a clause of their own (`B45.json`).
 
 ### Tier 3 — real but niche, or a big lift for a small current payoff
 

@@ -796,6 +796,16 @@ function evalStaticCondition(
     }
     case "ring-tempted":
       return (state.players[you]?.ringTemptations ?? 0) >= condition.atLeast;
+    case "class-level": {
+      // No level is level 1 (rule 716.2d); a source that has left is asked
+      // as it last was on the battlefield.
+      const level =
+        (source.zone === "battlefield" ? source.classLevel : source.lastKnown?.classLevel) ?? 1;
+      return (
+        (condition.atLeast === undefined || level >= condition.atLeast) &&
+        (condition.exactly === undefined || level === condition.exactly)
+      );
+    }
     case "self-counters": {
       // Last-known information once the source has left the battlefield
       // (603.10) — `moveObject` clears `counters`, so a dies-trigger asking
