@@ -78,6 +78,9 @@ const SAMPLES: Partial<Record<SoundCue, readonly string[]>> = {
   // apart again if it should sound different.
   turn: ['game-start'],
   'your-turn': ['game-start'],
+  // An ability going on the stack, as its entry flies there from its source:
+  // qubodup's bamboo-stick whoosh (Freesound, CC0).
+  ability: ['whoosh'],
   // Kenney's Interface Sounds: any button on the site (`clickButtons`). A
   // tiny, low click (the user's pick, 2026-10-10; click_001 was too sharp).
   click: ['click_003'],
@@ -264,8 +267,7 @@ export function playSound(cue: SoundCue, afterMs = 0): void {
       tone(a, 140, 180, { to: 55, type: 'sine', gain: 0.14 })
       break
     case 'ability':
-      // An ability going on the stack: a soft rise, until a recording is
-      // picked.
+      // Until the whoosh loads, a soft rise.
       tone(a, 520, 220, { to: 880, type: 'sine', gain: 0.06 })
       break
     case 'tap':
