@@ -303,6 +303,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
       return `${name(event.attacker)} attacked alone`
     case 'cards-put-into-graveyard':
       return `${event.arrivals.map((a) => name(a.object)).join(', ')} put into a graveyard`
+    case 'dice-rolled':
+      return `${who(event.player)} rolls ${event.results.length === 1 ? `a d${event.sides}` : `${event.results.length}d${event.sides}`}: ${event.results.join(', ')}${event.results.length > 1 ? ` (total ${event.results.reduce((n, r) => n + r, 0)})` : ''}`
     case 'coin-flipped':
       return `${who(event.player)} ${event.won ? 'wins' : 'loses'} a coin flip`
     case 'cards-put-into-exile':

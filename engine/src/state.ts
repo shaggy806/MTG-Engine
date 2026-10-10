@@ -3500,6 +3500,10 @@ export interface GameState {
    * no zone and can't be removed. Its `ability` is applied by the layer system
    * (a `"creatures-you-control"` anthem) and/or `detectTriggers`. */
   emblems: EmblemState[];
+  /** The last die roll made (rule 706), what a `roll-dice`'s results and
+   * `{ roll }` amounts read: who rolled, each die's natural result, and the
+   * result with the roll's modifier. */
+  lastRoll?: { readonly player: PlayerId; readonly sides: number; readonly results: readonly number[]; readonly total: number };
   /** The combat-damage step in progress (rule 510 — ROADMAP Phase 11 EG-4).
    * Tracks which sub-pass is running (first strike / regular), whether a
    * regular sub-pass is still owed, and any blocked attackers whose

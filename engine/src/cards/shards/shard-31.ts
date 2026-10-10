@@ -265,6 +265,7 @@ import _poolZurTheEnchanter from "../pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "../pool/zuran-enchanter.js";
 import _tokensAlienWarriorToken from "../tokens/alien-warrior-token.js";
 import _tokensGolemFlyingToken from "../tokens/golem-flying-token.js";
+import _tokensGreenOxToken44 from "../tokens/green-ox-token-4-4.js";
 import _tokensOctopusToken from "../tokens/octopus-token.js";
 import _tokensPhyrexianGermToken from "../tokens/phyrexian-germ-token.js";
 import _tokensRedWhiteSoldierHasteToken from "../tokens/red-white-soldier-haste-token.js";
@@ -536,6 +537,7 @@ const shard: CardShard = {
   tokens: [
     _tokensAlienWarriorToken,
     _tokensGolemFlyingToken,
+    _tokensGreenOxToken44,
     _tokensOctopusToken,
     _tokensPhyrexianGermToken,
     _tokensRedWhiteSoldierHasteToken,

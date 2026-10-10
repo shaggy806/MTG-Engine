@@ -299,6 +299,12 @@ export type EffectAmount =
    * casts. 0 for a player with no commander.
    */
   | { readonly commanderCasts: "you" }
+  /** The last die roll this effect's controller made (rule 706 — a
+   * `roll-dice`'s `then` or table row): `"total"`, the result (natural
+   * results plus the roll's modifier); `"odd"` / `"even"`, how many dice came
+   * up odd / even ("for each odd result" — Clown Car); `{ equals: N }`, how
+   * many came up exactly N. 0 before any roll. */
+  | { readonly roll: "total" | "odd" | "even" | { readonly equals: number } }
   /** The total mana value of the cards in exile linked to this effect's
    * source (rule 607.2a — `exile`'s `linked`), in the stint the resolving
    * ability refers to: Skyclave Apparition's "where X is the mana value of
@@ -824,6 +830,14 @@ export type EnterAttacking =
 export type ResolvedEnterAttacking =
   | "choose"
   | { readonly player: PlayerId | undefined; readonly orTheirPlaneswalker: boolean };
+
+/** One row of a die roll's results table (rule 706.3a): a result from `min`
+ * to `max` (any result from `min` up, without one) gets `effect`. */
+export interface DieResultRow {
+  readonly min: number;
+  readonly max?: number;
+  readonly effect: EffectSpec;
+}
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 /** What cascade found: the card it may cast, its name, and everything it
@@ -2470,6 +2484,30 @@ export type EffectSpec =
       readonly won?: EffectSpec;
       readonly lost?: EffectSpec;
       readonly untilLose?: boolean;
+    }
+  | {
+      /**
+       * "Roll a d20", "roll X six-sided dice" (rule 706): the effect's
+       * controller rolls `count` dice (1 when absent; none at all for 0) of
+       * `sides` sides on the game's seeded random stream, as one roll — one
+       * `dice-rolled` event, which a `rolls-dice` trigger fires on. The
+       * result is the natural results' total plus `modifier` (706.2: "roll a
+       * d20 and add the greatest power among creatures you control").
+       *
+       * `table` is a results table (706.3a): the first row whose range holds
+       * the result applies — `{ min: 1, max: 9 }` is "1—9", `{ min: 20 }`
+       * with no `max` is "20+", or exactly 20 when nothing rolls higher.
+       * `then` follows any row, reading the roll through `{ roll }` amounts
+       * ("create a number of Treasure tokens equal to the result" is a
+       * `create-token` of `{ roll: "total" }`). The roll is kept on
+       * `GameState.lastRoll`, so a step after a decision still reads it.
+       */
+      readonly kind: "roll-dice";
+      readonly sides: number;
+      readonly count?: EffectAmount;
+      readonly modifier?: EffectAmount;
+      readonly table?: readonly DieResultRow[];
+      readonly then?: EffectSpec;
     }
   | {
       /**
@@ -4758,6 +4796,12 @@ export interface EffectApi {
   /** Flip a coin for this effect's controller (see the `"flip-coin"`
    * {@link EffectSpec}): `true` if they won the flip. */
   flipCoin(): boolean;
+  /** Roll `count` `sides`-sided dice for the controller (rule 706), on the
+   * seeded stream; returns the result — the natural total plus `modifier` —
+   * and keeps the roll for `lastRoll`. */
+  rollDice(sides: number, count: number, modifier: number): number;
+  /** The controller's last roll: each die's natural result, and the total. */
+  lastRoll(): { readonly results: readonly number[]; readonly total: number } | undefined;
   /** See the `"prohibit"` {@link EffectSpec}: `players` can't cast spells
    * (every one, or those matching a filter) and/or activate abilities this
    * turn, or `object`'s activated abilities can't be activated. */
@@ -5710,6 +5754,15 @@ function signedAmountValue(
     return ref === undefined ? 0 : ctx.colorsSpentOf(ref);
   }
   if ("commanderCasts" in amount) return ctx.commanderCastsBy(ctx.controller);
+  if ("roll" in amount) {
+    const last = ctx.lastRoll();
+    if (last === undefined) return 0;
+    if (amount.roll === "total") return last.total;
+    if (amount.roll === "odd") return last.results.filter((r) => r % 2 === 1).length;
+    if (amount.roll === "even") return last.results.filter((r) => r % 2 === 0).length;
+    const n = amount.roll.equals;
+    return last.results.filter((r) => r === n).length;
+  }
   if ("exiledWithSourceManaValue" in amount) {
     return ctx.cardsExiledWithSource().reduce((n, id) => n + ctx.manaValueOf({ kind: "object", object: id }), 0);
   }
@@ -7084,6 +7137,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         return;
       }
       ctx.loseGame(ctx.playersInScope(spec.who ?? "you"));
+      return;
+    }
+    case "roll-dice": {
+      const count = spec.count === undefined ? 1 : Math.max(0, Math.floor(amountValue(spec.count, ctx)));
+      if (count === 0) return;
+      const modifier = spec.modifier === undefined ? 0 : amountValue(spec.modifier, ctx);
+      const total = ctx.rollDice(spec.sides, count, modifier);
+      const row = spec.table?.find((r) => total >= r.min && (r.max === undefined || total <= r.max));
+      const steps = [row?.effect, spec.then].filter((s): s is EffectSpec => s !== undefined);
+      if (steps.length > 0) applyEffectSpec(steps.length === 1 ? steps[0] : { kind: "sequence", effects: steps }, ctx);
       return;
     }
     case "flip-coin": {

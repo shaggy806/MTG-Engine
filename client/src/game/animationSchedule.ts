@@ -245,6 +245,10 @@ export const CROWN_STEP_MS = 640
  * banner because there's a card face to actually take in, and unpaced — the
  * information is already in the History log, so nobody has to catch it. */
 export const REVEAL_STEP_MS = 2600
+/** A die roll thrown onto the table (`ui/diceRoll.ts`): the dice tumble in
+ * and bounce for the first 60%, then rest showing what was rolled, long
+ * enough to read, before the roll's effects play. Paced: the game waits. */
+export const DICE_STEP_MS = 2400
 /** How far apart a run of draws in one frame is dealt out, so an opening
  * hand or a "draw three" arrives as cards rather than a single clump. Does
  * not hold the game up — see `PACED`. */
@@ -421,6 +425,7 @@ type SlotKind =
   | 'turn'
   | 'phase'
   | 'reveal'
+  | 'dice'
   | 'tap'
   | 'untap'
   | 'exit'
@@ -479,6 +484,7 @@ const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(AFTER_ORDER)
  */
 const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'card',
+  'dice',
   'handDraw',
   'hit',
   'death',
@@ -701,6 +707,9 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
   }
   if (ev.type === 'card-drawn') {
     return reduced ? null : { event: ev, kind: 'draw', duration: DRAW_STEP_MS }
+  }
+  if (ev.type === 'dice-rolled') {
+    return { event: ev, kind: 'dice', duration: DICE_STEP_MS }
   }
   if (ev.type === 'cards-revealed') {
     return { event: ev, kind: 'reveal', duration: REVEAL_STEP_MS }

@@ -4884,6 +4884,34 @@
   "condition:countered-spell-legendary": {
    "family": "effect:choices-by-other-players",
    "example": "Glorious Gale: 'Counter target creature spell. If it was a legendary spell, the Ring tempts you.'"
+  },
+  "replacement:roll-extra-ignore-lowest": {
+   "family": "mechanic:dice-rolling",
+   "example": "Barbarian Class, Wyll, Blade of Frontiers: 'If you would roll one or more dice, instead roll that many dice plus one and ignore the lowest roll' (rule 706.6)."
+  },
+  "decision:choose-roll-result": {
+   "family": "mechanic:dice-rolling",
+   "example": "Reckless Endeavor: 'Roll two d12 and choose one result.'"
+  },
+  "effect:roll-again": {
+   "family": "mechanic:dice-rolling",
+   "example": "Delina, Wild Mage: 'You may roll again' (rule 706.3c)."
+  },
+  "trigger:rolls-at-least": {
+   "family": "mechanic:dice-rolling",
+   "example": "Mr. House, President and CEO: 'Whenever you roll a 4 or higher' — per die."
+  },
+  "effect:player-no-max-hand-size-for-game": {
+   "family": "static:max-hand-size",
+   "example": "Ancient Silver Dragon: 'You have no maximum hand size for the rest of the game.'"
+  },
+  "effect:reflexive-with-roll-amount": {
+   "family": "mechanic:dice-rolling",
+   "example": "Ancient Bronze Dragon, Ancient Brass Dragon: 'roll a d20. When you do, …' with X the result, targets chosen after the roll."
+  },
+  "effect:each-player-rolls": {
+   "family": "mechanic:dice-rolling",
+   "example": "Chaos Dragon: 'each player rolls a d20. If one or more opponents had the highest result …'."
   }
  }
 }

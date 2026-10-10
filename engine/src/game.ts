@@ -14662,6 +14662,8 @@ export class Game {
             ability.trigger.batched === true &&
             event.type === "permanent-entered-battlefield"
               ? this.enterBatchMatches(ability.trigger, event, object)
+              : event.type === "dice-rolled"
+              ? event.results.reduce((n, r) => n + r, 0)
               : powerOfId !== undefined && this.state.objects[powerOfId] !== undefined
               ? computeCharacteristics(this.state, this.registry, powerOfId).power
               : (ability.trigger.on === "deals-combat-damage-to-player" ||
@@ -15504,6 +15506,8 @@ export class Game {
           this.triggerFilterOk(spec.filter, event.object, self) &&
           (spec.byYou !== true || event.by === self.controller)
         );
+      case "rolls-dice":
+        return event.type === "dice-rolled" && this.matchesWhoPlayer(spec.who, event.player, self);
       case "ring-tempts":
         // Rule 701.54d — once the choice is made, or found impossible.
         return (
@@ -18228,6 +18232,27 @@ export class Game {
         this.state.rngState = this.rng.seed;
         this.emit({ type: "coin-flipped", player: controller, won });
         return won;
+      },
+      rollDice: (sides, count, modifier) => {
+        // Each die has `sides` equally likely outcomes, 1 to N (rule 706.1a).
+        const results: number[] = [];
+        for (let i = 0; i < count; i += 1) results.push(1 + Math.floor(this.rng.next() * sides));
+        this.state.rngState = this.rng.seed;
+        const total = results.reduce((n, r) => n + r, 0) + modifier;
+        this.state.lastRoll = { player: controller, sides, results, total };
+        const from = this.state.objects[source];
+        this.emit({
+          type: "dice-rolled",
+          player: controller,
+          sides,
+          results,
+          ...(from !== undefined ? { source } : {}),
+        });
+        return total;
+      },
+      lastRoll: () => {
+        const last = this.state.lastRoll;
+        return last !== undefined && last.player === controller ? last : undefined;
       },
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, lastingHere(duration)),

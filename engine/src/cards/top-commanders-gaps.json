@@ -221,7 +221,8 @@
   "effect:emblem-triggered-abilities",
   "keyword:afflict",
   "keyword:crew",
-  "mechanic:the-ring"
+  "mechanic:the-ring",
+  "mechanic:dice-rolling"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

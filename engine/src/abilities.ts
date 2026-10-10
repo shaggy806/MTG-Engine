@@ -503,6 +503,15 @@ export type TriggerSpec =
       readonly chosen?: boolean;
     }
   | {
+      /**
+       * "Whenever you roll one or more dice" (rule 706): once per roll,
+       * however many dice it took (Brazen Dwarf). `{ triggerValue: true }`
+       * is the roll's natural total. `who` is the player who rolled.
+       */
+      readonly on: "rolls-dice";
+      readonly who: TriggerWho;
+    }
+  | {
       readonly on: "enters-battlefield";
       readonly who: TriggerWho;
       /** Narrow which entering permanent counts (Soul Warden: a creature;

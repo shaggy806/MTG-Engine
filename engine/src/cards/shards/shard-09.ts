@@ -36,6 +36,7 @@ import _poolBloodrootApothecary from "../pool/bloodroot-apothecary.js";
 import _poolBlossomingSands from "../pool/blossoming-sands.js";
 import _poolBoaConstrictor from "../pool/boa-constrictor.js";
 import _poolBorosSwiftblade from "../pool/boros-swiftblade.js";
+import _poolBrazenDwarf from "../pool/brazen-dwarf.js";
 import _poolBreathOfMalfegor from "../pool/breath-of-malfegor.js";
 import _poolBurglarRat from "../pool/burglar-rat.js";
 import _poolCaptainLanneryStorm from "../pool/captain-lannery-storm.js";
@@ -311,6 +312,7 @@ const shard: CardShard = {
     _poolBlossomingSands,
     _poolBoaConstrictor,
     _poolBorosSwiftblade,
+    _poolBrazenDwarf,
     _poolBreathOfMalfegor,
     _poolBurglarRat,
     _poolCaptainLanneryStorm,

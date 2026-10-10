@@ -256,6 +256,7 @@ import _poolYellowScarvesTroops from "../pool/yellow-scarves-troops.js";
 import _poolZookeeperMechan from "../pool/zookeeper-mechan.js";
 import _tokensAngelWarriorToken from "../tokens/angel-warrior-token.js";
 import _tokensElementalToken53 from "../tokens/elemental-token-5-3.js";
+import _tokensFaerieDragonToken from "../tokens/faerie-dragon-token.js";
 import _tokensHornetToken from "../tokens/hornet-token.js";
 import _tokensImpTokenJudith from "../tokens/imp-token-judith.js";
 import _tokensMerfolkTokenDeeprootWaters from "../tokens/merfolk-token-deeproot-waters.js";
@@ -521,6 +522,7 @@ const shard: CardShard = {
   tokens: [
     _tokensAngelWarriorToken,
     _tokensElementalToken53,
+    _tokensFaerieDragonToken,
     _tokensHornetToken,
     _tokensImpTokenJudith,
     _tokensMerfolkTokenDeeprootWaters,

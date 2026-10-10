@@ -119,6 +119,7 @@ import _poolGrislySalvage from "../pool/grisly-salvage.js";
 import _poolGroundbreaker from "../pool/groundbreaker.js";
 import _poolGuardDuty from "../pool/guard-duty.js";
 import _poolHighFaeTrickster from "../pool/high-fae-trickster.js";
+import _poolHoardingOgre from "../pool/hoarding-ogre.js";
 import _poolHonestRutstein from "../pool/honest-rutstein.js";
 import _poolHourOfReckoning from "../pool/hour-of-reckoning.js";
 import _poolImprovisedArmor from "../pool/improvised-armor.js";
@@ -405,6 +406,7 @@ const shard: CardShard = {
     _poolGroundbreaker,
     _poolGuardDuty,
     _poolHighFaeTrickster,
+    _poolHoardingOgre,
     _poolHonestRutstein,
     _poolHourOfReckoning,
     _poolImprovisedArmor,

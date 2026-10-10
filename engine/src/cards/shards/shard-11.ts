@@ -43,6 +43,7 @@ import _poolCamaraderie from "../pool/camaraderie.js";
 import _poolCapashenTemplar from "../pool/capashen-templar.js";
 import _poolCathedralSanctifier from "../pool/cathedral-sanctifier.js";
 import _poolChainsOfCustody from "../pool/chains-of-custody.js";
+import _poolChaosChanneler from "../pool/chaos-channeler.js";
 import _poolChosenByHeliod from "../pool/chosen-by-heliod.js";
 import _poolCircleOfPower from "../pool/circle-of-power.js";
 import _poolCitanulStalwart from "../pool/citanul-stalwart.js";
@@ -365,6 +366,7 @@ const shard: CardShard = {
     _poolCapashenTemplar,
     _poolCathedralSanctifier,
     _poolChainsOfCustody,
+    _poolChaosChanneler,
     _poolChosenByHeliod,
     _poolCircleOfPower,
     _poolCitanulStalwart,

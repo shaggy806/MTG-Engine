@@ -165,6 +165,17 @@ export type GameEvent =
       readonly text: string;
     })
   | (Base & {
+      /** `player` rolled `results.length` `sides`-sided dice (rule 706) as one
+       * roll — each die's natural result, in order. The client throws the
+       * dice and lets them land on these. */
+      readonly type: "dice-rolled";
+      readonly player: PlayerId;
+      readonly sides: number;
+      readonly results: readonly number[];
+      /** What rolled them, if a permanent or a spell did. */
+      readonly source?: ObjectId;
+    })
+  | (Base & {
       /** The Ring tempted `player` (rule 701.54d): they finished choosing a
        * Ring-bearer — `chosen`, or `null` when they controlled no creature.
        * `count` is how many times it has tempted them now. */

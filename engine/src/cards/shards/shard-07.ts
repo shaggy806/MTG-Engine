@@ -36,6 +36,7 @@ import _poolCircuitMender from "../pool/circuit-mender.js";
 import _poolCollectorOuphe from "../pool/collector-ouphe.js";
 import _poolColossapede from "../pool/colossapede.js";
 import _poolConstrictingTendrils from "../pool/constricting-tendrils.js";
+import _poolContrabandLivestock from "../pool/contraband-livestock.js";
 import _poolCrazedSkirge from "../pool/crazed-skirge.js";
 import _poolCreosoteHeath from "../pool/creosote-heath.js";
 import _poolCurate from "../pool/curate.js";
@@ -333,6 +334,7 @@ const shard: CardShard = {
     _poolCollectorOuphe,
     _poolColossapede,
     _poolConstrictingTendrils,
+    _poolContrabandLivestock,
     _poolCrazedSkirge,
     _poolCreosoteHeath,
     _poolCurate,

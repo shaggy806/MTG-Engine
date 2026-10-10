@@ -2511,6 +2511,15 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Clown Car, Hoarding Ogre, Ancient Copper Dragon, Brazen Dwarf',
+    board({
+      you: {
+        bf: ['Hoarding Ogre', 'Ancient Copper Dragon', 'Brazen Dwarf', 'Wastes*6'],
+        hand: ['Clown Car'],
+      },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

@@ -4809,3 +4809,92 @@ body.board-dragging {
   cursor: grabbing;
   user-select: none;
 }
+
+/* A die roll thrown onto the table (ui/diceRoll.ts): a full-screen box on
+   <body>, outside React, holding a caption and the dice; each die's wrapper
+   carries the throw (translate, scale for height), the die inside its spin
+   and squash. Over the board and its flights, under the floating numbers. */
+.dice-roll {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  pointer-events: none;
+  --die: #e8d48f;
+}
+.dice-caption {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translateX(-50%);
+  padding: 0.35em 0.9em;
+  border-radius: 999px;
+  background: rgba(10, 10, 14, 0.82);
+  border: 1px solid color-mix(in srgb, var(--die) 70%, transparent);
+  color: #f2f2f2;
+  font-weight: 700;
+  font-size: clamp(0.9rem, 1.2vw, 1.4rem);
+  white-space: nowrap;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+}
+.dice-roll.landed .dice-caption {
+  color: var(--die);
+}
+.die-wrap {
+  position: absolute;
+  width: var(--die-size);
+  height: var(--die-size);
+  margin-left: calc(var(--die-size) / -2);
+  margin-top: calc(var(--die-size) / -2);
+  filter: drop-shadow(0 calc(var(--die-size) * 0.12) calc(var(--die-size) * 0.12) rgba(0, 0, 0, 0.65));
+}
+.die {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(145deg, color-mix(in srgb, var(--die) 92%, white), color-mix(in srgb, var(--die) 70%, black));
+}
+.die.d4 {
+  clip-path: polygon(50% 2%, 98% 96%, 2% 96%);
+}
+.die.d4 .die-face {
+  transform: translateY(18%);
+}
+.die.d6 {
+  border-radius: 18%;
+}
+.die.d8 {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.die.d10 {
+  clip-path: polygon(50% 0, 100% 42%, 50% 100%, 0 42%);
+}
+.die.d12 {
+  clip-path: polygon(50% 0, 100% 38%, 81% 100%, 19% 100%, 0 38%);
+}
+.die.d20 {
+  clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%);
+}
+.die-face {
+  font-weight: 900;
+  font-size: calc(var(--die-size) * 0.42);
+  color: #141418;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+.dice-roll.landed .die-face {
+  animation: die-land calc(320ms * var(--anim-scale, 1)) ease-out;
+}
+@keyframes die-land {
+  from {
+    transform: scale(1.5);
+  }
+}
+.dice-roll.landed .die.d4 .die-face {
+  animation: none;
+}
+:root[data-reduce-motion] .dice-roll.landed .die-face {
+  animation: none;
+}

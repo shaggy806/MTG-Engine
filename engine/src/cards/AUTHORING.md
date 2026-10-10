@@ -1097,6 +1097,20 @@ only a combat phase can be "this phase" — use it from a combat trigger.
 
 ### Format extras
 
+**Rolling dice** (rule 706) is `{ kind: "roll-dice", sides, count?, modifier?, table?, then? }`:
+the controller rolls `count` (1 by default; 0 rolls nothing) `sides`-sided dice
+as one roll on the seeded stream. `table` is a results table (706.3a) — rows
+`{ min, max?, effect }`, the first holding the result applying (no `max` is
+"N+"); `then` follows any row. Amounts read the roll: `{ roll: "total" }` is
+the result (the natural total plus `modifier`), `{ roll: "odd" }` /
+`{ roll: "even" }` how many dice came up odd / even (Clown Car), `{ roll: {
+equals: 6 } }` how many came up 6. "Whenever you roll one or more dice" is the
+trigger `{ on: "rolls-dice", who: "you" }`, once per roll (Brazen Dwarf), its
+`triggerValue` the natural total. Every viewer sees the dice thrown and land on
+the engine's results (the `dice-rolled` event). Not yet: "roll an extra die and
+ignore the lowest", "roll again", choosing among results, and each player
+rolling.
+
 **The Ring tempts you** (rule 701.54) is `{ kind: "the-ring-tempts-you" }`: the
 effect's controller gets the Ring emblem if they have none, chooses a creature
 they control as their Ring-bearer (asked, never declined), and is tempted — the

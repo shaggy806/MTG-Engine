@@ -15,6 +15,7 @@ import { publicNameAt } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
 import { flyIntoHand, liftFromHand, placeLiftedSpotlight } from './handMotion.ts'
 import { closeStackGap } from './stackDepth.ts'
+import { throwDice } from './diceRoll.ts'
 import { defToVisible } from './defToVisible.ts'
 import { loadCard, peekCard } from '../cards/cardData.ts'
 import { playerLabel, seatClassOf } from '../format.ts'
@@ -39,6 +40,7 @@ import {
   PHASE_STEP_MS,
   CARD_HOLD_MS,
   REVEAL_STEP_MS,
+  DICE_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
@@ -1377,6 +1379,9 @@ function soundFor(ev: GameEvent): void {
     case 'turn-began':
       playSound('turn')
       return
+    case 'dice-rolled':
+      playSound('dice')
+      return
     case 'permanent-tapped':
       playSound('tap')
       return
@@ -2251,6 +2256,17 @@ export function AnimationLayer({
         else runDeath(ev.object, ev.toZone)
       } else if (ev.type === 'cards-discarded') {
         runDiscard(ev, seatRef.current)
+      } else if (ev.type === 'dice-rolled') {
+        throwDice({
+          seq: ev.seq,
+          sides: ev.sides,
+          results: ev.results,
+          who: playerLabel(ev.player, seatsRef.current),
+          seatClass: seatClassOf(view.turnOrder, ev.player),
+          from: flyOrigin(ev.player, seatRef.current),
+          durationMs: scaled(DICE_STEP_MS),
+          reduced: motionPrefs().reduced,
+        })
       } else if (ev.type === 'cards-revealed') {
         const cards = ev.objects
           .map((id) => view.objects[id])

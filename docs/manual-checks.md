@@ -222,6 +222,7 @@ How to use it:
 | [Liliana, Untouched by Death](#liliana-untouched-by-death) | rules call | Emblems with triggered abilities, and a turn-long graveyard permission |
 | [Smuggler's Copter, Cultivator's Caravan, Kotori, Pilot Prodigy](#smugglers-copter-cultivators-caravan-kotori-pilot-prodigy) | new decision | Crew and Vehicles |
 | [Claim the Precious, Call of the Ring, Birthday Escape](#claim-the-precious-call-of-the-ring-birthday-escape) | new decision | The Ring tempts you |
+| [Clown Car, Hoarding Ogre, Ancient Copper Dragon, Brazen Dwarf](#clown-car-hoarding-ogre-ancient-copper-dragon-brazen-dwarf) | rules call | Rolling dice |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4236,3 +4237,22 @@ stack count once per token)
   Elves but not his Hill Giant (greater power). The log reads "The Ring tempts Alice (2 times) —
   Grizzly Bears is the Ring-bearer"; the emblem viewer shows "Emblem — The Ring".
 - **Known limits:** The bots choose their first creature as Ring-bearer (BACKLOG, Bots).
+
+## Rolling dice (2026-10-09)
+
+### Clown Car, Hoarding Ogre, Ancient Copper Dragon, Brazen Dwarf
+
+*Rules call* — die rolls (rule 706), their results tables, and the thrown dice everyone sees
+
+- **Setup:** Your precombat main. Your battlefield: Hoarding Ogre, Ancient Copper Dragon, Brazen
+  Dwarf and six Wastes. Your hand: Clown Car. Bob is a bot.
+- **Do:** Cast Clown Car with X = 4. Attack bob with the Ogre and the Dragon, unblocked.
+- **Check:** Four six-sided dice in your colour are thrown in from your side, bounce and settle on
+  their results; the caption reads "Alice rolls 4d6: a, b, c, d — total". A Clown Robot appears
+  for each odd die and the Car gets a +1/+1 counter for each even one; Bob loses 1 life to the
+  Dwarf for the roll (once, not four times). Attacking, the Ogre's d20 lands and its Treasures
+  match the table (1—9: one, 10—19: two, 20: three); the Dragon's d20 gives that many Treasures.
+  The log names every result. With "Reduce motion" on, the dice appear in place, already showing
+  their results.
+- **Known limits:** "Roll an extra die and ignore the lowest" (Barbarian Class, Wyll), "roll
+  again" and choosing among results (Reckless Endeavor) aren't built.

@@ -62,11 +62,11 @@ section keeps only what to do next.
 - **3 cards whose recorded blockers have all been built since** (The Legend of Kyoshi, The
   Restoration of Eiganjo, Jill, Shiva's Dominant — each a Saga or creature that returns
   transformed) — recheck each with `card:brief` (`npm run cards:needs -w engine -- --stale`).
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,438 of 5,000
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,442 of 5,000
   implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
   rank 6672 is next. Every card left needs engine work: build the features that block the most
-  of them — crew and the Ring landed 2026-10-09; leading now (`cards:needs -- --rank`): dice
-  rolling (27 cards), casting during resolution (26), ninjutsu (23), Class (22) —
+  of them — crew, the Ring and dice landed 2026-10-09; leading now (`cards:needs -- --rank`):
+  casting during resolution (26 cards), ninjutsu (23), Class (22) —
    (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":

@@ -1,0 +1,124 @@
+{
+ "batch": "B40",
+ "status": "complete",
+ "ranks": "mechanic:dice-rolling's cards",
+ "authored": [
+  {
+   "name": "Ancient Copper Dragon",
+   "files": [
+    "engine/src/cards/pool/ancient-copper-dragon.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Ancient Gold Dragon",
+   "files": [
+    "engine/src/cards/pool/ancient-gold-dragon.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Hoarding Ogre",
+   "files": [
+    "engine/src/cards/pool/hoarding-ogre.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Brazen Dwarf",
+   "files": [
+    "engine/src/cards/pool/brazen-dwarf.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Chaos Channeler",
+   "files": [
+    "engine/src/cards/pool/chaos-channeler.ts"
+   ],
+   "tested": false
+  },
+  {
+   "name": "Contraband Livestock",
+   "files": [
+    "engine/src/cards/pool/contraband-livestock.ts"
+   ],
+   "tested": true
+  },
+  {
+   "name": "Clown Car",
+   "files": [
+    "engine/src/cards/pool/clown-car.ts"
+   ],
+   "tested": true
+  }
+ ],
+ "blocked": [
+  {
+   "name": "Barbarian Class",
+   "needs": [
+    "replacement:roll-extra-ignore-lowest",
+    "mechanic:class"
+   ],
+   "why": "Dice exist now; the extra-die replacement and Class levels don't."
+  },
+  {
+   "name": "Wyll, Blade of Frontiers",
+   "needs": [
+    "replacement:roll-extra-ignore-lowest"
+   ],
+   "why": "Dice exist now; 'roll that many dice plus one and ignore the lowest roll' doesn't."
+  },
+  {
+   "name": "Reckless Endeavor",
+   "needs": [
+    "decision:choose-roll-result"
+   ],
+   "why": "Dice exist now; choosing which of two results deals the damage doesn't."
+  },
+  {
+   "name": "Delina, Wild Mage",
+   "needs": [
+    "effect:roll-again"
+   ],
+   "why": "Dice exist now; 'you may roll again' doesn't."
+  },
+  {
+   "name": "Mr. House, President and CEO",
+   "needs": [
+    "trigger:rolls-at-least",
+    "decision:manual-payment-choices"
+   ],
+   "why": "Dice exist now; a per-die 'roll a 4 or higher' trigger and dice counted from Treasure mana spent don't."
+  },
+  {
+   "name": "Ancient Silver Dragon",
+   "needs": [
+    "effect:player-no-max-hand-size-for-game"
+   ],
+   "why": "Dice exist now; 'no maximum hand size for the rest of the game' isn't a player effect."
+  },
+  {
+   "name": "Ancient Bronze Dragon",
+   "needs": [
+    "effect:reflexive-with-roll-amount"
+   ],
+   "why": "Dice exist now; the 'when you do' targets chosen after the roll, X its result, aren't wired."
+  },
+  {
+   "name": "Ancient Brass Dragon",
+   "needs": [
+    "effect:reflexive-with-roll-amount",
+    "decision:target-total-mana-value"
+   ],
+   "why": "Dice exist now; the reflexive targets with total mana value X or less aren't."
+  },
+  {
+   "name": "Chaos Dragon",
+   "needs": [
+    "effect:each-player-rolls"
+   ],
+   "why": "Dice exist now; each player rolling and comparing results doesn't."
+  }
+ ]
+}

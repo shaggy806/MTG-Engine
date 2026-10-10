@@ -275,6 +275,7 @@ import _poolYotianMedic from "../pool/yotian-medic.js";
 import _poolZendikarsRoil from "../pool/zendikars-roil.js";
 import _poolZiatorasProvingGround from "../pool/ziatoras-proving-ground.js";
 import _poolZodiacRabbit from "../pool/zodiac-rabbit.js";
+import _tokensClownRobotToken from "../tokens/clown-robot-token.js";
 import _tokensDinosaurToken from "../tokens/dinosaur-token.js";
 import _tokensHumanToken from "../tokens/human-token.js";
 import _tokensScionOfTheDeepToken from "../tokens/scion-of-the-deep-token.js";
@@ -556,6 +557,7 @@ const shard: CardShard = {
     _poolZodiacRabbit,
   ],
   tokens: [
+    _tokensClownRobotToken,
     _tokensDinosaurToken,
     _tokensHumanToken,
     _tokensScionOfTheDeepToken,

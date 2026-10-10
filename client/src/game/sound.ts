@@ -7,7 +7,7 @@ import { motionPrefs } from './motionPrefs.ts'
  * same cues the animations are (see `AnimationLayer`), so a sound lands with
  * the thing it belongs to.
  */
-export type SoundCue = 'cast' | 'hit' | 'death' | 'exile' | 'gain' | 'loss' | 'turn' | 'tap'
+export type SoundCue = 'cast' | 'hit' | 'death' | 'exile' | 'gain' | 'loss' | 'turn' | 'tap' | 'dice'
 
 let ctx: AudioContext | null = null
 
@@ -89,6 +89,18 @@ export function playSound(cue: SoundCue): void {
       break
     case 'tap':
       tone(a, 1200, 40, { type: 'square', gain: 0.03 })
+      break
+    case 'dice':
+      // A rattle: short clicks, each quieter, as the dice bounce and settle.
+      for (const [at, gain] of [
+        [0, 0.05],
+        [260, 0.045],
+        [560, 0.04],
+        [820, 0.03],
+        [1000, 0.02],
+      ] as const) {
+        tone(a, 1500 + at, 30, { type: 'square', at, gain })
+      }
       break
   }
 }

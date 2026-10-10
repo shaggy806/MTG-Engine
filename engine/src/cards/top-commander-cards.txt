@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3438 already implemented / 1562 missing (marks refreshed 2026-10-10)
+3442 already implemented / 1558 missing (marks refreshed 2026-10-10)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -624,7 +624,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   625  Noxious Revival                          {G/P}            Instant
 [x]   626  Floodfarm Verge                          {0}              Land
 [ ]   627  Trouble in Pairs                         {2}{W}{W}        Enchantment
-[ ]   628  Ancient Copper Dragon                    {4}{R}{R}        Creature — Elder Dragon
+[x]   628  Ancient Copper Dragon                    {4}{R}{R}        Creature — Elder Dragon
 [x]   629  Thundering Falls                         {0}              Land — Island Mountain
 [x]   630  All That Glitters                        {1}{W}           Enchantment — Aura
 [ ]   631  Caretaker's Talent                       {2}{W}           Enchantment — Class
@@ -2124,7 +2124,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2131  Food Chain                               {2}{G}           Enchantment
 [x]  2132  Koma, World-Eater                        {3}{G}{G}{U}{U}  Legendary Creature — Serpent
 [x]  2133  Haunted Cloak                            {3}              Artifact — Equipment
-[ ]  2134  Ancient Gold Dragon                      {5}{W}{W}        Creature — Elder Dragon
+[x]  2134  Ancient Gold Dragon                      {5}{W}{W}        Creature — Elder Dragon
 [ ]  2135  Minas Morgul, Dark Fortress              {0}              Legendary Land
 [x]  2136  Fierce Empath                            {2}{G}           Creature — Elf
 [x]  2137  Wrenn's Resolve                          {1}{R}           Sorcery
@@ -3561,7 +3561,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3568  Thundermane Dragon                       {3}{R}           Creature — Dragon
 [ ]  3569  Komainu Battle Armor                     {2}{R}           Artifact Creature — Equipment Dog
 [ ]  3570  Redress Fate                             {6}{W}{W}        Sorcery
-[ ]  3571  Hoarding Ogre                            {3}{R}           Creature — Ogre
+[x]  3571  Hoarding Ogre                            {3}{R}           Creature — Ogre
 [x]  3572  Incarnation Technique                    {4}{B}           Sorcery
 [x]  3573  Riverchurn Monument                      {1}{U}           Artifact
 [x]  3574  Lord of the Undead                       {1}{B}{B}        Creature — Zombie
@@ -3956,7 +3956,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3963  Indulgent Tormentor                      {3}{B}{B}        Creature — Demon
 [ ]  3964  Breaker of Creation                      {6}{C}{C}        Creature — Eldrazi
 [x]  3965  Turbulent Wilderness                     {0}              Land — Forest Island
-[ ]  3966  Clown Car                                {X}              Artifact — Vehicle
+[x]  3966  Clown Car                                {X}              Artifact — Vehicle
 [x]  3967  Arctic Treeline                          {0}              Snow Land — Forest Plains
 [ ]  3968  Pariah's Shield                          {5}              Artifact — Equipment
 [x]  3969  Annoyed Altisaur                         {5}{G}{G}        Creature — Dinosaur

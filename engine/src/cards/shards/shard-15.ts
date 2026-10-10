@@ -10,6 +10,7 @@ import _poolAccursedDuneyard from "../pool/accursed-duneyard.js";
 import _poolAkkiAvalanchers from "../pool/akki-avalanchers.js";
 import _poolAkoumHellhound from "../pool/akoum-hellhound.js";
 import _poolAlabasterKirin from "../pool/alabaster-kirin.js";
+import _poolAncientCopperDragon from "../pool/ancient-copper-dragon.js";
 import _poolAnglerDrake from "../pool/angler-drake.js";
 import _poolArgivianFind from "../pool/argivian-find.js";
 import _poolArtisanOfKozilek from "../pool/artisan-of-kozilek.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolAkkiAvalanchers,
     _poolAkoumHellhound,
     _poolAlabasterKirin,
+    _poolAncientCopperDragon,
     _poolAnglerDrake,
     _poolArgivianFind,
     _poolArtisanOfKozilek,

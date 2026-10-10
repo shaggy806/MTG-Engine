@@ -226,9 +226,11 @@ import _poolAnchovyBananaPizza from "./pool/anchovy-banana-pizza.js";
 import _poolAncientAnimus from "./pool/ancient-animus.js";
 import _poolAncientBrontodon from "./pool/ancient-brontodon.js";
 import _poolAncientCarp from "./pool/ancient-carp.js";
+import _poolAncientCopperDragon from "./pool/ancient-copper-dragon.js";
 import _poolAncientCrab from "./pool/ancient-crab.js";
 import _poolAncientCraving from "./pool/ancient-craving.js";
 import _poolAncientDen from "./pool/ancient-den.js";
+import _poolAncientGoldDragon from "./pool/ancient-gold-dragon.js";
 import _poolAncientGreenwarden from "./pool/ancient-greenwarden.js";
 import _poolAncientGrudge from "./pool/ancient-grudge.js";
 import _poolAncientLumberknot from "./pool/ancient-lumberknot.js";
@@ -950,6 +952,7 @@ import _poolBrawlersPlate from "./pool/brawlers-plate.js";
 import _poolBrawnAmadeusCho from "./pool/brawn-amadeus-cho.js";
 import _poolBrawn from "./pool/brawn.js";
 import _poolBrazenBorrower from "./pool/brazen-borrower.js";
+import _poolBrazenDwarf from "./pool/brazen-dwarf.js";
 import _poolBrazenFreebooter from "./pool/brazen-freebooter.js";
 import _poolBrazenScourge from "./pool/brazen-scourge.js";
 import _poolBreachingDragonstorm from "./pool/breaching-dragonstorm.js";
@@ -1227,6 +1230,7 @@ import _poolChangelingWayfinder from "./pool/changeling-wayfinder.js";
 import _poolChannelTheSuns from "./pool/channel-the-suns.js";
 import _poolChannelerInitiate from "./pool/channeler-initiate.js";
 import _poolChantOfTheSkifsang from "./pool/chant-of-the-skifsang.js";
+import _poolChaosChanneler from "./pool/chaos-channeler.js";
 import _poolChaosWand from "./pool/chaos-wand.js";
 import _poolChaosWarp from "./pool/chaos-warp.js";
 import _poolChapelGeist from "./pool/chapel-geist.js";
@@ -1350,6 +1354,7 @@ import _poolCloudpost from "./pool/cloudpost.js";
 import _poolCloudreaderSphinx from "./pool/cloudreader-sphinx.js";
 import _poolCloudshift from "./pool/cloudshift.js";
 import _poolCloudshredderSliver from "./pool/cloudshredder-sliver.js";
+import _poolClownCar from "./pool/clown-car.js";
 import _poolCoalGolem from "./pool/coal-golem.js";
 import _poolCoastalHornclaw from "./pool/coastal-hornclaw.js";
 import _poolCoastalPeak from "./pool/coastal-peak.js";
@@ -1445,6 +1450,7 @@ import _poolContemplation from "./pool/contemplation.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolContingencyPlan from "./pool/contingency-plan.js";
 import _poolContrabandKingpin from "./pool/contraband-kingpin.js";
+import _poolContrabandLivestock from "./pool/contraband-livestock.js";
 import _poolContractKilling from "./pool/contract-killing.js";
 import _poolContradict from "./pool/contradict.js";
 import _poolConversionApparatus from "./pool/conversion-apparatus.js";
@@ -3431,6 +3437,7 @@ import _poolHithlainKnots from "./pool/hithlain-knots.js";
 import _poolHoarShade from "./pool/hoar-shade.js";
 import _poolHoardRobber from "./pool/hoard-robber.js";
 import _poolHoardSmelterDragon from "./pool/hoard-smelter-dragon.js";
+import _poolHoardingOgre from "./pool/hoarding-ogre.js";
 import _poolHobblefiend from "./pool/hobblefiend.js";
 import _poolHobgoblinDragoon from "./pool/hobgoblin-dragoon.js";
 import _poolHoldoutSettlement from "./pool/holdout-settlement.js";
@@ -8637,6 +8644,7 @@ import _tokensCatWarriorToken from "./tokens/cat-warrior-token.js";
 import _tokensCentaurToken from "./tokens/centaur-token.js";
 import _tokensChocoboBirdToken from "./tokens/chocobo-bird-token.js";
 import _tokensCitizenToken from "./tokens/citizen-token.js";
+import _tokensClownRobotToken from "./tokens/clown-robot-token.js";
 import _tokensClueToken from "./tokens/clue-token.js";
 import _tokensConstructTokenAncientStoneIdol from "./tokens/construct-token-ancient-stone-idol.js";
 import _tokensConstructTokenArtifactCount from "./tokens/construct-token-artifact-count.js";
@@ -8676,6 +8684,7 @@ import _tokensElephantToken from "./tokens/elephant-token.js";
 import _tokensElfDruidToken from "./tokens/elf-druid-token.js";
 import _tokensElfWarriorTokenRhysTheRedeemed from "./tokens/elf-warrior-token-rhys-the-redeemed.js";
 import _tokensElfWarriorToken from "./tokens/elf-warrior-token.js";
+import _tokensFaerieDragonToken from "./tokens/faerie-dragon-token.js";
 import _tokensFaerieRogueToken from "./tokens/faerie-rogue-token.js";
 import _tokensFaerieToken from "./tokens/faerie-token.js";
 import _tokensFirstMateRagavan from "./tokens/first-mate-ragavan.js";
@@ -8700,6 +8709,7 @@ import _tokensGolemTrampleToken from "./tokens/golem-trample-token.js";
 import _tokensGolemVigilanceToken from "./tokens/golem-vigilance-token.js";
 import _tokensGreenCatToken11 from "./tokens/green-cat-token-1-1.js";
 import _tokensGreenElementalToken22 from "./tokens/green-elemental-token-2-2.js";
+import _tokensGreenOxToken44 from "./tokens/green-ox-token-4-4.js";
 import _tokensGreenSpiderTokenReach from "./tokens/green-spider-token-reach.js";
 import _tokensGriffinToken from "./tokens/griffin-token.js";
 import _tokensHalflingToken from "./tokens/halfling-token.js";
@@ -9078,9 +9088,11 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAncientAnimus,
   _poolAncientBrontodon,
   _poolAncientCarp,
+  _poolAncientCopperDragon,
   _poolAncientCrab,
   _poolAncientCraving,
   _poolAncientDen,
+  _poolAncientGoldDragon,
   _poolAncientGreenwarden,
   _poolAncientGrudge,
   _poolAncientLumberknot,
@@ -9802,6 +9814,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBrawnAmadeusCho,
   _poolBrawn,
   _poolBrazenBorrower,
+  _poolBrazenDwarf,
   _poolBrazenFreebooter,
   _poolBrazenScourge,
   _poolBreachingDragonstorm,
@@ -10079,6 +10092,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolChannelTheSuns,
   _poolChannelerInitiate,
   _poolChantOfTheSkifsang,
+  _poolChaosChanneler,
   _poolChaosWand,
   _poolChaosWarp,
   _poolChapelGeist,
@@ -10202,6 +10216,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCloudreaderSphinx,
   _poolCloudshift,
   _poolCloudshredderSliver,
+  _poolClownCar,
   _poolCoalGolem,
   _poolCoastalHornclaw,
   _poolCoastalPeak,
@@ -10297,6 +10312,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolContentiousPlan,
   _poolContingencyPlan,
   _poolContrabandKingpin,
+  _poolContrabandLivestock,
   _poolContractKilling,
   _poolContradict,
   _poolConversionApparatus,
@@ -12283,6 +12299,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHoarShade,
   _poolHoardRobber,
   _poolHoardSmelterDragon,
+  _poolHoardingOgre,
   _poolHobblefiend,
   _poolHobgoblinDragoon,
   _poolHoldoutSettlement,
@@ -17495,6 +17512,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensCentaurToken,
   _tokensChocoboBirdToken,
   _tokensCitizenToken,
+  _tokensClownRobotToken,
   _tokensClueToken,
   _tokensConstructTokenAncientStoneIdol,
   _tokensConstructTokenArtifactCount,
@@ -17534,6 +17552,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensElfDruidToken,
   _tokensElfWarriorTokenRhysTheRedeemed,
   _tokensElfWarriorToken,
+  _tokensFaerieDragonToken,
   _tokensFaerieRogueToken,
   _tokensFaerieToken,
   _tokensFirstMateRagavan,
@@ -17558,6 +17577,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensGolemVigilanceToken,
   _tokensGreenCatToken11,
   _tokensGreenElementalToken22,
+  _tokensGreenOxToken44,
   _tokensGreenSpiderTokenReach,
   _tokensGriffinToken,
   _tokensHalflingToken,
