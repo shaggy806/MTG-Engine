@@ -215,6 +215,7 @@ import _poolSpidersilkNet from "../pool/spidersilk-net.js";
 import _poolSpikeJester from "../pool/spike-jester.js";
 import _poolSpittingDrake from "../pool/spitting-drake.js";
 import _poolSteadyProgress from "../pool/steady-progress.js";
+import _poolSteamClean from "../pool/steam-clean.js";
 import _poolSteamSpitter from "../pool/steam-spitter.js";
 import _poolSteelOfTheGodhead from "../pool/steel-of-the-godhead.js";
 import _poolStonecoilSerpent from "../pool/stonecoil-serpent.js";
@@ -223,6 +224,7 @@ import _poolSubtleStrike from "../pool/subtle-strike.js";
 import _poolSulfurFalls from "../pool/sulfur-falls.js";
 import _poolSunmanePegasus from "../pool/sunmane-pegasus.js";
 import _poolSurtlandFrostpyre from "../pool/surtland-frostpyre.js";
+import _poolSwordOfTheSqueak from "../pool/sword-of-the-squeak.js";
 import _poolSwordsToPlowshares from "../pool/swords-to-plowshares.js";
 import _poolSylvanOffering from "../pool/sylvan-offering.js";
 import _poolSymbolOfUnsummoning from "../pool/symbol-of-unsummoning.js";
@@ -483,6 +485,7 @@ const shard: CardShard = {
     _poolSpikeJester,
     _poolSpittingDrake,
     _poolSteadyProgress,
+    _poolSteamClean,
     _poolSteamSpitter,
     _poolSteelOfTheGodhead,
     _poolStonecoilSerpent,
@@ -491,6 +494,7 @@ const shard: CardShard = {
     _poolSulfurFalls,
     _poolSunmanePegasus,
     _poolSurtlandFrostpyre,
+    _poolSwordOfTheSqueak,
     _poolSwordsToPlowshares,
     _poolSylvanOffering,
     _poolSymbolOfUnsummoning,

@@ -115,6 +115,7 @@ import _poolGoreSwine from "../pool/gore-swine.js";
 import _poolGoringCeratops from "../pool/goring-ceratops.js";
 import _poolGrafMole from "../pool/graf-mole.js";
 import _poolGravePact from "../pool/grave-pact.js";
+import _poolGreatIntelligencesPlan from "../pool/great-intelligences-plan.js";
 import _poolGreaterForgeling from "../pool/greater-forgeling.js";
 import _poolGrixisCharm from "../pool/grixis-charm.js";
 import _poolGwennaEyesOfGaea from "../pool/gwenna-eyes-of-gaea.js";
@@ -148,6 +149,7 @@ import _poolKnightOfTheEbonLegion from "../pool/knight-of-the-ebon-legion.js";
 import _poolLaeliaTheBladeReforged from "../pool/laelia-the-blade-reforged.js";
 import _poolLavaglidePathway from "../pool/lavaglide-pathway.js";
 import _poolLightOfHope from "../pool/light-of-hope.js";
+import _poolLonelyArroyo from "../pool/lonely-arroyo.js";
 import _poolLongRiversPull from "../pool/long-rivers-pull.js";
 import _poolLootExuberantExplorer from "../pool/loot-exuberant-explorer.js";
 import _poolLoporritScout from "../pool/loporrit-scout.js";
@@ -215,6 +217,7 @@ import _poolSkysovereignConsulFlagship from "../pool/skysovereign-consul-flagshi
 import _poolSmaugTheMagnificent from "../pool/smaug-the-magnificent.js";
 import _poolSmugglersSurprise from "../pool/smugglers-surprise.js";
 import _poolSneeringShadewriter from "../pool/sneering-shadewriter.js";
+import _poolSoulcatchersAerie from "../pool/soulcatchers-aerie.js";
 import _poolSpawningKraken from "../pool/spawning-kraken.js";
 import _poolSpinedThopter from "../pool/spined-thopter.js";
 import _poolSpireMonitor from "../pool/spire-monitor.js";
@@ -393,6 +396,7 @@ const shard: CardShard = {
     _poolGoringCeratops,
     _poolGrafMole,
     _poolGravePact,
+    _poolGreatIntelligencesPlan,
     _poolGreaterForgeling,
     _poolGrixisCharm,
     _poolGwennaEyesOfGaea,
@@ -426,6 +430,7 @@ const shard: CardShard = {
     _poolLaeliaTheBladeReforged,
     _poolLavaglidePathway,
     _poolLightOfHope,
+    _poolLonelyArroyo,
     _poolLongRiversPull,
     _poolLootExuberantExplorer,
     _poolLoporritScout,
@@ -493,6 +498,7 @@ const shard: CardShard = {
     _poolSmaugTheMagnificent,
     _poolSmugglersSurprise,
     _poolSneeringShadewriter,
+    _poolSoulcatchersAerie,
     _poolSpawningKraken,
     _poolSpinedThopter,
     _poolSpireMonitor,

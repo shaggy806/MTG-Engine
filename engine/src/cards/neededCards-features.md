@@ -704,7 +704,16 @@ in `git log`.
   sacrifice (rule 118.3), for `unless` and `each-player-may` alike. Strefan,
   Maurer Progenitor (top-500 commander; his Blood token and every other piece
   already existed) and Rakdos, Patron of Chaos.
-
+- **Attach to the trigger's object or the source, and attach every match**
+  (part of `effect:attach-extensions`, 2026-10-10, B46) — `attach`'s `target`
+  takes `"trigger-object"` / `"source"` as well as a slot or `"created"`, and
+  `attachments: CardFilter` attaches each match (Hero's Blade, Shielded by
+  Faith, Sword of the Squeak, Cloud, Ex-SOLDIER, Balan, Wandering Knight;
+  `attach-extensions.test.ts`); the `equipmentAttached` filter count; and an
+  enters or attacks trigger's object is lost once it has left, back or not
+  (rule 400.7). The rest of the feature — attaching to a card just returned,
+  to a creature chosen without targeting, "the creature this is attached to"
+  as an effect's object, Auras put onto the battlefield attached — is open.
 
 ## Completed: `neededCards.txt` passes (P0-P20)
 

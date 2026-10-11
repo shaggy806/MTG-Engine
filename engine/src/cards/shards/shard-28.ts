@@ -32,6 +32,7 @@ import _poolBilbosDeadlySlice from "../pool/bilbos-deadly-slice.js";
 import _poolBiomassMutation from "../pool/biomass-mutation.js";
 import _poolBlackMarket from "../pool/black-market.js";
 import _poolBloodGlutton from "../pool/blood-glutton.js";
+import _poolBloodbraidChallenger from "../pool/bloodbraid-challenger.js";
 import _poolBoarQPine from "../pool/boar-q-pine.js";
 import _poolBountyOfMight from "../pool/bounty-of-might.js";
 import _poolBramblesnap from "../pool/bramblesnap.js";
@@ -176,6 +177,7 @@ import _poolPowerDepot from "../pool/power-depot.js";
 import _poolProfaneInsight from "../pool/profane-insight.js";
 import _poolPropaganda from "../pool/propaganda.js";
 import _poolProtectorOfTheWastes from "../pool/protector-of-the-wastes.js";
+import _poolPryingBlade from "../pool/prying-blade.js";
 import _poolPygmyPyrosaur from "../pool/pygmy-pyrosaur.js";
 import _poolRagingMinotaur from "../pool/raging-minotaur.js";
 import _poolRakdosRagemutt from "../pool/rakdos-ragemutt.js";
@@ -308,6 +310,7 @@ const shard: CardShard = {
     _poolBiomassMutation,
     _poolBlackMarket,
     _poolBloodGlutton,
+    _poolBloodbraidChallenger,
     _poolBoarQPine,
     _poolBountyOfMight,
     _poolBramblesnap,
@@ -452,6 +455,7 @@ const shard: CardShard = {
     _poolProfaneInsight,
     _poolPropaganda,
     _poolProtectorOfTheWastes,
+    _poolPryingBlade,
     _poolPygmyPyrosaur,
     _poolRagingMinotaur,
     _poolRakdosRagemutt,

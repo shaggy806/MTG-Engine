@@ -1,0 +1,474 @@
+{
+  "batch": "B46",
+  "status": "complete",
+  "ranks": "6672-6745 (the next 60 untriaged by EDHREC rank), and effect:attach-extensions' attach-to-the-trigger-object, attach-to-the-source and attach-every-match cards",
+  "authored": [
+    {
+      "name": "Hero's Blade",
+      "files": [
+        "engine/src/cards/pool/heros-blade.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shielded by Faith",
+      "files": [
+        "engine/src/cards/pool/shielded-by-faith.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sword of the Squeak",
+      "files": [
+        "engine/src/cards/pool/sword-of-the-squeak.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cloud, Ex-SOLDIER",
+      "files": [
+        "engine/src/cards/pool/cloud-ex-soldier.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Balan, Wandering Knight",
+      "files": [
+        "engine/src/cards/pool/balan-wandering-knight.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prying Blade",
+      "files": [
+        "engine/src/cards/pool/prying-blade.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Goblin Piledriver",
+      "files": [
+        "engine/src/cards/pool/goblin-piledriver.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Layla Hassan",
+      "files": [
+        "engine/src/cards/pool/layla-hassan.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Gwaihir the Windlord",
+      "files": [
+        "engine/src/cards/pool/gwaihir-the-windlord.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ringwraiths",
+      "files": [
+        "engine/src/cards/pool/ringwraiths.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Drafna, Founder of Lat-Nam",
+      "files": [
+        "engine/src/cards/pool/drafna-founder-of-lat-nam.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cabal Pit",
+      "files": [
+        "engine/src/cards/pool/cabal-pit.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wedding Announcement // Wedding Festivity",
+      "files": [
+        "engine/src/cards/pool/wedding-announcement.ts",
+        "engine/src/cards/pool/wedding-festivity.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Scalding Viper // Steam Clean",
+      "files": [
+        "engine/src/cards/pool/scalding-viper.ts",
+        "engine/src/cards/pool/steam-clean.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Nemesis Mask",
+      "files": [
+        "engine/src/cards/pool/nemesis-mask.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Harabaz Druid",
+      "files": [
+        "engine/src/cards/pool/harabaz-druid.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sapling of Colfenor",
+      "files": [
+        "engine/src/cards/pool/sapling-of-colfenor.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Koll, the Forgemaster",
+      "files": [
+        "engine/src/cards/pool/koll-the-forgemaster.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Unexplained Absence",
+      "files": [
+        "engine/src/cards/pool/unexplained-absence.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Great Intelligence's Plan",
+      "files": [
+        "engine/src/cards/pool/great-intelligences-plan.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lonely Arroyo",
+      "files": [
+        "engine/src/cards/pool/lonely-arroyo.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Gruul War Chant",
+      "files": [
+        "engine/src/cards/pool/gruul-war-chant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Three Blind Mice",
+      "files": [
+        "engine/src/cards/pool/three-blind-mice.ts",
+        "engine/src/cards/tokens/mouse-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Introduction to Prophecy",
+      "files": [
+        "engine/src/cards/pool/introduction-to-prophecy.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bloodbraid Challenger",
+      "files": [
+        "engine/src/cards/pool/bloodbraid-challenger.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lapis Orb of Dragonkind",
+      "files": [
+        "engine/src/cards/pool/lapis-orb-of-dragonkind.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Gix's Command",
+      "files": [
+        "engine/src/cards/pool/gixs-command.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Blur Sliver",
+      "files": [
+        "engine/src/cards/pool/blur-sliver.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Well of Ideas",
+      "files": [
+        "engine/src/cards/pool/well-of-ideas.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Termagant Swarm",
+      "files": [
+        "engine/src/cards/pool/termagant-swarm.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Soulcatchers' Aerie",
+      "files": [
+        "engine/src/cards/pool/soulcatchers-aerie.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Skitterbeam Battalion",
+      "files": [
+        "engine/src/cards/pool/skitterbeam-battalion.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Immoral Bargain",
+      "files": [
+        "engine/src/cards/pool/immoral-bargain.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kami of Celebration",
+      "files": [
+        "engine/src/cards/pool/kami-of-celebration.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Darksteel Splicer",
+      "files": [
+        "engine/src/cards/pool/darksteel-splicer.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Deathmist Raptor",
+      "needs": [
+        "mechanic:morph",
+        "mechanic:face-down"
+      ],
+      "why": "Megamorph (cast face down, turn face up for a cost with a +1/+1 counter), a 'whenever a permanent you control is turned face up' trigger, and returning 'face up or face down' are all unmodeled."
+    },
+    {
+      "name": "Imposing Grandeur",
+      "needs": [
+        "effect:amount-commander-mana-value-battlefield-or-command-zone"
+      ],
+      "why": "greatestCommanderManaValue counts a player's commanders in every zone (hand, graveyard, exile, library, stack); the card counts only commanders they own on the battlefield or in the command zone."
+    },
+    {
+      "name": "Dawn-Blessed Pennant",
+      "needs": [
+        "decision:choose-creature-type-from-list"
+      ],
+      "why": "chooseCreatureTypeOnEnter offers every creature type; the card's choice is limited to Elemental, Elf, Faerie, Giant, Goblin, Kithkin, Merfolk or Treefolk (ofChosenType would otherwise cover the trigger and the graveyard target)."
+    },
+    {
+      "name": "Phyrexian Unlife",
+      "needs": [
+        "static:no-loss-for-zero-life",
+        "static:damage-to-you-as-though-infect"
+      ],
+      "why": "No static for 'you don't lose the game for having 0 or less life' (narrower than Platinum Angel's can't-lose: poison and an empty library still kill), nor for damage dealt to you as though its source had infect while at 0 or less life."
+    },
+    {
+      "name": "Historian's Boon",
+      "needs": [
+        "trigger:saga-final-chapter-triggers"
+      ],
+      "why": "'Whenever the final chapter ability of a Saga you control triggers' — the engine has chapter-resolves (finalOnly) only; a trigger on the chapter triggering goes on the stack beside it and fires even if that chapter ability is later countered or loses its targets."
+    },
+    {
+      "name": "Aethersquall Ancient",
+      "needs": [
+        "effect:return-to-hand-all-except-source"
+      ],
+      "why": "return-to-hand-all has no exceptSource and CardFilter can't exclude the source, so 'return all other creatures' would bounce the Ancient itself."
+    },
+    {
+      "name": "Curse of Fool's Wisdom",
+      "needs": [
+        "keyword:madness"
+      ],
+      "why": "Madness isn't modeled (the Curse and its enchanted-player draw trigger are otherwise expressible)."
+    },
+    {
+      "name": "Spirit Loop",
+      "needs": [
+        "trigger:damage-trigger-extensions"
+      ],
+      "why": "deals-damage fires once per recipient; 'whenever enchanted creature deals damage' triggers once per simultaneous damage event (Angel of Deliverance / Vessel of the All-Consuming rulings), so a trample split or a double block would trigger twice (Armadillo Cloak's record)."
+    },
+    {
+      "name": "Mythos of Snapdax",
+      "needs": [
+        "effect:keep-one-of-each-permanent-type"
+      ],
+      "why": "No 'each player chooses an artifact, a creature, an enchantment and a planeswalker, then sacrifices the rest' effect (a multi-typed permanent filling several slots), nor the {B}{R}-spent variant where the caster chooses for every player."
+    },
+    {
+      "name": "Roaring Furnace // Steaming Sauna",
+      "needs": [
+        "bug:door-unlock-timestamp"
+      ],
+      "why": "Steaming Sauna's ruling: unlocked after a 'your maximum hand size is N' permanent entered, its 'no maximum hand size' wins (the door's static takes the unlock's timestamp); the engine keeps the Room's entry timestamp (unlockDoor: 'same object, same timestamp'), so The Ten Rings / Twenty-Toed Toad / Cecily would wrongly win."
+    },
+    {
+      "name": "_____ Goblin",
+      "needs": [
+        "mechanic:stickers"
+      ],
+      "why": "Name stickers (Unfinity, rule 123) aren't modeled: no sticker sheets, no 'put a name sticker on it', no vowels-on-the-sticker count."
+    },
+    {
+      "name": "The Stasis Coffin",
+      "needs": [
+        "effect:player-protection"
+      ],
+      "why": "'You gain protection from everything until your next turn': there's no player protection (only player hexproof), so no prevention of all damage to the player and no aura/target bar."
+    },
+    {
+      "name": "Overgrown Zealot",
+      "needs": [
+        "cost:spend-only-turn-face-up"
+      ],
+      "why": "'Spend this mana only to turn permanents face up': ManaSpendOnly has no such restriction, and turning a face-down permanent face up (whyCannotTurnFaceUp/payMana) pays without a spend context the restriction could admit."
+    },
+    {
+      "name": "Stranglehold",
+      "needs": [
+        "static:cant-search-library",
+        "replacement:skip-extra-turns"
+      ],
+      "why": "No static stopping opponents from searching libraries (with the ruling's 'search … then shuffle' still shuffling, a 'you may search' not), and no replacement turning an opponent's extra turn into a skipped one."
+    },
+    {
+      "name": "Aragorn, Hornburg Hero",
+      "needs": [
+        "keyword:renown"
+      ],
+      "why": "Renown N (rule 702.112) and the renowned designation aren't modeled, so neither 'attacking creatures you control have … renown 1' nor 'whenever a renowned creature you control deals combat damage' can be said."
+    },
+    {
+      "name": "Plasm Capture",
+      "needs": [
+        "effect:delayed-trigger-next-first-main-phase"
+      ],
+      "why": "delayed-trigger timing 'your-next-main-phase' fires at a postcombat main too (Mana Drain); 'your next first main phase' has no timing, so countered on your own precombat main it would pay out this turn instead of next"
+    },
+    {
+      "name": "Tectonic Reformation",
+      "needs": [
+        "static:grant-cycling-to-cards-in-hand"
+      ],
+      "why": "no static grants cycling {R} to land cards in your hand (only grantsToGraveyard / grantsToSpells exist)"
+    },
+    {
+      "name": "Blitzball Stadium",
+      "needs": [
+        "decision:x-targets",
+        "effect:amount-counter-kinds"
+      ],
+      "why": "support X needs up to X target slots with X the spell's value; and the granted 'draw a card for each kind of counter on it' has no amount counting counter kinds"
+    },
+    {
+      "name": "Exponential Growth",
+      "needs": [
+        "effect:repeat-effect-x-times"
+      ],
+      "why": "'double target creature's power X times' needs a repeat of the doubling X times (or an exponent amount); modify-pt's powerOf doubling happens once"
+    },
+    {
+      "name": "Tainted Remedy",
+      "needs": [
+        "replacement:gain-life-becomes-loss",
+        "decision:replacement-order-choice"
+      ],
+      "why": "would-gain-life replacement has plus/multiplier/prevent but no 'loses that much life instead'; its ruling also has the gaining player order it against Rhox Faithmender-style doublers (rule 616.1), which the engine applies in a fixed order"
+    },
+    {
+      "name": "Ironsoul Enforcer",
+      "needs": [
+        "trigger:attacks-alone-filter"
+      ],
+      "why": "the attacks-alone trigger takes only who (self / you-control / attached), no filter for 'this creature or a commander you control'; two triggers would fire twice when it is your commander"
+    },
+    {
+      "name": "Case of the Stashed Skeleton",
+      "needs": [
+        "mechanic:case"
+      ],
+      "why": "Cases (to solve / solved) aren't modeled (AUTHORING §15)"
+    },
+    {
+      "name": "Anrakyr the Traveller",
+      "needs": [
+        "cost:alt-cost-pay-life-equal-mana-value",
+        "effect:cast-now-from-hand-or-graveyard"
+      ],
+      "why": "cast-now has only free casts, not 'pay life equal to its mana value rather than its mana cost', and its from is one zone, not 'from your hand or graveyard'"
+    },
+    {
+      "name": "Espers to Magicite",
+      "needs": [
+        "effect:target-card-exiled-this-way"
+      ],
+      "why": "The reflexive trigger's 'target creature card exiled this way' needs a target spec over exiled cards restricted to the creating resolution's exiles; no exile-zone target exists and `thisWay` matches nothing between resolutions."
+    },
+    {
+      "name": "Retribution of the Ancients",
+      "needs": [
+        "cost:remove-counters-from-chosen"
+      ],
+      "why": "'Remove X +1/+1 counters from among creatures you control' as a cost; removeCounter only removes a fixed count from the source."
+    },
+    {
+      "name": "Starscream, Power Hungry // Starscream, Seeker Leader",
+      "needs": [
+        "mechanic:more-than-meets-the-eye",
+        "trigger:becomes-monarch"
+      ],
+      "why": "More Than Meets the Eye, convert and living metal are unmodeled, and there's no 'whenever you become the monarch' trigger."
+    },
+    {
+      "name": "Shakedown Heavy",
+      "needs": [
+        "effect:remove-from-combat"
+      ],
+      "why": "'Untap this creature and remove it from combat' has no remove-from-combat effect."
+    },
+    {
+      "name": "Hofri Ghostforge",
+      "needs": [
+        "effect:linked-token-leaves"
+      ],
+      "why": "The token's granted 'when this token leaves, return the exiled card to its owner's graveyard' must be linked to the one card exiled by that resolution (the rulings); exile `linked` ties a card to the source, not to a token."
+    },
+    {
+      "name": "Ty Lee, Chi Blocker",
+      "needs": [
+        "effect:doesnt-untap-while-you-control-source"
+      ],
+      "why": "'It doesn't untap during its controller's untap step for as long as you control Ty Lee' — only `doesntUntapNext` (one untap step) and a self-only `doesntUntap` static exist; no duration tied to continued control of the source."
+    },
+    {
+      "name": "Demonic Ruckus",
+      "needs": [
+        "keyword:plot"
+      ],
+      "why": "Plot {R} (special action from hand, free cast from exile on a later turn) isn't built."
+    }
+  ]
+}

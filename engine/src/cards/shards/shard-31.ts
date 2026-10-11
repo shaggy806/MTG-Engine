@@ -21,6 +21,7 @@ import _poolArmoredCancrix from "../pool/armored-cancrix.js";
 import _poolAtraxaPraetorsVoice from "../pool/atraxa-praetors-voice.js";
 import _poolAvatarRokuFirebender from "../pool/avatar-roku-firebender.js";
 import _poolAzureBeastbinder from "../pool/azure-beastbinder.js";
+import _poolBalanWanderingKnight from "../pool/balan-wandering-knight.js";
 import _poolBallroom from "../pool/ballroom.js";
 import _poolBaradDur from "../pool/barad-dur.js";
 import _poolBarbarianRiftcutter from "../pool/barbarian-riftcutter.js";
@@ -247,6 +248,7 @@ import _poolTreasureDredger from "../pool/treasure-dredger.js";
 import _poolTreeOfRedemption from "../pool/tree-of-redemption.js";
 import _poolTuvasaTheSunlit from "../pool/tuvasa-the-sunlit.js";
 import _poolUndercityShade from "../pool/undercity-shade.js";
+import _poolUnexplainedAbsence from "../pool/unexplained-absence.js";
 import _poolValorSinger from "../pool/valor-singer.js";
 import _poolVaultOfCatlacan from "../pool/vault-of-catlacan.js";
 import _poolVesselOfParamnesia from "../pool/vessel-of-paramnesia.js";
@@ -294,6 +296,7 @@ const shard: CardShard = {
     _poolAtraxaPraetorsVoice,
     _poolAvatarRokuFirebender,
     _poolAzureBeastbinder,
+    _poolBalanWanderingKnight,
     _poolBallroom,
     _poolBaradDur,
     _poolBarbarianRiftcutter,
@@ -520,6 +523,7 @@ const shard: CardShard = {
     _poolTreeOfRedemption,
     _poolTuvasaTheSunlit,
     _poolUndercityShade,
+    _poolUnexplainedAbsence,
     _poolValorSinger,
     _poolVaultOfCatlacan,
     _poolVesselOfParamnesia,

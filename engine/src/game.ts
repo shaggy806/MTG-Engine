@@ -17102,10 +17102,16 @@ export class Game {
       resolutionCount,
       ...(opts.sourceLost === true ? { sourceLost: true } : {}),
       // A trigger object that left the battlefield as the ability triggered,
-      // and has changed zones again since, is a new object (rule 400.7).
+      // and has changed zones again since, is a new object (rule 400.7) —
+      // and so is one that was on the battlefield as it triggered (an
+      // enters or attacks trigger) and has left since, even if it's back:
+      // Hero's Blade doesn't go onto the creature that left and returned.
       ...(triggerObject !== undefined &&
-      refs.triggerObjectAfterLeaving !== undefined &&
-      this.state.objects[triggerObject]?.zoneChangeCount !== refs.triggerObjectAfterLeaving
+      (refs.triggerObjectAfterLeaving !== undefined
+        ? this.state.objects[triggerObject]?.zoneChangeCount !== refs.triggerObjectAfterLeaving
+        : refs.triggerObject !== undefined &&
+          (this.state.objects[triggerObject]?.zone !== "battlefield" ||
+            (this.state.objects[triggerObject]?.zoneChangeCount ?? 0) !== refs.triggerObject))
         ? { triggerObjectLost: true }
         : {}),
       ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
@@ -18845,6 +18851,19 @@ export class Game {
           return;
         }
         if (attachment.kind === "object") this.attachPermanent(attachment.object, target);
+      },
+      attachAll: (target, filter) => {
+        // Every match now, each in turn; a stack of Equipment tokens one
+        // token at a time, each its own attachment.
+        const matches = this.state.zones.shared.battlefield.filter((id) =>
+          matchesFilter(this.state, this.registry, id, filter, { you: controller, source }),
+        );
+        for (const id of matches) {
+          while ((this.state.objects[id]?.stackCount ?? 1) > 1) {
+            this.attachPermanent(this.splitOneFromStack(id), target);
+          }
+          this.attachPermanent(id, target);
+        }
       },
       transform: (target) => {
         const t = this.splitTargetRef(target);

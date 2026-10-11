@@ -145,6 +145,7 @@ import _poolKillerBees from "../pool/killer-bees.js";
 import _poolKirdApe from "../pool/kird-ape.js";
 import _poolKithkinBillyrider from "../pool/kithkin-billyrider.js";
 import _poolKoboldsOfKherKeep from "../pool/kobolds-of-kher-keep.js";
+import _poolKollTheForgemaster from "../pool/koll-the-forgemaster.js";
 import _poolKyrenGlider from "../pool/kyren-glider.js";
 import _poolLadyOctopusInspiredInventor from "../pool/lady-octopus-inspired-inventor.js";
 import _poolLegolasGreenleaf from "../pool/legolas-greenleaf.js";
@@ -469,6 +470,7 @@ const shard: CardShard = {
     _poolKirdApe,
     _poolKithkinBillyrider,
     _poolKoboldsOfKherKeep,
+    _poolKollTheForgemaster,
     _poolKyrenGlider,
     _poolLadyOctopusInspiredInventor,
     _poolLegolasGreenleaf,

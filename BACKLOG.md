@@ -55,19 +55,20 @@ section keeps only what to do next.
 
 - **Now: more cards, in EDHREC rank order** (the `author-top-cards` skill). `npm run cards:needs
   -w engine -- --next 60` lists the next untriaged cards by rank: Turntimber Symbiosis (rank
-  2312) is triaged since batch 37, so rank 6672 on. The nine other starter precons' 31 stand-ins
+  2312) is triaged since batch 37, so rank 6746 on. The nine other starter precons' 31 stand-ins
   (`engine/data/sweep-3/PC-*.json`) go as their originals land.
 - **Cards manifest and cloak may have unblocked** — recheck each: `docs/card-blockers.md`,
   "Open leads".
-- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,482 of 5,000
-  implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
-  rank 6672 is next. Every card left needs engine work: build the features that block the most
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,486 of 5,000
+  implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6745 (batches 30–36, 46);
+  rank 6746 is next. Every card left needs engine work: build the features that block the most
   of them — crew, the Ring, dice, ninjutsu, Rooms and most of casting during resolution landed
-  2026-10-09, Class 2026-10-10; leading now (`cards:needs -- --rank`): attach extensions (24 cards,
-  18 fully unblocked), face-down's leftovers (22, 19), random choice (21, 16), the Kindred card
+  2026-10-09, Class 2026-10-10, and attach to the trigger's object or the source and attach-all
+  2026-10-10 (B46); leading now (`cards:needs -- --rank`): face-down's leftovers (23 cards, 19
+  fully unblocked), random choice (21, 16), attach extensions' rest (19, 13), the Kindred card
   type (19, 17) (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring
-  blockers are in `docs/card-blockers.md`, "Open leads"). **Next to build: attach extensions**
-  (`cards:needs -- --feature effect:attach-extensions`), then author what it unblocks.
+  blockers are in `docs/card-blockers.md`, "Open leads"). **Next to build: face-down's
+  leftovers** (`cards:needs -- --feature mechanic:face-down`), then author what it unblocks.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`).

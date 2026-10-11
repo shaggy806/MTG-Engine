@@ -93,6 +93,7 @@ export function filterReadsX(filter: CardFilter): boolean {
     readsX(filter.toughness) ||
     readsX(filter.basePower) ||
     readsX(filter.baseToughness) ||
+    readsX(filter.equipmentAttached) ||
     readsX(filter.coloredManaSymbols) ||
     readsX(filter.cardTypeCount) ||
     (filter.nameDiffersFromEach !== undefined && filterReadsX(filter.nameDiffersFromEach)) ||
@@ -377,6 +378,11 @@ export interface CardFilter {
   /** Has an Equipment attached to it, whoever controls the Equipment (rule
    * 301.5). */
   readonly equipped?: boolean;
+  /** How many Equipment are attached to it, whoever controls them — Balan,
+   * Wandering Knight's "as long as **two or more Equipment are attached to
+   * it**" is `{ op: "gte", n: 2 }` (a `source` condition). Read on the
+   * battlefield only: off it (a last-known snapshot) it fails closed. */
+  readonly equipmentAttached?: NumCompare;
   /** Is (or isn't) the filtering player's **Ring-bearer** (rule 701.54e) —
    * "if Frodo is your Ring-bearer", "unless Sauron is your Ring-bearer". */
   readonly ringBearer?: boolean;
@@ -659,12 +665,14 @@ export function attachmentsOf(
   id: ObjectId,
 ): {
   equipped: boolean;
+  equipment: number;
   enchanted: boolean;
   enchantedByController: boolean;
   enchantedBy: PlayerId[];
 } {
   const out = {
     equipped: false,
+    equipment: 0,
     enchanted: false,
     enchantedByController: false,
     enchantedBy: [] as PlayerId[],
@@ -675,7 +683,10 @@ export function attachmentsOf(
     const o = state.objects[other];
     if (o === undefined || o.attachedTo !== id) continue;
     const subtypes = effectiveSubtypes(state, registry, o);
-    if (subtypes.includes("Equipment")) out.equipped = true;
+    if (subtypes.includes("Equipment")) {
+      out.equipped = true;
+      out.equipment += 1;
+    }
     if (subtypes.includes("Aura")) {
       out.enchanted = true;
       if (o.controller === host.controller) out.enchantedByController = true;
@@ -1105,12 +1116,19 @@ export function matchesFilter(
   }
   if (
     filter.equipped !== undefined ||
+    filter.equipmentAttached !== undefined ||
     filter.enchanted !== undefined ||
     filter.enchantedBy !== undefined ||
     filter.modified !== undefined
   ) {
     const attached = live !== undefined ? attachmentsOf(state, registry, id) : lki!;
     if (filter.equipped !== undefined && attached.equipped !== filter.equipped) return false;
+    if (
+      filter.equipmentAttached !== undefined &&
+      (live === undefined || !compareNum(attachmentsOf(state, registry, id).equipment, filter.equipmentAttached, ctx.x))
+    ) {
+      return false;
+    }
     if (filter.enchanted !== undefined && attached.enchanted !== filter.enchanted) return false;
     if (filter.enchantedBy === "you" && !(attached.enchantedBy ?? []).includes(ctx.you)) return false;
     if (filter.modified !== undefined) {

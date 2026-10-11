@@ -24,6 +24,7 @@ import _poolBirninZanaPlaza from "../pool/birnin-zana-plaza.js";
 import _poolBitterReunion from "../pool/bitter-reunion.js";
 import _poolBlastingStation from "../pool/blasting-station.js";
 import _poolBloomvineRegent from "../pool/bloomvine-regent.js";
+import _poolBlurSliver from "../pool/blur-sliver.js";
 import _poolBogNaughty from "../pool/bog-naughty.js";
 import _poolBotanicalSanctum from "../pool/botanical-sanctum.js";
 import _poolBrimstoneDragon from "../pool/brimstone-dragon.js";
@@ -313,6 +314,7 @@ const shard: CardShard = {
     _poolBitterReunion,
     _poolBlastingStation,
     _poolBloomvineRegent,
+    _poolBlurSliver,
     _poolBogNaughty,
     _poolBotanicalSanctum,
     _poolBrimstoneDragon,

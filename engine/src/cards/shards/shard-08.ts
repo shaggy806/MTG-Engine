@@ -119,6 +119,7 @@ import _poolHondenOfSeeingWinds from "../pool/honden-of-seeing-winds.js";
 import _poolIceridgeSerpent from "../pool/iceridge-serpent.js";
 import _poolIlhargTheRazeBoar from "../pool/ilharg-the-raze-boar.js";
 import _poolImmaculateMagistrate from "../pool/immaculate-magistrate.js";
+import _poolImmoralBargain from "../pool/immoral-bargain.js";
 import _poolIndomitableAncients from "../pool/indomitable-ancients.js";
 import _poolIorethOfTheHealingHouse from "../pool/ioreth-of-the-healing-house.js";
 import _poolJanJansenChaosCrafter from "../pool/jan-jansen-chaos-crafter.js";
@@ -134,6 +135,7 @@ import _poolKomodoRhino from "../pool/komodo-rhino.js";
 import _poolKwainItinerantMeddler from "../pool/kwain-itinerant-meddler.js";
 import _poolKyrenNegotiations from "../pool/kyren-negotiations.js";
 import _poolLavabellySliver from "../pool/lavabelly-sliver.js";
+import _poolLaylaHassan from "../pool/layla-hassan.js";
 import _poolLeaveInTheDust from "../pool/leave-in-the-dust.js";
 import _poolLectureHall from "../pool/lecture-hall.js";
 import _poolLegionWarboss from "../pool/legion-warboss.js";
@@ -399,6 +401,7 @@ const shard: CardShard = {
     _poolIceridgeSerpent,
     _poolIlhargTheRazeBoar,
     _poolImmaculateMagistrate,
+    _poolImmoralBargain,
     _poolIndomitableAncients,
     _poolIorethOfTheHealingHouse,
     _poolJanJansenChaosCrafter,
@@ -414,6 +417,7 @@ const shard: CardShard = {
     _poolKwainItinerantMeddler,
     _poolKyrenNegotiations,
     _poolLavabellySliver,
+    _poolLaylaHassan,
     _poolLeaveInTheDust,
     _poolLectureHall,
     _poolLegionWarboss,

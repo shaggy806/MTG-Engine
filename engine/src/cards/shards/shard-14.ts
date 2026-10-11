@@ -208,6 +208,7 @@ import _poolScurryOfSquirrels from "../pool/scurry-of-squirrels.js";
 import _poolSerpentOfYawningDepths from "../pool/serpent-of-yawning-depths.js";
 import _poolShatter from "../pool/shatter.js";
 import _poolShelteringLight from "../pool/sheltering-light.js";
+import _poolShieldedByFaith from "../pool/shielded-by-faith.js";
 import _poolShivanGorge from "../pool/shivan-gorge.js";
 import _poolShorecomberCrab from "../pool/shorecomber-crab.js";
 import _poolShriekmaw from "../pool/shriekmaw.js";
@@ -487,6 +488,7 @@ const shard: CardShard = {
     _poolSerpentOfYawningDepths,
     _poolShatter,
     _poolShelteringLight,
+    _poolShieldedByFaith,
     _poolShivanGorge,
     _poolShorecomberCrab,
     _poolShriekmaw,

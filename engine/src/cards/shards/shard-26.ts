@@ -193,7 +193,9 @@ import _poolRovingHarper from "../pool/roving-harper.js";
 import _poolRubblebeltBoar from "../pool/rubblebelt-boar.js";
 import _poolRuinousUltimatum from "../pool/ruinous-ultimatum.js";
 import _poolSaltfieldRecluse from "../pool/saltfield-recluse.js";
+import _poolSaplingOfColfenor from "../pool/sapling-of-colfenor.js";
 import _poolSapphireDragon from "../pool/sapphire-dragon.js";
+import _poolScaldingViper from "../pool/scalding-viper.js";
 import _poolScareTactics from "../pool/scare-tactics.js";
 import _poolScatheZombies from "../pool/scathe-zombies.js";
 import _poolScepterOfDominance from "../pool/scepter-of-dominance.js";
@@ -471,7 +473,9 @@ const shard: CardShard = {
     _poolRubblebeltBoar,
     _poolRuinousUltimatum,
     _poolSaltfieldRecluse,
+    _poolSaplingOfColfenor,
     _poolSapphireDragon,
+    _poolScaldingViper,
     _poolScareTactics,
     _poolScatheZombies,
     _poolScepterOfDominance,

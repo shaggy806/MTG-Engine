@@ -144,6 +144,7 @@ import _poolMoonSprite from "../pool/moon-sprite.js";
 import _poolMudbuttonTorchrunner from "../pool/mudbutton-torchrunner.js";
 import _poolMysticalTutor from "../pool/mystical-tutor.js";
 import _poolNamoraTheSeaQueen from "../pool/namora-the-sea-queen.js";
+import _poolNemesisMask from "../pool/nemesis-mask.js";
 import _poolNetherHorror from "../pool/nether-horror.js";
 import _poolNezumiCutthroat from "../pool/nezumi-cutthroat.js";
 import _poolNightsWhisper from "../pool/nights-whisper.js";
@@ -278,6 +279,7 @@ import _tokensElephantToken from "../tokens/elephant-token.js";
 import _tokensForestDryadToken from "../tokens/forest-dryad-token.js";
 import _tokensGoblinTokenHaste from "../tokens/goblin-token-haste.js";
 import _tokensInsectTokenInfestationSage from "../tokens/insect-token-infestation-sage.js";
+import _tokensMouseToken from "../tokens/mouse-token.js";
 import _tokensTreasureToken from "../tokens/treasure-token.js";
 import _tokensZombieKnightToken from "../tokens/zombie-knight-token.js";
 
@@ -424,6 +426,7 @@ const shard: CardShard = {
     _poolMudbuttonTorchrunner,
     _poolMysticalTutor,
     _poolNamoraTheSeaQueen,
+    _poolNemesisMask,
     _poolNetherHorror,
     _poolNezumiCutthroat,
     _poolNightsWhisper,
@@ -560,6 +563,7 @@ const shard: CardShard = {
     _tokensForestDryadToken,
     _tokensGoblinTokenHaste,
     _tokensInsectTokenInfestationSage,
+    _tokensMouseToken,
     _tokensTreasureToken,
     _tokensZombieKnightToken,
   ],

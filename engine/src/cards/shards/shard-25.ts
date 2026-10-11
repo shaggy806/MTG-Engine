@@ -37,6 +37,7 @@ import _poolBrightstoneRitual from "../pool/brightstone-ritual.js";
 import _poolBrinebarrowIntruder from "../pool/brinebarrow-intruder.js";
 import _poolBumbleflowersSharepot from "../pool/bumbleflowers-sharepot.js";
 import _poolBumpInTheNight from "../pool/bump-in-the-night.js";
+import _poolCabalPit from "../pool/cabal-pit.js";
 import _poolCacophodon from "../pool/cacophodon.js";
 import _poolCaptivatingUnicorn from "../pool/captivating-unicorn.js";
 import _poolChamberedNautilus from "../pool/chambered-nautilus.js";
@@ -320,6 +321,7 @@ const shard: CardShard = {
     _poolBrinebarrowIntruder,
     _poolBumbleflowersSharepot,
     _poolBumpInTheNight,
+    _poolCabalPit,
     _poolCacophodon,
     _poolCaptivatingUnicorn,
     _poolChamberedNautilus,

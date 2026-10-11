@@ -52,6 +52,7 @@ import _poolChildOfThorns from "../pool/child-of-thorns.js";
 import _poolChocoboKnights from "../pool/chocobo-knights.js";
 import _poolCleansingScreech from "../pool/cleansing-screech.js";
 import _poolCloakOfFeathers from "../pool/cloak-of-feathers.js";
+import _poolCloudExSoldier from "../pool/cloud-ex-soldier.js";
 import _poolCloudblazer from "../pool/cloudblazer.js";
 import _poolCommandersSphere from "../pool/commanders-sphere.js";
 import _poolCommonCrook from "../pool/common-crook.js";
@@ -100,6 +101,7 @@ import _poolGatewayShade from "../pool/gateway-shade.js";
 import _poolGempalmIncinerator from "../pool/gempalm-incinerator.js";
 import _poolGhaltaPrimalHunger from "../pool/ghalta-primal-hunger.js";
 import _poolGhituWarCry from "../pool/ghitu-war-cry.js";
+import _poolGixsCommand from "../pool/gixs-command.js";
 import _poolGleamingSplendor from "../pool/gleaming-splendor.js";
 import _poolGoShintaiOfAncientWars from "../pool/go-shintai-of-ancient-wars.js";
 import _poolGoShintaiOfLostWisdom from "../pool/go-shintai-of-lost-wisdom.js";
@@ -115,7 +117,9 @@ import _poolGravelHideGoblin from "../pool/gravel-hide-goblin.js";
 import _poolGravewaker from "../pool/gravewaker.js";
 import _poolGreenhouse from "../pool/greenhouse.js";
 import _poolGrixisPanorama from "../pool/grixis-panorama.js";
+import _poolGruulWarChant from "../pool/gruul-war-chant.js";
 import _poolGuardianAutomaton from "../pool/guardian-automaton.js";
+import _poolGwaihirTheWindlord from "../pool/gwaihir-the-windlord.js";
 import _poolGyreSage from "../pool/gyre-sage.js";
 import _poolHallOfStormGiants from "../pool/hall-of-storm-giants.js";
 import _poolHannaShipsNavigator from "../pool/hanna-ships-navigator.js";
@@ -230,6 +234,7 @@ import _poolShiftingSliver from "../pool/shifting-sliver.js";
 import _poolShinkaTheBloodsoakedKeep from "../pool/shinka-the-bloodsoaked-keep.js";
 import _poolSiegeSmash from "../pool/siege-smash.js";
 import _poolSisaysRing from "../pool/sisays-ring.js";
+import _poolSkitterbeamBattalion from "../pool/skitterbeam-battalion.js";
 import _poolSnappingDrake from "../pool/snapping-drake.js";
 import _poolSoulherder from "../pool/soulherder.js";
 import _poolSpectacleSummit from "../pool/spectacle-summit.js";
@@ -352,6 +357,7 @@ const shard: CardShard = {
     _poolChocoboKnights,
     _poolCleansingScreech,
     _poolCloakOfFeathers,
+    _poolCloudExSoldier,
     _poolCloudblazer,
     _poolCommandersSphere,
     _poolCommonCrook,
@@ -400,6 +406,7 @@ const shard: CardShard = {
     _poolGempalmIncinerator,
     _poolGhaltaPrimalHunger,
     _poolGhituWarCry,
+    _poolGixsCommand,
     _poolGleamingSplendor,
     _poolGoShintaiOfAncientWars,
     _poolGoShintaiOfLostWisdom,
@@ -415,7 +422,9 @@ const shard: CardShard = {
     _poolGravewaker,
     _poolGreenhouse,
     _poolGrixisPanorama,
+    _poolGruulWarChant,
     _poolGuardianAutomaton,
+    _poolGwaihirTheWindlord,
     _poolGyreSage,
     _poolHallOfStormGiants,
     _poolHannaShipsNavigator,
@@ -530,6 +539,7 @@ const shard: CardShard = {
     _poolShinkaTheBloodsoakedKeep,
     _poolSiegeSmash,
     _poolSisaysRing,
+    _poolSkitterbeamBattalion,
     _poolSnappingDrake,
     _poolSoulherder,
     _poolSpectacleSummit,

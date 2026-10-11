@@ -62,6 +62,7 @@ import _poolCultivate from "../pool/cultivate.js";
 import _poolCunningManeuver from "../pool/cunning-maneuver.js";
 import _poolDaggerdromeImp from "../pool/daggerdrome-imp.js";
 import _poolDarkness from "../pool/darkness.js";
+import _poolDarksteelSplicer from "../pool/darksteel-splicer.js";
 import _poolDaybreakCharger from "../pool/daybreak-charger.js";
 import _poolDefensiveStance from "../pool/defensive-stance.js";
 import _poolDelete from "../pool/delete.js";
@@ -283,6 +284,7 @@ import _poolWallOfFire from "../pool/wall-of-fire.js";
 import _poolWandOfOrcus from "../pool/wand-of-orcus.js";
 import _poolWanderingMusicians from "../pool/wandering-musicians.js";
 import _poolWarrenInstigator from "../pool/warren-instigator.js";
+import _poolWeddingAnnouncement from "../pool/wedding-announcement.js";
 import _poolWelcomingVampire from "../pool/welcoming-vampire.js";
 import _poolWhisperBloodLiturgist from "../pool/whisper-blood-liturgist.js";
 import _poolWildwoodRebirth from "../pool/wildwood-rebirth.js";
@@ -362,6 +364,7 @@ const shard: CardShard = {
     _poolCunningManeuver,
     _poolDaggerdromeImp,
     _poolDarkness,
+    _poolDarksteelSplicer,
     _poolDaybreakCharger,
     _poolDefensiveStance,
     _poolDelete,
@@ -583,6 +586,7 @@ const shard: CardShard = {
     _poolWandOfOrcus,
     _poolWanderingMusicians,
     _poolWarrenInstigator,
+    _poolWeddingAnnouncement,
     _poolWelcomingVampire,
     _poolWhisperBloodLiturgist,
     _poolWildwoodRebirth,

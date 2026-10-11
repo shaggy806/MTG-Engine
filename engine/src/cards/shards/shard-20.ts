@@ -135,6 +135,7 @@ import _poolJackhammer from "../pool/jackhammer.js";
 import _poolJaxisTheTroublemaker from "../pool/jaxis-the-troublemaker.js";
 import _poolJhessianInfiltrator from "../pool/jhessian-infiltrator.js";
 import _poolKalastriaNightwatch from "../pool/kalastria-nightwatch.js";
+import _poolKamiOfCelebration from "../pool/kami-of-celebration.js";
 import _poolKarametrasAcolyte from "../pool/karametras-acolyte.js";
 import _poolKazanduMammoth from "../pool/kazandu-mammoth.js";
 import _poolKindlyCustomer from "../pool/kindly-customer.js";
@@ -244,6 +245,7 @@ import _poolTalasAirShip from "../pool/talas-air-ship.js";
 import _poolTalismanOfHierarchy from "../pool/talisman-of-hierarchy.js";
 import _poolTatyova from "../pool/tatyova.js";
 import _poolTavernScoundrel from "../pool/tavern-scoundrel.js";
+import _poolTermagantSwarm from "../pool/termagant-swarm.js";
 import _poolTerritorialScythecat from "../pool/territorial-scythecat.js";
 import _poolTezzeretsGambit from "../pool/tezzerets-gambit.js";
 import _poolThaliaGuardianOfThraben from "../pool/thalia-guardian-of-thraben.js";
@@ -273,6 +275,7 @@ import _poolVorpalSword from "../pool/vorpal-sword.js";
 import _poolVoyagingSatyr from "../pool/voyaging-satyr.js";
 import _poolVulshokBerserker from "../pool/vulshok-berserker.js";
 import _poolWaytaTrainerProdigy from "../pool/wayta-trainer-prodigy.js";
+import _poolWeddingFestivity from "../pool/wedding-festivity.js";
 import _poolWellRested from "../pool/well-rested.js";
 import _poolWildCantor from "../pool/wild-cantor.js";
 import _poolWillowrushVerge from "../pool/willowrush-verge.js";
@@ -419,6 +422,7 @@ const shard: CardShard = {
     _poolJaxisTheTroublemaker,
     _poolJhessianInfiltrator,
     _poolKalastriaNightwatch,
+    _poolKamiOfCelebration,
     _poolKarametrasAcolyte,
     _poolKazanduMammoth,
     _poolKindlyCustomer,
@@ -528,6 +532,7 @@ const shard: CardShard = {
     _poolTalismanOfHierarchy,
     _poolTatyova,
     _poolTavernScoundrel,
+    _poolTermagantSwarm,
     _poolTerritorialScythecat,
     _poolTezzeretsGambit,
     _poolThaliaGuardianOfThraben,
@@ -557,6 +562,7 @@ const shard: CardShard = {
     _poolVoyagingSatyr,
     _poolVulshokBerserker,
     _poolWaytaTrainerProdigy,
+    _poolWeddingFestivity,
     _poolWellRested,
     _poolWildCantor,
     _poolWillowrushVerge,

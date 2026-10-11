@@ -604,7 +604,7 @@
    "description": "Aura and Equipment attachment beyond attaching the source and an entering Aura choosing what it enchants (built as effect:aura-enters-choice): an Aura put onto the battlefield attached to a named object (Light-Paws, Animate Dead), Aura tokens and token copies of a creature's attachments, and attaching chosen or target Equipment or Auras (any number) to a creature (Cloud, Ardenn). Built so far: attaching one Equipment or Aura the effect names — the one whose entering fired the trigger included — to a target (`attach`'s `attachment`: Hammer of Nazahn, Sigarda's Aid)."
   },
   "effect:aura-enters-choice": {
-   "size": "medium",
+   "size": "medium Also built (2026-10-10, B46): attaching to the trigger's object or the ability's source rather than a target (`attach`'s `target: \"trigger-object\" | \"source\"`: Hero's Blade, Shielded by Faith, Sword of the Squeak, Cloud, Ex-SOLDIER) and every match at once (`attachments`: Balan, Wandering Knight).",
    "ui": true,
    "description": "An Aura put onto the battlefield without being cast chooses what it enchants as it enters (rule 303.4f), and stays where it was with nothing to enchant (303.4g); an Aura attached to nothing or to something it can no longer enchant goes to the graveyard (704.5m), and attaching checks the enchant restriction and Equipment's creatures-only rule (701.3b)."
   },

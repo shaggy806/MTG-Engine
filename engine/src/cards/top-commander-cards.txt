@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3482 already implemented / 1518 missing (marks refreshed 2026-10-10)
+3486 already implemented / 1514 missing (marks refreshed 2026-10-11)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1856,7 +1856,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1863  Dictate of Kruphix                       {1}{U}{U}        Enchantment
 [x]  1864  Twisted Landscape                        {0}              Land
 [x]  1865  Passionate Archaeologist                 {1}{R}           Legendary Enchantment — Background
-[ ]  1866  Hero's Blade                             {2}              Artifact — Equipment
+[x]  1866  Hero's Blade                             {2}              Artifact — Equipment
 [x]  1867  Fists of Flame                           {1}{R}           Instant
 [x]  1868  Razaketh, the Foulblooded                {5}{B}{B}{B}     Legendary Creature — Demon
 [x]  1869  Springleaf Parade                        {X}{G}{G}        Enchantment
@@ -3275,7 +3275,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3282  Take the Bait                            {2}{R}{W}        Instant
 [x]  3283  Leonin Warleader                         {2}{W}{W}        Creature — Cat Soldier
 [x]  3284  Grim Guardian                            {2}{B}           Enchantment Creature — Zombie
-[ ]  3285  Shielded by Faith                        {1}{W}{W}        Enchantment — Aura
+[x]  3285  Shielded by Faith                        {1}{W}{W}        Enchantment — Aura
 [x]  3286  Axebane Guardian                         {2}{G}           Creature — Human Druid
 [x]  3287  Surrak Dragonclaw                        {2}{G}{U}{R}     Legendary Creature — Human Warrior
 [x]  3288  Cosmogrand Zenith                        {2}{W}           Creature — Human Soldier
@@ -4109,7 +4109,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4116  Sam's Desperate Rescue                   {B}              Sorcery
 [x]  4117  Ethereal Investigator                    {3}{U}           Creature — Spirit
 [x]  4118  Coppercoat Vanguard                      {1}{W}           Creature — Human Soldier
-[ ]  4119  Sword of the Squeak                      {2}              Artifact — Equipment
+[x]  4119  Sword of the Squeak                      {2}              Artifact — Equipment
 [x]  4120  Azure Beastbinder                        {1}{U}           Creature — Rat Rogue
 [x]  4121  Curse of Disturbance                     {2}{B}           Enchantment — Aura Curse
 [ ]  4122  Horizon Stone                            {5}              Artifact
@@ -4442,7 +4442,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4449  Vindictive Vampire                       {3}{B}           Creature — Vampire
 [ ]  4450  Flickering Ward                          {W}              Enchantment — Aura
 [x]  4451  Gigantosaurus                            {G}{G}{G}{G}{G}  Creature — Dinosaur
-[ ]  4452  Cloud, Ex-SOLDIER                        {2}{R}{G}{W}     Legendary Creature — Human Soldier Mercenary
+[x]  4452  Cloud, Ex-SOLDIER                        {2}{R}{G}{W}     Legendary Creature — Human Soldier Mercenary
 [x]  4453  You Find Some Prisoners                  {1}{R}           Instant
 [x]  4454  Coiling Rebirth                          {3}{B}{B}        Sorcery
 [ ]  4455  Savvy Trader                             {3}{G}           Creature — Human Citizen

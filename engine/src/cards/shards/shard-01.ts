@@ -112,6 +112,7 @@ import _poolKodamaOfTheWestTree from "../pool/kodama-of-the-west-tree.js";
 import _poolKorHalberd from "../pool/kor-halberd.js";
 import _poolKothFireOfResistance from "../pool/koth-fire-of-resistance.js";
 import _poolKrenkoTinStreetKingpin from "../pool/krenko-tin-street-kingpin.js";
+import _poolLapisOrbOfDragonkind from "../pool/lapis-orb-of-dragonkind.js";
 import _poolLavaSpike from "../pool/lava-spike.js";
 import _poolLeylineTyrant from "../pool/leyline-tyrant.js";
 import _poolLifegift from "../pool/lifegift.js";
@@ -369,6 +370,7 @@ const shard: CardShard = {
     _poolKorHalberd,
     _poolKothFireOfResistance,
     _poolKrenkoTinStreetKingpin,
+    _poolLapisOrbOfDragonkind,
     _poolLavaSpike,
     _poolLeylineTyrant,
     _poolLifegift,

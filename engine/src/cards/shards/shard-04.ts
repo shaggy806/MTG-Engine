@@ -98,6 +98,7 @@ import _poolGingerbreadCabin from "../pool/gingerbread-cabin.js";
 import _poolGlenElendraArchmage from "../pool/glen-elendra-archmage.js";
 import _poolGoblinAnarchomancer from "../pool/goblin-anarchomancer.js";
 import _poolGoblinDeathraiders from "../pool/goblin-deathraiders.js";
+import _poolGoblinPiledriver from "../pool/goblin-piledriver.js";
 import _poolGoblinSpelunkers from "../pool/goblin-spelunkers.js";
 import _poolGohnTownOfRuin from "../pool/gohn-town-of-ruin.js";
 import _poolGondGate from "../pool/gond-gate.js";
@@ -107,6 +108,7 @@ import _poolGrimHireling from "../pool/grim-hireling.js";
 import _poolGrislyTransformation from "../pool/grisly-transformation.js";
 import _poolGruffTriplets from "../pool/gruff-triplets.js";
 import _poolHammerheadMaggiaBoss from "../pool/hammerhead-maggia-boss.js";
+import _poolHarabazDruid from "../pool/harabaz-druid.js";
 import _poolHealerOfThePride from "../pool/healer-of-the-pride.js";
 import _poolHeartwoodTreefolk from "../pool/heartwood-treefolk.js";
 import _poolHerdGnarr from "../pool/herd-gnarr.js";
@@ -121,6 +123,7 @@ import _poolImposingVantasaur from "../pool/imposing-vantasaur.js";
 import _poolIndrikStomphowler from "../pool/indrik-stomphowler.js";
 import _poolInfectiousHorror from "../pool/infectious-horror.js";
 import _poolInsurrection from "../pool/insurrection.js";
+import _poolIntroductionToProphecy from "../pool/introduction-to-prophecy.js";
 import _poolIroassChampion from "../pool/iroass-champion.js";
 import _poolIroncladKrovod from "../pool/ironclad-krovod.js";
 import _poolJenovaAncientCalamity from "../pool/jenova-ancient-calamity.js";
@@ -381,6 +384,7 @@ const shard: CardShard = {
     _poolGlenElendraArchmage,
     _poolGoblinAnarchomancer,
     _poolGoblinDeathraiders,
+    _poolGoblinPiledriver,
     _poolGoblinSpelunkers,
     _poolGohnTownOfRuin,
     _poolGondGate,
@@ -390,6 +394,7 @@ const shard: CardShard = {
     _poolGrislyTransformation,
     _poolGruffTriplets,
     _poolHammerheadMaggiaBoss,
+    _poolHarabazDruid,
     _poolHealerOfThePride,
     _poolHeartwoodTreefolk,
     _poolHerdGnarr,
@@ -404,6 +409,7 @@ const shard: CardShard = {
     _poolIndrikStomphowler,
     _poolInfectiousHorror,
     _poolInsurrection,
+    _poolIntroductionToProphecy,
     _poolIroassChampion,
     _poolIroncladKrovod,
     _poolJenovaAncientCalamity,

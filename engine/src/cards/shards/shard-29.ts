@@ -56,6 +56,7 @@ import _poolDemandAnswers from "../pool/demand-answers.js";
 import _poolDesertDrake from "../pool/desert-drake.js";
 import _poolDesolationTwin from "../pool/desolation-twin.js";
 import _poolDouserOfLights from "../pool/douser-of-lights.js";
+import _poolDrafnaFounderOfLatNam from "../pool/drafna-founder-of-lat-nam.js";
 import _poolDragonsRageChanneler from "../pool/dragons-rage-channeler.js";
 import _poolDramaticRescue from "../pool/dramatic-rescue.js";
 import _poolDriftingShade from "../pool/drifting-shade.js";
@@ -178,6 +179,7 @@ import _poolReprieve from "../pool/reprieve.js";
 import _poolRepurposingBay from "../pool/repurposing-bay.js";
 import _poolRestlessVinestalk from "../pool/restless-vinestalk.js";
 import _poolRevivingMelody from "../pool/reviving-melody.js";
+import _poolRingwraiths from "../pool/ringwraiths.js";
 import _poolRiverSneak from "../pool/river-sneak.js";
 import _poolRuinsOfTrokair from "../pool/ruins-of-trokair.js";
 import _poolRunedServitor from "../pool/runed-servitor.js";
@@ -326,6 +328,7 @@ const shard: CardShard = {
     _poolDesertDrake,
     _poolDesolationTwin,
     _poolDouserOfLights,
+    _poolDrafnaFounderOfLatNam,
     _poolDragonsRageChanneler,
     _poolDramaticRescue,
     _poolDriftingShade,
@@ -448,6 +451,7 @@ const shard: CardShard = {
     _poolRepurposingBay,
     _poolRestlessVinestalk,
     _poolRevivingMelody,
+    _poolRingwraiths,
     _poolRiverSneak,
     _poolRuinsOfTrokair,
     _poolRunedServitor,

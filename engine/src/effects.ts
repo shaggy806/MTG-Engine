@@ -3349,10 +3349,26 @@ export type EffectSpec =
        * created, rather than a target — living weapon's "create a 0/0 black
        * Phyrexian Germ creature token, then attach this to it" (rule
        * 702.92a), with `attachment: "source"`. With several made (Doubling
-       * Season), it goes onto one of them (the rulings). */
+       * Season), it goes onto one of them (the rulings).
+       *
+       * `target` may also name an object without targeting it:
+       * `"trigger-object"`, the permanent whose entering fired the trigger —
+       * Hero's Blade's "whenever a legendary creature you control enters, you
+       * may attach this Equipment to **it**", Shielded by Faith's "attach this
+       * Aura to **that creature**" — or `"source"`, the ability's own
+       * permanent — Cloud, Ex-SOLDIER's "attach up to one target Equipment
+       * you control **to it**" (with `attachment: 0`). Each only while it is
+       * still the object it was (rule 400.7).
+       *
+       * `attachments` attaches **every** permanent matching the filter, each
+       * in turn, rather than one — Balan, Wandering Knight's "attach all
+       * Equipment you control to Balan" (`{ subtype: "Equipment",
+       * controlledBy: "you" }`, `target: "source"`). Each one that can't
+       * legally go there stays where it is (rule 701.3b). */
       readonly kind: "attach";
-      readonly target: number | "created";
+      readonly target: EffectTargetRef | "created";
       readonly attachment?: EffectTargetRef;
+      readonly attachments?: CardFilter;
     }
   | {
       /** Transform `target` — turn a transforming double-faced permanent over
@@ -5165,6 +5181,10 @@ export interface EffectApi {
   /** Attach `attachment` (an Aura/Equipment) to `target` — `ctx.source`
    * when it's omitted. See the `"attach"` {@link EffectSpec}. */
   attach(target: TargetRef, attachment?: TargetRef): void;
+  /** Attach every permanent matching `filter` (from the source's
+   * controller's view) to `target`, each in turn — the `"attach"`
+   * {@link EffectSpec}'s `attachments`. */
+  attachAll(target: TargetRef, filter: CardFilter): void;
   /** Transform `target` (a transforming DFC permanent) — see the `"transform"`
    * {@link EffectSpec}. */
   transform(target: TargetRef): void;
@@ -7680,9 +7700,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "attach": {
-      const target = spec.target === "created" ? createdThisWay(ctx) : ctx.targets[spec.target];
+      const target = spec.target === "created" ? createdThisWay(ctx) : resolveEffectTarget(spec.target, ctx);
       if (target === undefined) return;
+      if (spec.attachments !== undefined) {
+        ctx.attachAll(target, spec.attachments);
+        return;
+      }
       if (spec.attachment === undefined) {
+        // "Attach this …": not once the source has left and come back as a
+        // new object (rule 400.7).
+        if (ctx.sourceLost === true) return;
         ctx.attach(target);
         return;
       }

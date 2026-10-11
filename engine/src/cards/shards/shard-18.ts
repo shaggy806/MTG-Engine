@@ -229,6 +229,7 @@ import _poolThirstingRoots from "../pool/thirsting-roots.js";
 import _poolThistledownPlayers from "../pool/thistledown-players.js";
 import _poolThornOfAmethyst from "../pool/thorn-of-amethyst.js";
 import _poolThoughtflare from "../pool/thoughtflare.js";
+import _poolThreeBlindMice from "../pool/three-blind-mice.js";
 import _poolThunderingCeratok from "../pool/thundering-ceratok.js";
 import _poolTifaMartialArtist from "../pool/tifa-martial-artist.js";
 import _poolTimeWarp from "../pool/time-warp.js";
@@ -262,6 +263,7 @@ import _poolWaryOkapi from "../pool/wary-okapi.js";
 import _poolWastes from "../pool/wastes.js";
 import _poolWatchfulGiant from "../pool/watchful-giant.js";
 import _poolWearDown from "../pool/wear-down.js";
+import _poolWellOfIdeas from "../pool/well-of-ideas.js";
 import _poolWerebear from "../pool/werebear.js";
 import _poolWetlandSambar from "../pool/wetland-sambar.js";
 import _poolWhiteSunsZenith from "../pool/white-suns-zenith.js";
@@ -520,6 +522,7 @@ const shard: CardShard = {
     _poolThistledownPlayers,
     _poolThornOfAmethyst,
     _poolThoughtflare,
+    _poolThreeBlindMice,
     _poolThunderingCeratok,
     _poolTifaMartialArtist,
     _poolTimeWarp,
@@ -553,6 +556,7 @@ const shard: CardShard = {
     _poolWastes,
     _poolWatchfulGiant,
     _poolWearDown,
+    _poolWellOfIdeas,
     _poolWerebear,
     _poolWetlandSambar,
     _poolWhiteSunsZenith,
