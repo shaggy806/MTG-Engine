@@ -815,6 +815,8 @@
 .pp-mana {
   display: flex;
   align-items: center;
+  /* The zone-count row's right end. */
+  margin-left: auto;
   gap: 1px;
   font-family: var(--font-mono);
   font-size: var(--text-sm);

@@ -255,12 +255,15 @@ export function PlayerPanel({
         <span>
           lands {info.landsPlayedThisTurn}/{info.maxLandsThisTurn}
         </span>
+        {/* At the row's end rather than a row of its own, which came and
+            went with every mana added and spent and moved the board under
+            it (the user's ask, 2026-10-10). */}
+        {mana ? (
+          <span className="pp-mana" title="Mana pool">
+            <Symbols text={mana} />
+          </span>
+        ) : null}
       </div>
-      {mana ? (
-        <div className="pp-mana" title="Mana pool">
-          <Symbols text={mana} />
-        </div>
-      ) : null}
       {info.hasLost ? <div className="pp-lost">{info.lossReason}</div> : null}
     </div>
   )
