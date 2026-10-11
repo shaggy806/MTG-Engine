@@ -4,6 +4,46 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-10 — Sarkhan, Soul Aflame copies a Dragon and loses the discount the next one needs
+
+Status: open.
+
+- **Seen:** "the bot doesn't know when to let Sarkhan, Soul Aflame transform into a Dragon" (no
+  board saved) — the user's case: it didn't copy **Summon: Bahamut** as it entered.
+- **Not reproduced (Bahamut):** precombat with Sarkhan unsick, at two and four players, with and
+  without the room's 300 ms clock, v2 casts Bahamut before combat, copies it and attacks as the
+  9/9 every time; the engine's copy is right too (no lore counters, so rule 714.4 leaves him). The
+  one way it declines is when chapter I's "destroy up to one target nonland permanent" is aimed at
+  Sarkhan himself — rightly, as he's about to be destroyed — which the bot's own aim doesn't do.
+  Held as a gate: "has Sarkhan, Soul Aflame become Summon: Bahamut". The live board differed in
+  something not yet known (whether Sarkhan came down that same turn, whether Bahamut came after
+  combat or some other way than cast).
+- **Reproduced instead:** over the other spots that matter, v2 copies precombat with Sarkhan unsick
+  and declines postcombat or with Sarkhan summoning sick, and gets this one wrong.
+- **Wrong spot:** precombat, ten Mountains, two Shivan Dragons in hand. The first is cast at the
+  discount ({3}{R}{R}); Sarkhan's trigger asks, and the bot copies it. As a copy, Sarkhan has Shivan
+  Dragon's abilities, not "Dragon spells you cast cost {1} less", so the second Shivan ({4}{R}{R},
+  five Mountains left) can't be cast this turn.
+- **Right:** decline, cast the second Shivan at the discount, and copy *that* one when its own
+  enters trigger asks: two Dragons on the board and Sarkhan still attacking as one.
+- **Scenario:** "keeps Sarkhan, Soul Aflame himself while his discount casts another Dragon"
+  (training; reads wrong today, choosing the copy). Its gate twin, "has Sarkhan, Soul Aflame become
+  the Dragon it can attack as", holds the spot it gets right.
+- **Why:** v1's `chooseModes` prices the "you may" with `effect-worth.ts`, which has no worth for
+  `become-copy`, so it's a tie and declining wins. v2's decision search (`bestDecision`,
+  `eval-bot.ts`) overrules it: it plays each answer out, but the rollouts pass our own seat, so
+  neither answer's rollout ever casts the second Dragon. What's left is the copy's 5 in the air
+  this combat against Sarkhan's 2/4, and accepting wins.
+- **Fix (outline):** before accepting a "you may" whose effect changes the source's own text (a
+  `become-copy` of the source, until end of turn), ask what it costs this turn — as
+  `reducerFirst` does: compare the spells castable once each answer resolves
+  (`legalActionsAfter` on `[accept, passes…]` and `[decline, passes…]`), and if declining keeps a
+  cast that accepting loses, decline (the next Dragon's trigger offers the copy again). Contained
+  to `chooseModes` / the decision search for this effect kind. Risk: declining a copy when the
+  spell kept is one the bot then doesn't cast (a sorcery-speed one after combat), losing the
+  attack for nothing — so only where the lost spell is a Dragon that would re-offer the copy, or
+  check that the bot's own priority answer casts it.
+
 ## 2026-10-08 — Klauth's mana: all white, asked one unit at a time
 
 - **Seen:** the bot "has no clue how to add mana in any combination of colors", and the choice is

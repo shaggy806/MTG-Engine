@@ -405,6 +405,38 @@ function cardOf(game: Game, id: ObjectId | null): string {
   return object === undefined ? String(id) : `${object.controller}'s ${printedCardName(object)}`;
 }
 
+/** Alice, precombat with Sarkhan, Soul Aflame there since last turn and
+ * `hand` held back, casts `dragon` at his discount with `mountains`: paused
+ * at Sarkhan's "you may become a copy", or a failure if it never asked. Bob
+ * at 12 behind two Bears. */
+function sarkhanAsked(
+  registry: CardRegistry,
+  hand: readonly string[],
+  mountains: number,
+  dragon = "Shivan Dragon",
+): Game | ScenarioResult {
+  const game = table(registry, [A, B], A);
+  lands(game, "Mountain", A, mountains);
+  onBoard(game, "Sarkhan, Soul Aflame", A);
+  onBoard(game, "Grizzly Bears", B);
+  game.state.players[B].life = 12;
+  for (const name of hand) game.debugSpawn(name, A, "hand");
+  const bears = onBoard(game, "Grizzly Bears", B);
+  const cast = game.debugSpawn(dragon, A, "hand");
+  game.dispatch({ type: "cast-spell", player: A, card: cast, targets: [] });
+  // A chapter's target (Summon: Bahamut's "destroy up to one") goes at bob's
+  // Bears, as the bot aims it: left to the automatic answer it took Sarkhan
+  // himself, and a copy about to be destroyed is rightly declined.
+  game.advanceUntil(
+    (s) => (s.awaiting?.kind === "choose-targets" || s.awaiting?.kind === "choose-modes") && s.awaiting.player === A,
+  );
+  if (game.state.awaiting?.kind === "choose-targets") {
+    game.dispatch({ type: "choose-targets", player: A, targets: [{ kind: "object", object: bears }] });
+  }
+  game.advanceUntil((s) => (s.awaiting?.kind === "choose-modes" && s.awaiting.player === A) || s.result.over);
+  return game.state.awaiting?.kind === "choose-modes" ? game : { passed: false, detail: "Sarkhan never asked" };
+}
+
 /** A scenario asked with one `act`, its `run` following from its position. */
 function asked(
   spec: Omit<BotScenario, "run" | "position"> & Required<Pick<BotScenario, "position">>,
@@ -3280,6 +3312,75 @@ const SCENARIOS: readonly BotScenario[] = [
         player: A,
         judge: (action) => ({
           passed: action.type === "choose-modes" && action.modes.includes(0),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "has Sarkhan, Soul Aflame become the Dragon it can attack as",
+    rule: "Sarkhan, there since last turn, becoming a copy of the Dragon just cast attacks this turn as that Dragon; the Dragon itself can't.",
+    position(registry) {
+      // The spot a live report (2026-10-10, "the bot doesn't know when to let
+      // Sarkhan transform") is measured against, which v2 gets right: the
+      // copy is gone at cleanup, so its whole worth is this turn's combat,
+      // and precombat, unsick, Sarkhan swings for 5 in the air.
+      const game = sarkhanAsked(registry, [], 5);
+      if (!("state" in game)) return game;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "choose-modes" && action.modes.includes(0),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "has Sarkhan, Soul Aflame become Summon: Bahamut",
+    rule: "Copying Summon: Bahamut makes Sarkhan a 9/9 flyer this turn; a copy that didn't enter has no lore counters, so the Saga rule (714.4) leaves him.",
+    position(registry) {
+      // The user's own case (2026-10-10): the bot didn't copy Summon:
+      // Bahamut as it entered. Rebuilt precombat with Sarkhan unsick, at two
+      // and four players, with and without the room's clock, v2 copies and
+      // attacks as the 9/9 every time -- so the live board differed (not
+      // reproduced); this holds what it gets right.
+      const game = sarkhanAsked(registry, [], 8, "Summon: Bahamut");
+      if (!("state" in game)) return game;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "choose-modes" && action.modes.includes(0),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "keeps Sarkhan, Soul Aflame himself while his discount casts another Dragon",
+    kind: "training",
+    rule: "As a copy, Sarkhan loses 'Dragon spells cost {1} less': with a second Dragon that only fits with the {1} off, decline, cast it, and copy that one instead.",
+    position(registry) {
+      // Reported from a live game (2026-10-10): the bot didn't know when to
+      // let Sarkhan, Soul Aflame transform into a Dragon. Here it copies the
+      // first Shivan Dragon, losing the discount, and the second Shivan (6
+      // mana, 5 Mountains left) can't be cast; declining keeps it castable,
+      // and its own enters trigger offers the copy again. v1 declines (a
+      // become-copy has no worth in effect-worth.ts, and a tie declines); v2's
+      // search overrules it, because its rollouts pass our own seat: neither
+      // answer's rollout casts the second Dragon, so accepting is just the
+      // copy's attack, and wins.
+      // Ten Mountains: five for the first at the discount, and the five left
+      // fit the second only with the {1} off.
+      const game = sarkhanAsked(registry, ["Shivan Dragon"], 10);
+      if (!("state" in game)) return game;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "choose-modes" && action.modes.length === 0,
           detail: `chose ${describeAction(action)}`,
         }),
       };
