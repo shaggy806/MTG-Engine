@@ -3562,6 +3562,38 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   },
   {
+    name: "keeps a creature home when every attack dies to a block",
+    kind: "training",
+    rule: "At four players, an attacker that dies to a block or a trade only sets us and that player back against the other two.",
+    run(weights, registry, makeBot) {
+      // Reported from a live game (2026-10-10): "bots keep sending attackers
+      // in when they will die" — trades in a four-player game leave you and
+      // the player you traded with behind the other two. Here a Hill Giant
+      // trades with the Courser, a Craw Wurm eats it, and dave's Giant and
+      // Bears together kill it for one of theirs. The attack planner predicts
+      // each defender with v1's blocks (`simulateCombat`), and v1 takes
+      // neither an even trade nor a second blocker beside one that already
+      // kills — so the Courser looks unblocked (+1.0) while a live v2 dave
+      // double-blocks it (−3.6). And a 1-for-1 the planner does foresee scores
+      // +1.5 against the leader: `scoreOutcome` subtracts the strongest
+      // opponent in full, so their loss pays for ours, and the bystanders
+      // weigh only `otherOpponents` over their average.
+      const game = table(registry, [A, B, C, D], A);
+      onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Centaur Courser", A);
+      onBoard(game, "Hill Giant", B);
+      onBoard(game, "Craw Wurm", C);
+      onBoard(game, "Hill Giant", D);
+      onBoard(game, "Grizzly Bears", D);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return {
+        passed: attackers.length === 0,
+        detail: `attacked with ${attackers.map((d) => `${game.state.objects[d.attacker]?.cardName} at ${d.defender}`).join(", ") || "nothing"}`,
+      };
+    },
+  },
+  {
     name: "attacks the open player, not one with a blocker",
     rule: "At a four-player table, a 2/2 goes at the opponent who can't block it.",
     run(weights, registry, makeBot) {
