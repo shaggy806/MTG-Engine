@@ -816,6 +816,15 @@ export class EvalBotController extends HeuristicBotController {
       this.lastDecision = audit("priority", null, "reducer first");
       return this.acted(view, reducer);
     }
+    // A hideaway land's free card goes before a spell that would tap the
+    // land to pay for it, when the spell still fits afterwards
+    // (`hideawayFirst`): the land was last to be scored, and Mosswort
+    // Bridge's free Hit the Mother Lode was lost to Utvara Hellkite's mana.
+    const hideaway = this.hideawayFirst(view, candidates);
+    if (hideaway !== null) {
+      this.lastDecision = audit("priority", null, "hideaway first");
+      return this.acted(view, hideaway);
+    }
     const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
     const fetches = candidates.filter(
       (a) =>

@@ -2349,6 +2349,51 @@ export class HeuristicBotController extends AutomaticController {
     return null;
   }
 
+  /**
+   * A hideaway land's "play the exiled card" among `offers` to activate
+   * before a spell that would tap the land to pay for it: once the ability
+   * has resolved (its condition met, this bot taking the free card — or,
+   * looked at here, declining it), that spell is still castable, where
+   * casting it first leaves the activation unaffordable. A live misplay
+   * (2026-10-10, capture AN5SU t22): Utvara Hellkite's auto-pay tapped
+   * Mosswort Bridge for {G} and its free Hit the Mother Lode was lost. The
+   * search can't be trusted with it: the land is last among the candidates,
+   * so a room's clock ran out before scoring it, and its rollouts pass our
+   * own seat, so "the free card, then the Hellkite" is never seen. Null
+   * when there's none, the free card wouldn't be cast now (the condition
+   * fails, or `chooseCastNow` declines it), or the order doesn't matter.
+   */
+  protected hideawayFirst<T extends Action>(view: ControllerView, offers: readonly T[]): T | null {
+    const casts = offers.filter((o): o is T & CastSpellAction => o.type === "cast-spell");
+    if (casts.length === 0) return null;
+    for (const offer of offers) {
+      if (offer.type !== "activate-ability") continue;
+      const name = view.state.objects[offer.source]?.cardName ?? "";
+      if (!this.registry.has(name)) continue;
+      const effect = JSON.stringify(this.registry.get(name).activated?.[offer.abilityIndex]?.effect ?? null);
+      if (!effect.includes('"kind":"cast-now"') || !effect.includes('"from":"exiled-with-source"')) continue;
+      const same = (a: LegalAction): boolean =>
+        a.kind === "activate-ability" && a.source === offer.source && a.abilityIndex === offer.abilityIndex;
+      // Only where a spell castable now would leave the activation illegal.
+      const spends = casts.filter((cast) => {
+        const after = view.legalActionsAfter?.(cast);
+        return after !== null && after !== undefined && !after.some(same);
+      });
+      if (spends.length === 0) continue;
+      const order = view.state.turnOrder.filter((p) => !view.state.players[p].hasLost);
+      const from = order.indexOf(offer.player);
+      const resolved: Action[] = [offer, ...[...order.slice(from), ...order.slice(0, from)].map((p) => passFor(p))];
+      const asked = view.viewAfter?.(resolved);
+      const castNow = view.legalActionsAfter?.(resolved)?.find((a): a is CastNowOffer => a.kind === "cast-now");
+      if (asked === null || asked === undefined || castNow === undefined) continue;
+      if (this.chooseCastNow(asked, castNow) === null) continue;
+      const declined = view.legalActionsAfter?.([...resolved, { type: "cast-now", player: offer.player, cast: null }]);
+      if (declined === null || declined === undefined) continue;
+      if (spends.some((cast) => declined.some((a) => a.kind === "cast-spell" && a.card === cast.card))) return offer;
+    }
+    return null;
+  }
+
   /** A mana land's fetch at its moment — see `isManaLandFetch`. */
   protected isManaLandFetchDue(state: GameState, source: ObjectId, abilityIndex: number): boolean {
     return this.isManaLandFetch(state, source, abilityIndex) && this.isEndOfTurnBeforeOurs(state);

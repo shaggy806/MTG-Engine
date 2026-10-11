@@ -1393,6 +1393,43 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "plays Mosswort Bridge's hidden card before the spell that would tap the Bridge",
+    rule: "A hideaway land's free card goes first when the spell in hand still fits after it; cast first, the spell's mana takes the land.",
+    position(registry) {
+      // Capture AN5SU t22: Utvara Hellkite's auto-pay tapped Mosswort Bridge
+      // for {G}, and its free Hit the Mother Lode was lost. Ten mana and a
+      // Hellkite at eight: the Bridge's {G} and the Hellkite both fit, but
+      // only in that order, since auto-pay taps lands ahead of mana
+      // creatures, the Bridge among them.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 2);
+      lands(game, "Forest", A, 5);
+      // It enters tapped, even spawned.
+      const bridge = onBoard(game, "Mosswort Bridge", A);
+      game.state.objects[bridge].tapped = false;
+      onBoard(game, "Llanowar Elves", A);
+      onBoard(game, "Birds of Paradise", A);
+      onBoard(game, "Craw Wurm", A);
+      onBoard(game, "Hill Giant", A);
+      onBoard(game, "Grizzly Bears", A);
+      const hidden = game.debugSpawn("Colossal Dreadmaw", A, "exile");
+      game.state.objects[hidden].exiledFaceDown = { lookers: [A] };
+      game.state.objects[hidden].exiledWith = {
+        source: bridge,
+        zoneChangeCount: game.state.objects[bridge].zoneChangeCount ?? 0,
+      };
+      game.debugSpawn("Utvara Hellkite", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "activate-ability" && action.source === bridge,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "leaves Lightning Greaves where it is when moving it gains nothing",
     rule: "A free equip that changes nothing isn't worth taking, and taking it once means taking it for ever.",
     position(registry) {
