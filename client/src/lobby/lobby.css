@@ -184,6 +184,10 @@ button.seat-add-panel:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* The name field's underline and its padding, unseen, so the head is as
+     tall once the field becomes text on Ready. */
+  padding-bottom: 1px;
+  border-bottom: 1px solid transparent;
 }
 .seat-panel-tag {
   flex: none;
@@ -333,6 +337,22 @@ button.seat-add-panel:hover {
   font-size: var(--text-xs);
   padding: 4px 8px;
 }
+/* A seat's action, over a hidden Ready button that holds the row's height
+   whether the seat shows Ready, Add bot or nothing: a seat lost its button
+   as it readied or a bot sat down, and the board shrank and moved. */
+.seat-panel-action {
+  display: grid;
+  align-items: start;
+}
+.seat-panel-action > * {
+  grid-area: 1 / 1;
+}
+.seat-panel-action > .seat-action-room {
+  visibility: hidden;
+}
+.seat-deck-hint.hidden {
+  visibility: hidden;
+}
 
 /* The room's game settings (RoomSettingsPanel.tsx), at the top of the
    settings box: labelled fields one under another, the host's to change.
@@ -418,7 +438,11 @@ button.seat-add-panel:hover {
 }
 .seat-board-hint {
   font-size: var(--text-sm);
+  line-height: 1.35;
   margin: 0;
+  /* Two lines, said or not, so the box doesn't shrink as the last seat
+     readies (and "Waiting for … to start the game" may wrap). */
+  min-height: calc(2 * 1.35em);
 }
 .seat-host-badge {
   flex: none;

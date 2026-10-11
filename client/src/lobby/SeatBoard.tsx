@@ -232,33 +232,41 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
                     </span>
                   ) : null}
 
-                  {isMySeat ? (
-                    amReady ? (
-                      <button type="button" className="seat-panel-ready-btn active" onClick={() => game.setReady(false)}>
-                        ✓ Ready
-                      </button>
-                    ) : (
+                  {/* Every seat keeps a Ready button's room, filled or not, so
+                      the row holds its height as seats ready up and bots sit
+                      down (the user's ask, 2026-10-10). */}
+                  <div className="seat-panel-action">
+                    <button type="button" className="seat-panel-ready-btn seat-action-room" tabIndex={-1} disabled aria-hidden="true">
+                      ✓ Ready
+                    </button>
+                    {isMySeat ? (
+                      amReady ? (
+                        <button type="button" className="seat-panel-ready-btn active" onClick={() => game.setReady(false)}>
+                          ✓ Ready
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="seat-panel-ready-btn"
+                          onClick={readyUp}
+                          disabled={refused !== null}
+                          title={refused !== null ? 'Only Commander-legal decks may play in this room' : undefined}
+                        >
+                          Ready
+                        </button>
+                      )
+                    ) : host && !s.claimed && !s.isBot ? (
                       <button
                         type="button"
-                        className="seat-panel-ready-btn"
-                        onClick={readyUp}
-                        disabled={refused !== null}
-                        title={refused !== null ? 'Only Commander-legal decks may play in this room' : undefined}
+                        className="seat-panel-add-bot"
+                        onClick={() =>
+                          game.addBot(s.player, randomBotDeck(game.seats, Math.random, game.roomSettings?.botDecks))
+                        }
                       >
-                        Ready
+                        Add bot (random deck)
                       </button>
-                    )
-                  ) : host && !s.claimed && !s.isBot ? (
-                    <button
-                      type="button"
-                      className="seat-panel-add-bot"
-                      onClick={() =>
-                        game.addBot(s.player, randomBotDeck(game.seats, Math.random, game.roomSettings?.botDecks))
-                      }
-                    >
-                      Add bot (random deck)
-                    </button>
-                  ) : null}
+                    ) : null}
+                  </div>
                 </div>
               )
             })}
@@ -285,13 +293,15 @@ export function SeatBoard({ game, children }: { readonly game: NetworkGame; read
                 Start Game
               </button>
             ) : null}
-            {!allReady ? (
-              <p className="muted seat-board-hint">Waiting for everyone to ready up…</p>
-            ) : !host ? (
-              <p className="muted seat-board-hint">
-                Waiting for {hostSeat ? playerLabel(hostSeat.player, game.seats) : 'the host'} to start the game…
-              </p>
-            ) : null}
+            {/* Always there (empty for a host with everyone ready), two lines
+                tall, so the box holds its height. */}
+            <p className="muted seat-board-hint">
+              {!allReady
+                ? 'Waiting for everyone to ready up…'
+                : !host
+                  ? `Waiting for ${hostSeat ? playerLabel(hostSeat.player, game.seats) : 'the host'} to start the game…`
+                  : null}
+            </p>
           </div>
         </aside>
       </div>
@@ -355,7 +365,10 @@ function DeckSlot({
           <span className="seat-deck-commander">&nbsp;</span>
         </>
       )}
-      {editable ? <span className="seat-deck-hint">{deck ? 'Change deck' : 'Pick a deck'}</span> : null}
+      {/* Kept, hidden, once the slot locks: a readied seat lost its line. */}
+      <span className={`seat-deck-hint${editable ? '' : ' hidden'}`} aria-hidden={!editable}>
+        {deck ? 'Change deck' : 'Pick a deck'}
+      </span>
     </button>
   )
 }
