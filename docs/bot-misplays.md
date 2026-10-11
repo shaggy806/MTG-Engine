@@ -6,7 +6,7 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
 
 ## 2026-10-10 — Sarkhan, Soul Aflame copies a Dragon and loses the discount the next one needs
 
-Status: open.
+Status: open, fix not wanted for now (the user, 2026-10-10); the scenarios stay as recorded.
 
 - **Seen:** "the bot doesn't know when to let Sarkhan, Soul Aflame transform into a Dragon" (no
   board saved) — the user's case: it didn't copy **Summon: Bahamut** as it entered.
