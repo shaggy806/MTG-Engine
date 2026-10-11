@@ -4,6 +4,32 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-10 — A Mountain played where the Forest would cast Sakura-Tribe Elder too
+
+Status: open.
+
+- **Seen:** room FU6RP, turn 11 (four players, the user's seat bot-played): the bot played a Mountain
+  and cast Temur Battlecrier, with a Forest in hand that would also have cast Sakura-Tribe Elder.
+- **Board:** Island, Hinterland Harbor, Mountain and Sol Ring out; in hand a Mountain, a Forest,
+  Temur Battlecrier ({G}{U}{R}), Sakura-Tribe Elder ({1}{G}, {G} once Battlecrier's out), Frostcliff
+  Siege and An Offer You Can't Refuse. The Harbor was the only green source.
+- **Right:** the Forest — Forest, Island and Mountain cast Battlecrier, the Harbor the Elder. With the
+  Mountain, Battlecrier takes the Harbor's {G} and the Elder has none.
+- **Scenario:** "plays the Forest that casts Temur Battlecrier and Sakura-Tribe Elder, not a Mountain"
+  (training; reads wrong today, choosing the Mountain).
+- **Why:** v1's `bestLand` (`controller.ts`) ranks lands by `castableAfterPlay` — how many spells are
+  castable *one at a time* after the land — and every spell here is, after either land, so they tie.
+  The colour tie-break ties too (green and red are both on the board already: 2 wanted pips each), and
+  a tie keeps enumeration order: the Mountain, listed first. v2's search scores each land, but its
+  rollouts pass our own seat, so neither land's rollout casts a second spell; v1's pick, scored first,
+  wins the tie.
+- **Fix (outline):** in `castableAfterPlay`, look one spell deeper: for each castable spell after the
+  land, cast it (and let it resolve) and count what's still castable, keeping the best pair — "how
+  many spells this land casts together this turn" — as the first key, the single count after it.
+  Risk: cost (a simulation per spell per land, on top of today's one per land; capped to the few
+  spells the bot would cast), and a pair that isn't what the bot then plays (it may cast the bigger
+  spell alone); the land drop is cheap to get right here, as the mana is all known.
+
 ## 2026-10-10 — Sarkhan, Soul Aflame copies a Dragon and loses the discount the next one needs
 
 Status: open, fix not wanted for now (the user, 2026-10-10); the scenarios stay as recorded.

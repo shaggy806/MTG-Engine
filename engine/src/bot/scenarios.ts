@@ -1646,6 +1646,40 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "plays the Forest that casts Temur Battlecrier and Sakura-Tribe Elder, not a Mountain",
+    kind: "training",
+    rule: "The land drop that lets two of this turn's spells be cast together beats one that casts either alone.",
+    position(registry) {
+      // Reported from a live game (2026-10-10, room FU6RP turn 11, no
+      // capture): the bot played a Mountain and cast Temur Battlecrier, when
+      // the Forest in hand would also have cast Sakura-Tribe Elder. Its green
+      // source was Hinterland Harbor alone: with the Mountain, Battlecrier
+      // ({G}{U}{R}) takes the Harbor's {G} and the Elder (then {G}, a power-4
+      // creature out) has none; with the Forest, Forest, Island and Mountain
+      // cast Battlecrier and the Harbor the Elder.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 9;
+      onBoard(game, "Island", A);
+      onBoard(game, "Hinterland Harbor", A);
+      onBoard(game, "Mountain", A);
+      onBoard(game, "Sol Ring", A);
+      game.debugSpawn("Mountain", A, "hand");
+      const forest = game.debugSpawn("Forest", A, "hand");
+      game.debugSpawn("Temur Battlecrier", A, "hand");
+      game.debugSpawn("Sakura-Tribe Elder", A, "hand");
+      game.debugSpawn("Frostcliff Siege", A, "hand");
+      game.debugSpawn("An Offer You Can't Refuse", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === forest,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "plays a Forest for Birds of Paradise, not a tapped Stomping Ground",
     rule: "The land drop that casts this turn's spell beats one that enters tapped, and a basic beats paying 2 life.",
     position(registry) {
