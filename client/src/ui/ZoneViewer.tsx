@@ -5,6 +5,7 @@ import { CardTile } from './CardTile.tsx'
 import { Symbols } from './Symbols.tsx'
 import { defToVisible } from './defToVisible.ts'
 import { requestCards, useCardData } from '../cards/cardData.ts'
+import { StableLabel } from './StableLabel.tsx'
 
 /** The face a double-faced card isn't showing, as a tile of its printed
  * values — `null` for a one-faced card, and for an adventure, whose two
@@ -265,9 +266,16 @@ export function ZoneViewer({
               disabled={!canConfirm}
               onClick={() => selection.onConfirm(picked)}
             >
-              {picked.length === 0 && selection.min === 0
-                ? (selection.noneLabel ?? 'Put none')
-                : `Confirm (${picked.length})`}
+              <StableLabel
+                widest={[
+                  ...(selection.min === 0 ? [selection.noneLabel ?? 'Put none'] : []),
+                  `Confirm (${Math.min(selection.max, ids.length)})`,
+                ]}
+              >
+                {picked.length === 0 && selection.min === 0
+                  ? (selection.noneLabel ?? 'Put none')
+                  : `Confirm (${picked.length})`}
+              </StableLabel>
             </button>
           </div>
         ) : null}

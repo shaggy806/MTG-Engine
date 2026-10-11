@@ -110,6 +110,8 @@
   flex-direction: column;
   gap: 0.35rem;
   overflow-y: auto;
+  /* Room for a held button's 1px drop (index.css's bevel). */
+  padding-bottom: 1px;
 }
 .capture-entries button {
   width: 100%;

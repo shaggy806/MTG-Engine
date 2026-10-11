@@ -133,16 +133,6 @@ export function PlayerPanel({
           />
         )}
         <span className="pp-name">{playerLabel(info.id, seats)}</span>
-        {waiting !== null ? (
-          <span className="pp-waiting" role="status">
-            {waiting}
-            <span className="pp-waiting-dots" aria-hidden="true">
-              <span>.</span>
-              <span>.</span>
-              <span>.</span>
-            </span>
-          </span>
-        ) : null}
         {aimedBy !== null ? (
           <span className="pp-aimed" title={`Targeted by ${aimedBy}`}>
             <TargetedMark by={aimedBy} inline />
@@ -190,6 +180,18 @@ export function PlayerPanel({
             {curses.map((c) => (
               <CurseChip key={c.id} curse={c} />
             ))}
+          </span>
+        ) : null}
+        {/* Last, beside the life total: after the name, it came and went with
+            every bot's move and slid every badge after it. */}
+        {waiting !== null ? (
+          <span className="pp-waiting" role="status">
+            {waiting}
+            <span className="pp-waiting-dots" aria-hidden="true">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
           </span>
         ) : null}
         <span className="pp-life">{info.life}</span>

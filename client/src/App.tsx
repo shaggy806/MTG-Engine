@@ -78,6 +78,7 @@ import {
   unassigned,
 } from './game/damageAssignment.ts'
 import { setShare } from './game/divideShares.ts'
+import { StableLabel } from './ui/StableLabel.tsx'
 import { usePlayback } from './game/usePlayback.ts'
 import { AnimationBus } from './game/animationBus.ts'
 import { playerLabel, seatClassOf, withNames } from './format.ts'
@@ -985,16 +986,9 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               1366px. */}
           {game.isHost && game.seats.some((s) => s.isBot) && !over ? (
             <>
-              <button
-                type="button"
-                className={`ts-icon${game.botsPaused ? ' ts-paused' : ''}`}
-                aria-pressed={game.botsPaused}
-                aria-label={game.botsPaused ? 'Resume the bots' : 'Pause the bots'}
-                title={game.botsPaused ? 'Resume the bots' : 'Pause the bots'}
-                onClick={() => game.setBotsPaused(!game.botsPaused)}
-              >
-                {game.botsPaused ? '▶' : '⏸'}
-              </button>
+              {/* Left of the pause button, so its appearing on a pause doesn't
+                  push that button along under the cursor (the menu is
+                  right-anchored); the phase track's free space takes it. */}
               {game.botsPaused ? (
                 <button
                   type="button"
@@ -1006,6 +1000,17 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
                   ⏭
                 </button>
               ) : null}
+              <button
+                type="button"
+                className={`ts-icon${game.botsPaused ? ' ts-paused' : ''}`}
+                aria-pressed={game.botsPaused}
+                aria-label={game.botsPaused ? 'Resume the bots' : 'Pause the bots'}
+                title={game.botsPaused ? 'Resume the bots' : 'Pause the bots'}
+                onClick={() => game.setBotsPaused(!game.botsPaused)}
+              >
+                {game.botsPaused ? '▶' : '⏸'}
+              </button>
+
             </>
           ) : game.botsPaused ? (
             <span className="ts-paused-badge">Bots paused</span>
@@ -1090,7 +1095,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       {showHistory ? (
         <div className="zone-viewer-overlay" onClick={() => setShowHistory(false)}>
           <div
-            className="zone-viewer-box"
+            className="zone-viewer-box history-box"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-label="History"
@@ -3644,6 +3649,7 @@ function Table({
                 key={i}
                 type="button"
                 className={modePicks.includes(i) ? 'selected' : undefined}
+                aria-pressed={modePicks.includes(i)}
                 onClick={() => toggle(i)}
               >
                 {modeLabel(i)}
@@ -3712,6 +3718,7 @@ function Table({
             key={i}
             type="button"
             className={picked.includes(i) ? 'selected' : undefined}
+            aria-pressed={picked.includes(i)}
             disabled={(uncastable(i) || !fits([...picked, i])) && !picked.includes(i)}
             onClick={() => toggle(i)}
           >
@@ -4349,39 +4356,43 @@ function Table({
             ))}
           </span>
         ) : null}
-        {unpicked.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => {
-              // As a click on each would: a creature with only one legal
-              // defender (every one, at a two-player table without a
-              // planeswalker) is sent there outright, and only those with a
-              // real choice wait in the group for the player to point.
-              const single = unpicked.filter((id) => defendersFor(id).length === 1)
-              const choosing = unpicked.filter((id) => defendersFor(id).length !== 1)
-              if (single.length > 0) {
-                setAttackAssignments((cur) => ({
-                  ...cur,
-                  ...Object.fromEntries(single.map((id) => [id, defendersFor(id)[0]])),
-                }))
-              }
-              if (choosing.length > 0) setAttackPicks((cur) => [...cur, ...choosing])
-            }}
-          >
-            {unpicked.every((id) => defendersFor(id).length === 1) ? 'All attack' : 'Select all'}
-          </button>
-        ) : null}
-        {attackPicks.length > 0 ? (
-          <button type="button" onClick={() => setAttackPicks([])}>
-            Clear
-          </button>
-        ) : null}
+        {/* "All attack" and Clear stay, disabled while there's nothing for
+            them to do: coming and going, they moved Confirm's neighbours on
+            every click. */}
+        <button
+          type="button"
+          disabled={unpicked.length === 0}
+          onClick={() => {
+            // As a click on each would: a creature with only one legal
+            // defender (every one, at a two-player table without a
+            // planeswalker) is sent there outright, and only those with a
+            // real choice wait in the group for the player to point.
+            const single = unpicked.filter((id) => defendersFor(id).length === 1)
+            const choosing = unpicked.filter((id) => defendersFor(id).length !== 1)
+            if (single.length > 0) {
+              setAttackAssignments((cur) => ({
+                ...cur,
+                ...Object.fromEntries(single.map((id) => [id, defendersFor(id)[0]])),
+              }))
+            }
+            if (choosing.length > 0) setAttackPicks((cur) => [...cur, ...choosing])
+          }}
+        >
+          <StableLabel widest={['All attack', 'Select all']}>
+            {unpicked.length > 0 && unpicked.some((id) => defendersFor(id).length !== 1) ? 'Select all' : 'All attack'}
+          </StableLabel>
+        </button>
+        <button type="button" disabled={attackPicks.length === 0} onClick={() => setAttackPicks([])}>
+          Clear
+        </button>
         <button type="button" disabled={unmetMusts.length > 0} onClick={confirmAttackers}>
-          {enterAttackingAction !== undefined
-            ? 'Confirm'
-            : assignedCount === 0
-              ? 'No attacks'
-              : `Attack with ${assignedCount}`}
+          {enterAttackingAction !== undefined ? (
+            'Confirm'
+          ) : (
+            <StableLabel widest={['No attacks', `Attack with ${attackAction.eligible.length}`]}>
+              {assignedCount === 0 ? 'No attacks' : `Attack with ${assignedCount}`}
+            </StableLabel>
+          )}
         </button>
       </div>
     )
@@ -4463,7 +4474,9 @@ function Table({
           }
           onClick={confirmBlockers}
         >
-          {n === 0 ? 'No blocks' : `Block (${n})`}
+          <StableLabel widest={['No blocks', `Block (${blockAction.eligible.length})`]}>
+            {n === 0 ? 'No blocks' : `Block (${n})`}
+          </StableLabel>
         </button>
       </div>
     )
@@ -4646,20 +4659,20 @@ function Table({
             out, as "X to act" plus the full phase name; repeating it here
             was what pushed these four buttons onto a second row and made
             this corner tall enough to cover a whole quadrant's rail. */}
+        {/* A row of its own above the buttons (`.priority-waiting`), so its
+            coming and going moves none of them. */}
         {awaiting !== null ? (
-          <span className="muted">
+          <span className="muted priority-waiting">
             {`Waiting for ${playerLabel(who, game.seats)} to ${AWAITING_LABEL[awaiting.kind]}…`}
           </span>
         ) : null}
         {/* A spectator only watches: no passing of any kind. */}
         {game.spectating ? null : (
           <>
-            <button type="button" onClick={pass} disabled={!canPass}>
-              Pass (space)
-            </button>
             {/* Only while something is actually on the stack: with an empty one
                 there is nothing to resolve, and the button would read as a
-                second, vaguer "Pass". */}
+                second, vaguer "Pass". First in the row, so the right-anchored
+                buttons after it stay where they are as it comes and goes. */}
             {view.zones.stack.length > 0 ? (
               <button
                 type="button"
@@ -4672,6 +4685,9 @@ function Table({
                 {view.zones.stack.reduce((n, id) => n + (view.objects[id]?.stackCount ?? 1), 0)})
               </button>
             ) : null}
+            <button type="button" onClick={pass} disabled={!canPass}>
+              Pass (space)
+            </button>
             <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>
               Pass Turn
             </button>
@@ -4690,7 +4706,9 @@ function Table({
             >
               {/* Paused is still on: say so, or a button that reads "Stop
                   auto-pass" while the game waits on you looks like it broke. */}
-              {game.autoPassPaused ? 'Auto-pass paused' : game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
+              <StableLabel widest={['Auto-pass paused', 'Stop auto-pass', 'Auto-pass']}>
+                {game.autoPassPaused ? 'Auto-pass paused' : game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
+              </StableLabel>
             </button>
           </>
         )}

@@ -55,6 +55,7 @@ export function PhaseTrack({ view, seat }: { readonly view: PlayerView; readonly
             <button
               type="button"
               className="phase-pip"
+              data-abbr={abbr}
               disabled={!stoppable}
               aria-pressed={stoppable ? stopped : undefined}
               title={

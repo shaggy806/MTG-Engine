@@ -235,6 +235,9 @@
   gap: 1px;
   max-height: 60vh;
   overflow-y: auto;
+  /* Room for the scrollbar from the first card, or the rows' buttons moved
+     over as the list passed 60vh. */
+  scrollbar-gutter: stable;
   border: 1px solid var(--border-soft);
   border-radius: 0;
   box-shadow: var(--frame-sunk);
@@ -753,6 +756,7 @@
   gap: 8px;
   max-height: 60vh;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   border: 1px solid var(--border-soft);
   border-radius: 0;
   padding: 6px;

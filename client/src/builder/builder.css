@@ -198,7 +198,9 @@
 .bp-results {
   list-style: none;
   margin: 6px 0 0;
-  padding: 0;
+  /* Room for a held button's 1px drop (index.css's bevel), or the box
+     scrolled while the last one was held. */
+  padding: 0 0 1px;
   max-height: 38vh;
   overflow-y: auto;
   border: 1px solid var(--border-soft);

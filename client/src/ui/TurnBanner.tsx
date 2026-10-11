@@ -1,6 +1,7 @@
 import type { PlayerView } from 'engine/client'
 import { STEP_LABEL, playerLabel, seatClassOf } from '../format.ts'
 import type { SeatStatus } from 'protocol'
+import { StableLabel } from './StableLabel.tsx'
 
 /**
  * A large, unambiguous "whose turn, what phase" readout — the compact
@@ -32,11 +33,18 @@ export function TurnBanner({
           <span className="turn-banner-sep">·</span>
         </>
       ) : null}
+      {/* Each as wide as the widest it can say -- any seat's name, any step:
+          the phase pips start where this ends, and slid along with every
+          step (the user's ask, 2026-10-10). */}
       <span className="turn-banner-player">
-        {playerLabel(view.activePlayer, seats)}'s Turn{view.turn.isExtra ? ' (extra)' : ''}
+        <StableLabel widest={view.turnOrder.map((p) => `${playerLabel(p, seats)}'s Turn`)}>
+          {playerLabel(view.activePlayer, seats)}'s Turn{view.turn.isExtra ? ' (extra)' : ''}
+        </StableLabel>
       </span>
       <span className="turn-banner-sep">·</span>
-      <span className="turn-banner-phase">{STEP_LABEL[view.turn.step]}</span>
+      <span className="turn-banner-phase">
+        <StableLabel widest={Object.values(STEP_LABEL)}>{STEP_LABEL[view.turn.step]}</StableLabel>
+      </span>
       {view.dayNight !== null ? (
         <>
           <span className="turn-banner-sep">·</span>

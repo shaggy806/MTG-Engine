@@ -6,6 +6,12 @@
   min-height: 100vh;
   background: var(--bg);
 }
+/* The page scrolls as a document: keep the scrollbar's room, or the bar,
+   the search box being typed in and the grid shifted sideways as a search
+   went from a scroll's worth of results to fewer. */
+html:has(.lib-page) {
+  scrollbar-gutter: stable;
+}
 
 /* --- header ------------------------------------------------------------ */
 
@@ -283,6 +289,12 @@
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 0.55fr);
   gap: clamp(16px, 2.5vw, 28px);
   width: min(1120px, 100%);
+  /* And one height for an ordinary card: centred and sized to its content,
+     the box grew and shrank from card to card (its rules text, a back face's
+     button, the printings arriving a second later), and Previous/Next, at
+     its foot, moved up and down under the cursor. A card with more than
+     this still grows it. */
+  min-height: min(720px, calc(100vh - 2 * clamp(14px, 4vh, 44px)));
   padding: clamp(18px, 2.5vw, 28px);
   background: var(--panel);
   border: 1px solid var(--border);

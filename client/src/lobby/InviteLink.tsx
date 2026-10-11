@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { StableLabel } from '../ui/StableLabel.tsx'
 
 /**
  * "Copy invite link", beside the room code in the waiting room: the link a
@@ -31,7 +32,10 @@ export function InviteLink({ roomId }: { readonly roomId: string }) {
   return (
     <span className="invite-link">
       <button type="button" onClick={copy}>
-        {state === 'copied' ? '✓ Link copied' : 'Copy invite link'}
+        {/* Its width held, so it doesn't shrink under the cursor. */}
+        <StableLabel widest={['Copy invite link', '✓ Link copied']}>
+          {state === 'copied' ? '✓ Link copied' : 'Copy invite link'}
+        </StableLabel>
       </button>
       {state === 'manual' ? (
         <input

@@ -5,6 +5,29 @@ and the cleanups found along the way. `BACKLOG.md` keeps one line per item under
 title; when one lands, delete it in both. The animation follow-ups are in
 `docs/plans/legibility-of-play.md`, "Follow-ups".
 
+- **A few views still move on a click** (the jitter sweep, 2026-10-10, after the in-game
+  ones were fixed — the Pass row, decision panel, phase pips, hand row, History, zone viewer,
+  split menus, player panel badges, lobby, library overlay and scroll boxes). What's left, each
+  a smaller or rarer shift:
+  - **The landing page** (`lobby/landing.css`, `justify-content: safe center`): a join error,
+    the blitz paste box, its progress bar and error each add height, and the centred column
+    moves by half of it. A top-anchored column with fixed room for the notices would hold it.
+  - **The deck builder's legality list** (`deck-builder/DeckEditor.tsx`): its problems (up to
+    seven rows) come and go as cards are added, moving everything under it; a fixed-height
+    box, or the problems as a count with a popover, would hold it. Also small label changes
+    there ("Make active" → "Active", the "Delete…" confirm, "Import" → "Importing…").
+  - **A stack entry's label** (`ui/Stack.tsx`): one that wraps to two lines draws its card a
+    line lower, so the top card's place moves as the top changes. One line with an ellipsis
+    (the full text in its title), or two lines kept for every label.
+  - **The Game menu's confirms** (`ui/SeatMenu.tsx`): "Concede…" → "Concede the game?
+    [Concede] [Cancel]" widens the right-anchored panel; a min-width for the longest would
+    hold it.
+  - **A decision prompt that wraps** grows the bottom-right panel upward a line (its width and
+    buttons now hold still): at four players, picking an attacker adds "· click who they
+    attack". Two lines kept for every prompt would cost every decision a line of board.
+  - **Toasts**: an error is inserted above the sticky blitz report and the highroll notice,
+    pushing them down. Also the stand-in review and printing picker re-centring as they step
+    or load, and the scenario builder's notice above its results.
 - **A gift's opponent is asked one opponent at a time** (rule 702.174a): with two or more
   opponents the caster answers a yes-or-no `choose-modes` `about` each in turn, the last one
   left taking it. One prompt naming every opponent (picked on their panels) would read better;
