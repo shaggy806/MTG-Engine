@@ -4992,7 +4992,10 @@ function Table({
   const renderHandStrip = () => {
     return (
       <div
-        className={`hand-strip ${peekable ? 'peekable' : ''} ${handRaised || handForcedOpen ? 'raised' : ''} ${
+        // Empty in the mulligan (the popup holds the hand), and out of the
+        // layout then: in flow, it took the board's height on top of the
+        // band the board keeps for the tray.
+        className={`hand-strip ${peekable ? 'peekable' : 'idle'} ${handRaised || handForcedOpen ? 'raised' : ''} ${
           handForcedOpen ? 'hand-decision' : ''
         }`}
         onMouseLeave={() => setHandRaised(false)}
@@ -5242,12 +5245,12 @@ function Table({
 
   return (
     <div className="player-col" ref={playerColRef}>
-      {/* `peekable` is exactly the modes where the hand collapses to its
-          fixed tray and the priority controls float in the corner — i.e.
-          where something is permanently drawn over the bottom of the
-          screen. In the other modes the hand strip is in normal flow and
-          takes its own height, so there's nothing to reserve. */}
-      <main className={`table ${peekable ? 'bottom-band' : ''}`}>
+      {/* The band under the board the hand's tray and the priority controls
+          are drawn over. Reserved in the mulligan too, where neither is
+          drawn: the board was the band's height taller behind the mulligan
+          popup and shrank as the game began, every library column with it
+          (found 2026-10-10). */}
+      <main className="table bottom-band">
         <div className={`quadrant-grid ${opponents.length === 1 ? 'two-player' : ''}`}>
           {quadrantCells.map((pid, i) => (
             <div

@@ -1143,6 +1143,11 @@
    always-visible layout; the .peekable modifier below overrides it for the
    one case (ordinary priority — just browsing, nothing forcing your
    attention) where collapsing it to a peek is actually an improvement. */
+/* The mulligan's empty strip: kept mounted, out of the layout (App.tsx's
+   `renderHandStrip`). */
+.hand-strip.idle {
+  display: none;
+}
 .hand-strip {
   flex: none;
   display: flex;
