@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-402 already implemented / 98 missing
+403 already implemented / 97 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -371,7 +371,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  365  Admiral Brass, Unsinkable                       7808 decks  {2}{U}{B}{R}     Legendary Creature — Human Pirate
 [ ]  366  The Gitrog, Ravenous Ride                       7797 decks  {3}{B}{G}        Legendary Creature — Frog Horror Mount
 [x]  367  Breena, the Demagogue                           7785 decks  {1}{W}{B}        Legendary Creature — Bird Warlock
-[ ]  368  Kadena, Slinking Sorcerer                       7779 decks  {1}{B}{G}{U}     Legendary Creature — Snake Wizard Sorcerer
+[x]  368  Kadena, Slinking Sorcerer                       7779 decks  {1}{B}{G}{U}     Legendary Creature — Snake Wizard Sorcerer
 [ ]  369  Sméagol, Helpful Guide                          7751 decks  {1}{B}{G}        Legendary Creature — Halfling Horror
 [x]  370  The Unbeatable Squirrel Girl                    7751 decks  {1}{G}{G}{G}     Legendary Creature — Squirrel Human Hero
 [x]  371  Ultima, Origin of Oblivion                      7742 decks  {5}              Legendary Creature — God

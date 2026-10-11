@@ -2179,6 +2179,24 @@ export interface CardDefinition {
     readonly power: number;
     readonly toughness: number;
   } | null;
+  /**
+   * Morph, megamorph or disguise (rules 702.37, 702.168): the card may be
+   * cast face down as a 2/2 creature spell with no name, text, subtypes or
+   * mana cost for {3} (the `cast-spell` variant with `via: "face-down"`),
+   * and the face-down permanent turned face up any time its controller has
+   * priority for `cost` (the `turn-face-up` special action). Disguise's
+   * face-down 2/2 has ward {2} (702.168a); megamorph puts a +1/+1 counter on
+   * it as it's turned face up for its megamorph cost (702.37b). A mana cost
+   * only: a morph cost that isn't mana (Gift of Doom's sacrifice) isn't
+   * modeled. `null` for none.
+   */
+  readonly morph: { readonly keyword: "morph" | "megamorph" | "disguise"; readonly cost: string } | null;
+  /**
+   * "As this creature is turned face up, put N +1/+1 counters on it" (Hooded
+   * Hydra): a replacement on turning it face up (rule 708.8 — it doesn't
+   * enter), however it's turned. Absent for none.
+   */
+  readonly asTurnedFaceUp?: { readonly counters: number };
   /** Escape (rule 702.139 — ROADMAP Phase 6b) — cast from your graveyard for
    * `cost` plus exiling `exileCount` other cards from your graveyard as an
    * additional cost. Unlike flashback the spell resolves normally (it can be
@@ -2386,6 +2404,8 @@ const PRINTED_ABILITY: {
   blitz: (def) => def.blitz !== null,
   evoke: (def) => def.evoke !== null,
   prototype: (def) => def.prototype !== null,
+  morph: (def) => def.morph !== null,
+  asTurnedFaceUp: (def) => def.asTurnedFaceUp !== undefined,
   escape: (def) => def.escape !== null,
   suspend: (def) => def.suspend !== null,
   cycling: (def) => def.cycling !== null,
@@ -2539,6 +2559,8 @@ interface CardDraft {
   blitz?: { readonly cost: string };
   evoke?: { readonly cost: string };
   prototype?: { readonly cost: string; readonly power: number; readonly toughness: number };
+  morph?: { readonly keyword: "morph" | "megamorph" | "disguise"; readonly cost: string };
+  asTurnedFaceUp?: { readonly counters: number };
   suspend?: { readonly n: number; readonly cost: string };
   cycling?: { readonly cost: string; readonly search?: CardFilter };
   escape?: {
@@ -2631,6 +2653,8 @@ export function defineCard(draft: CardDraft): CardDefinition {
     blitz: draft.blitz ?? null,
     evoke: draft.evoke ?? null,
     prototype: draft.prototype ?? null,
+    morph: draft.morph ?? null,
+    ...(draft.asTurnedFaceUp !== undefined ? { asTurnedFaceUp: draft.asTurnedFaceUp } : {}),
     suspend: draft.suspend ?? null,
     cycling: draft.cycling ?? null,
     ...(draft.castFromGraveyardIf !== undefined ? { castFromGraveyardIf: draft.castFromGraveyardIf } : {}),

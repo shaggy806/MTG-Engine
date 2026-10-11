@@ -714,6 +714,14 @@ in `git log`.
   (rule 400.7). The rest of the feature — attaching to a card just returned,
   to a creature chosen without targeting, "the creature this is attached to"
   as an effect's object, Auras put onto the battlefield attached — is open.
+- **Morph, megamorph, disguise and manifest dread** (`mechanic:morph`,
+  `mechanic:disguise`, `keyword:manifest-dread`, part of `mechanic:face-down`,
+  2026-10-10, B47) — casting face down for {3} (`via: "face-down"`, hidden on
+  the stack, 708.4), turning face up for the morph cost (megamorph's counter,
+  `asTurnedFaceUp`), `turned-face-up` triggers, the `faceDown` filter, and
+  `manifest-dread` (Den Protector, Kadena, Hooded Hydra, Arno Dorian, Trail of
+  Mystery, Unwanted Remake; `morph.test.ts`). Open: turning face up by an
+  effect, returning face down, manifesting from a hand.
 
 ## Completed: `neededCards.txt` passes (P0-P20)
 

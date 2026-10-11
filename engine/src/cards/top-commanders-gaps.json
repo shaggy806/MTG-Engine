@@ -2,6 +2,9 @@
  "generated": "2026-09-22",
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
  "built": [
+  "mechanic:morph",
+  "mechanic:disguise",
+  "keyword:manifest-dread",
   "mechanic:class",
   "mechanic:rooms",
   "keyword:ninjutsu",
@@ -1076,7 +1079,7 @@
   "mechanic:face-down": {
    "size": "large",
    "ui": true,
-   "description": "Face-down permanents (rule 708): a characteristic-less 2/2, identity hidden per viewer, turning face up (special action, cost, triggers, 'you may turn a permanent face up'), 'enters face down' triggers, leaving play, and a noted card name on a face-down permanent (Magar). Shared by manifest, morph, disguise and cloak. Built 2026-10-09: the face-down 2/2 (manifest and cloak, `GameObject.faceDown`), hidden per viewer, turning a manifested or cloaked creature card face up for its mana cost, and revealing it as it leaves; not yet morph, disguise, manifest dread, turn-face-up triggers or effects, or Magar's noted name."
+   "description": "Face-down permanents (rule 708): a characteristic-less 2/2, identity hidden per viewer, turning face up (special action, cost, triggers, 'you may turn a permanent face up'), 'enters face down' triggers, leaving play, and a noted card name on a face-down permanent (Magar). Shared by manifest, morph, disguise and cloak. Built 2026-10-09: the face-down 2/2 (manifest and cloak, `GameObject.faceDown`), hidden per viewer, turning a manifested or cloaked creature card face up for its mana cost, and revealing it as it leaves; since 2026-10-10 (B47) also morph, megamorph and disguise (cast face down for {3}, turned face up for their cost), turn-face-up triggers, the faceDown filter and manifest dread; not yet turning a permanent face up by an effect, returning a card face down, manifesting from a hand, or Magar's noted name."
   },
   "mechanic:goad-extensions": {
    "size": "medium",

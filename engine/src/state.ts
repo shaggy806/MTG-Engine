@@ -1214,6 +1214,10 @@ export interface LastKnownInfo {
   readonly blocking: boolean;
   readonly equipped: boolean;
   readonly enchanted: boolean;
+  /** It was face down (rule 708) — a face-down spell as cast, or a face-down
+   * permanent as it left: the `faceDown` filter's "a face-down creature
+   * spell" (Kadena's first each turn). */
+  readonly faceDown?: boolean;
   /** What it was attached to, if it was an Equipment or Aura on something —
    * so an "equipped creature dies" trigger still knows its host when both
    * left together. */
@@ -1882,6 +1886,7 @@ export type AwaitingDecision =
         | "exile"
         | "exile-playable"
         | "exile-face-down"
+        | "manifest"
         | "library-top"
         | "library-bottom"
         | "graveyard";
@@ -3642,9 +3647,10 @@ export const LOCKED_ROOM = "Room (Both Doors Locked)";
 export const doorsFace = (doors: { readonly left: boolean; readonly right: boolean }): number =>
   doors.left && doors.right ? 0 : doors.left ? 1 : doors.right ? 2 : 0;
 
-/** How a permanent came to be face down: manifested (rule 701.40) or cloaked
- * (701.58, a manifest with ward {2}). Morph and disguise aren't modeled. */
-export type FaceDownKind = "manifest" | "cloak";
+/** How a permanent (or spell) came to be face down: manifested (rule
+ * 701.40), cloaked (701.58, a manifest with ward {2}), or cast face down
+ * with morph or megamorph (702.37c) or disguise (702.168a, ward {2}). */
+export type FaceDownKind = "manifest" | "cloak" | "morph" | "disguise";
 
 /** The registry names of the face-down 2/2s (rule 708.2a): internal
  * definitions, not cards — `cards/face-down.ts` defines them, and
@@ -3656,6 +3662,10 @@ export type FaceDownKind = "manifest" | "cloak";
 export const FACE_DOWN_CARDS: Readonly<Record<FaceDownKind, string>> = {
   manifest: "Face-Down Creature",
   cloak: "Face-Down Creature (Ward {2})",
+  // A morph's face-down 2/2 is manifest's (702.37c); a disguise's has ward
+  // {2}, as a cloak's (702.168a).
+  morph: "Face-Down Creature",
+  disguise: "Face-Down Creature (Ward {2})",
 };
 
 /** The card whose rules text this object has (layer 3): another's, once an

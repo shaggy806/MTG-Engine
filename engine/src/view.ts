@@ -215,7 +215,7 @@ export interface VisibleObject {
    * else here is the face-down 2/2's (`cardName` is its internal name, no
    * art), and `card` — the card it really is — is in its controller's view
    * only, who may look at it (708.5). */
-  readonly faceDown?: { readonly kind: "manifest" | "cloak"; readonly card?: string };
+  readonly faceDown?: { readonly kind: "manifest" | "cloak" | "morph" | "disguise"; readonly card?: string };
   /** A Room on the battlefield (rule 709.5): its two doors — the card's
    * left and right halves, each with its name, mana cost and rules text —
    * and whether each is unlocked. The rest of this object is what the
@@ -375,9 +375,10 @@ function visible(
   viewer?: PlayerId,
 ): VisibleObject {
   const object = state.objects[id];
-  // A face-down permanent shows only a face-down 2/2 (rule 708.2a), and
-  // which card it is only to its controller (708.5).
-  const faceDown = object.zone === "battlefield" ? object.faceDown : undefined;
+  // A face-down permanent — or a face-down spell, cast with morph or
+  // disguise (708.4) — shows only a face-down 2/2 (rule 708.2a), and which
+  // card it is only to its controller (708.5).
+  const faceDown = object.zone === "battlefield" || object.zone === "stack" ? object.faceDown : undefined;
   const printedName = printedCardName(object);
   const def = registry.get(printedName);
   // A Room on the battlefield is drawn as its whole card — both doors are

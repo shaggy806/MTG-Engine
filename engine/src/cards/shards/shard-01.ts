@@ -219,6 +219,7 @@ import _poolTheMeathookMassacre from "../pool/the-meathook-massacre.js";
 import _poolTheSpearOfLeonidas from "../pool/the-spear-of-leonidas.js";
 import _poolThoughtcast from "../pool/thoughtcast.js";
 import _poolThranVigil from "../pool/thran-vigil.js";
+import _poolThreatsAroundEveryCorner from "../pool/threats-around-every-corner.js";
 import _poolThreeTragedies from "../pool/three-tragedies.js";
 import _poolThrummingbird from "../pool/thrummingbird.js";
 import _poolTitaniaProtectorOfArgoth from "../pool/titania-protector-of-argoth.js";
@@ -477,6 +478,7 @@ const shard: CardShard = {
     _poolTheSpearOfLeonidas,
     _poolThoughtcast,
     _poolThranVigil,
+    _poolThreatsAroundEveryCorner,
     _poolThreeTragedies,
     _poolThrummingbird,
     _poolTitaniaProtectorOfArgoth,

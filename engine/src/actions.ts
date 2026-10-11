@@ -65,6 +65,11 @@ export type CastVia =
   | "warp"
   /** Blitz (rule 702.152a) — cast from the hand for its blitz cost. */
   | "blitz"
+  /** Morph, megamorph or disguise (rules 702.37c, 702.168a) — cast from the
+   * hand face down, as a 2/2 creature spell with no name, text, subtypes or
+   * mana cost, for {3}: an alternative cost. It resolves into a face-down
+   * permanent (708.4). */
+  | "face-down"
   /** Cast from your graveyard for its normal cost, under a permission a
    * permanent you control grants (Gisa and Geralf: "you may cast a Zombie
    * creature spell from your graveyard"). Unlike flashback, nothing exiles
@@ -207,10 +212,14 @@ export type Action =
   | {
       /** Turn a face-down permanent you control face up (rules 701.40b,
        * 701.58b): a special action any time you have priority, paying its
-       * card's mana cost. */
+       * card's mana cost — or, with `morph`, its morph, megamorph or
+       * disguise cost (702.37e, 702.168d), the only way for one cast face
+       * down, and a second way for a manifested card with morph (701.40c).
+       * Echoed from the offer. */
       readonly type: "turn-face-up";
       readonly player: PlayerId;
       readonly permanent: ObjectId;
+      readonly morph?: boolean;
     }
   | {
       /** Unlock a locked door of a Room you control (rule 709.5e): a special
@@ -655,11 +664,14 @@ export type LegalAction =
     }
   | {
       /** One of your face-down permanents can be turned face up — its card
-       * (which only you may see, rule 708.5) and the mana cost to pay. */
+       * (which only you may see, rule 708.5) and the cost to pay: its mana
+       * cost, or with `morph` its morph, megamorph or disguise cost (one
+       * offer each where both apply). */
       readonly kind: "turn-face-up";
       readonly permanent: ObjectId;
       readonly cardName: string;
       readonly cost: string;
+      readonly morph?: "morph" | "megamorph" | "disguise";
     }
   | {
       /** A locked door of one of your Rooms can be unlocked (rule 709.5e):
@@ -1097,6 +1109,7 @@ export type LegalAction =
         | "exile"
         | "exile-playable"
         | "exile-face-down"
+        | "manifest"
         | "library-top"
         | "library-bottom"
         | "graveyard";

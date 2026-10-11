@@ -327,6 +327,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   // Reality Shift's manifest is the consolation for the creature exiled: it
   // aims at nothing.
   manifest: none,
+  "manifest-dread": none,
   "create-token": (n, v) => v.touch(n.who === "target-controller" ? 0 : undefined, "help", MINOR),
   // A copy goes to the copied permanent's controller unless the card says
   // it's yours (Hate Mirage).

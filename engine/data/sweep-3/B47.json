@@ -1,0 +1,156 @@
+{
+  "batch": "B47",
+  "status": "complete",
+  "ranks": "mechanic:face-down's waiting cards: morph, megamorph and disguise (cast face down, turned face up for their cost), turn-face-up triggers, the faceDown filter, and manifest dread",
+  "authored": [
+    {
+      "name": "Aphetto Alchemist",
+      "files": [
+        "engine/src/cards/pool/aphetto-alchemist.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Gudul Lurker",
+      "files": [
+        "engine/src/cards/pool/gudul-lurker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Grim Haruspex",
+      "files": [
+        "engine/src/cards/pool/grim-haruspex.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Den Protector",
+      "files": [
+        "engine/src/cards/pool/den-protector.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rattleclaw Mystic",
+      "files": [
+        "engine/src/cards/pool/rattleclaw-mystic.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Hooded Hydra",
+      "files": [
+        "engine/src/cards/pool/hooded-hydra.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Arno Dorian",
+      "files": [
+        "engine/src/cards/pool/arno-dorian.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bayek of Siwa",
+      "files": [
+        "engine/src/cards/pool/bayek-of-siwa.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hunted Bonebrute",
+      "files": [
+        "engine/src/cards/pool/hunted-bonebrute.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Kadena, Slinking Sorcerer",
+      "files": [
+        "engine/src/cards/pool/kadena-slinking-sorcerer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Trail of Mystery",
+      "files": [
+        "engine/src/cards/pool/trail-of-mystery.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "They Came from the Pipes",
+      "files": [
+        "engine/src/cards/pool/they-came-from-the-pipes.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Threats Around Every Corner",
+      "files": [
+        "engine/src/cards/pool/threats-around-every-corner.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Fear of Impostors",
+      "files": [
+        "engine/src/cards/pool/fear-of-impostors.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Unwanted Remake",
+      "files": [
+        "engine/src/cards/pool/unwanted-remake.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Abhorrent Oculus",
+      "needs": [
+        "cost:exile-from-graveyard-additional"
+      ],
+      "why": "its additional cost exiles six cards from your graveyard, which a spell can't say (manifest dread itself is built)"
+    },
+    {
+      "name": "Deathmist Raptor",
+      "needs": [
+        "effect:return-face-up-or-down"
+      ],
+      "why": "megamorph and the turned-face-up trigger are built; returning it 'face up or face down' isn't"
+    },
+    {
+      "name": "Ugin's Mastery",
+      "needs": [
+        "effect:turn-face-up"
+      ],
+      "why": "turning a face-down creature face up by an effect, not the special action"
+    },
+    {
+      "name": "Zimone, Mystery Unraveler",
+      "needs": [
+        "effect:turn-face-up"
+      ],
+      "why": "manifest dread is built; 'you may turn a permanent you control face up' by an effect isn't"
+    },
+    {
+      "name": "Hauntwoods Shrieker",
+      "needs": [
+        "effect:turn-face-up"
+      ],
+      "why": "manifest dread is built; revealing a face-down permanent and turning it face up by an effect isn't"
+    },
+    {
+      "name": "Scroll of Fate",
+      "needs": [
+        "effect:manifest-from-hand"
+      ],
+      "why": "manifests a card chosen from the hand, not the library's top"
+    }
+  ]
+}

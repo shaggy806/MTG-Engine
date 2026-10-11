@@ -22,6 +22,7 @@ import _poolAnnieJoinsUp from "../pool/annie-joins-up.js";
 import _poolArachnoid from "../pool/arachnoid.js";
 import _poolArbaazMir from "../pool/arbaaz-mir.js";
 import _poolArgothianSwine from "../pool/argothian-swine.js";
+import _poolArnoDorian from "../pool/arno-dorian.js";
 import _poolAtalanJackal from "../pool/atalan-jackal.js";
 import _poolAxgardCavalry from "../pool/axgard-cavalry.js";
 import _poolBartolomeDelPresidio from "../pool/bartolome-del-presidio.js";
@@ -300,6 +301,7 @@ const shard: CardShard = {
     _poolArachnoid,
     _poolArbaazMir,
     _poolArgothianSwine,
+    _poolArnoDorian,
     _poolAtalanJackal,
     _poolAxgardCavalry,
     _poolBartolomeDelPresidio,

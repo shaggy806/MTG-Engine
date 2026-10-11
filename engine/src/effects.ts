@@ -26,7 +26,6 @@ import { EVERY_CREATURE_TYPE, isCreatureType } from "./subtypes.js";
 import type { ThisWayEntry } from "./this-way.js";
 import type {
   DelayedTriggerTiming,
-  FaceDownKind,
   LeaveDestination,
   PlayerCounterKind,
   PlayerEffect,
@@ -3181,6 +3180,20 @@ export type EffectSpec =
       readonly cloak?: true;
     }
   | {
+      /** Manifest dread (rule 701.62a): the player looks at the top two cards
+       * of their library, manifests one of them (their choice, seen by no one
+       * else), then puts the rest into their graveyard — the
+       * `look-and-choose` with `destination: "manifest"`, `leftover:
+       * "graveyard"`. `who` is the effect's controller (`"you"`, the
+       * default) or a target's controller as it last existed — Unwanted
+       * Remake's "its controller manifests dread" is `{ controllerOfTarget:
+       * 0 }`. `count` manifests dread that many times, each finished before
+       * the next (They Came from the Pipes' "twice"). */
+      readonly kind: "manifest-dread";
+      readonly who?: "you" | { readonly controllerOfTarget: number };
+      readonly count?: number;
+    }
+  | {
       readonly kind: "create-token";
       /** Name of a token definition in the {@link CardRegistry}. */
       readonly token: string;
@@ -4114,7 +4127,7 @@ export type EffectSpec =
        * `"exile"` is the same link, face up — imprint's "you may exile a
        * nonartifact, nonland card from your hand" (Chrome Mox), whose "the
        * exiled card" is every player's to see. */
-      readonly destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "exile-face-down" | "exile";
+      readonly destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "exile-face-down" | "exile" | "manifest";
       /** Chosen cards bound for the battlefield enter **tapped** (Terrain
        * Generator). */
       readonly enterTapped?: boolean;
@@ -5120,7 +5133,7 @@ export interface EffectApi {
   ): void;
   /** `player` manifests (or cloaks) the top card of their library — see the
    * `"manifest"` {@link EffectSpec}. */
-  manifestTop(player: PlayerId, kind: FaceDownKind): void;
+  manifestTop(player: PlayerId, kind: "manifest" | "cloak"): void;
   /** Create `count` copies of the named token, controlled by `ctx.controller`. */
   createToken(
     token: string,
@@ -5299,7 +5312,7 @@ export interface EffectApi {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "graveyard" | "exile-face-down" | "exile",
+    destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "graveyard" | "exile-face-down" | "exile" | "manifest",
     leftover: "bottom-random" | "bottom-any-order" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
@@ -6746,6 +6759,25 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "return-to-hand": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.returnToHand(target, spec.from);
+      return;
+    }
+    case "manifest-dread": {
+      // Several times: one after another, each choice made before the next
+      // look — a sequence parks its later steps behind a pending choice.
+      const times = spec.count ?? 1;
+      if (times > 1) {
+        applyEffectSpec({ kind: "sequence", effects: Array.from({ length: times }, () => ({ ...spec, count: 1 })) }, ctx);
+        return;
+      }
+      const who = spec.who ?? "you";
+      let player: PlayerId | undefined = ctx.controller;
+      if (who !== "you") {
+        const ref = ctx.targets[who.controllerOfTarget];
+        player = ref === undefined ? undefined : ctx.controllerOf(ref);
+      }
+      if (player === undefined) return;
+      ctx.lookAndChoose("library", 2, 1, 1, "manifest", "graveyard", undefined, false, undefined, false,
+        undefined, undefined, undefined, undefined, player);
       return;
     }
     case "manifest": {

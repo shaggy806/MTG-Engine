@@ -227,6 +227,8 @@ How to use it:
 | [Ninja of the Deep Hours, Yuriko, the Tiger's Shadow](#ninja-of-the-deep-hours-yuriko-the-tigers-shadow) | new decision | Ninjutsu |
 | [Bottomless Pool // Locker Room, Unholy Annex // Ritual Chamber](#bottomless-pool--locker-room-unholy-annex--ritual-chamber) | new decision | Rooms |
 | [Paladin Class](#paladin-class) | new decision | Class levels |
+| [Den Protector, Arno Dorian, Trail of Mystery](#den-protector-arno-dorian-trail-of-mystery) | new decision | Morph, disguise and manifest dread |
+| [Unwanted Remake, They Came from the Pipes](#unwanted-remake-they-came-from-the-pipes) | new decision | Morph, disguise and manifest dread |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -4336,3 +4338,38 @@ stack count once per token)
   at level 3 attacking asks for the trigger's target, and the Bears get +1/+1 more and double strike (4/4,
   dealing 8). The level is gone if the Class leaves and comes back.
 - **Known limits:** Bots level up only as the evaluation sees fit (no Class-specific planning).
+
+## Morph, disguise and manifest dread (2026-10-10)
+
+### Den Protector, Arno Dorian, Trail of Mystery
+
+*New decision* — casting a card face down (rules 702.37c, 702.168a) and turning it face up for its morph or disguise cost
+
+- **Setup:** Your precombat main. Your battlefield: Trail of Mystery and four Forests, three Swamps and three
+  Mountains. Your hand: Den Protector and Arno Dorian. Your graveyard: Grizzly Bears. Your library's top: a
+  Forest. Bob: Hill Giant.
+- **Do:** Cast Den Protector face down from its hand card. Let Trail of Mystery's search find the Forest.
+  Open the face-down tile's menu and turn it face up for its megamorph cost, returning the Bears. Next turn,
+  cast Arno Dorian face down and turn it face up for its disguise cost.
+- **Check:** The hand card offers "Cast Den Protector" and "Cast Den Protector face down (a 2/2 for {3})"; the
+  face-down spell and permanent read "Morph: Den Protector" to you and "Face-down (morph)" in Bob's view and
+  log (a disguised one also shows ward {2}). Its menu offers only "Turn face up — Den Protector, megamorph
+  {1}{G}", never for its mana cost. Turned up, it's a 3/2 with a +1/+1 counter, Trail of Mystery makes it 5/4
+  until end of turn, and its trigger asks for a card in your graveyard. Arno face up is a 3/3 deathtouch.
+- **Known limits:** A morph cost that isn't mana (Gift of Doom's sacrifice) isn't modeled; bots cast face
+  down only as the evaluation sees fit.
+
+### Unwanted Remake, They Came from the Pipes
+
+*New decision* — manifest dread (rule 701.62a): choosing which of the top two to manifest
+
+- **Setup:** Your precombat main. Your battlefield: Grizzly Bears, five Islands and a Plains. Your hand:
+  Unwanted Remake and They Came from the Pipes. Your library's top: Craw Wurm, Hill Giant, Grizzly Bears,
+  Centaur Courser. Bob: Hill Giant, and Craw Wurm and Hill Giant on top of his library.
+- **Do:** Cast Unwanted Remake on Bob's Hill Giant. Then cast They Came from the Pipes.
+- **Check:** Bob (a bot) manifests one of his top two and the other goes to his graveyard; you see only a
+  face-down 2/2. For the Pipes you're asked twice, "Manifest dread: choose a card…", each over your next two
+  cards; each chosen card enters face down ("Manifested: …" to you) and draws a card, the other goes to your
+  graveyard.
+- **Known limits:** None known.
+

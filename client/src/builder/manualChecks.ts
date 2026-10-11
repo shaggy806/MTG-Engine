@@ -2561,6 +2561,29 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Den Protector, Arno Dorian, Trail of Mystery',
+    board({
+      you: {
+        bf: ['Trail of Mystery', 'Forest*4', 'Swamp*3', 'Mountain*3'],
+        hand: ['Den Protector', 'Arno Dorian'],
+        gy: ['Grizzly Bears'],
+        lib: ['Forest', 'Island*6'],
+      },
+      opp: { bf: ['Hill Giant'] },
+    }),
+  ),
+  preset(
+    'Unwanted Remake, They Came from the Pipes',
+    board({
+      you: {
+        bf: ['Grizzly Bears', 'Island*5', 'Plains'],
+        hand: ['Unwanted Remake', 'They Came from the Pipes'],
+        lib: ['Craw Wurm', 'Hill Giant', 'Grizzly Bears', 'Centaur Courser', 'Island*4'],
+      },
+      opp: { bf: ['Hill Giant'], lib: ['Craw Wurm', 'Hill Giant', 'Island*4'] },
+    }),
+  ),
+  preset(
     'Deadpool, Trading Card',
     board({
       you: { bf: ['Swamp*2', 'Mountain*2', 'Soul Warden'], hand: ['Deadpool, Trading Card'] },

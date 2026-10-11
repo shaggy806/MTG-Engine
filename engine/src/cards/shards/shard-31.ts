@@ -234,6 +234,7 @@ import _poolTemurBattlecrier from "../pool/temur-battlecrier.js";
 import _poolTheBattleOfBywater from "../pool/the-battle-of-bywater.js";
 import _poolTheReaverCleaver from "../pool/the-reaver-cleaver.js";
 import _poolTheWatcherInTheWater from "../pool/the-watcher-in-the-water.js";
+import _poolTheyCameFromThePipes from "../pool/they-came-from-the-pipes.js";
 import _poolThorinsLastStand from "../pool/thorins-last-stand.js";
 import _poolTifaLockhart from "../pool/tifa-lockhart.js";
 import _poolTimbercrownPathway from "../pool/timbercrown-pathway.js";
@@ -509,6 +510,7 @@ const shard: CardShard = {
     _poolTheBattleOfBywater,
     _poolTheReaverCleaver,
     _poolTheWatcherInTheWater,
+    _poolTheyCameFromThePipes,
     _poolThorinsLastStand,
     _poolTifaLockhart,
     _poolTimbercrownPathway,

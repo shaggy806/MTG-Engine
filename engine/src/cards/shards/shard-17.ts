@@ -121,6 +121,7 @@ import _poolIronWill from "../pool/iron-will.js";
 import _poolItlimocCradleOfTheSun from "../pool/itlimoc-cradle-of-the-sun.js";
 import _poolIzzetGuildgate from "../pool/izzet-guildgate.js";
 import _poolJhovallRider from "../pool/jhovall-rider.js";
+import _poolKadenaSlinkingSorcerer from "../pool/kadena-slinking-sorcerer.js";
 import _poolKamahlPitFighter from "../pool/kamahl-pit-fighter.js";
 import _poolKambalProfiteeringMayor from "../pool/kambal-profiteering-mayor.js";
 import _poolKeyToTheCity from "../pool/key-to-the-city.js";
@@ -170,6 +171,7 @@ import _poolQueenMarchesa from "../pool/queen-marchesa.js";
 import _poolQuickStudy from "../pool/quick-study.js";
 import _poolRaffineSchemingSeer from "../pool/raffine-scheming-seer.js";
 import _poolRainOfTears from "../pool/rain-of-tears.js";
+import _poolRattleclawMystic from "../pool/rattleclaw-mystic.js";
 import _poolRavos from "../pool/ravos.js";
 import _poolReadTheBones from "../pool/read-the-bones.js";
 import _poolReaperFromTheAbyss from "../pool/reaper-from-the-abyss.js";
@@ -399,6 +401,7 @@ const shard: CardShard = {
     _poolItlimocCradleOfTheSun,
     _poolIzzetGuildgate,
     _poolJhovallRider,
+    _poolKadenaSlinkingSorcerer,
     _poolKamahlPitFighter,
     _poolKambalProfiteeringMayor,
     _poolKeyToTheCity,
@@ -448,6 +451,7 @@ const shard: CardShard = {
     _poolQuickStudy,
     _poolRaffineSchemingSeer,
     _poolRainOfTears,
+    _poolRattleclawMystic,
     _poolRavos,
     _poolReadTheBones,
     _poolReaperFromTheAbyss,

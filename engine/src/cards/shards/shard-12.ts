@@ -23,6 +23,7 @@ import _poolBanishingKnack from "../pool/banishing-knack.js";
 import _poolBarterInBlood from "../pool/barter-in-blood.js";
 import _poolBasiliskGate from "../pool/basilisk-gate.js";
 import _poolBattlegroundGeist from "../pool/battleground-geist.js";
+import _poolBayekOfSiwa from "../pool/bayek-of-siwa.js";
 import _poolBeholdTheMultiverse from "../pool/behold-the-multiverse.js";
 import _poolBiowasteBlob from "../pool/biowaste-blob.js";
 import _poolBlazingCrescendo from "../pool/blazing-crescendo.js";
@@ -301,6 +302,7 @@ const shard: CardShard = {
     _poolBarterInBlood,
     _poolBasiliskGate,
     _poolBattlegroundGeist,
+    _poolBayekOfSiwa,
     _poolBeholdTheMultiverse,
     _poolBiowasteBlob,
     _poolBlazingCrescendo,

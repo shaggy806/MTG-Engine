@@ -16,6 +16,7 @@ import _poolAnaconda from "../pool/anaconda.js";
 import _poolAncestorsProphet from "../pool/ancestors-prophet.js";
 import _poolAncientSpring from "../pool/ancient-spring.js";
 import _poolAntQueen from "../pool/ant-queen.js";
+import _poolAphettoAlchemist from "../pool/aphetto-alchemist.js";
 import _poolArborbackStomper from "../pool/arborback-stomper.js";
 import _poolArmorOfShadows from "../pool/armor-of-shadows.js";
 import _poolArmoredWarhorse from "../pool/armored-warhorse.js";
@@ -303,6 +304,7 @@ const shard: CardShard = {
     _poolAncestorsProphet,
     _poolAncientSpring,
     _poolAntQueen,
+    _poolAphettoAlchemist,
     _poolArborbackStomper,
     _poolArmorOfShadows,
     _poolArmoredWarhorse,

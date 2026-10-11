@@ -5071,6 +5071,21 @@
   "effect:doesnt-untap-while-you-control-source": {
    "family": "effect:duration-extensions",
    "example": "Ty Lee, Chi Blocker: 'It doesn't untap during its controller's untap step for as long as you control [this]' (Ty Lee, Chi Blocker): a doesn't-untap mark on another permanent that lasts while the source stays under the effect's controller's control (ends if it leaves or changes control, and doesn't resume)."
+  },
+  "effect:turn-face-up": {
+   "family": "mechanic:face-down",
+   "example": "Ugin's Mastery: 'you may turn a face-down creature you control face up' by an effect (also Zimone, Mystery Unraveler; Hauntwoods Shrieker's reveal-then-turn), not the special action."
+  },
+  "effect:return-face-up-or-down": {
+   "family": "mechanic:face-down",
+   "example": "Deathmist Raptor: 'return this card from your graveyard to the battlefield face up or face down' — the player's choice, face down as a morph."
+  },
+  "effect:manifest-from-hand": {
+   "family": "mechanic:face-down",
+   "example": "Scroll of Fate: 'Manifest a card from your hand' — the manifested card chosen from a hand, not the library's top."
+  },
+  "cost:exile-from-graveyard-additional": {
+   "example": "Abhorrent Oculus: 'As an additional cost to cast this spell, exile six cards from your graveyard' — a spell's additional cost exiling N cards from the graveyard (escape has it only as part of escape)."
   }
  }
 }

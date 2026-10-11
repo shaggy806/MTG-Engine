@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3486 already implemented / 1514 missing (marks refreshed 2026-10-11)
+3491 already implemented / 1509 missing (marks refreshed 2026-10-11)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1134,7 +1134,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1139  Spore Frog                               {G}              Creature — Frog
 [ ]  1140  Augur of Autumn                          {1}{G}{G}        Creature — Human Druid
 [x]  1141  Lonely Sandbar                           {0}              Land
-[ ]  1142  Grim Haruspex                            {2}{B}           Creature — Human Wizard
+[x]  1142  Grim Haruspex                            {2}{B}           Creature — Human Wizard
 [x]  1143  Spymaster's Vault                        {0}              Land
 [x]  1144  Fiery Inscription                        {2}{R}           Enchantment
 [x]  1145  Waterlogged Grove                        {0}              Land
@@ -3385,7 +3385,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3392  Lathiel, the Bounteous Dawn              {2}{G}{W}        Legendary Creature — Unicorn
 [ ]  3393  Winter Orb                               {2}              Artifact
 [ ]  3394  O'aka, Traveling Merchant                {1}{U}           Legendary Creature — Human Citizen
-[ ]  3395  Hooded Hydra                             {X}{G}{G}        Creature — Snake Hydra
+[x]  3395  Hooded Hydra                             {X}{G}{G}        Creature — Snake Hydra
 [x]  3396  Sigil of Sleep                           {U}              Enchantment — Aura
 [ ]  3397  Killian, Ink Duelist                     {W}{B}           Legendary Creature — Human Warlock
 [x]  3398  Angelic Accord                           {3}{W}           Enchantment
@@ -4225,7 +4225,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4232  Zhur-Taa Druid                           {R}{G}           Creature — Human Druid
 [x]  4233  Count on Luck                            {R}{R}{R}        Enchantment
 [x]  4234  Rolling Hamsphere                        {7}              Artifact — Vehicle
-[ ]  4235  Unwanted Remake                          {W}              Instant
+[x]  4235  Unwanted Remake                          {W}              Instant
 [x]  4236  The First Sliver                         {W}{U}{B}{R}{G}  Legendary Creature — Sliver
 [x]  4237  Gothmog, Morgul Lieutenant               {3}{B}           Legendary Creature — Human Soldier
 [ ]  4238  Unstable Amulet                          {1}{R}           Artifact
@@ -4357,7 +4357,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4364  The Restoration of Eiganjo // Architect of Restoration {3}              Enchantment — Saga // Enchantment Creature — Fox Monk
 [ ]  4365  Moseo, Vein's New Dean                   {2}{B}           Legendary Creature — Bird Skeleton Warlock
 [x]  4366  Goblin Ringleader                        {3}{R}           Creature — Goblin
-[ ]  4367  Bayek of Siwa                            {3}{R}{W}        Legendary Creature — Human Assassin
+[x]  4367  Bayek of Siwa                            {3}{R}{W}        Legendary Creature — Human Assassin
 [x]  4368  Venom Sliver                             {1}{G}           Creature — Sliver
 [ ]  4369  Nighthowler                              {1}{B}{B}        Enchantment Creature — Horror
 [ ]  4370  Cayth, Famed Mechanist                   {1}{U}{R}{W}     Legendary Creature — Dwarf Artificer
@@ -4903,7 +4903,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4910  Cut Down                                 {B}              Instant
 [x]  4911  From Beyond                              {3}{G}           Enchantment
 [x]  4912  Smokebraider                             {1}{R}           Creature — Elemental Shaman
-[ ]  4913  Aphetto Alchemist                        {1}{U}           Creature — Human Wizard
+[x]  4913  Aphetto Alchemist                        {1}{U}           Creature — Human Wizard
 [x]  4914  Ardbert, Warrior of Darkness             {1}{W}{B}        Legendary Creature — Spirit Warrior
 [x]  4915  Thrumming Hivepool                       {6}              Artifact
 [ ]  4916  Amoeboid Changeling                      {1}{U}           Creature — Shapeshifter

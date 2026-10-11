@@ -245,6 +245,7 @@ import _poolTuktukRubblefort from "../pool/tuktuk-rubblefort.js";
 import _poolTurbulentWilderness from "../pool/turbulent-wilderness.js";
 import _poolUnflinchingCourage from "../pool/unflinching-courage.js";
 import _poolUnhallowedPhalanx from "../pool/unhallowed-phalanx.js";
+import _poolUnwantedRemake from "../pool/unwanted-remake.js";
 import _poolUnwind from "../pool/unwind.js";
 import _poolUrborgVolcano from "../pool/urborg-volcano.js";
 import _poolUsherOfTheFallen from "../pool/usher-of-the-fallen.js";
@@ -527,6 +528,7 @@ const shard: CardShard = {
     _poolTurbulentWilderness,
     _poolUnflinchingCourage,
     _poolUnhallowedPhalanx,
+    _poolUnwantedRemake,
     _poolUnwind,
     _poolUrborgVolcano,
     _poolUsherOfTheFallen,

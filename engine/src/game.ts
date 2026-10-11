@@ -242,6 +242,7 @@ import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import {
   DEFAULT_RULES,
+  FACE_DOWN_CARDS,
   POISON_LETHAL,
   activePlayerOf,
   cloneGameState,
@@ -1215,7 +1216,7 @@ export class Game {
         this.foretellCard(action.player, action.card);
         break;
       case "turn-face-up":
-        this.turnFaceUp(action.player, action.permanent);
+        this.turnFaceUp(action.player, action.permanent, action.morph === true);
         break;
       case "unlock-door":
         this.payToUnlock(action.player, action.permanent, action.door);
@@ -1392,7 +1393,7 @@ export class Game {
       case "foretell":
         return this.whyCannotForetell(action.player, action.card);
       case "turn-face-up":
-        return this.whyCannotTurnFaceUp(action.player, action.permanent);
+        return this.whyCannotTurnFaceUp(action.player, action.permanent, action.morph === true);
       case "unlock-door":
         return this.whyCannotUnlock(action.player, action.permanent, action.door);
       case "cycle":
@@ -1506,6 +1507,21 @@ export class Game {
                 via: "blitz",
                 costString: blitzCost,
               }),
+            );
+          }
+          // Morph, megamorph and disguise (rules 702.37c, 702.168a) — face
+          // down for {3}, worked out as the face-down 2/2 spell it would be.
+          const downKind = face === undefined || face === 0 ? this.faceDownKindOf(card) : null;
+          if (downKind !== null) {
+            const downDef = this.registry.get(FACE_DOWN_CARDS[downKind]);
+            out.push(
+              ...this.withFaceDown(card, downKind, () =>
+                this.castSpellActions(player, card, cardName, downDef, {
+                  ...faceProp,
+                  via: "face-down",
+                  costString: "{3}",
+                }),
+              ),
             );
           }
         }
@@ -1748,9 +1764,16 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.faceDown === undefined || object.controller !== player) continue;
-      if (this.whyCannotTurnFaceUp(player, id) !== null) continue;
       const card = this.registry.get(object.cardName);
-      out.push({ kind: "turn-face-up", permanent: id, cardName: card.name, cost: card.manaCost ?? "" });
+      // For its mana cost (a manifested or cloaked creature card), and for
+      // its morph or disguise cost (one cast face down, or a manifested card
+      // with morph — 701.40c): each way its own offer.
+      if (this.whyCannotTurnFaceUp(player, id) === null) {
+        out.push({ kind: "turn-face-up", permanent: id, cardName: card.name, cost: card.manaCost ?? "" });
+      }
+      if (card.morph !== null && this.whyCannotTurnFaceUp(player, id, true) === null) {
+        out.push({ kind: "turn-face-up", permanent: id, cardName: card.name, cost: card.morph.cost, morph: card.morph.keyword });
+      }
     }
     // Unlocking a Room's locked door (rule 709.5e) — a special action too,
     // at sorcery speed, offered beside the Room's abilities.
@@ -5747,6 +5770,18 @@ export class Game {
         }
         return;
       }
+      if (to === "manifest") {
+        // Manifest dread (rule 701.62a): the chosen card is manifested —
+        // put onto the battlefield face down as a 2/2 (701.40a) by the
+        // player whose library it was — and nobody else learns what it is.
+        this.moveObject(id, "battlefield", { faceDown: "manifest" });
+        const entered = this.state.objects[id];
+        if (entered?.zone === "battlefield") {
+          this.emit({ type: "card-manifested", player, object: id, kind: "manifest" });
+          this.emit({ type: "permanent-entered-battlefield", object: id });
+        }
+        return;
+      }
       if (to === "library-bottom") {
         // In the order chosen: each goes under the one before it.
         const fromHand = this.state.objects[id]?.zone === "hand";
@@ -6882,6 +6917,11 @@ export class Game {
    * single-faced card, or `faces[face]`'s def for a multi-face card (rule
    * 712). */
   private faceDef(cardId: ObjectId, face = 0): CardDefinition {
+    // A face-down spell or permanent is the face-down 2/2 and nothing else
+    // (rules 708.2a, 708.4): no name, text or mana cost to cast it for, or
+    // abilities for it to resolve with.
+    const down = this.state.objects[cardId]?.faceDown;
+    if (down !== undefined) return this.registry.get(FACE_DOWN_CARDS[down.kind]);
     const own = this.registry.get(this.state.objects[cardId].cardName);
     const faceName = own.faces?.[face];
     return faceName !== undefined ? this.registry.get(faceName) : own;
@@ -6926,6 +6966,34 @@ export class Game {
       return fn();
     } finally {
       undo();
+    }
+  }
+
+  /** The face-down kind casting `cardId` face down makes it (rules 702.37c,
+   * 702.168a), or `null` if it has no morph, megamorph or disguise. */
+  private faceDownKindOf(cardId: ObjectId): FaceDownKind | null {
+    const object = this.state.objects[cardId];
+    if (object === undefined) return null;
+    const morph = this.registry.get(object.cardName).morph;
+    return morph === null ? null : morph.keyword === "disguise" ? "disguise" : "morph";
+  }
+
+  /** Run `fn` with `cardId` turned face down as `kind` — the face-down spell
+   * it would be cast as (708.4), so every check sees a 2/2 with no name,
+   * text or mana cost — and turned back, unless it has moved meanwhile (cast
+   * onto the stack, where it stays face down). The `withFace` of morph. */
+  private withFaceDown<T>(cardId: ObjectId, kind: FaceDownKind, fn: () => T): T {
+    const object = this.state.objects[cardId];
+    if (object === undefined || object.faceDown !== undefined) return fn();
+    const zone = object.zone;
+    object.faceDown = { kind };
+    invalidateComputedCache();
+    try {
+      return fn();
+    } finally {
+      const now = this.state.objects[cardId];
+      if (now !== undefined && now.zone === zone) delete now.faceDown;
+      invalidateComputedCache();
     }
   }
 
@@ -8642,7 +8710,10 @@ export class Game {
               ? this.warpCostOfCaster(cardId, def, caster)
               : via === "blitz"
               ? this.blitzCostOf(cardId, def, caster ?? this.state.objects[cardId]?.owner ?? "")
-            : // Disturb (rule 702.150) — the disturb cost is on the front face.
+            : // Face down (rules 702.37c, 702.168a): {3}, an alternative cost.
+              via === "face-down"
+              ? "{3}"
+              : // Disturb (rule 702.150) — the disturb cost is on the front face.
               via === "disturb"
               ? (this.frontFaceDef(cardId).disturb?.cost ?? null)
               : // Adventure (rule 715) — the creature is cast for its own cost.
@@ -8791,6 +8862,26 @@ export class Game {
         this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free, convoke,
           altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, true, offspring, evoke, delve),
       );
+    }
+    // Face down (morph, megamorph, disguise — rules 702.37c, 702.168a): judged
+    // as the face-down 2/2 spell it would be — no abilities, so sorcery
+    // timing unless something lets creature spells be cast as though they
+    // had flash — for {3}, an alternative cost, so no other goes with it
+    // (118.9a). From wherever it could otherwise be cast: the hand, or the
+    // command zone for a commander.
+    if (via === "face-down") {
+      const kind = this.faceDownKindOf(cardId);
+      if (kind === null) return "that card has no morph or disguise";
+      if (face !== 0) return "a card is cast face down as itself, not one of its faces";
+      if (free || altCost || overload || evoke !== null || prototype || offspring || kicked !== false) {
+        return "casting face down is an alternative cost, and can't be combined with another";
+      }
+      if (this.state.objects[cardId]?.faceDown === undefined) {
+        return this.withFaceDown(cardId, kind, () =>
+          this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free, convoke,
+            altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, prototype, offspring, evoke, delve),
+        );
+      }
     }
     // Cast because a resolving spell or ability says so: no priority needed,
     // but only the card it offered, by the player it offered it to.
@@ -9583,6 +9674,17 @@ export class Game {
       );
       return;
     }
+    // Face down (rules 702.37c, 702.168a): turned face down before it's cast,
+    // and it stays so on the stack (708.4).
+    if (via === "face-down" && this.state.objects[cardId]?.faceDown === undefined) {
+      const kind = this.faceDownKindOf(cardId);
+      if (kind === null) throw new Error("that card has no morph or disguise");
+      this.withFaceDown(cardId, kind, () =>
+        this.castSpell(player, cardId, targets, xValue, via, face, modes, kicked, sacrifice, overload, free,
+          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, prototype, offspring, evoke, division, delve),
+      );
+      return;
+    }
     // "For each target" cost modifications (Hinata) count these: the targets
     // are chosen before the total cost is determined (rule 601.2c, 601.2f).
     const targetCount = distinctTargetCount(targets, this.targetCopies(targets));
@@ -9826,8 +9928,10 @@ export class Game {
       via === "library-top" &&
       this.libraryTopCastPermissions(player, cardId, face, chosenX).some((p) => p.gainsHaste === true);
     // Commit: move to the stack, pay, announce. The targets are recorded
-    // once the costs are paid, below.
-    this.moveObject(cardId, "stack");
+    // once the costs are paid, below. A face-down spell goes there face down
+    // (708.4): nobody else ever learns what was cast.
+    const castDown = object.faceDown?.kind;
+    this.moveObject(cardId, "stack", castDown !== undefined ? { faceDown: castDown } : {});
     // The player who casts a spell controls it (rule 601.2a) — a card cast
     // from an opponent's exile or library (Maralen) too.
     object.controller = player;
@@ -13457,7 +13561,12 @@ export class Game {
     // battlefield under your control" (rule 110.2), not a control-changing
     // effect.
     const under = object.controller !== object.owner ? object.controller : undefined;
-    const entered = this.moveObject(id, "battlefield", under !== undefined ? { under } : {});
+    // A face-down spell resolves into a face-down permanent (rule 708.4).
+    const down = object.faceDown?.kind;
+    const entered = this.moveObject(id, "battlefield", {
+      ...(under !== undefined ? { under } : {}),
+      ...(down !== undefined ? { faceDown: down } : {}),
+    });
     object.targets = null;
     if (!entered) return;
     if (under !== undefined && this.state.objects[id]?.zone === "battlefield" && this.state.objects[id].controller !== under) {
@@ -14692,7 +14801,10 @@ export class Game {
             event.type === "permanent-sacrificed" ||
             event.type === "permanent-transformed" ||
             event.type === "became-monstrous" ||
-            event.type === "permanent-exerted"
+            event.type === "permanent-exerted" ||
+            // "Whenever a permanent you control is turned face up … it"
+            // (Trail of Mystery).
+            event.type === "permanent-turned-face-up"
               ? event.object
               : event.type === "chapter-resolved"
                 ? event.saga
@@ -15595,6 +15707,12 @@ export class Game {
           event.type === "door-unlocked" &&
           (spec.door === undefined || event.door === spec.door) &&
           (spec.fully !== true || event.fully) &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
+        );
+      case "turned-face-up":
+        return (
+          event.type === "permanent-turned-face-up" &&
           this.matchesWho(spec.who, event.object, self) &&
           this.triggerFilterOk(spec.filter, event.object, self)
         );
@@ -19094,7 +19212,7 @@ export class Game {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "graveyard" | "exile-face-down" | "exile",
+    destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "graveyard" | "exile-face-down" | "exile" | "manifest",
     leftover: "bottom-random" | "bottom-any-order" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
@@ -23352,7 +23470,7 @@ export class Game {
    * replacements and triggers see a 2/2 with no name. Nobody else learns
    * what it is (708.5). An empty library manifests nothing.
    */
-  private manifestTop(player: PlayerId, kind: FaceDownKind): void {
+  private manifestTop(player: PlayerId, kind: "manifest" | "cloak"): void {
     if (this.state.players[player]?.hasLost !== false) return;
     const top = this.state.zones.perPlayer[player].library[0];
     if (top === undefined) return;
@@ -23363,13 +23481,14 @@ export class Game {
     this.emit({ type: "permanent-entered-battlefield", object: top });
   }
 
-  /** Why `player` can't turn the face-down permanent `id` face up (rules
-   * 701.40b, 701.58b): a special action, any time they have priority, for a
-   * permanent they control whose card is a creature card — paying its mana
-   * cost. A card with no mana cost can't be turned face up this way (its
-   * cost can't be paid, 118.6), and neither can a noncreature card
-   * (701.40g); morph and disguise aren't modeled. */
-  private whyCannotTurnFaceUp(player: PlayerId, id: ObjectId): string | null {
+  /** Why `player` can't turn the face-down permanent `id` face up: a special
+   * action, any time they have priority, for a permanent they control. For
+   * its mana cost (rules 701.40b, 701.58b), a manifested or cloaked one
+   * whose card is a creature card — not a noncreature card (701.40g), nor
+   * one with no mana cost (118.6), nor one cast face down. With `morph`, for
+   * its morph, megamorph or disguise cost (702.37e, 702.168d) — a card cast
+   * face down, or a manifested card with morph (701.40c). */
+  private whyCannotTurnFaceUp(player: PlayerId, id: ObjectId, morph = false): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
     const object = this.state.objects[id];
@@ -23378,30 +23497,52 @@ export class Game {
     }
     if (object.controller !== player) return `${player} doesn't control that permanent`;
     const card = this.registry.get(object.cardName);
-    if (!card.types.includes("creature")) return "that card isn't a creature card";
-    if (card.manaCost === null) return "that card has no mana cost to pay";
-    if (this.payMana(player, parseManaCost(card.manaCost)) === null) {
-      return `${player} cannot pay ${card.manaCost}`;
+    const cost = this.turnFaceUpCost(id, morph);
+    if (cost === null) {
+      if (morph) return "that card has no morph or disguise";
+      if (object.faceDown.kind === "morph" || object.faceDown.kind === "disguise") {
+        return "a card cast face down is turned face up for its morph or disguise cost";
+      }
+      if (!card.types.includes("creature")) return "that card isn't a creature card";
+      return "that card has no mana cost to pay";
     }
+    if (this.payMana(player, parseManaCost(cost)) === null) return `${player} cannot pay ${cost}`;
     return null;
   }
 
-  /** Turn a face-down permanent face up (rule 701.40b): show everyone the
-   * card, pay its mana cost, and it has its own characteristics again —
-   * the same permanent, so it doesn't enter the battlefield (708.8) and
-   * whatever applied to the 2/2 still applies. A special action: the player
-   * keeps priority (116.3c). */
-  private turnFaceUp(player: PlayerId, id: ObjectId): void {
-    const why = this.whyCannotTurnFaceUp(player, id);
+  /** What turning face-down `id` face up costs that way — see
+   * {@link whyCannotTurnFaceUp} — or `null` if it can't be turned so. */
+  private turnFaceUpCost(id: ObjectId, morph: boolean): string | null {
+    const object = this.state.objects[id];
+    if (object?.faceDown === undefined) return null;
+    const card = this.registry.get(object.cardName);
+    if (morph) return card.morph?.cost ?? null;
+    if (object.faceDown.kind === "morph" || object.faceDown.kind === "disguise") return null;
+    return card.types.includes("creature") ? card.manaCost : null;
+  }
+
+  /** Turn a face-down permanent face up (rules 701.40b, 702.37e): show
+   * everyone the card, pay the cost, and it has its own characteristics
+   * again — the same permanent, so it doesn't enter the battlefield (708.8)
+   * and whatever applied to the 2/2 still applies. Turned up for its
+   * megamorph cost, it gets a +1/+1 counter as it is (702.37b); a card that
+   * says "as this is turned face up" (Hooded Hydra) gets its counters
+   * however it is. A special action: the player keeps priority (116.3c). */
+  private turnFaceUp(player: PlayerId, id: ObjectId, morph = false): void {
+    const why = this.whyCannotTurnFaceUp(player, id, morph);
     if (why !== null) throw new Error(why);
     const object = this.state.objects[id];
     const card = this.registry.get(object.cardName);
-    const payment = this.payMana(player, parseManaCost(card.manaCost ?? ""));
-    if (payment === null) throw new Error(`${player} cannot pay ${card.manaCost}`);
+    const cost = this.turnFaceUpCost(id, morph) ?? "";
+    const payment = this.payMana(player, parseManaCost(cost));
+    if (payment === null) throw new Error(`${player} cannot pay ${cost}`);
     this.executePayment(player, payment);
     delete object.faceDown;
     invalidateComputedCache();
     this.revealFaceDown(id);
+    const ref = { kind: "object", object: id } as const;
+    if (morph && card.morph?.keyword === "megamorph") this.addCounter(ref, "+1/+1", 1, false, player);
+    if (card.asTurnedFaceUp !== undefined) this.addCounter(ref, "+1/+1", card.asTurnedFaceUp.counters, false, player);
     this.emit({ type: "permanent-turned-face-up", player, object: id });
     this.afterPlayerAction(player);
   }
@@ -27471,6 +27612,7 @@ export class Game {
       blocking: object.blocking !== null,
       equipped: attached.equipped,
       enchanted: attached.enchanted,
+      ...(object.faceDown !== undefined ? { faceDown: true } : {}),
       enchantedByController: attached.enchantedByController,
       ...(attached.enchantedBy.length > 0 ? { enchantedBy: attached.enchantedBy } : {}),
       ...(object.attachedTo !== null ? { attachedTo: object.attachedTo } : {}),
@@ -27526,7 +27668,11 @@ export class Game {
    */
   private moveObject(id: ObjectId, to: ZoneType, enter: EnterOptions = {}): boolean {
     const from = this.state.objects[id]?.zone;
-    const wasFaceDown = from === "battlefield" && this.state.objects[id]?.faceDown !== undefined;
+    // A face-down spell that leaves the stack any way but onto the
+    // battlefield is revealed too (rule 708.9).
+    const wasFaceDown =
+      (from === "battlefield" || (from === "stack" && to !== "battlefield")) &&
+      this.state.objects[id]?.faceDown !== undefined;
     // Where the move starts in the log: the events it emits itself (a lone
     // card's `cards-put-into-exile`) already describe the card where it's
     // going, so a public zone's stint covers them too.
@@ -28114,6 +28260,9 @@ export class Game {
     // A new object isn't face down (400.7) — `moveObject` revealed it as it
     // left the battlefield (708.9); one entering face down is turned so below.
     delete object.faceDown;
+    // A spell cast face down (morph, disguise) is a face-down spell from the
+    // moment it's on the stack (rule 708.4), before anything sees it arrive.
+    if (to === "stack" && enter.faceDown !== undefined) object.faceDown = { kind: enter.faceDown };
     // Nor has a Room's unlocked designations (rule 709.5c): set below as it
     // enters the battlefield. Nor a Class level (716.2b).
     delete object.doors;

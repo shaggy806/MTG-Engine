@@ -540,6 +540,20 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /**
+       * A face-down permanent was turned face up (rule 708.8) — the
+       * `permanent-turned-face-up` event, however it was turned (its cost, or
+       * an effect). "When this creature is turned face up" (Den Protector,
+       * Rattleclaw Mystic) is `who: "self"`: the permanent has its abilities
+       * from then on, so this one triggers. "Whenever a permanent you control
+       * is turned face up" (Trail of Mystery) is `who: "you-control"`, its
+       * trigger object the permanent; `filter` narrows it, as it is now.
+       */
+      readonly on: "turned-face-up";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
+  | {
       readonly on: "enters-battlefield";
       readonly who: TriggerWho;
       /** Narrow which entering permanent counts (Soul Warden: a creature;

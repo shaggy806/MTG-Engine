@@ -375,6 +375,13 @@ export interface CardFilter {
   readonly notSupertype?: Supertype;
   /** Must NOT be this card — "a card not named …". */
   readonly notName?: string;
+  /** Is (or isn't) face down (rule 708) — manifested, cloaked, or cast face
+   * down with morph or disguise: "whenever a face-down creature you control
+   * enters" (Kadena, Trail of Mystery) is `{ type: "creature", faceDown:
+   * true }`. A face-down spell on the stack counts too, and a snapshot says
+   * whether it was face down — a spell as cast (Kadena's "the first
+   * face-down creature spell you cast each turn"), a permanent as it left. */
+  readonly faceDown?: boolean;
   /** Has an Equipment attached to it, whoever controls the Equipment (rule
    * 301.5). */
   readonly equipped?: boolean;
@@ -1102,6 +1109,10 @@ export function matchesFilter(
   // battlefield now.
   if (filter.ringBearer !== undefined && (live !== undefined && isRingBearer(state, ctx.you, id)) !== filter.ringBearer) {
     return false;
+  }
+  if (filter.faceDown !== undefined) {
+    const down = live !== undefined ? live.faceDown !== undefined : lki?.faceDown === true;
+    if (down !== filter.faceDown) return false;
   }
   if (filter.attachedTo !== undefined) {
     const host = live !== undefined ? live.attachedTo : lki!.attachedTo;

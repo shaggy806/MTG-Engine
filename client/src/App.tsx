@@ -332,6 +332,9 @@ function zoneChoiceTitle(action: ZoneChoiceAction, nameOf: (player: PlayerId) =>
       return `Choose ${cards} you may play`
     case 'exile-face-down':
       return `Choose ${cards} to exile face down`
+    case 'manifest':
+      // Manifest dread (rule 701.62a): the rest go to the graveyard.
+      return `Manifest dread: choose ${cards} to put onto the battlefield face down as a 2/2 — the rest go to your graveyard`
   }
 }
 
@@ -1489,9 +1492,11 @@ function Table({
     }
     return m
   }, [actions])
+  // Every way to turn each face-down permanent face up: its mana cost, its
+  // morph or disguise cost, or both (a manifested card with morph).
   const faceUpBySource = useMemo(() => {
-    const m = new Map<ObjectId, Extract<LegalAction, { kind: 'turn-face-up' }>>()
-    for (const a of actions) if (a.kind === 'turn-face-up') m.set(a.permanent, a)
+    const m = new Map<ObjectId, Extract<LegalAction, { kind: 'turn-face-up' }>[]>()
+    for (const a of actions) if (a.kind === 'turn-face-up') m.set(a.permanent, [...(m.get(a.permanent) ?? []), a])
     return m
   }, [actions])
   const abilitiesBySource = useMemo(() => {
@@ -5157,6 +5162,9 @@ function Table({
                         ? ` (X=${a.xCost.maxX})`
                         : ''}
                       {a.kind === 'cast-spell' && a.via === 'warp' ? ' (warp)' : ''}
+                      {a.kind === 'cast-spell' && a.via === 'face-down' ? (
+                        <> face down (a 2/2 for <Symbols text="{3}" />)</>
+                      ) : null}
                       {a.kind === 'cast-spell' && a.via === 'blitz' ? ' (blitz)' : ''}
                       {a.kind === 'cast-spell' && a.offspring ? (
                         <> (offspring <Symbols text={a.offspringCost ?? ''} />)</>
@@ -5337,18 +5345,19 @@ function Table({
                 game.dispatch({ type: 'unlock-door', player: seat, permanent: u.permanent, door: u.door })
               },
             })),
-            ...(selectedFaceUp !== undefined
-              ? [
-                  {
-                    key: 'turn-face-up',
-                    label: `Turn face up — ${selectedFaceUp.cardName}, pay ${selectedFaceUp.cost}`,
-                    onSelect: () => {
-                      setSelectedSource(null)
-                      game.dispatch({ type: 'turn-face-up', player: seat, permanent: selectedFaceUp.permanent })
-                    },
-                  },
-                ]
-              : []),
+            ...(selectedFaceUp ?? []).map((up) => ({
+              key: `turn-face-up:${up.morph ?? 'cost'}`,
+              label: `Turn face up — ${up.cardName}, ${up.morph !== undefined ? `${up.morph} ` : ''}${up.cost}`,
+              onSelect: () => {
+                setSelectedSource(null)
+                game.dispatch({
+                  type: 'turn-face-up',
+                  player: seat,
+                  permanent: up.permanent,
+                  ...(up.morph !== undefined ? { morph: true } : {}),
+                })
+              },
+            })),
             ...selectedAbilities.map((ab) => ({
             // An "add one mana of any color" ability is listed once per
             // colour, all sharing an index -- the colours are what tell them

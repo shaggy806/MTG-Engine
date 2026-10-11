@@ -94,6 +94,7 @@ import _poolGodPharaohsStatue from "../pool/god-pharaohs-statue.js";
 import _poolGraveshifter from "../pool/graveshifter.js";
 import _poolGrayOgre from "../pool/gray-ogre.js";
 import _poolGrazingGladehart from "../pool/grazing-gladehart.js";
+import _poolGudulLurker from "../pool/gudul-lurker.js";
 import _poolGyreEngineer from "../pool/gyre-engineer.js";
 import _poolHavocDevils from "../pool/havoc-devils.js";
 import _poolHedronRover from "../pool/hedron-rover.js";
@@ -366,6 +367,7 @@ const shard: CardShard = {
     _poolGraveshifter,
     _poolGrayOgre,
     _poolGrazingGladehart,
+    _poolGudulLurker,
     _poolGyreEngineer,
     _poolHavocDevils,
     _poolHedronRover,

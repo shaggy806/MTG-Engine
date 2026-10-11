@@ -59,6 +59,7 @@ import _poolDaybreakChaplain from "../pool/daybreak-chaplain.js";
 import _poolDebilitatingInjury from "../pool/debilitating-injury.js";
 import _poolDeerDog from "../pool/deer-dog.js";
 import _poolDefiantStrike from "../pool/defiant-strike.js";
+import _poolDenProtector from "../pool/den-protector.js";
 import _poolDesertOfTheTrue from "../pool/desert-of-the-true.js";
 import _poolDevotedHero from "../pool/devoted-hero.js";
 import _poolDiluvianPrimordial from "../pool/diluvian-primordial.js";
@@ -329,6 +330,7 @@ const shard: CardShard = {
     _poolDebilitatingInjury,
     _poolDeerDog,
     _poolDefiantStrike,
+    _poolDenProtector,
     _poolDesertOfTheTrue,
     _poolDevotedHero,
     _poolDiluvianPrimordial,
